@@ -1,0 +1,9 @@
+{
+  "name": "barebones",
+  "version": "0.0.1",
+  "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
+  "dependencies": {
+    "node-slack": "0.0.7",
+    "restify": "^4.0.3"
+  }
+}
