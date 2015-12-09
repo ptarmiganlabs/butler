@@ -9,13 +9,12 @@ var slack = new Slack(slackWebhookURL);
 
 
 function respondSlack(req, res, next) {
-  console.log(req.params);
-  console.log(req.params.channel);
+//  console.log(req.params);
 
   slack.send({
       text: req.params.msg,
-      channel: '#general',
-      username: 'Bot',
+      channel: req.params.channel,
+      username: req.params.from_user,
       icon_emoji: req.params.emoji
   });
 
