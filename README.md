@@ -91,6 +91,19 @@ The examples below assume the call is made from localhost, i.e. the same server 
         $(Include=[lib:/Scripts/create_directory.qvs]);
         CALL CreateDir('c:/abc/def/ghi');
 
+- **Getting disk space info**
+
+  This endpoint will return total disk size, as well as available free space on the disk/path specified in the URL parameter.
+
+  - Calling using curl:
+
+        curl -X GET 'http://localhost:8080/getDiskSpace?path=/'
+
+  - Calling from Sense or QV load script:
+
+    Same principle as above, using a LOAD ...from [URL]. Preferably wrapping the API call in a Sub... End Sub
+
+
 Warning
 -------
 You should make sure to configure the firewall of the server where slack_proxy is running, so it only accepts calls from the desired clients/IP addresses.
