@@ -38,7 +38,7 @@ function respondGetDiskSpace(req, res, next) {
   //console.log(req.params);
 
   // // Windows: get disk usage. Takes path as first parameter
-  // disk.check('c:', function(err, info) {
+  // disk.check(req.params.path, function(err, info) {
   //   req.params.available = info.available;
   //   req.params.free = info.free;
   //   req.params.total = info.total;
@@ -46,7 +46,7 @@ function respondGetDiskSpace(req, res, next) {
 
 
   // OSX/Linux: get disk usage. Takes mount point as first parameter
-  disk.check('/', function(err, info) {
+  disk.check(req.params.path, function(err, info) {
     req.params.available = info.available;
     req.params.free = info.free;
     req.params.total = info.total;
