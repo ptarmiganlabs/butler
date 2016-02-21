@@ -42,20 +42,38 @@ The examples below assume the call is made from localhost, i.e. the same server 
 
   - Calling from Sense or QlikView load script:
 
-    First store the function below in its own file, called for example post_to_slack.qvs.
+    First store the functions below in their own file, called for example post_to_slack.qvs.
+
+
+
+        Sub PostToSlackInit
+          // Initialize mapping table needed for URL encoding
+        	URL_EncodingReferenceMap:
+        	Mapping LOAD   
+        		Replace([Character], 'space', ' ') as ASCII_Character,
+        		//     Text([From Windows-1252]) as URL_encoding,   
+        		Text([From UTF-8]) as URL_encoding
+        	FROM  
+        	[http://www.w3schools.com/tags/ref_urlencode.asp]  
+        	(html, utf8, embedded labels, table is @1);  
+        end sub
+
 
         Sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
+          SlackResult:
           LOAD
             *
             FROM [http://localhost:8080/slack?channel=%23$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(Emoji)]
           (txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
 
+          drop table SlackResult;
           // trace $(vMessage);
         End Sub
 
-    Then include the function in the load script (assuming you have a folder data connection called "Scripts", pointing to your qvs scripts):
+    Then include the function in the load script (assuming you have a folder data connection called "Scripts", pointing to your qvs scripts). Also call the init sub to set up the mapping table used for the URL encoding:
 
         $(Include=[lib://Scripts/post_to_slack.qvs]);
+        CALL PostToSlackInit;
 
     Finally, call the function from the load script. You should now get a message showing up in Slack.
 
