@@ -1,11 +1,13 @@
 {
-  "name": "barebones",
+  "name": "qliksensebutler",
   "version": "0.0.1",
   "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
   "dependencies": {
     "diskusage": "^0.1.4",
     "mkdirp": "^0.5.1",
+    "mqtt": "^1.7.4",
     "node-slack": "0.0.7",
+    "qsocks": "^2.2.1",
     "restify": "^4.0.3"
   }
 }
