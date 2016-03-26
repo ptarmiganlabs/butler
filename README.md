@@ -1,4 +1,4 @@
-# butler
+# Butler for Qlik Sense
 
 Node.js based proxy app for providing features accessible from Qlik Sense load scripts (or other systems capable of making REST calls).
 
