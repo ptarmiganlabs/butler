@@ -3,8 +3,8 @@ var Slack = require('node-slack');
 var mkdirp = require('mkdirp');
 var disk = require('diskusage');
 var mqtt = require('mqtt');
-var qsocks = require('qsocks');
 var dgram = require('dgram');
+var dgram = require('os');
 
 // Set up various objects and variables needed by the app
 var slackWebhookURL = '<fill in your web hook URL from Slack>';
@@ -133,9 +133,9 @@ udpServer.on('message', function(message, remote) {
   var msg = message.toString().split(';');
 
   slack.send({
-    text: msg[0] + ' for user ' + msg[2],
+    text: msg[0] + ' for user ' + msg[1] + '/' + msg[2],
     channel: SLACK_LOGIN_NOTIFICATION_CHANNEL,
-    username: 'goran',
+    username: os.hostname(),
     icon_emoji: ''
   });
 
