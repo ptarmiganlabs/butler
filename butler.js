@@ -4,7 +4,7 @@ var mkdirp = require('mkdirp');
 var disk = require('diskusage');
 var mqtt = require('mqtt');
 var dgram = require('dgram');
-var dgram = require('os');
+var os = require('os');
 
 // Set up various objects and variables needed by the app
 var slackWebhookURL = '<fill in your web hook URL from Slack>';
