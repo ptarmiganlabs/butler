@@ -1,20 +1,28 @@
-# slack_proxy
+# Butler for Qlik Sense
 
-Node.js based proxy app for providing features accessible from Qlik Sense load scripts.
+Node.js based proxy app for providing features accessible from Qlik Sense load scripts (or other systems capable of making REST calls).
 
 The app started out as a way of posting to [Slack](https://slack.com/) from [Qlik Sense](http://www.qlik.com/products/qlik-sense) (or [QlikView](http://www.qlik.com/products/qlikview)) load scripts, but has since been generalized and now supports the following features/endpoints:
 
-- Posting to Slack.
+- Post to Slack.
       Endpoint: /slack
-- Creating directories on the server where slack_proxy is running
+- Create directories on the server where slack_proxy is running
       Endpoint: /createDir
+- Check available disk space
+      Endpoint: /getDiskSpace
+- Start Qlik Sense tasks based on MQTT subscriptions 
+      Endpoint: /mqttStartSenseTask
+- Publish message to MQTT topic
+      Endpoint: /mqttPublishMessage 
 
 Other endpoints can be added if/when needed - ideas include linking to services like [Pushover](https://pushover.net/), sending tweets, controlling USB status lights like [Blink(1)](https://blink1.thingm.com/) etc. Given the large number of node.js modules available, it is quite easy to add new integrations.
 
 
 Configuration
 -------------
+The following configuration needs to be entered in the source code:
 - Enter the webhook URL you got when configuring incoming webhooks in Slack
+- MQTT broker to be used
 
 Starting
 --------
