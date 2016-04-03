@@ -4,7 +4,7 @@ var mkdirp = require('mkdirp');
 var disk = require('diskusage');
 var mqtt = require('mqtt');
 var qsocks = require('qsocks');
-var dgram = require('dgram')
+var dgram = require('dgram');
 
 // Set up various objects and variables needed by the app
 var slackWebhookURL = '<fill in your web hook URL from Slack>';
@@ -19,6 +19,7 @@ var restServer = restify.createServer({
 var udpServer = dgram.createSocket({type:"udp4", reuseAddr:true});
 const UDP_PORT = 9997;
 const UDP_HOST = 'localhost';
+
 
 
 
