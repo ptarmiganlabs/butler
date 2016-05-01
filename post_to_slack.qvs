@@ -1,0 +1,30 @@
+// ------------------------------------------------------------
+// ** Publish message to a Slack channel **
+//
+// Publishes a message to Slack.
+// The Slack API access URL is hard coded in Butler
+//
+// Formatting options for messages: https://api.slack.com/docs/formatting
+// Available emojis: http://www.emoji-cheat-sheet.com/
+// Slack API docs: https://api.slack.com/incoming-webhooks
+//
+// ------------------------------------------------------------
+
+Sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
+  // URL encode the parameters passed to Butler, to ensure spaces, international characters etc are handled correctly.
+	let vFromUser = MapSubstring('URL_EncodingReferenceMap', '$(vFromUser)');
+	let vMessage = MapSubstring('URL_EncodingReferenceMap', '$(vMessage)');
+
+	//trace $(vToSlackChannel);
+	//trace $(vFromUser);
+	//trace $(vMessage);
+	//trace $(vEmoji);
+
+	tmpSlack:
+	LOAD
+		*
+	FROM [http://localhost:8080/slack?channel=%23$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(vEmoji)]
+	(txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
+
+	drop table tmpSlack;
+end sub

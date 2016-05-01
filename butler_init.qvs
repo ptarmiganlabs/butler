@@ -1,0 +1,21 @@
+// ------------------------------------------------------------
+// ** Initialise Butler data structures **
+//
+// Create mapping table for conversion from utf8 to URL encoded
+// Could be a good idea to save this to a QVD rather than to read it from online, in order to
+// prevent reloads to break if there is no Internet connectivity.
+//
+// ------------------------------------------------------------
+
+Sub ButlerInit
+  // Initialize mapping table needed for URL encoding
+	URL_EncodingReferenceMap:
+	Mapping LOAD
+		Replace([Character], 'space', ' ') as ASCII_Character,
+		//     Text([From Windows-1252]) as URL_encoding,
+		Text([From UTF-8]) as URL_encoding
+	FROM
+	[http://www.w3schools.com/tags/ref_urlencode.asp]
+	(html, utf8, embedded labels, table is @1);
+
+end sub
