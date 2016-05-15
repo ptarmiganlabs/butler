@@ -63,7 +63,7 @@ The app can also be managed by a node.js process monitor, such as [PM2](https://
 
 A rather serious, not yet resolved issue is that both PM2 and Forever seems to have trouble auto-starting node-js apps when a Windows server reboots.   
 They can be configured to start when a user logs into the newly rebooted Windows server, but that extra step (logging into the server) is of course not good. Way better would be if PM2 or Forever (or some other tool) could start on server boot.  
-There for sure are solutions for this - feel free to investigate, fork and send a pull request with a solution. 
+There for sure are solutions for this - feel free to investigate, fork and send a pull request with a solution.
 
 
 Usage
@@ -145,30 +145,30 @@ General usage instructions follow, it is recommended to also take a look at the 
         CALL PostToMQTT('qliksense/my_app/last_reload', Timestamp(Now()));
 
 
-  - **Failed task notifications**
+- **Failed task notifications**
 
-    Note: This is not an endpoint in Butler's REST API, but rather a combination of Sense's log4net logging library, and features built into Butler.
+  Note: This is not an endpoint in Butler's REST API, but rather a combination of Sense's log4net logging library, and features built into Butler.
 
-    When a task started by the Sense QMC fails, log4net will (if you have configured the XML file described above) send a UDP message to Butler, using port 9998.
-    Butler will then forward this message to Slack, using the Slack channel defined at the top of the butler.js file.
+  When a task started by the Sense QMC fails, log4net will (if you have configured the XML file described above) send a UDP message to Butler, using port 9998.
+  Butler will then forward this message to Slack, using the Slack channel defined at the top of the butler.js file.
 
-    log4net will also send an email to the email address specified in the XML file. In this case Butler is not involved in any way.
+  log4net will also send an email to the email address specified in the XML file. In this case Butler is not involved in any way.
 
-    More information on log4net and how it is used in Sense can be found [here](http://help.qlik.com/en-US/sense/2.2/Subsystems/PlanningQlikSenseDeployments/Content/Server/Server-Logging-Using-Appenders-QSRollingFileAppender-Built-in-Appenders.htm).
+  More information on log4net and how it is used in Sense can be found [here](http://help.qlik.com/en-US/sense/2.2/Subsystems/PlanningQlikSenseDeployments/Content/Server/Server-Logging-Using-Appenders-QSRollingFileAppender-Built-in-Appenders.htm).
 
 
-  - **Session start/stop, connection open/close notifications**
+- **Session start/stop, connection open/close notifications**
 
-    Note: This is not an endpoint in Butler's REST API, but rather a combination of Sense's log4net logging library, and features built into Butler.
+  Note: This is not an endpoint in Butler's REST API, but rather a combination of Sense's log4net logging library, and features built into Butler.
 
-    When a user start or stops a session, or when a user's connection opens or closes, the log4net library will (assuming it has been configured as described above) send a UDP message to Butler, using port 9997.
-    Butler will then forward this message to
-    1. the Slack channel defined in butler.js, and
-    2. the following MQTT topics
-      * qliksense/session/start
-      * qliksense/session/stop
-      * qliksense/connection/open
-      * qliksense/connection/close
+  When a user start or stops a session, or when a user's connection opens or closes, the log4net library will (assuming it has been configured as described above) send a UDP message to Butler, using port 9997.
+  Butler will then forward this message to
+  1. the Slack channel defined in butler.js, and
+  2. the following MQTT topics
+    * qliksense/session/start
+    * qliksense/session/stop
+    * qliksense/connection/open
+    * qliksense/connection/close
 
 
 Warning
