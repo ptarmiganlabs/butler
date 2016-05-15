@@ -8,7 +8,9 @@ var os = require('os');
 
 // Set up various objects and variables needed by the app
 var slackWebhookURL = '<fill in your web hook URL from Slack>';
-const SLACK_LOGIN_NOTIFICATION_CHANNEL = '<fill in name of Slack chanel where audit events (login/logoff etc) should be displayed>';
+const SLACK_LOGIN_NOTIFICATION_CHANNEL = '<fill in name of Slack chanel where audit events (login/logoff etc) should be posted>';
+const SLACK_TASK_FAILURE_CHANNEL = '<fill in name of Slack channel where task failure events should be posted>';
+
 
 var slack = new slack(slackWebhookURL);
 
@@ -21,14 +23,21 @@ var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>');
 
 
 var restServer = restify.createServer({
-  name: 'Qlik Sense Butler'
+  name: 'Butler for Qlik Sense'
 });
 
 
+const UDP_HOST = '<IP of server where Butler is running>';
+
 // Listen on port 9997 for incoming UDP connections regarding session starting/stoping, or connection opening/closing
-var udpServer = dgram.createSocket({type:"udp4", reuseAddr:true});
-const UDP_PORT = 9997;
-const UDP_HOST = '<IP of server where Butler is running>';  // Should work with localhost too... but it doesn't. Investigation needed
+var udpServerSessionConnection = dgram.createSocket({type:"udp4", reuseAddr:true});
+const UDP_PORT_SESSION_CONNECTION = 9997;
+
+// Listen on port 9998 for incoming UDP connections regarding failed tasks
+var udpServerTaskFailure = dgram.createSocket({type:"udp4", reuseAddr:true});
+const UDP_PORT_TASK_FAILURE = 9998;
+
+
 
 
 function respondSlack(req, res, next) {
@@ -126,21 +135,25 @@ mqttClient.on('error', function (topic, message) {
 restServer.use(restify.queryParser());    // Enable parsing of http parameters
 
 
+// -------------------------------------------------------------------------
 // Set up UDP server for sending acting on session events from Sense
-udpServer.on('listening', () => {
-  var address = udpServer.address();
+// -------------------------------------------------------------------------
+udpServerSessionConnection.on('listening', () => {
+  var address = udpServerSessionConnection.address();
   console.log('UDP server listening on %s:%s', address.address, address.port);
-  mqttClient.publish('qliksense/butler/session_server', 'start');   // Publish MQTT message that UDP server has started
+  // Publish MQTT message that UDP server has started
+  mqttClient.publish('qliksense/butler/session_server', 'start');
 });
 
-udpServer.on('error', () => {
-  var address = udpServer.address();
+udpServerSessionConnection.on('error', () => {
+  var address = udpServerSessionConnection.address();
   console.log('UDP server error on %s:%s', address.address, address.port);
-  mqttClient.publish('qliksense/butler/session_server', 'error');   // Publish MQTT message that UDP server has reported an error
+  // Publish MQTT message that UDP server has reported an error
+  mqttClient.publish('qliksense/butler/session_server', 'error');
 });
 
 // Main handler for UDP messages relating to session and connection events
-udpServer.on('message', function(message, remote) {
+udpServerSessionConnection.on('message', function(message, remote) {
   var msg = message.toString().split(';');
   console.log('%s: %s for user %s/%s', msg[0], msg[1], msg[2], msg[3])
 
@@ -173,6 +186,37 @@ udpServer.on('message', function(message, remote) {
 });
 
 
+// -------------------------------------------------------------------------
+// Set up UDP server for acting on failed task events
+// -------------------------------------------------------------------------
+udpServerTaskFailure.on('listening', () => {
+  var address = udpServerTaskFailure.address();
+  console.log('UDP server listening on %s:%s', address.address, address.port);
+  // Publish MQTT message that UDP server has started
+  mqttClient.publish('qliksense/butler/task_failure', 'start');
+});
+
+udpServerTaskFailure.on('error', () => {
+  var address = udpServerTaskFailure.address();
+  console.log('UDP server error on %s:%s', address.address, address.port);
+  // Publish MQTT message that UDP server has reported an error
+  mqttClient.publish('qliksense/butler/task_failure', 'error');
+});
+
+udpServerTaskFailure.on('message', function(message, remote) {
+  var msg = message.toString().split(';');
+  console.log('%s: Task "%s" failed, associated with app "%s', msg[0], msg[1], msg[2], msg[3])
+
+  slack.send({
+    text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
+    channel: SLACK_TASK_FAILURE_CHANNEL,
+    username: msg[0],
+    icon_emoji: ':ghost:'
+  });
+});
+
+
+
 
 // Set up endpoints for REST server
 restServer.get('/slack', respondSlack);
@@ -187,4 +231,6 @@ restServer.listen(8080, function() {
   console.log('REST server listening on %s', restServer.url);
 });
 
-udpServer.bind(UDP_PORT, UDP_HOST);
+// Set up UDP server for incoming messages from Sense log4net appenders
+udpServerSessionConnection.bind(UDP_PORT_SESSION_CONNECTION, UDP_HOST);
+udpServerTaskFailure.bind(UDP_PORT_TASK_FAILURE, UDP_HOST);

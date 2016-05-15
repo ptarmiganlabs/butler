@@ -1,5 +1,5 @@
 // ------------------------------------------------------------
-// ** Initialise Butler data structures **
+// ** Initialize Butler data structures **
 //
 // Create mapping table for conversion from utf8 to URL encoded
 // Could be a good idea to save this to a QVD rather than to read it from online, in order to
