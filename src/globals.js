@@ -4,6 +4,13 @@ var QRS = require('qrs');
 var config = require('config');
 var qrsUtil = require('./qrsUtil');
 var dgram = require('dgram');
+var qsocks = require('qsocks')
+var serializeApp = require('serializeapp')
+var fs = require('fs-extra');
+// var yargs = require('yargs');
+// var Promise = require('promise');
+// var util = require('util');
+
 
 
 // ------------------------------------
