@@ -30,6 +30,7 @@ restServer.get('/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublish
 restServer.get('/senseStartTask', rest.senseStartTask.respondSenseStartTask);
 restServer.get('/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
 restServer.get('/butlerPing', rest.butlerPing.respondButlerPing);
+restServer.get('/senseAppDump', rest.senseAppDump.respondSenseAppDump);
 
 
 // ---------------------------------------------------
