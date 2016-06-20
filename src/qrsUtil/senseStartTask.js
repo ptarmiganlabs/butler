@@ -1,8 +1,11 @@
 
 
+
 // Function for starting Sense task, given its task ID (as it appears in the QMC task list)
 module.exports.senseStartTask = function (taskId) {
-  qrs.post( '/qrs/task/' + taskId + '/start')
+  var globals = require('../globals');
+
+  globals.qrs.post( '/qrs/task/' + taskId + '/start')
     .then( function ( data) {
       console.info('return value: ', data );
 
