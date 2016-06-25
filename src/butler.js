@@ -16,7 +16,7 @@ var udp = require('./udp');
 // ---------------------------------------------------
 // Create restServer object
 var restServer = restify.createServer({
-  name: 'Butler for Qlik Sense'
+    name: 'Butler for Qlik Sense'
 });
 
 // Enable parsing of http parameters
@@ -25,12 +25,14 @@ restServer.use(restify.queryParser());
 // Set up endpoints for REST server
 restServer.get('/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
 restServer.get('/createDir', rest.createDir.respondCreateDir);
+restServer.get('/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
 restServer.get('/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
 restServer.get('/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublishMessage);
 restServer.get('/senseStartTask', rest.senseStartTask.respondSenseStartTask);
 restServer.get('/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
-restServer.get('/butlerPing', rest.butlerPing.respondButlerPing);
 restServer.get('/senseAppDump', rest.senseAppDump.respondSenseAppDump);
+restServer.get('/senseListApps', rest.senseListApps.respondSenseListApps);
+restServer.get('/butlerPing', rest.butlerPing.respondButlerPing);
 
 
 // ---------------------------------------------------
@@ -48,8 +50,7 @@ udp.udp.udpInitSessionConnectionServer();
 // ---------------------------------------------------
 // Start REST server on port 8080
 restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), function() {
-  // console.log('%s REST server listening on %s', restServer.name, restServer.url);
-  console.info('REST server listening on %s', restServer.url);
+    console.info('REST server listening on %s', restServer.url);
 });
 
 // Start UDP server for Session and Connection events

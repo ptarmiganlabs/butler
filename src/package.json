@@ -16,6 +16,8 @@
     "serializeapp": "^2.0.0"
   },
   "devDependencies": {
+    "eslint": "^2.13.1",
+    "eslint-config-google": "^0.6.0",
     "mocha": "*",
     "should": "*",
     "verb": "^0.8.10"
