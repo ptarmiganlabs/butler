@@ -4,13 +4,15 @@ site_description: Butler extends Qlik Sense with various data connectivity and m
 pages:
 - Home: index.md
 - Overview and features: overview.md
+- Getting started: getting-started.md
 - Project layout: project-layout.md
-- Installation and configuration: install.md
+- Installation and configuration: install-config.md
 - Running Butler: running.md
 - Features:
   - REST API: rest.md
   - Log event handlers: log-events.md
   - MQTT integration: mqtt.md
+- Tools used: tools-used.md
 theme: readthedocs
 markdown_extensions:
     - toc:
