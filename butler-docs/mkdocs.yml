@@ -1,6 +1,8 @@
 site_name: Butler documentation
 repo_url: https://github.com/mountaindude/butler
+site_url: https://mountaindude.github.io/butler/
 site_description: Butler extends Qlik Sense with various data connectivity and monitoring features.
+google_analytics: ['UA-58487795-2', 'mountaindude.github.io/butler']
 pages:
 - Home: index.md
 - Overview and features: overview.md
