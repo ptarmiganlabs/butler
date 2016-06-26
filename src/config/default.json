@@ -24,13 +24,15 @@
       "serverPort": 8080
     },
     "qrsConfig": {
-      "serverIP": "<FQDN or IP of Sense server>",
-      "useSSL": true,
-      "xrfkey": "ABCDEFG123456789",
-      "authentication": "header",
-      "headerKey": "QLIKSENSE-BUTLER",
-      "headerValue": "<sense username>",
-      "virtualProxy": "<name of Sense virtual proxy we are connecting to>"
+      "qrsServer": "<FQDN or IP of Sense server>",
+      "qrsServerPort": "<Port to connect to, usually 4747>",
+      "isSecure": "true",
+      "headers": {
+          "X-Qlik-User": "UserDirectory=Internal;UserId=sa_repository"
+      },
+      "cert": "<Path to cert file>",
+      "key": "<Path to key file>",
+      "rejectUnauthorized": "false"
     }
   }
 }
