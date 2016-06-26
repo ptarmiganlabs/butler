@@ -1,6 +1,18 @@
 site_name: Butler documentation
+repo_url: https://github.com/mountaindude/butler
+site_description: Butler extends Qlik Sense with various data connectivity and monitoring features.
 pages:
 - Home: index.md
 - Overview and features: overview.md
+- Project layout: project-layout.md
 - Installation and configuration: install.md
+- Running Butler: running.md
+- Features:
+  - REST API: rest.md
+  - Log event handlers: log-events.md
+  - MQTT integration: mqtt.md
 theme: readthedocs
+markdown_extensions:
+    - toc:
+        permalink: True
+        separator: "_"

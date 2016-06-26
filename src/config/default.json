@@ -2,7 +2,7 @@
   "Butler": {
     "slackConfig": {
       "webhookURL": "<fill in your web hook URL from Slack>",
-      "loginNotificationChannel": "<fill in name of Slack chanel where audit events (login/logoff etc) should be posted>",
+      "loginNotificationChannel": "<fill in name of Slack channel where audit events (login/logoff etc) should be posted>",
       "taskFailureChannel": "<fill in name of Slack channel where task failure events should be posted>"
     },
     "mqttConfig": {
