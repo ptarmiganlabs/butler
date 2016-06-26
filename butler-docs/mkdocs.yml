@@ -1,0 +1,6 @@
+site_name: Butler documentation
+pages:
+- Home: index.md
+- Overview and features: overview.md
+- Installation and configuration: install.md
+theme: readthedocs

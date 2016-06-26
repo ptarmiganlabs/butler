@@ -1,4 +1,5 @@
 src/node_modules/*
 src/config/production.json
 docs/*
-doc/* 
+doc/*
+butler-docs/site/
