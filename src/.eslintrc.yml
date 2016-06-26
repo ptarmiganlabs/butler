@@ -16,4 +16,6 @@ rules:
     - always
   no-console:
     - warn
-    - allow: [warn, error, info] 
+    - allow: [warn, error, info]
+  no-unused-vars:
+    - warn
