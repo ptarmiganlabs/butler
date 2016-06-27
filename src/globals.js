@@ -3,7 +3,6 @@ var mqtt = require('mqtt');
 var QRS = require('qrs');
 var config = require('config');
 var dgram = require('dgram');
-//var qsocks = require('qsocks')
 var serializeApp = require('serializeapp')
 var fs = require('fs-extra');
 
@@ -13,17 +12,6 @@ var qrsUtil = require('./qrsUtil');
 
 
 
-// ------------------------------------
-// Set up connection parameters for Sense QRS API
-// var qrsConfig = {
-//   "host": config.get('Butler.qrsConfig.qrsServer'),
-//   "useSSL": config.get('Butler.qrsConfig.useSSL'),
-//   "xrfkey": config.get('Butler.qrsConfig.xrfkey'),
-//   "authentication": config.get('Butler.qrsConfig.authentication'),
-//   "headerKey": config.get('Butler.qrsConfig.headerKey'),
-//   "headerValue": config.get('Butler.qrsConfig.headerValue'),
-//   "virtualProxy": config.get('Butler.qrsConfig.virtualProxy')
-// };
 var qrsConfig = {
   host: config.get('Butler.qrsConfig.qrsServer'),
   port: config.get('Butler.qrsConfig.qrsServerPort'),

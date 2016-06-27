@@ -1,8 +1,5 @@
 // Add dependencies
 var restify = require('restify');
-//var mkdirp = require('mkdirp');
-//var disk = require('diskusage');
-//var os = require('os');
 
 
 // Load code from sub modules
