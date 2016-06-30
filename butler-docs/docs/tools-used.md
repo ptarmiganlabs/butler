@@ -11,3 +11,4 @@ Thus, please treat this page for what it is...
 * Command line parameter parsing in node.js: [yargs](https://github.com/yargs/yargs)
 * MkDocs for creating doc site: [MkDocs](http://www.mkdocs.org/)
 * GitHub Pages (github.io) for hosting docs. Pushing docs to github.io: `mkdocs gh-deploy --clean`
+* [node-windows](https://www.npmjs.com/package/node-windows) for auto-starting Butler after server reboot.

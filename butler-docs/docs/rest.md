@@ -22,5 +22,68 @@ As Slack works really well across both desktop and mobile devices, Sense will be
 
 The Slack integration supports Slack's full markdown message formatting as well as [emoijs](https://get.slack.help/hc/en-us/articles/202931348-Emoji-and-emoticons).
 
+## Versioning of the REST API
+This is a very wide and complex topic in itself.  
+For now Butler uses a very simple and rather naive approach, by just prefixing the endpoint name with a version number.
+This allows Butler to support multiple versions, and old versions to be (possibly) deprecated in the future.
+
 
 ## REST API endpoints
+
+### /v2/butlerPing
+      Purpose    : Ask Butler if it is running and all is ok.
+      Parameters : -
+      Example    : curl http://<FQDN or IP of Butler>:8080/butlerPing
+      Returns    : {"response":"Butler reporting for duty"}
+
+### /v2/createDir
+      Purpose    : Create a directory in any place (where the account Butler is running under has write access) on the server.  
+                   Intermediate directories will be created too, i.e. if creating d:\abc\def when d:\abc does net yet exist, it will also be created.
+      Parameters : directory
+      Example    : curl http://<FQDN or IP of Butler>:8080/createDir?directory=d:/abc/def
+      Returns    : {"directory":"d:/abc/def"}
+
+### /v2/createDirQVD
+      Purpose    : Create a directory relative to a predefined path. Can be used to ensure all QVDs are stored in a well defined location.
+                   Intermediate directories will be created too, i.e. if creating d:\abc\def when d:\abc does net yet exist, it will also be created.
+      Parameters : directory
+      Example    : curl http://<FQDN or IP of Butler>:8080/createDirQVD?directory=abc/def
+      Returns    : {"directory":"abc/def"}
+
+### /v2/getDiskSpace
+      Purpose    : Get free space information for all disks connected to the server where Butler is running.
+      Parameters : path
+      Returns    : curl http://<FQDN or IP of Butler>:8080/getDiskSpace?path=z:/
+      Example    : {"path":"z:/","available":<number>,"free":<number>,"total":<number>}
+
+### /v2/mqqtPublishMessage
+      Purpose    : Publish a message to a MQTT topic, using a MQTT broker defined in the Butler config file
+      Parameters : topic, message
+      Example    : curl "http://<FQDN or IP of Butler>:8080/mqttPublishMessage?topic=abc/def&message=ButlerTalksMQTT"
+                   curl -G "http://<FQDN or IP of Butler>:8080/mqttPublishMessage" --data-urlencode "topic=abc/def" --data-urlencode "message=Butler talks MQTT"
+      Returns    : {"topic":"abc/def","message":"ButlerTalksMQTT"}
+                   {"topic":"abc/def","message":"Butler talks MQTT"}
+
+### /v2/senseAppDump
+      Purpose    : Extracts metadata about a Sense app.
+      Parameters : appId
+      Example    : curl http://<FQDN or IP of Butler>:8080/senseAppDump?appId=98765e52-abcd-1234-5678-5678203b23b3
+      Returns    : A long, long JSON string.
+
+### /v2/senseListApps
+      Purpose    : List name and GUID of all apps in the Sense cluster where Butler is installed.
+      Parameters : -
+      Example    : curl http://<FQDN or IP of Butler>:8080/senseListApps
+      Returns    : A long, long JSON string.
+
+### /v2/senseStartTask
+      Purpose    : Start a Sense task. Can be used by upstream data providers to trigger reloads of Sense apps when new data is available.
+      Parameters : taskId
+      Example    : curl http://<FQDN or IP of Butler>:8080/senseStartTask?taskId=abcd1234-5678-abcd-1234-abcd1234abcd
+      Returns    : {"taskId":"abcd1234-5678-abcd-1234-abcd1234abcd"}
+
+### /v2/slackPostMessage
+      Purpose    : Post a message to a Slack channel. Normal Slack formatting options (emoijs, markdown etc) can be used.
+      Parameters : channel, from_user, msg, emoij
+      Example    : curl -G http://<FQDN or IP of Butler>:8080/slackPostMessage --data-urlencode "channel=#sense-test-slack" --data-urlencode "msg=Butler posting to *Slack*" --data-urlencode "from_user=sa_scheduler" --data-urlencode "emoji=:test:"
+      Returns    : {"channel":"#sense-test-slack","msg":"Butler posting to *Slack*","from_user":"sa_scheduler","emoji":":test:"}
