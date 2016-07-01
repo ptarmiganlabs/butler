@@ -20,16 +20,16 @@ var restServer = restify.createServer({
 restServer.use(restify.queryParser());
 
 // Set up endpoints for REST server
-restServer.get('/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
-restServer.get('/createDir', rest.createDir.respondCreateDir);
-restServer.get('/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
-restServer.get('/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
-restServer.get('/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublishMessage);
-restServer.get('/senseStartTask', rest.senseStartTask.respondSenseStartTask);
-restServer.get('/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
-restServer.get('/senseAppDump', rest.senseAppDump.respondSenseAppDump);
-restServer.get('/senseListApps', rest.senseListApps.respondSenseListApps);
-restServer.get('/butlerPing', rest.butlerPing.respondButlerPing);
+restServer.get('/v2/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
+restServer.get('/v2/createDir', rest.createDir.respondCreateDir);
+restServer.get('/v2/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
+restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
+restServer.get('/v2/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublishMessage);
+restServer.get('/v2/senseStartTask', rest.senseStartTask.respondSenseStartTask);
+//restServer.get('/v2/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
+restServer.get('/v2/senseAppDump', rest.senseAppDump.respondSenseAppDump);
+restServer.get('/v2/senseListApps', rest.senseListApps.respondSenseListApps);
+restServer.get('/v2/butlerPing', rest.butlerPing.respondButlerPing);
 
 
 // ---------------------------------------------------
