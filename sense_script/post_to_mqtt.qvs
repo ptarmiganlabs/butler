@@ -2,23 +2,20 @@
 // ** Publish message to MQTT topic **
 //
 // Publishes a message to a MQTT topic.
-// The address of the MQTT server is hard coded in Butler.
+// The address of the MQTT server is configured in Butler.
 //
 // ------------------------------------------------------------
 
 Sub PostToMQTT(vTopic, vMessage)
   // URL encode the parameters passed to Butler, to ensure spaces, international characters etc are handled correctly.
-	let vTopic = MapSubstring('URL_EncodingReferenceMap', '$(vTopic)');
-	let vMessage = MapSubstring('URL_EncodingReferenceMap', '$(vMessage)');
+  let vTopic = MapSubstring('URL_EncodingReferenceMap', '$(vTopic)');
+  let vMessage = MapSubstring('URL_EncodingReferenceMap', '$(vMessage)');
 
-	//trace $(vTopic);
-	//trace $(vMessage);
+  tmpMQTT:
+  LOAD
+    *
+  FROM [http://localhost:8080/mqttPublishMessage?topic=$(vTopic)&message=$(vMessage)]
+  (txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
 
-	tmpMQTT:
-	LOAD
-		*
-	FROM [http://localhost:8080/mqttPublishMessage?topic=$(vTopic)&message=$(vMessage)]
-	(txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
-
-	drop table tmpMQTT;
+  drop table tmpMQTT;
 end sub
