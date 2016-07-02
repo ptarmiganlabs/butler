@@ -12,3 +12,10 @@ Thus, please treat this page for what it is...
 * MkDocs for creating doc site: [MkDocs](http://www.mkdocs.org/)
 * GitHub Pages (github.io) for hosting docs. Pushing docs to github.io: `mkdocs gh-deploy --clean`
 * [node-windows](https://www.npmjs.com/package/node-windows) for auto-starting Butler after server reboot.
+
+## Documentation
+
+### MkDocs
+The main documentation is built using [MkDocs](http://www.mkdocs.org/).
+From within the butler-docs folder, run ```mkdocs build --clean``` to generate the static documentation files in the site folder.
+Or run ```mkdocs serve```, then go to [http://127.0.0.1:8000](http://127.0.0.1:8000) to view the documentation as you edit it.
