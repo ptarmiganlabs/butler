@@ -15,6 +15,7 @@ pages:
   - Log event handlers: log-events.md
   - MQTT integration: mqtt.md
 - Examples: sample-code.md
+- Security considerations: security.md
 - Tools used: tools-used.md
 theme: readthedocs
 markdown_extensions:
