@@ -34,7 +34,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // Post to Slack when a task has failed
         globals.slack.send({
             text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
-            channel: globals.slackTaskFailureChannel,
+            channel: globals.config.get('Butler.mqttConfig.taskFailureChannel'),
             username: msg[0],
             icon_emoji: ':ghost:'
         });
@@ -78,7 +78,7 @@ module.exports.udpInitSessionConnectionServer = function () {
         // Send Slack message when session starts/stops, or a connection open/close
         globals.slack.send({
             text: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
-            channel: globals.slackLoginNotificationChannel,
+            channel: globals.config.get('Butler.mqttConfig.loginNotificationChannel'),
             username: msg[0],
             icon_emoji: ''
         });

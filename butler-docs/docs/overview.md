@@ -8,6 +8,7 @@ The app started out as a way of posting to [Slack](https://slack.com/) from Qlik
 
 * REST endpoints that can be called from Sense load scripts or external systems.
 * Event proxies used to forward messages from Sense's logging framework.
+* In- and outbound MQTT messages for stable, reliable machine-to-machine communication and notifications
 
 
 
@@ -30,8 +31,9 @@ The app started out as a way of posting to [Slack](https://slack.com/) from Qlik
 
 
 # Handler for Sense log messages
-It is possible to hook into Sense's logging framework, and have log events forwarded to Butler.  
-Once there, Butler can act as needed on the messages. Currently Butler forwards some messages to Slack (for notifying humans that some event occurred) and MQTT (for notifying other systems that some event occurred).
+It is possible to hook into Sense's logging framework, and have log events forwarded to Butler. Once there, Butler can act as needed on the messages.  
+Currently Butler forwards messages to Slack (for notifying humans that some event occurred) and MQTT (for notifying other systems that some event occurred).  
+More info [here](log-events). 
 
 # MQTT handlers
 MQTT is a light weight pub-sub protocol developed for efficient machine-to-machine message sending. The protocol was developed with embedded systems (IoT and other low CPU/memory systems) in mind, and there are client implementations available in many different languages/platforms. It is also a mature protocol that has proven its stability over many years.  
