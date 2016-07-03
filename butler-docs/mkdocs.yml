@@ -14,6 +14,7 @@ pages:
   - REST API: rest.md
   - Log event handlers: log-events.md
   - MQTT integration: mqtt.md
+  - UDP client: udp-client.md
 - Examples: sample-code.md
 - Security considerations: security.md
 - Tools used: tools-used.md
