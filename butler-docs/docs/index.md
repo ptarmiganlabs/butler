@@ -10,6 +10,8 @@ Sample use cases:
 * Any messages sent to Slack can include full formatting (web links, text formatting etc), as well as "poking" users. I.e. notifying specific Slack users that they have a 
 new message. Can for example be used to notify user(s) that an app has reloaded with new data, or that some error condition has occured. 
 * Send and receive MQTT publish-subscribe messages. MQTT (and the pubsub concept in general) is a great way for systems to communicate reliably with each other.
+* Modify the Operations Monitor app to send a daily summary of daily/weekly/monthly active users, # of failed tasks etc to a Slack channel
+* ...
 
 
 
