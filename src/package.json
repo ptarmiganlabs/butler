@@ -11,7 +11,7 @@
     "mqtt": "^1.7.4",
     "node-slack": "0.0.7",
     "qrs": "^2.0.2",
-    "qsocks": "^3.0.0",
+    "qsocks": "^3.0.1",
     "restify": "^4.0.3",
     "serializeapp": "^2.0.0"
   },

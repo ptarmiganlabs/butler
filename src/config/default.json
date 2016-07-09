@@ -23,9 +23,9 @@
     "restServerConfig": {
       "serverPort": 8080
     },
-    "qrsConfig": {
-      "qrsServer": "<FQDN or IP of Sense server>",
-      "qrsServerPort": "<Port to connect to, usually 4747>",
+    "configEngine": {
+      "server": "<FQDN or IP of Sense server where Sense Engine is running>",
+      "serverPort": "<Port to connect to, usually 4747>",
       "isSecure": "true",
       "headers": {
           "X-Qlik-User": "UserDirectory=Internal;UserId=sa_repository"
@@ -33,6 +33,17 @@
       "cert": "<Path to cert file>",
       "key": "<Path to key file>",
       "rejectUnauthorized": "false"
+    },
+    "configQRS": {
+      "authentication": "certificates",
+      "host": "FQDN or IP of Sense server where QRS is running>",
+      "useSSL": true,
+      "port": 4242,
+      "headerKey": "X-Qlik-User",
+      "headerValue": "UserDirectory=Internal; UserId=sa_repository",
+      "cert": "<Path to client.pem>",
+      "key": "<Path to client_key.pem>",
+      "ca": "<Path to root.pem>"
     }
   }
 }

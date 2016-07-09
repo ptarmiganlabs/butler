@@ -5,7 +5,7 @@ var globals = require('../globals');
 module.exports.respondSenseAppDump = function (req, res, next) {
     console.info('Dumping app: ' + req.params.appId);
 
-    globals.qsocks.Connect(globals.qrsConfig).then(function(global) {
+    globals.qsocks.Connect(globals.configEngine).then(function(global) {
         global.openDoc(req.params.appId, '' , '', '', true)
         .then(function(app) {
             return globals.serializeApp(app);

@@ -11,17 +11,33 @@ var fs = require('fs-extra');
 var qrsUtil = require('./qrsUtil');
 
 
-
-var qrsConfig = {
-  host: config.get('Butler.qrsConfig.qrsServer'),
-  port: config.get('Butler.qrsConfig.qrsServerPort'),
-  isSecure: config.get('Butler.qrsConfig.isSecure'),
-  headers: config.get('Butler.qrsConfig.headers'),
-  cert: fs.readFileSync(config.get('Butler.qrsConfig.cert')),
-  key: fs.readFileSync(config.get('Butler.qrsConfig.key')),
-  rejectUnauthorized: config.get('Butler.qrsConfig.rejectUnauthorized')
+//  Engine config
+var configEngine = {
+  host: config.get('Butler.configEngine.server'),
+  port: config.get('Butler.configEngine.serverPort'),
+  isSecure: config.get('Butler.configEngine.isSecure'),
+  headers: config.get('Butler.configEngine.headers'),
+  cert: fs.readFileSync(config.get('Butler.configEngine.cert')),
+  key: fs.readFileSync(config.get('Butler.configEngine.key')),
+  rejectUnauthorized: config.get('Butler.configEngine.rejectUnauthorized')
 };
-var qrs = new QRS( qrsConfig );
+
+
+
+// QRS config
+var configQRS = {
+  authentication: config.get('Butler.configQRS.authentication'),
+  host: config.get('Butler.configQRS.host'),
+  port: config.get('Butler.configQRS.port'),
+  useSSL: config.get('Butler.configQRS.useSSL'),
+  headerKey: config.get('Butler.configQRS.headerKey'),
+  headerValue: config.get('Butler.configQRS.headerValue'),
+  cert: config.get('Butler.configQRS.cert'),
+  key: config.get('Butler.configQRS.key'),
+  ca: config.get('Butler.configQRS.ca')
+};
+
+var qrs = new QRS( configQRS );
 
 
 // ------------------------------------
@@ -65,7 +81,8 @@ module.exports = {
   config,
   qrs,
   qrsUtil,
-  qrsConfig,
+  configEngine,
+  configQRS,
   slack,
   slackLoginNotificationChannel,
   slackTaskFailureChannel,
