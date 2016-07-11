@@ -1,11 +1,13 @@
 var globals = require('../globals');
+var disk = require('diskusage');
+
 
 // Function for handling /getDiskSpace REST endpoint
 module.exports.respondGetDiskSpace = function (req, res, next) {
     console.info(req.params);
 
     // Windows: get disk usage. Takes path as first parameter
-    globals.disk.check(req.params.path, function(err, info) {
+    disk.check(req.params.path, function(err, info) {
         console.info(info);
         req.params.available = info.available;
         req.params.free = info.free;

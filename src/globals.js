@@ -1,9 +1,7 @@
 var slack = require('node-slack');
 var mqtt = require('mqtt');
-var QRS = require('qrs');
 var config = require('config');
 var dgram = require('dgram');
-var serializeApp = require('serializeapp')
 var fs = require('fs-extra');
 
 
@@ -23,7 +21,6 @@ var configEngine = {
 };
 
 
-
 // QRS config
 var configQRS = {
   authentication: config.get('Butler.configQRS.authentication'),
@@ -36,9 +33,6 @@ var configQRS = {
   key: config.get('Butler.configQRS.key'),
   ca: config.get('Butler.configQRS.ca')
 };
-
-var qrs = new QRS( configQRS );
-
 
 // ------------------------------------
 // Slack config
@@ -53,7 +47,7 @@ var slack = new slack(slackWebhookURL);
 
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker
-var mqttClient  = mqtt.connect('mqtt://' + config.get('Butler.mqttConfig.brokerIP'));
+var mqttClient = mqtt.connect('mqtt://' + config.get('Butler.mqttConfig.brokerIP'));
 /*
 Following might be needed for conecting to older Mosquitto versions
 var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
@@ -79,7 +73,6 @@ var udp_port_take_failure = config.get('Butler.udpServerConfig.portTaskFailure')
 
 module.exports = {
   config,
-  qrs,
   qrsUtil,
   configEngine,
   configQRS,
