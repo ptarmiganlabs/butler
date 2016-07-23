@@ -1,0 +1,22 @@
+// ------------------------------------------------------------
+// ** Time stamped trace messages **
+//
+// Get nice trace lines in the reload log by calling the line with CALL NiceTrace('My trace message. Variable value=$(vVariableName)');
+// Include this file at the beginning of your reload script by including the following line (except leading //)
+//
+// QlikView
+// $(Include=path\to\script\files\Nice trace.qvs)
+//
+// Qlik Sense
+// $(Include=[lib://Butler scripts/nice_trace.qvs]);
+//
+// ------------------------------------------------------------
+
+
+// 
+//
+SUB NiceTrace(vMsg)
+	let vNow = Now(1);
+	TRACE >>> $(vNow): $(vMsg);
+END Sub
+
