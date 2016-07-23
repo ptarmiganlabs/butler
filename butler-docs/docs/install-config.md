@@ -31,11 +31,15 @@ Below are the general steps needed to install Butler. Please note that you might
 Butler uses configuration files in JSON format. The config files are stored in the src\\config folder.  
 Butler comes with a default config file called `default.json`. Either update it as needed (see below for details), or make a copy of it and call it `production.json`, then make the needed changes to that file. That way you will not overwrite your customized `default.json` file if you in the future download updated Butler versions from GitHub.  
 
-Note: Butler uses the [node-config](https://github.com/lorenwest/node-config) module to handle config files. As per node-config's documentation, to switch to using the production.json config file, at a command prompt type
+Note: Butler uses the [node-config](https://github.com/lorenwest/node-config) module to handle config files. As per node-config's documentation, to switch to using the production.json config file, at a command prompt type (for Windows)
 
     set NODE_ENV=production
 
-  before starting Butler with `node butler.js`.
+  before starting Butler with `node butler.js`.  
+  If developing on OSX or Linux, instead use  
+
+    export NODE_ENV=production
+
 
 
 ## Config file syntax
