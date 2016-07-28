@@ -70,6 +70,10 @@ var udpServerTaskFailureSocket = dgram.createSocket({type:"udp4", reuseAddr:true
 var udp_port_take_failure = config.get('Butler.udpServerConfig.portTaskFailure');
 
 
+// ------------------------------------
+// Folder under which QVD folders are to be created
+var qvdFolder = config.get('Butler.qvdPath');
+
 
 module.exports = {
   config,
@@ -84,5 +88,6 @@ module.exports = {
   udp_host,
   udp_port_session_connection,
   udp_port_take_failure,
-  mqttClient
+  mqttClient,
+  qvdFolder
 };

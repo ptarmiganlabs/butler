@@ -44,6 +44,7 @@
       "cert": "<Path to client.pem>",
       "key": "<Path to client_key.pem>",
       "ca": "<Path to root.pem>"
-    }
+    },
+    "qvdPath": "<Path to folder under which QVDs are stored>" 
   }
 }
