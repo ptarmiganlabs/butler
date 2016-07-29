@@ -1,3 +1,6 @@
+var dict = require("dict");
+
+
 // Load global variables and functions
 var globals = require('../globals');
 
@@ -25,6 +28,28 @@ module.exports.mqttInitHandlers = function () {
         if (topic == 'qliksense/start_task') {
             globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
         }
+
+        // Handle dict of currently active users
+        // Message arrives as "serverName: directoryName/userName
+        var strMessage = new String(message);
+        var array1 = strMessage.split(': ');
+        var array2 = array1[1].split('/');
+
+        var serverName = array1[0];
+        var directoryName = array2[0];
+        var userName = array2[1];
+
+        if (topic == 'qliksense/session/start') {
+            console.info('Adding active user');
+            globals.currentUsers.set(userName, serverName);
+        }
+
+        if (topic == 'qliksense/session/stop') {
+            console.info('Removing active user');
+            globals.currentUsers.delete(userName);
+        }
+
+        console.info('# of active users: ' + globals.currentUsers.size );
     });
 
 

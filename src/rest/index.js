@@ -1,4 +1,5 @@
 module.exports = {
+    activeUserCount: require('./activeUserCount.js'),
     slackPostMessage: require('./slackPostMessage.js'),
     createDir: require('./createDir.js'),
     createDirQVD: require('./createDirQVD.js'),

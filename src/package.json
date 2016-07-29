@@ -5,6 +5,7 @@
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
     "config": "^1.21.0",
+    "dict": "^1.4.0",
     "diskusage": "^0.1.4",
     "fs-extra": "^0.30.0",
     "mkdirp": "^0.5.1",

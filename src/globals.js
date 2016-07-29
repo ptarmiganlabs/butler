@@ -3,6 +3,7 @@ var mqtt = require('mqtt');
 var config = require('config');
 var dgram = require('dgram');
 var fs = require('fs-extra');
+var dict = require("dict");
 
 
 // Load our own libs
@@ -44,6 +45,10 @@ var slackTaskFailureChannel = config.get('Butler.slackConfig.taskFailureChannel'
 var slack = new slack(slackWebhookURL);
 
 
+// ------------------------------------
+// Data structures needed to keep track of currently active users/sessions
+var currentUsers = dict();
+
 
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker
@@ -83,6 +88,7 @@ module.exports = {
   slack,
   slackLoginNotificationChannel,
   slackTaskFailureChannel,
+  currentUsers,
   udpServerSessionConnectionSocket,
   udpServerTaskFailureSocket,
   udp_host,

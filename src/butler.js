@@ -20,6 +20,7 @@ var restServer = restify.createServer({
 restServer.use(restify.queryParser());
 
 // Set up endpoints for REST server
+restServer.get('/v2/activeUserCount', rest.activeUserCount.respondActiveUserCount);
 restServer.get('/v2/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
 restServer.get('/v2/createDir', rest.createDir.respondCreateDir);
 restServer.get('/v2/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
