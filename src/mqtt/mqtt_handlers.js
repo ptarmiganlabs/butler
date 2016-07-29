@@ -29,27 +29,62 @@ module.exports.mqttInitHandlers = function () {
             globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
         }
 
-        // Handle dict of currently active users
-        // Message arrives as "serverName: directoryName/userName
-        var strMessage = new String(message);
-        var array1 = strMessage.split(': ');
-        var array2 = array1[1].split('/');
+        if (topic == globals.config.get('Butler.mqttConfig.sessionStartTopic')) {
+            // Handle dict of currently active users
+            // Message arrives as "serverName: directoryName/userName
+            var array1 = message.toString().split(': ');
+            var array2 = array1[1].split('/');
 
-        var serverName = array1[0];
-        var directoryName = array2[0];
-        var userName = array2[1];
+            var serverName = array1[0];
+            var directoryName = array2[0];
+            var userName = array2[1];
 
-        if (topic == 'qliksense/session/start') {
             console.info('Adding active user');
-            globals.currentUsers.set(userName, serverName);
+            globals.currentUsers.set(userName, serverName);     // Add user as active
+
+            // Build JSON of all active users
+            var activeUsers = [];
+            globals.currentUsers.forEach(function (value, key) {
+                activeUsers.push(key);
+            });
+
+            var activeUsersJSON = JSON.stringify(activeUsers);
+
+            // Send MQTT messages relating to active users
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(), globals.currentUsers.size.toString());
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(), activeUsersJSON);
+
+            console.info('# of active users: ' + globals.currentUsers.size );
         }
 
-        if (topic == 'qliksense/session/stop') {
+        if (topic == globals.config.get('Butler.mqttConfig.sessionStopTopic')) {
+            // Handle dict of currently active users
+            // Message arrives as "serverName: directoryName/userName
+            var array1 = message.toString().split(': ');
+            var array2 = array1[1].split('/');
+
+            var serverName = array1[0];
+            var directoryName = array2[0];
+            var userName = array2[1];
+
             console.info('Removing active user');
-            globals.currentUsers.delete(userName);
+            globals.currentUsers.delete(userName);              // Remove user from list of active users
+
+            // Build JSON of all active users
+            var activeUsers = [];
+            globals.currentUsers.forEach(function (value, key) {
+                activeUsers.push(key);
+            });
+
+            var activeUsersJSON = JSON.stringify(activeUsers);
+
+            // Send MQTT messages relating to active users
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(), globals.currentUsers.size.toString());
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(), activeUsersJSON);
+
+            console.info('# of active users: ' + globals.currentUsers.size );
         }
 
-        console.info('# of active users: ' + globals.currentUsers.size );
     });
 
 
