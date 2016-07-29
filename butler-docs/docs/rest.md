@@ -30,6 +30,18 @@ This allows Butler to support multiple versions, and old versions to be (possibl
 
 ## REST API endpoints
 
+### /v2/activeUserCount
+      Purpose    : Get number of users that have active sessions. This value is based on session start/stop events, which means that there are corner cases where the incorrect value will be shown - for example just after starting Butler.  
+      Parameters : -
+      Example    : curl http://<FQDN or IP of Butler>:8080/activeUserCount
+      Returns    : 5
+
+### /v2/activeUsers
+      Purpose    : Get an arrary with the usernames of users that currently have active sessions. This endpoint suffers from same limitation as the activeUserCount endpoint, i.e. it will not capture sessions that are active when Butler is started.  
+      Parameters : -
+      Example    : curl http://<FQDN or IP of Butler>:8080/activeUsers
+      Returns    : ["userA","userB","userC"]
+
 ### /v2/butlerPing
       Purpose    : Ask Butler if it is running and all is ok.
       Parameters : -

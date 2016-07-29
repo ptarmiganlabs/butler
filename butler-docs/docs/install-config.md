@@ -81,7 +81,9 @@ The `default.json` config file looks like this:
       "sessionStopTopic": "qliksense/session/stop",
       "connectionOpenTopic": "qliksense/connection/open",
       "connectionCloseTopic": "qliksense/connection/close",
-      "taskFailureServerStatusTopic": "qliksense/butler/session_server"
+      "taskFailureServerStatusTopic": "qliksense/butler/session_server",
+      "activeUserCountTopic": "qliksense/users/active/count",
+      "activeUsersTopic": "qliksense/users/active/usernames"
     },
     "udpServerConfig": {
       "serverIP": "<IP of server where Butler is running>",
