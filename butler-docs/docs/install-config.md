@@ -116,3 +116,6 @@ The files to use are `client.pem` and `client_key.pem`. The config file can poin
 
 
 # Customisation
+As Butler offers a rather diverse set of features, everyone might not need all features. There is no single config file in which individual features can be turned on/off, 
+but given the structure of the Butler source code it is relatively easy to disable speciifc features, or add new ones.  
+For example, to disable a particular REST API endpoint, you could just remove the registration of that endpoint from within the src/butler.js file.

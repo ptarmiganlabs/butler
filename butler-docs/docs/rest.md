@@ -24,7 +24,7 @@ The Slack integration supports Slack's full markdown message formatting as well 
 
 ## Versioning of the REST API
 This is a very wide and complex topic in itself.  
-For now Butler uses a very simple and rather naive approach, by just prefixing the endpoint name with a version number.
+For now Butler uses a very simple and rather naive approach, by just prefixing the endpoint name with a version number, e.g. http://FQDN/v2/EndpointName/...   
 This allows Butler to support multiple versions, and old versions to be (possibly) deprecated in the future.
 
 
