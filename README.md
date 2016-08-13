@@ -10,30 +10,6 @@ The app started out as a way of posting to [Slack](https://slack.com/) from [Qli
 
 Full documenation available [here]().
 
-* 
-You should make sure to configure the firewall of the server where Buter is running, so it only accepts calls from the desired clients/IP addresses.
-A reasonable first approach would be to configure the firewall to only allow calls from localhost.
-
-* 
-As of right now the MQTT connections are not secured by certificates or passwords.
-For use within a controlled network that might be fine, but nonetheless something to keep in mind. Adding certificate based authentication (which MQTT supports) would solve this.
-
-## Usage
-
-```js
-var qliksensebutler = require('Butler for Qlik Sense');
-```
-
-## API
-
-<!-- add a path or glob pattern for files with code comments to use for docs  -->
-{%= apidocs("index.js") %}
-
-## Related projects
-
-<!-- add an array of related projects, then un-escape the helper -->
-{%= related([]) %}
-
 ## Running tests
 
 Install dev dependencies:
