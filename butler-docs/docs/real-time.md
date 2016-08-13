@@ -11,4 +11,6 @@ The data will then become more and more exact as users end their sessions, and l
   
 ## Active users data as MQTT messages
 
+Butler publishes a set of MQTT messages relating to active sessions:  
 
+    * Whenever a session starts or ends, a message will be sent to the MQTT topic defined by 
