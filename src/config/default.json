@@ -13,7 +13,7 @@
       "sessionStopTopic": "qliksense/session/stop",
       "connectionOpenTopic": "qliksense/connection/open",
       "connectionCloseTopic": "qliksense/connection/close",
-      "taskFailureServerStatusTopic": "qliksense/butler/session_server",
+      "sessionServerStatusTopic": "qliksense/butler/session_server",
       "activeUserCountTopic": "qliksense/users/active/count",
       "activeUsersTopic": "qliksense/users/active/usernames"
      },

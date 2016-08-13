@@ -31,10 +31,8 @@ var argv = yargs.usage('Butler UDP client test app', {
 
 
 var client = dgram.createSocket({type:'udp4', reuseAddr:true});
-//sock.send(8000, "localhost", buf, 0, buf.length);
 var msg = new Buffer (argv.msg.toString());
 
-//udpServerSessionConnection.bind(9998);
 client.send(msg, 0, msg.length, argv.port, argv.ip, function(err, bytes) {
     if (err) throw err;
     console.info('UDP message sent to ' + argv.ip +':'+ argv.port + ', ' +  bytes + ' bytes.');

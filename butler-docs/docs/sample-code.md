@@ -21,7 +21,7 @@ With this taken care of, we can call any other Butler API.
     $(Must_Include=[lib://Butler scripts/post_to_slack.qvs]);
 
     CALL ButlerInit;
-    CALL PostToSlack('sense-reload-info', 'server: sensedev1eu', '*<App name>*: reload starting', ':ghost:');	// Post a starting message to Slack
+    CALL PostToSlack('sense-reload-info', 'server: senseServer1', '*<App name>*: reload starting', ':ghost:');	// Post a starting message to Slack
     CALL PostToSlack('sense-reload-info', subfield(OSUser(),'UserId=',2) & ' on server: ' & ComputerName(), '*Reloaded by: ' & subfield(OSUser(),'UserId=',2) & '* <App name>: Reload starting', ':test:');  
 
 This will result in the following Slack entries:  

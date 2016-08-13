@@ -58,7 +58,7 @@ module.exports.udpInitSessionConnectionServer = function () {
         console.info('UDP server listening on %s:%s', address.address, address.port);
 
         // Publish MQTT message that UDP server has started
-        globals.mqttClient.publish('qliksense/butler/session_server', 'start');
+        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'start');
     });
 
     // Handler for UDP error event
@@ -67,7 +67,7 @@ module.exports.udpInitSessionConnectionServer = function () {
         var address = globals.udpServerSessionConnectionSocket.address();
         console.error('UDP server error on %s:%s', address.address, address.port);
         // Publish MQTT message that UDP server has reported an error
-        globals.mqttClient.publish('qliksense/butler/session_server', 'error');
+        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'error');
     });
 
     // Main handler for UDP messages relating to session and connection events
@@ -78,7 +78,7 @@ module.exports.udpInitSessionConnectionServer = function () {
         // Send Slack message when session starts/stops, or a connection open/close
         globals.slack.send({
             text: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
-            channel: globals.config.get('Butler.mqttConfig.loginNotificationChannel'),
+            channel: globals.config.get('Butler.slackConfig.loginNotificationChannel'),
             username: msg[0],
             icon_emoji: ''
         });
