@@ -45,6 +45,15 @@ Below are the general steps needed to install Butler. Please note that you might
   MkDocs is used to create the pages you are reading right now.
 
 
+# Security considerations
+
+* You should make sure to configure the firewall of the server where Buter is running, so it only accepts connections from the desired clients/IP addresses.
+A reasonable first approach would be to configure the firewall to only allow calls from localhost. That way calls to Butler can only be made from the server where Butler itself is running.
+ 
+* As of right now the MQTT connections are not secured by certificates or passwords.
+For use within a controlled network that might be fine, but nonetheless something to keep in mind. Adding certificate based authentication (which MQTT supports) would solve this.
+
+
 # Configuration
 
 Butler uses configuration files in JSON format. The config files are stored in the src\\config folder.  
