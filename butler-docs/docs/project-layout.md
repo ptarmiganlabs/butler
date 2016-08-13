@@ -18,6 +18,7 @@ The GitHub repository consists of the following parts:
       create_directory.qvs
       post_to_mqtt.qvs
       post_to_slack.qvs  
+      ...
 
     src/                      # Butler source code
       config/
@@ -30,5 +31,6 @@ The GitHub repository consists of the following parts:
       globals.js
       package.json
       README.md
+      ...
 
     README.md                 # Main GitHub readme file  

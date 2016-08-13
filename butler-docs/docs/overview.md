@@ -35,6 +35,10 @@ It is possible to hook into Sense's logging framework, and have log events forwa
 Currently Butler forwards messages to Slack (for notifying humans that some event occurred) and MQTT (for notifying other systems that some event occurred).  
 More info [here](log-events). 
 
+# Real time active user data
+Butler keeps track of how many and which users are currently using Sense. This information is also published as MQTT messages.   
+
+
 # MQTT handlers
 MQTT is a light weight pub-sub protocol developed for efficient machine-to-machine message sending. The protocol was developed with embedded systems (IoT and other low CPU/memory systems) in mind, and there are client implementations available in many different languages/platforms. It is also a mature protocol that has proven its stability over many years.  
 

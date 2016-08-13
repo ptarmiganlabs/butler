@@ -13,6 +13,7 @@ pages:
 - Features:
   - REST API: rest.md
   - Log event handlers: log-events.md
+  - Real time metrics: real-time.md
   - MQTT integration: mqtt.md
   - UDP client: udp-client.md
 - Examples: sample-code.md
