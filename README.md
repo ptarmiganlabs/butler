@@ -10,14 +10,6 @@ The app started out as a way of posting to [Slack](https://slack.com/) from [Qli
 
 Full documenation available [here]().
 
-## Running tests
-
-Install dev dependencies:
-
-```sh
-$ npm i -d && npm test
-```
-
 ## Contributing
 
 Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/mountaindude/qliksensebutler/issues/new).
