@@ -8,7 +8,7 @@ Node.js based proxy app providing various add-on features to Qlik Sense, such as
 
 The app started out as a way of posting to [Slack](https://slack.com/) from [Qlik Sense](http://www.qlik.com/products/qlik-sense) (or [QlikView](http://www.qlik.com/products/qlikview)) load scripts, but has since been generalized and now offers a lot more features. 
 
-Full documenation available [here]().
+Full documenation available [here](https://mountaindude.github.io/butler).
 
 ## Contributing
 
