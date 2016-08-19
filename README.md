@@ -17,10 +17,9 @@ Pull requests and stars are always welcome. For bugs and feature requests, [plea
 ## Author
 
 **Göran Sander**
-
-<!-- `github`, `github.username`, and `username` variables are undefined -->
-<!-- `twitter`, `twitter.username`, and `username` variables are undefined -->
-
+  
+  
+  
 ## License
 
 Copyright © 2016 Göran Sander

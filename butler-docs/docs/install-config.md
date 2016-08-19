@@ -126,6 +126,19 @@ Future versions may make MQTT, Slack and other similar channels optional, using 
 The files to use are `client.pem` and `client_key.pem`. The config file can point straight to these files.  
 
 
+# log4net extender config files
+Butler includes a couple of xml files that when deployed to the Sense server will create real-time UDP messages for certain events (tasks failing, user sessions starting/ending etc).  
+These xml files should be deployed as follows:  
+  
+* Task failure events  
+    * XML file found in log4net_task-failed/LocalLogConfig.xml. This file includes settings to both send an email, and a UDP message when a task fails.
+    * XML file should be deployed to the server where reloads are done, in the C:\ProgramData\Qlik\Sense\Scheduler directory
+* User audit events
+    * XML file found in log4net_user-audit-event/LocalLogConfig.xml
+    * XML file should be deployed on the server where the proxy is running, in the C:\ProgramData\Qlik\Sense\Proxy directory
+    * If there multiple proxies on different servers, it might make sense deploying the xml file on all of them, to capture all user audit events.
+
+
 # Customisation
 As Butler offers a rather diverse set of features, everyone might not need all features. There is no single config file in which individual features can be turned on/off, 
 but given the structure of the Butler source code it is relatively easy to disable speciifc features, or add new ones.  
