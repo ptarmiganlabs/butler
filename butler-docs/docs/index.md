@@ -11,7 +11,15 @@ Sample use cases:
 new message. Can for example be used to notify user(s) that an app has reloaded with new data, or that some error condition has occured. 
 * Send and receive MQTT publish-subscribe messages. MQTT (and the pubsub concept in general) is a great way for systems to communicate reliably with each other.
 * Modify the Operations Monitor app to send a daily summary of daily/weekly/monthly active users, # of failed tasks etc to a Slack channel
-* ... Butler is open and extensibleby its nature, it is thus possible to integrate it with most other systems.
+* ... Butler is open and extensibleby in its nature, it is thus possible to integrate it with most other systems.
+* Real-time monitoring of active users. This data is posted to MQTT, from where it can be plotted by various tools, see below.
+   
+   
+   
+![alt text](img/active_user_sessions.png "Active user sessions")  
+Real-time viewing of # of active users.
+
+
 
 All project files are found [on GitHub](https://github.com/mountaindude/butler).
 
