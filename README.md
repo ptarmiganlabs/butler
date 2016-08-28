@@ -10,6 +10,17 @@ The app started out as a way of posting to [Slack](https://slack.com/) from [Qli
 
 Full documenation available [here](https://mountaindude.github.io/butler).
 
+## Main features
+* Integration with MQTT pub-sub protocol
+* Sending messages to [Slack](https://slack.com) instant messaging system
+* Start Sense tasks from the load script, or from external/3rd party systems
+* Send emails and MQTT messages when Sense reload tasks fail
+* Real-time info on how many and what users are currently active on the Sense server(s)
+
+![alt text](butler-docs/docs/img/active_user_sessions.png "Active user sessions")  
+Real-time view of # of active users.
+
+
 ## Contributing
 
 Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/mountaindude/qliksensebutler/issues/new).
