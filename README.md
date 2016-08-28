@@ -17,8 +17,14 @@ Full documenation available [here](https://mountaindude.github.io/butler).
 * Send emails and MQTT messages when Sense reload tasks fail
 * Real-time info on how many and what users are currently active on the Sense server(s)
 
+
+## Screen shots
 ![alt text](butler-docs/docs/img/active_user_sessions.png "Active user sessions")  
 Real-time view of # of active users.
+  
+  
+![alt text](butler-docs/docs/img/post_to_slack_3.png "Post to Slack")  
+Posting to Slack, including message formatting and emojis.
 
 
 ## Contributing
