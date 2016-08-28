@@ -21,7 +21,9 @@ Full documenation available [here](https://mountaindude.github.io/butler).
 ## Screen shots
 
 ### Posting to Slack, including message formatting and emojis.
-
+  
+---
+  
 ![alt text](butler-docs/docs/img/post_to_slack_3.png "Post to Slack")   
 
 ---
