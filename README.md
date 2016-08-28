@@ -19,13 +19,12 @@ Full documenation available [here](https://mountaindude.github.io/butler).
 
 
 ## Screen shots
-![alt text](butler-docs/docs/img/active_user_sessions.png "Active user sessions")  
-Real-time view of # of active users.
-  
-  
-![alt text](butler-docs/docs/img/post_to_slack_3.png "Post to Slack")  
-Posting to Slack, including message formatting and emojis.
 
+### Posting to Slack, including message formatting and emojis.
+![alt text](butler-docs/docs/img/post_to_slack_3.png "Post to Slack")
+
+### Real-time view of # of active users
+![alt text](butler-docs/docs/img/active_user_sessions.png "Active user sessions") 
 
 ## Contributing
 
