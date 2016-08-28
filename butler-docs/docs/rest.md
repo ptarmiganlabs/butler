@@ -68,7 +68,7 @@ This allows Butler to support multiple versions, and old versions to be (possibl
       Returns    : curl http://<FQDN or IP of Butler>:8080/getDiskSpace?path=z:/
       Example    : {"path":"z:/","available":<number>,"free":<number>,"total":<number>}
 
-### /v2/mqqtPublishMessage
+### /v2/mqttPublishMessage
       Purpose    : Publish a message to a MQTT topic, using a MQTT broker defined in the Butler config file
       Parameters : topic, message
       Example    : curl "http://<FQDN or IP of Butler>:8080/mqttPublishMessage?topic=abc/def&message=ButlerTalksMQTT"
