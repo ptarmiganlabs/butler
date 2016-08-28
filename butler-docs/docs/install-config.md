@@ -74,8 +74,10 @@ A reasonable first approach would be to configure the firewall to only allow cal
 * As of right now the MQTT connections are not secured by certificates or passwords.
 For use within a controlled network that might be fine, but nonetheless something to keep in mind. Adding certificate based authentication (which MQTT supports) would solve this.  
 
-* Butler uses various node.js modules from npm. If conserned about security, you should review these dependencies and decide whether there are issues in them or not.  
-Same thing with Butler itself - while efforts have been made to make Butler secure, you need to decide for yourself whether the level of security is enough for your use case.
+* Butler uses various node.js modules from [npm](https://www.npmjs.com/). If conserned about security, you should review these dependencies and decide whether there are issues in them or not.  
+Same thing with Butler itself - while efforts have been made to make Butler secure, you need to decide for yourself whether the level of security is enough for your use case.  
+    
+    Butler is from time to time (not continuously as this point) checked for security vulnerabilities by using [NPS](https://nodesecurity.io/opensource), as of Butler 2.0 no security issues are reported by NPS.
 
 
 # Configuration
