@@ -7,6 +7,8 @@ Butler depends on various pieces of software. Some are required, others are opti
 | Sense Enterprise | Butler is developed with Sense Enterprise in mind. While many Butler features might also work with Sense Desktop, you are on your own there. |  
 | MQTT broker | MQTT is used for both in- and out-bound pub-sub messaging. Butler assumes a working MQTT broker is available, the IP of which is defined in the Butler config file. Mosquitto is a nice open source broker. It requires very little hardware to run, even the smallest (free!) Amazon EC2 instance is enough, if you want a dedicated MQTT server. If you don't care about the pubsub features of Butler, you obviously don't need a MQTT broker. | 
 | node.js | Butler is written in Node - which is thus a firm requirement. |   
+| Visual Studo | When Butler is running on Windows, the free disk space feature of Butler requires some tools from Visual Studio to be installed during Butler installation. |   
+| Python | When Butler is running on Windows, the free disk space feature of Butler requires Python to be installed during Butler installation. |   
 
 
 ## Windows or OSX
@@ -27,6 +29,25 @@ Below are the general steps needed to install Butler. Please note that you might
 * **Decide where to install Butler**  
   It is usually a good starting point to run Butler on the Sense server. If there are more than one server in the Sense cluster, Butler can be placed on the reload server (as the /createDir endpoint then can be used to create folders in which QVD and other files can be stored).
   That said, it is quite possible to run Butler on any server, as long as there is network connectivity to the Sense server(s).  
+
+* ** Windows dependencies: Visual Studio and Python**  
+The following npm modules need to be rebuilt when installing Butler (i.e. when doing "npm install", see below):
+    * *Diskusage*    
+
+    <p>
+
+    It is fairly easy to adapt the Butler source code to remove the getDiskSpace REST endpoint, if it is not needed.  
+    Otherwise the following software also need to be installed on the server where Butler will be running:  
+
+    * *Visual Studio 2015 Community Edition*   
+    This is a rather large software package, but it is free from Microsoft. The full IDE version is needed, the command line tools don't seem to include all the tools needed to build some of the npm modules.  
+    Make a custom install and make sure to install the C++ components.
+
+    * *Python*  
+    A standard installation of Python for Windows is enough. Python 2.7.12 has been tested - your milage may vary if using other versions.
+    <p>
+      
+    It is obviously not ideal having such big dependencies, maybe it is possible to address this in future Butler versions.    
 
 * **Download Butler**  
   Download the repository zip file or clone the Butler repository using your git tool of choice. Both options achieve the same thing, i.e. a directory such as d:\node\butler, which is then Butler's root directory.  
