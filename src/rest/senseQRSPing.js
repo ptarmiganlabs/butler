@@ -1,7 +1,6 @@
 var globals = require('../globals');
 
 // Function for handling /senseQRSPing REST endpoint
-// function respondSenseQRSPing(req, res, next) {
 module.exports.respondSenseQRSPing = function (req, res, next) {
     console.info(req.params);
 

@@ -1,6 +1,4 @@
-//var globals = require('../globals');
 var disk = require('diskusage');
-
 
 // Function for handling /getDiskSpace REST endpoint
 module.exports.respondGetDiskSpace = function (req, res, next) {

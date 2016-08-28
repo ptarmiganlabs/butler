@@ -1,6 +1,4 @@
-//var globals = require('../globals');
 var mkdirp = require('mkdirp');
-
 
 // Function for handling /createDir REST endpoint
 module.exports.respondCreateDir = function (req, res, next) {

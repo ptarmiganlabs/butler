@@ -1,8 +1,6 @@
 var dgram = require('dgram');
 var yargs = require('yargs');
 
-
-
 // Parse command line parameters
 var argv = yargs.usage('Butler UDP client test app', {
     'about': {

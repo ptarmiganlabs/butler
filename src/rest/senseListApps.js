@@ -1,7 +1,6 @@
 var globals = require('../globals');
 var qsocks = require('qsocks');
 
-
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
     console.info('Getting list of all apps');

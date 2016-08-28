@@ -2,7 +2,6 @@ var globals = require('../globals');
 var qsocks = require('qsocks');
 var serializeApp = require('serializeapp');
 
-
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
     console.info('Dumping app: ' + req.params.appId);

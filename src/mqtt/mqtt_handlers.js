@@ -1,6 +1,3 @@
-//var dict = require('dict');
-
-
 // Load global variables and functions
 var globals = require('../globals');
 
