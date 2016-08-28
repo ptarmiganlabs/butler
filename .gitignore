@@ -1,1 +1,7 @@
-node_modules/*
+src/node_modules/*
+src/config/production.json
+docs/*
+doc/*
+butler-docs/site/
+src/udp_client/node_modules/*
+npm-debug.log

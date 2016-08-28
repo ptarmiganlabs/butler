@@ -1,0 +1,17 @@
+// ------------------------------------------------------------
+// ** Start Sense task **
+//
+// Use Butler to start the task identified by the ID in parameter vTaskId.
+//
+// ------------------------------------------------------------
+
+Sub StartTask(vTaskId)
+	tmpStartTask:
+	LOAD
+		*
+	FROM [http://localhost:8080/startSenseTask?taskid=$(vTaskId)]
+	(txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
+
+	drop table tmpStartTask;
+end sub
+	
