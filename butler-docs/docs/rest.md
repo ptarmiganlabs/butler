@@ -33,69 +33,69 @@ This allows Butler to support multiple versions, and old versions to be (possibl
 ### /v2/activeUserCount
       Purpose    : Get number of users that have active sessions. This value is based on session start/stop events, which means that there are corner cases where the incorrect value will be shown - for example just after starting Butler.  
       Parameters : -
-      Example    : curl http://<FQDN or IP of Butler>:8080/activeUserCount
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/activeUserCount
       Returns    : 5
 
 ### /v2/activeUsers
       Purpose    : Get an arrary with the usernames of users that currently have active sessions. This endpoint suffers from same limitation as the activeUserCount endpoint, i.e. it will not capture sessions that are active when Butler is started.  
       Parameters : -
-      Example    : curl http://<FQDN or IP of Butler>:8080/activeUsers
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/activeUsers
       Returns    : ["userA","userB","userC"]
 
 ### /v2/butlerPing
       Purpose    : Ask Butler if it is running and all is ok.
       Parameters : -
-      Example    : curl http://<FQDN or IP of Butler>:8080/butlerPing
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/butlerPing
       Returns    : {"response":"Butler reporting for duty"}
 
 ### /v2/createDir
       Purpose    : Create a directory in any place (where the account Butler is running under has write access) on the server.  
                    Intermediate directories will be created too, i.e. if creating d:\abc\def when d:\abc does net yet exist, it will also be created.
       Parameters : directory
-      Example    : curl http://<FQDN or IP of Butler>:8080/createDir?directory=d:/abc/def
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/createDir?directory=d:/abc/def
       Returns    : {"directory":"d:/abc/def"}
 
 ### /v2/createDirQVD
       Purpose    : Create a directory relative to a predefined path. Can be used to ensure all QVDs are stored in a well defined location.
                    Intermediate directories will be created too, i.e. if creating d:\abc\def when d:\abc does net yet exist, it will also be created.
       Parameters : directory
-      Example    : curl http://<FQDN or IP of Butler>:8080/createDirQVD?directory=abc/def
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/createDirQVD?directory=abc/def
       Returns    : {"directory":"abc/def"}
 
 ### /v2/getDiskSpace
       Purpose    : Get free space information for all disks connected to the server where Butler is running.
       Parameters : path
-      Returns    : curl http://<FQDN or IP of Butler>:8080/getDiskSpace?path=z:/
+      Returns    : curl http://<FQDN or IP of Butler>:8080/v2/getDiskSpace?path=z:/
       Example    : {"path":"z:/","available":<number>,"free":<number>,"total":<number>}
 
 ### /v2/mqttPublishMessage
       Purpose    : Publish a message to a MQTT topic, using a MQTT broker defined in the Butler config file
       Parameters : topic, message
-      Example    : curl "http://<FQDN or IP of Butler>:8080/mqttPublishMessage?topic=abc/def&message=ButlerTalksMQTT"
-                   curl -G "http://<FQDN or IP of Butler>:8080/mqttPublishMessage" --data-urlencode "topic=abc/def" --data-urlencode "message=Butler talks MQTT"
+      Example    : curl "http://<FQDN or IP of Butler>:8080/v2/mqttPublishMessage?topic=abc/def&message=ButlerTalksMQTT"
+                   curl -G "http://<FQDN or IP of Butler>:8080/v2/mqttPublishMessage" --data-urlencode "topic=abc/def" --data-urlencode "message=Butler talks MQTT"
       Returns    : {"topic":"abc/def","message":"ButlerTalksMQTT"}
                    {"topic":"abc/def","message":"Butler talks MQTT"}
 
 ### /v2/senseAppDump
       Purpose    : Extracts metadata about a Sense app.
       Parameters : appId
-      Example    : curl http://<FQDN or IP of Butler>:8080/senseAppDump?appId=98765e52-abcd-1234-5678-5678203b23b3
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/senseAppDump?appId=98765e52-abcd-1234-5678-5678203b23b3
       Returns    : A long, long JSON string.
 
 ### /v2/senseListApps
       Purpose    : List name and GUID of all apps in the Sense cluster where Butler is installed.
       Parameters : -
-      Example    : curl http://<FQDN or IP of Butler>:8080/senseListApps
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/senseListApps
       Returns    : A long, long JSON string.
 
 ### /v2/senseStartTask
       Purpose    : Start a Sense task. Can be used by upstream data providers to trigger reloads of Sense apps when new data is available.
       Parameters : taskId
-      Example    : curl http://<FQDN or IP of Butler>:8080/senseStartTask?taskId=abcd1234-5678-abcd-1234-abcd1234abcd
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/senseStartTask?taskId=abcd1234-5678-abcd-1234-abcd1234abcd
       Returns    : {"taskId":"abcd1234-5678-abcd-1234-abcd1234abcd"}
 
 ### /v2/slackPostMessage
       Purpose    : Post a message to a Slack channel. Normal Slack formatting options (emoijs, markdown etc) can be used.
       Parameters : channel, from_user, msg, emoij
-      Example    : curl -G http://<FQDN or IP of Butler>:8080/slackPostMessage --data-urlencode "channel=#sense-test-slack" --data-urlencode "msg=Butler posting to *Slack*" --data-urlencode "from_user=sa_scheduler" --data-urlencode "emoji=:test:"
+      Example    : curl -G http://<FQDN or IP of Butler>:8080/v2/slackPostMessage --data-urlencode "channel=#sense-test-slack" --data-urlencode "msg=Butler posting to *Slack*" --data-urlencode "from_user=sa_scheduler" --data-urlencode "emoji=:test:"
       Returns    : {"channel":"#sense-test-slack","msg":"Butler posting to *Slack*","from_user":"sa_scheduler","emoji":":test:"}
