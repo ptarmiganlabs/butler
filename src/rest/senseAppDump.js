@@ -1,6 +1,6 @@
 var globals = require('../globals');
 var qsocks = require('qsocks');
-var serializeApp = require('serializeapp')
+var serializeApp = require('serializeapp');
 
 
 // Function for handling /senseAppDump REST endpoint

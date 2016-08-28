@@ -1,4 +1,4 @@
-var dict = require("dict");
+var dict = require('dict');
 
 
 // Load global variables and functions
@@ -30,7 +30,7 @@ module.exports.mqttInitHandlers = function () {
         }
 
         if ( (topic == globals.config.get('Butler.mqttConfig.sessionStartTopic')) || 
-        	(topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic')) ) {
+            (topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic')) ) {
             // Handle dict of currently active users
             // Message arrives as "serverName: directoryName/userName
             var array1 = message.toString().split(': ');

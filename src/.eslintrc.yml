@@ -17,5 +17,7 @@ rules:
   no-console:
     - warn
     - allow: [warn, error, info]
+  no-undef:
+    - warn
   no-unused-vars:
     - warn
