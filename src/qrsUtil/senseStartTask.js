@@ -1,4 +1,4 @@
-var globals = require('../globals');
+//var globals = require('../globals');
 var QRS = require('qrs');
 var config = require('config');
 
@@ -18,7 +18,7 @@ module.exports.senseStartTask = function (taskId) {
     };
 
     var qrs = new QRS(configQRS );
-    console.log('Starting task ' + taskId);
+    console.info('Starting task ' + taskId);
 
     qrs.post( '/qrs/task/' + taskId + '/start')
         .then( function ( data) {
