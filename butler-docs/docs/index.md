@@ -1,7 +1,7 @@
 # Welcome to the Butler documentation
 
 Butler is an open source add-on tool for Qlik Sense, extending that platform with various features, most of which are focused on integrating Sense with other systems.   
-Butler makes it very easy to hook up Sense to systems like [Slack](https://slack.com/) or [MQTT](http://mqtt.org/), and use these tools to send alerts when something important/interesting/urgent happen in a Sense cluster.  
+Butler makes it easy to hook up Sense to systems like [Slack](https://slack.com/) or [MQTT](http://mqtt.org/), and use these tools to send alerts when something important/interesting/urgent happen in a Sense cluster.  
 
 Sample use cases:  
 
@@ -17,7 +17,7 @@ new message. Can for example be used to notify user(s) that an app has reloaded 
    
    
 ![alt text](img/active_user_sessions.png "Active user sessions")  
-Real-time viewing of # of active users.
+Real-time view of # of active users.
 
 
 

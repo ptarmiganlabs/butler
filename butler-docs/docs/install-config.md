@@ -51,13 +51,17 @@ Below are the general steps needed to install Butler. Please note that you might
 A reasonable first approach would be to configure the firewall to only allow calls from localhost. That way calls to Butler can only be made from the server where Butler itself is running.
  
 * As of right now the MQTT connections are not secured by certificates or passwords.
-For use within a controlled network that might be fine, but nonetheless something to keep in mind. Adding certificate based authentication (which MQTT supports) would solve this.
+For use within a controlled network that might be fine, but nonetheless something to keep in mind. Adding certificate based authentication (which MQTT supports) would solve this.  
+
+* Butler uses various node.js modules from npm. If conserned about security, you should review these dependencies and decide whether there are issues in them or not.  
+Same thing with Butler itself - while efforts have been made to make Butler secure, you need to decide for yourself whether the level of security is enough for your use case.
 
 
 # Configuration
 
 Butler uses configuration files in JSON format. The config files are stored in the src\\config folder.  
-Butler comes with a default config file called `default.json`. Either update it as needed (see below for details), or make a copy of it and call it `production.json`, then make the needed changes to that file. That way you will not overwrite your customized `default.json` file if you in the future download updated Butler versions from GitHub.  
+Butler comes with a default config file called `default.json`. Either update it as needed (see below for details), or make a copy of it and call it `production.json`, then make the needed changes to that file. That way you will not overwrite your customized `default.json` file if you in the future download updated Butler versions from GitHub.   
+Trying to run Butler with the default config file (the one included in the files download from GitHub) will not work - you need to adapt it to your server environment.
 
 Note: Butler uses the [node-config](https://github.com/lorenwest/node-config) module to handle config files. As per node-config's documentation, to switch to using the production.json config file, at a command prompt type (for Windows)
 
@@ -68,6 +72,7 @@ Note: Butler uses the [node-config](https://github.com/lorenwest/node-config) mo
 
     export NODE_ENV=production
 
+You may want to set that variable during server boot, to ensure Butler starts properly when the server is rebooted.
 
 
 ## Config file syntax

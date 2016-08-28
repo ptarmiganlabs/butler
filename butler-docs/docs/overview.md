@@ -18,16 +18,17 @@ The app started out as a way of posting to [Slack](https://slack.com/) from Qlik
 
 | Endpoint | Description |  
 | -------- | ----------- |  
-| `/butlerPing` | Desc |  
-| `/createDir` | Create directories (anywhere in the file system) on the server where Butler is running |  
-| `/createDirQVD` | Create directories (relative to a hard coded path) on the server where Butler is running |  
-| `/getDiskSpace` | Check available disk space |  
-| `/mqttPublishMessage` | Publish message to MQTT topic |  
-| `/senseAppDump` | ... |  
-| `/senseListApps` | ... |  
-| `/senseQRSPing` | ... |  
-| `/senseStartTask` | ... |  
-| `/slackPostMessage` | Post to Slack from Sense load scripts |  
+| `/v2/activeUserCount` | # of users with open Sense sessions |  
+| `/v2/activeUsers` | Usernames of users with open Sense sessions |  
+| `/v2/butlerPing` | Checks if Butler is running |  
+| `/v2/createDir` | Create directories (anywhere in the file system) on the server where Butler is running |  
+| `/v2/createDirQVD` | Create directories (relative to a hard coded path) on the server where Butler is running |  
+| `/v2/getDiskSpace` | Check available disk space |  
+| `/v2/mqttPublishMessage` | Publish message to MQTT topic |  
+| `/v2/senseAppDump` | Retrieves metadata (load script etc) about a Sense app |  
+| `/v2/senseListApps` | List name and GUID of all Sense apps in the system |  
+| `/v2/senseStartTask` | Start a Sense task. Can for example be used by upstream data providers to trigger reloads of Sense apps |  
+| `/v2/slackPostMessage` | Post to Slack from Sense load scripts |  
 
 
 # Handler for Sense log messages
