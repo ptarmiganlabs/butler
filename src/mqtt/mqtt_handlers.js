@@ -29,9 +29,11 @@ module.exports.mqttInitHandlers = function () {
 
         var array1, array2, serverName, directoryName, userName;
         var activeUsers = [], activeUsersJSON;
+        var activeUsersPerServer = [], activeUsersPerServerJSON;
 
         if ( (topic == globals.config.get('Butler.mqttConfig.sessionStartTopic')) || 
             (topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic')) ) {
+
             // Handle dict of currently active users
             // Message arrives as "serverName: directoryName/userName
             array1 = message.toString().split(': ');
@@ -46,10 +48,29 @@ module.exports.mqttInitHandlers = function () {
 
             // Build JSON of all active users
             globals.currentUsers.forEach(function (value, key) {
-                activeUsers.push(key);
+                activeUsers.push(key);      // Push to overall list of active users
             });
 
             activeUsersJSON = JSON.stringify(activeUsers);
+
+
+            // Handle dict of currently active users, split on proxy they are connected through
+            var serverObj;
+            if (globals.currentUsersPerServer.has(serverName)) {
+                // Server already exists in dict - get it
+                serverObj = globals.currentUsersPerServer.get(serverName);
+            } else {
+                serverObj = dict();
+            }
+
+            serverObj.set(userName, '');
+            globals.currentUsersPerServer.set(serverName, serverObj);
+
+            // Debug output
+            globals.currentUsersPerServer.forEach(function (value, key) {
+                console.log('server:' + key + ', users:' + JSON.stringify(value))
+            });
+
 
             // Send MQTT messages relating to active users
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(), globals.currentUsers.size.toString());
