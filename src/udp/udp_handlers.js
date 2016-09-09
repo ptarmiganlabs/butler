@@ -34,7 +34,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // Post to Slack when a task has failed
         globals.slack.send({
             text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
-            channel: globals.config.get('Butler.mqttConfig.taskFailureChannel'),
+            channel: globals.config.get('Butler.slackConfig.taskFailureChannel'),
             username: msg[0],
             icon_emoji: ':ghost:'
         });
