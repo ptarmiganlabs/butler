@@ -4,6 +4,7 @@
   "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
+    "any-base": "^1.0.0",
     "config": "^1.21.0",
     "dict": "^1.4.0",
     "diskusage": "^0.1.4",

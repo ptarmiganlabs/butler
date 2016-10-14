@@ -10,5 +10,7 @@ module.exports = {
     senseQRSPing: require('./senseQRSPing.js'),
     senseAppDump: require('./senseAppDump.js'),
     senseListApps: require('./senseListApps.js'),
-    butlerPing: require('./butlerPing.js')
+    butlerPing: require('./butlerPing.js'),
+    base62ToBase16: require('./baseConversion.js'),
+    base16ToBase62: require('./baseConversion.js')
 };
