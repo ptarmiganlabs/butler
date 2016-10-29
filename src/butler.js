@@ -32,6 +32,8 @@ restServer.get('/v2/senseStartTask', rest.senseStartTask.respondSenseStartTask);
 restServer.get('/v2/senseAppDump', rest.senseAppDump.respondSenseAppDump);
 restServer.get('/v2/senseListApps', rest.senseListApps.respondSenseListApps);
 restServer.get('/v2/butlerPing', rest.butlerPing.respondButlerPing);
+restServer.get('/v2/base62ToBase16', rest.base62ToBase16.respondBase62ToBase16);
+restServer.get('/v2/base16ToBase62', rest.base16ToBase62.respondBase16ToBase62);
 
 
 // ---------------------------------------------------
