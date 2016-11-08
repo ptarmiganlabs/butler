@@ -42,6 +42,18 @@ This allows Butler to support multiple versions, and old versions to be (possibl
       Example    : curl http://<FQDN or IP of Butler>:8080/v2/activeUsers
       Returns    : ["userA","userB","userC"]
 
+### /v2/base16ToBase62
+      Purpose    : Convert a value coded in base16 to a base62 value. Works on arbitrary length input strings.  
+      Parameters : base16
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/base16ToBase62?base16=1f5848b5f8ba4e85a57c7ca55a9e
+      Returns    : 3t5Na7R7Hj5yaBCv80S
+
+### /v2/base62ToBase16
+      Purpose    : Convert a value coded in base62 to a base16 value. Works on arbitrary length input strings.  
+      Parameters : base62
+      Example    : curl http://<FQDN or IP of Butler>:8080/v2/base62ToBase16?base62=0X96HlegVXzQfJVIBWC31
+      Returns    : 816c8710661a0a69e51ac8dc4ccf13
+
 ### /v2/butlerPing
       Purpose    : Ask Butler if it is running and all is ok.
       Parameters : -

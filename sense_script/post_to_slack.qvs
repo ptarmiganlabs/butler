@@ -11,7 +11,8 @@
 // ------------------------------------------------------------
 
 Sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
-  // URL encode the parameters passed to Butler, to ensure spaces, international characters etc are handled correctly.
+    // URL encode the parameters passed to Butler, to ensure spaces, international characters etc are handled correctly.
+
 	let vFromUser = MapSubstring('URL_EncodingReferenceMap', '$(vFromUser)');
 	let vMessage = MapSubstring('URL_EncodingReferenceMap', '$(vMessage)');
 
@@ -23,7 +24,7 @@ Sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
 	tmpSlack:
 	LOAD
 		*
-	FROM [http://localhost:8080/slack?channel=%23$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(vEmoji)]
+	FROM [http://localhost:8080/v2/slackPostMessage?channel=%23$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(vEmoji)]
 	(txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
 
 	drop table tmpSlack;
