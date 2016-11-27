@@ -68,7 +68,7 @@ module.exports.mqttInitHandlers = function () {
 
             // Debug output
             globals.currentUsersPerServer.forEach(function (value, key) {
-                console.log('server:' + key + ', users:' + JSON.stringify(value))
+                console.log('server:' + key + ', users:' + JSON.stringify(value));
             });
 
 
