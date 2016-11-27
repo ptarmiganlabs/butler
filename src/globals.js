@@ -48,6 +48,7 @@ var slack = new slack(slackWebhookURL);
 // ------------------------------------
 // Data structures needed to keep track of currently active users/sessions
 var currentUsers = dict();
+var currentUsersPerServer = dict();
 
 
 // ------------------------------------
@@ -89,6 +90,7 @@ module.exports = {
   slackLoginNotificationChannel,
   slackTaskFailureChannel,
   currentUsers,
+  currentUsersPerServer,
   udpServerSessionConnectionSocket,
   udpServerTaskFailureSocket,
   udp_host,
