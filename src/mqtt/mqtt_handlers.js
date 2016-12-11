@@ -1,4 +1,4 @@
-var dict = require("dict");
+var dict = require('dict');
 
 
 // Load global variables and functions
@@ -33,6 +33,7 @@ module.exports.mqttInitHandlers = function () {
         var array1, array2, serverName, directoryName, userName;
         var activeUsers = [], activeUsersJSON;
         var activeUsersPerServer = [], activeUsersPerServerJSON;
+        var serverObj;
 
         if ( (topic == globals.config.get('Butler.mqttConfig.sessionStartTopic')) || 
             (topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic')) ) {
@@ -58,7 +59,6 @@ module.exports.mqttInitHandlers = function () {
 
 
             // Handle dict of currently active users, split on proxy they are connected through
-            var serverObj;
             if (globals.currentUsersPerServer.has(serverName)) {
                 // Server already exists in dict - get it
                 serverObj = globals.currentUsersPerServer.get(serverName);
@@ -71,7 +71,7 @@ module.exports.mqttInitHandlers = function () {
 
             // Send active user count messages to MQTT, one for each proxy node 
             globals.currentUsersPerServer.forEach(function (value, key) {
-                console.log('server:' + key + ', users:' + JSON.stringify(value));
+                console.info('server:' + key + ', users:' + JSON.stringify(value));
 //                console.log('=========');
 //                console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
 
@@ -116,7 +116,6 @@ module.exports.mqttInitHandlers = function () {
             activeUsersJSON = JSON.stringify(activeUsers);
 
             // Handle dict of currently active users, split on proxy they are connected through
-            var serverObj;
             if (globals.currentUsersPerServer.has(serverName)) {
                 // Server already exists in dict - get it.
                 // If the server does not exist in dict there is no reason to proceed
@@ -124,7 +123,7 @@ module.exports.mqttInitHandlers = function () {
 
                 serverObj.delete(userName);
                 globals.currentUsersPerServer.set(serverName, serverObj);       // Update the main users-per-server dict
-                console.log('----Removed user ' + userName + ' from server ' + serverName);
+                console.info('----Removed user ' + userName + ' from server ' + serverName);
 
                 // Send active user count messages to MQTT, one for each proxy node 
                 globals.currentUsersPerServer.forEach(function (value, key) {

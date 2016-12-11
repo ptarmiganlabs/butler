@@ -47,6 +47,10 @@
       "key": "<Path to client_key.pem>",
       "ca": "<Path to root.pem>"
     },
-    "qvdPath": "<Path to folder under which QVDs are stored>" 
+    "qvdPath": "<Path to folder under which QVDs are stored>",
+    "gitHub": {
+      "host": "api.github.com",
+      "pathPrefix": ""
+    }
   }
 }

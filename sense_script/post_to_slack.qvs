@@ -12,20 +12,28 @@
 
 Sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
     // URL encode the parameters passed to Butler, to ensure spaces, international characters etc are handled correctly.
+	// If neither # nor @ is specified as first character of the Slack channel name, # will be added.
 
+	if ( (left('$(vToSlackChannel)', 1) <> '@') and (left('$(vToSlackChannel)', 1) <> '#') ) then
+		let vToSlackChannel = '#$(vToSlackChannel)';
+	endif
+
+	let vToSlackChannel2 = '$(vToSlackChannel)';
+	let vToSlackChannel = MapSubstring('URL_EncodingReferenceMap', '$(vToSlackChannel)');
+	let vFromUser2 = '$(vFromUser)';
 	let vFromUser = MapSubstring('URL_EncodingReferenceMap', '$(vFromUser)');
+	let vMessage2 = '$(vMessage)';
 	let vMessage = MapSubstring('URL_EncodingReferenceMap', '$(vMessage)');
-
-	//trace $(vToSlackChannel);
-	//trace $(vFromUser);
-	//trace $(vMessage);
-	//trace $(vEmoji);
 
 	tmpSlack:
 	LOAD
 		*
-	FROM [http://localhost:8080/v2/slackPostMessage?channel=%23$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(vEmoji)]
+	FROM [http://localhost:8080/v2/slackPostMessage?channel=$(vToSlackChannel)&from_user=$(vFromUser)&msg=$(vMessage)&emoji=$(vEmoji)]
 	(txt, codepage is 1252, embedded labels, delimiter is '\t', msq);
 
 	drop table tmpSlack;
+
+	let vToSlackChannel = '$(vToSlackChannel2)';
+	let vFromUser = '$(vFromUser2)';
+ 	let vMessage = '$(vMessage2)';
 end sub
