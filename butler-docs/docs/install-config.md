@@ -61,6 +61,11 @@ The following npm modules need to be rebuilt when installing Butler (i.e. when d
 
     This will download and install all node.js modules used by Butler.  
 
+* **MQTT message broker**  
+Many of Butler's features use [MQTT](http://mqtt.org/) for sending and receiving messages.  
+MQTT is a standardised messaging protocol, and it should be possible to use [any broker following the MQTT standard](https://github.com/mqtt/mqtt.github.io/wiki/software?id=software).    
+Butler has been developed and tested using [Mosquitto](https://mosquitto.org/) running on OSX and Debian Linux - both work flawlessly.
+
 * **Documentation dependencies**  
   If you plan to modify or extend Butler's documentation, you will need to install [MkDocs](http://www.mkdocs.org/).  
   MkDocs is used to create the pages you are reading right now.
