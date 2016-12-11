@@ -3,8 +3,23 @@ var mqtt = require('mqtt');
 var config = require('config');
 var dgram = require('dgram');
 var fs = require('fs-extra');
-var dict = require("dict");
+var dict = require('dict');
+var gitHubApi = require('github');
 
+
+// GitHub access
+var github = new gitHubApi({
+    debug: false,
+    protocol: "https",
+    host: config.get('Butler.gitHub.host'),
+    pathPrefix: config.get('Butler.gitHub.pathPrefix'),  
+    headers: {
+        "user-agent": "Butler-Sense-App" // GitHub is happy with a unique user agent 
+    },
+    Promise: require('bluebird'),
+    followRedirects: false, // default: true; there's currently an issue with non-get redirects, so allow ability to disable follow-redirects 
+    timeout: 5000
+});
 
 // Load our own libs
 var qrsUtil = require('./qrsUtil');
@@ -97,5 +112,6 @@ module.exports = {
   udp_port_session_connection,
   udp_port_take_failure,
   mqttClient,
-  qvdFolder
+  qvdFolder,
+  github
 };
