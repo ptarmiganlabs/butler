@@ -1,3 +1,4 @@
+var globals = require('../globals');
 var config = require('config');
 
 var https = require('https');
@@ -21,15 +22,19 @@ var options = {
 module.exports.senseStartTask = function (taskId) {
     // QRS config
 
-    console.info('Starting task ' + taskId);
+    globals.logger.log('info', 'Starting task ' + taskId);
+    // console.info('Starting task ' + taskId);
     options.path = '/qrs/task/' + taskId + '/start?xrfkey=abcdefghijklmnop';
 
     https.get(options, function(res) {
+        globals.logger.log('info', 'Got response: ' + res.statusCode);
         console.info('Got response: ' + res.statusCode);
         res.on('data', function(chunk) {
-            console.info('BODY: ' + chunk);  
+            globals.logger.log('info', 'BODY: ' + chunk);
+            // console.info('BODY: ' + chunk);  
         }); 
     }).on('error', function(e) {
-        console.error('Got error: ' + e.message);
+        globals.logger.log('error', 'Got error: ' + e.message);
+        // console.error('Got error: ' + e.message);
     });
 };

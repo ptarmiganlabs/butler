@@ -10,6 +10,11 @@ var udp = require('./udp');
 
 
 
+// Set default debug level
+// { error: 0, warn: 1, info: 2, verbose: 3, debug: 4, silly: 5 }
+globals.logger.transports.console.level = 'warn';
+
+
 // ---------------------------------------------------
 // Create restServer object
 var restServer = restify.createServer({
@@ -50,8 +55,16 @@ udp.udp.udpInitSessionConnectionServer();
 
 // ---------------------------------------------------
 // Start REST server on port 8080
+
 restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), function() {
-    console.info('REST server listening on %s', restServer.url);
+    var oldLogLevel = globals.logger.transports.console.level;
+    globals.logger.transports.console.level = 'info';
+
+    globals.logger.log('info', 'REST server listening on %s', restServer.url);
+
+    globals.logger.transports.console.level = oldLogLevel;
+
+    // console.info('REST server listening on %s', restServer.url);
 });
 
 // Start UDP server for Session and Connection events

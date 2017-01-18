@@ -4,7 +4,8 @@ var serializeApp = require('serializeapp');
 
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
-    console.info('Dumping app: ' + req.params.appId);
+    globals.logger.log('info', 'Dumping app: ' + req.params.appId);
+    // console.info('Dumping app: ' + req.params.appId);
 
     qsocks.Connect(globals.configEngine).then(function(global) {
         global.openDoc(req.params.appId, '' , '', '', true)
@@ -18,18 +19,21 @@ module.exports.respondSenseAppDump = function (req, res, next) {
             try {
                 global.connection.ws.close();
             } catch(ex) {
-                console.error(ex);
+                globals.logger.log('error', ex);
+                // console.error(ex);
             }
 
             res.send(d);
         })
         .catch(function(error) {
-            console.error(error);
+            globals.logger.log('error', error);
+            // console.error(error);
 
             try {
                 global.connection.ws.close();
             } catch(ex) {
-                console.error(ex);
+                globals.logger.log('error', ex);
+                // console.error(ex);
             }
 
             res.send(error);

@@ -5,6 +5,14 @@ var dgram = require('dgram');
 var fs = require('fs-extra');
 var dict = require('dict');
 var gitHubApi = require('github');
+var winston = require('winston');
+
+// Set up default log format for Winston logger
+var logger = new (winston.Logger) ({
+    transports: [
+      new (winston.transports.Console)({'timestamp': true, 'colorize': true})
+    ]
+});
 
 
 // GitHub access
@@ -113,5 +121,6 @@ module.exports = {
   udp_port_take_failure,
   mqttClient,
   qvdFolder,
-  github
+  github,
+  logger
 };

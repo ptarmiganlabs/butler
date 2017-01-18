@@ -2,14 +2,17 @@ var globals = require('../globals');
 
 // Function for handling /senseQRSPing REST endpoint
 module.exports.respondSenseQRSPing = function (req, res, next) {
-    console.info(req.params);
+    globals.logger.log('info', req.params);
+    // console.info(req.params);
 
     // Ping Sense QRS
     globals.qrs.get( '/qrs/ping')
         .then( function ( data) {
+            globals.logger.log('info', 'return value: ', data );
             console.info('return value: ', data );
         }, function ( err ) {
-            console.error( 'An error occurred: ', err);
+            globals.logger.log('error', 'An error occurred: ', err);
+            // console.error( 'An error occurred: ', err);
         }
     );
 
