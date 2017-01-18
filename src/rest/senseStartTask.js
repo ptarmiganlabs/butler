@@ -3,7 +3,8 @@ var globals = require('../globals');
 // Function for handling /senseStartTask REST endpoint
 module.exports.respondSenseStartTask = function (req, res, next) {
     // Use data in request to start Qlik Sense task
-    console.info(req.params.taskId);
+    globals.logger.log('info', req.params.taskId);
+    // console.info(req.params.taskId);
 
     globals.qrsUtil.senseStartTask.senseStartTask(req.params.taskId);
 

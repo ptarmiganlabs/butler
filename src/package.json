@@ -16,7 +16,8 @@
     "qrs": "^2.0.2",
     "qsocks": "^3.0.1",
     "restify": "^4.0.3",
-    "serializeapp": "^2.0.0"
+    "serializeapp": "^2.0.0",
+    "winston": "^2.3.0"
   },
   "devDependencies": {
     "eslint": "^2.13.1",
