@@ -46,7 +46,6 @@ restServer.get('/v2/base16ToBase62', rest.base16ToBase62.respondBase16ToBase62);
 mqtt.mqtt.mqttInitHandlers();
 
 
-
 // ---------------------------------------------------
 // Set up UDP handlers
 udp.udp.udpInitTaskErrorServer();
@@ -55,7 +54,6 @@ udp.udp.udpInitSessionConnectionServer();
 
 // ---------------------------------------------------
 // Start REST server on port 8080
-
 restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), function() {
     var oldLogLevel = globals.logger.transports.console.level;
     globals.logger.transports.console.level = 'info';
@@ -63,8 +61,6 @@ restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), func
     globals.logger.log('info', 'REST server listening on %s', restServer.url);
 
     globals.logger.transports.console.level = oldLogLevel;
-
-    // console.info('REST server listening on %s', restServer.url);
 });
 
 // Start UDP server for Session and Connection events
