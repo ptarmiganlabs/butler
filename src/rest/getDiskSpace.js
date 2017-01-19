@@ -4,7 +4,6 @@ var disk = require('diskusage');
 // Function for handling /getDiskSpace REST endpoint
 module.exports.respondGetDiskSpace = function (req, res, next) {
     globals.logger.log('info', 'Get disk space: %s', req.params);
-    // console.info(req.params);
 
     // Windows: get disk usage. Takes path as first parameter
     disk.check(req.params.path, function(err, info) {

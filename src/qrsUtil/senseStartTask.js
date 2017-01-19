@@ -23,7 +23,6 @@ module.exports.senseStartTask = function (taskId) {
     // QRS config
 
     globals.logger.log('info', 'Starting task ' + taskId);
-    // console.info('Starting task ' + taskId);
     options.path = '/qrs/task/' + taskId + '/start?xrfkey=abcdefghijklmnop';
 
     https.get(options, function(res) {
@@ -31,10 +30,8 @@ module.exports.senseStartTask = function (taskId) {
         console.info('Got response: ' + res.statusCode);
         res.on('data', function(chunk) {
             globals.logger.log('info', 'BODY: ' + chunk);
-            // console.info('BODY: ' + chunk);  
         }); 
     }).on('error', function(e) {
         globals.logger.log('error', 'Got error: ' + e.message);
-        // console.error('Got error: ' + e.message);
     });
 };

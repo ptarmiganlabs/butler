@@ -18,11 +18,8 @@ module.exports.udpInitTaskErrorServer = function () {
         globals.logger.transports.console.level = 'info';
 
         globals.logger.log('info', 'UDP server listening on %s:%s', address.address, address.port);
-
         globals.logger.transports.console.level = oldLogLevel;
         
-        // console.info('UDP server listening on %s:%s', address.address, address.port);
-
         // Publish MQTT message that UDP server has started
         globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
     });
@@ -31,7 +28,6 @@ module.exports.udpInitTaskErrorServer = function () {
     globals.udpServerTaskFailureSocket.on('error', function(message, remote) {
         var address = globals.udpServerTaskFailureSocket.address();
         globals.logger.log('error', 'UDP server error on %s:%s', address.address, address.port);
-        // console.error('UDP server error on %s:%s', address.address, address.port);
 
         // Publish MQTT message that UDP server has reported an error
         globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
@@ -41,7 +37,6 @@ module.exports.udpInitTaskErrorServer = function () {
     globals.udpServerTaskFailureSocket.on('message', function(message, remote) {
         var msg = message.toString().split(';');
         globals.logger.log('warning', '%s: Task "%s" failed, associated with app "%s', msg[0], msg[1], msg[2], msg[3]);
-        // console.info('%s: Task "%s" failed, associated with app "%s', msg[0], msg[1], msg[2], msg[3]);
 
         // Post to Slack when a task has failed
         globals.slack.send({
@@ -72,10 +67,8 @@ module.exports.udpInitSessionConnectionServer = function () {
         globals.logger.transports.console.level = 'info';
 
         globals.logger.log('info', 'UDP server listening on %s:%s', address.address, address.port);
-
         globals.logger.transports.console.level = oldLogLevel;
 
-        // console.info('UDP server listening on %s:%s', address.address, address.port);
 
         // Publish MQTT message that UDP server has started
         globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'start');
@@ -86,7 +79,6 @@ module.exports.udpInitSessionConnectionServer = function () {
     globals.udpServerSessionConnectionSocket.on('error', function(message, remote) {
         var address = globals.udpServerSessionConnectionSocket.address();
         globals.logger.log('error', 'UDP server error on %s:%s', address.address, address.port);
-        // console.error('UDP server error on %s:%s', address.address, address.port);
 
         // Publish MQTT message that UDP server has reported an error
         globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'error');
@@ -96,7 +88,6 @@ module.exports.udpInitSessionConnectionServer = function () {
     globals.udpServerSessionConnectionSocket.on('message', function(message, remote) {
         var msg = message.toString().split(';');
         globals.logger.log('info', '%s: %s for user %s/%s', msg[0], msg[1], msg[2], msg[3]);
-        // console.info('%s: %s for user %s/%s', msg[0], msg[1], msg[2], msg[3]);
 
         // Send Slack message when session starts/stops, or a connection open/close
         globals.slack.send({

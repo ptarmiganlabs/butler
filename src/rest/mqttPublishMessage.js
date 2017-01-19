@@ -4,7 +4,6 @@ var globals = require('../globals');
 module.exports.respondMQTTPublishMessage = function (req, res, next) {
     // Use data in request to publish MQTT message
     globals.logger.log('info', req.params);
-    // console.info(req.params);
 
     globals.mqttClient.publish(req.params.topic, req.params.message);
 
