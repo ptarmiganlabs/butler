@@ -5,6 +5,7 @@
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
     "any-base": "^1.0.0",
+    "bluebird": "^3.4.7",
     "config": "^1.21.0",
     "dict": "^1.4.0",
     "fs-extra": "^2.0.0",

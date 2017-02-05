@@ -36,18 +36,22 @@ module.exports.udpInitTaskErrorServer = function () {
     // Main handler for UDP messages relating to failed tasks
     globals.udpServerTaskFailureSocket.on('message', function(message, remote) {
         var msg = message.toString().split(';');
-        globals.logger.log('warning', '%s: Task "%s" failed, associated with app "%s', msg[0], msg[1], msg[2], msg[3]);
 
-        // Post to Slack when a task has failed
-        globals.slack.send({
-            text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
-            channel: globals.config.get('Butler.slackConfig.taskFailureChannel'),
-            username: msg[0],
-            icon_emoji: ':ghost:'
-        });
+        if (msg[3].substring(0,27) == 'Message from ReloadProvider') {
+            // Message arrives as %hostname;%property{TaskName};%property{AppName};%message;%level
+            globals.logger.log('warn', '%s - %s: Task "%s" failed, associated with app "%s".', msg[0], msg[4], msg[1], msg[2], msg[3]);
 
-        // Publish MQTT message when a task has failed
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
+            // Post to Slack when a task has failed
+            globals.slack.send({
+                text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
+                channel: globals.config.get('Butler.slackConfig.taskFailureChannel'),
+                username: msg[0],
+                icon_emoji: ':ghost:'
+            });
+
+            // Publish MQTT message when a task has failed
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
+        }
     });
 
 };

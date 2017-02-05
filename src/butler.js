@@ -12,7 +12,7 @@ var udp = require('./udp');
 
 // Set default debug level
 // { error: 0, warn: 1, info: 2, verbose: 3, debug: 4, silly: 5 }
-globals.logger.transports.console.level = 'warn';
+globals.logger.transports.console.level = 'info';
 
 
 // ---------------------------------------------------
