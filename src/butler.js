@@ -30,7 +30,7 @@ restServer.get('/v2/activeUsers', rest.activeUsers.respondActiveUsers);
 restServer.get('/v2/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
 restServer.get('/v2/createDir', rest.createDir.respondCreateDir);
 restServer.get('/v2/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
-restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
+// restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
 restServer.get('/v2/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublishMessage);
 restServer.get('/v2/senseStartTask', rest.senseStartTask.respondSenseStartTask);
 //restServer.get('/v2/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
