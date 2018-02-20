@@ -1,6 +1,6 @@
 // Add dependencies
 var restify = require('restify');
-
+const corsMiddleware = require('restify-cors-middleware')
 
 // Load code from sub modules
 var globals = require('./globals');
@@ -21,8 +21,27 @@ var restServer = restify.createServer({
     name: 'Butler for Qlik Sense'
 });
 
-// Enable parsing of http parameters
-restServer.use(restify.queryParser());
+
+const cors = corsMiddleware({
+    preflightMaxAge: 5, //Optional
+    origins: ['*'],
+    allowHeaders: ['API-Token'],
+    exposeHeaders: ['API-Token-Expiry']
+})
+
+
+
+// Set up restify
+restServer.use(restify.plugins.queryParser({
+    mapParams: true
+})); // Parses the HTTP query string (i.e., /foo?id=bar&name=mark). 
+restServer.use(restify.plugins.fullResponse()); // sets up all of the default headers for the system
+restServer.use(restify.plugins.bodyParser()); // remaps the body content of a request to the req.params variable, allowing both GET and POST/PUT routes to use the same interface
+
+restServer.pre(cors.preflight)
+restServer.use(cors.actual)
+
+
 
 // Set up endpoints for REST server
 restServer.get('/v2/activeUserCount', rest.activeUserCount.respondActiveUserCount);
@@ -30,7 +49,7 @@ restServer.get('/v2/activeUsers', rest.activeUsers.respondActiveUsers);
 restServer.get('/v2/slackPostMessage', rest.slackPostMessage.respondSlackPostMessage);
 restServer.get('/v2/createDir', rest.createDir.respondCreateDir);
 restServer.get('/v2/createDirQVD', rest.createDirQVD.respondCreateDirQVD);
-restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
+//restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
 restServer.get('/v2/mqttPublishMessage', rest.mqttPublishMessage.respondMQTTPublishMessage);
 restServer.get('/v2/senseStartTask', rest.senseStartTask.respondSenseStartTask);
 //restServer.get('/v2/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
