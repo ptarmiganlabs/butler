@@ -1,4 +1,3 @@
-var globals = require('../globals');
 var config = require('config');
 
 var https = require('https');
@@ -20,6 +19,10 @@ var options = {
 
 // Function for starting Sense task, given its task ID (as it appears in the QMC task list)
 module.exports.senseStartTask = function (taskId) {
+
+    var globals = require('../globals');
+
+
     // QRS config
 
     globals.logger.log('info', 'Starting task ' + taskId);
@@ -28,13 +31,13 @@ module.exports.senseStartTask = function (taskId) {
 
     https.get(options, function(res) {
         globals.logger.log('info', 'Got response: ' + res.statusCode);
-        console.info('Got response: ' + res.statusCode);
+        // console.info('Got response: ' + res.statusCode);
         res.on('data', function(chunk) {
             globals.logger.log('info', 'BODY: ' + chunk);
             // console.info('BODY: ' + chunk);  
         }); 
     }).on('error', function(e) {
         globals.logger.log('error', 'Got error: ' + e.message);
-        // console.error('Got error: ' + e.message);
+        console.error('Got error: ' + e.message);
     });
 };
