@@ -32,7 +32,7 @@ Butler:
     rejectUnauthorized: 'false'
   configQRS:
     authentication: certificates
-    host: sense.ptarmiganlabs.net
+    host: sense1.ptarmiganlabs.local
     useSSL: true
     port: 4242
     headerKey: X-Qlik-User
@@ -44,3 +44,4 @@ Butler:
   gitHub:
     host: api.github.com
     pathPrefix: ''
+  
