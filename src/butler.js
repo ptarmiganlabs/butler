@@ -1,6 +1,6 @@
 // Add dependencies
 var restify = require('restify');
-const corsMiddleware = require('restify-cors-middleware')
+var corsMiddleware = require('restify-cors-middleware');
 
 // Load code from sub modules
 var globals = require('./globals');
@@ -22,12 +22,12 @@ var restServer = restify.createServer({
 });
 
 
-const cors = corsMiddleware({
+var cors = corsMiddleware({
     preflightMaxAge: 5, //Optional
     origins: ['*'],
     allowHeaders: ['API-Token'],
     exposeHeaders: ['API-Token-Expiry']
-})
+});
 
 
 
@@ -38,8 +38,8 @@ restServer.use(restify.plugins.queryParser({
 restServer.use(restify.plugins.fullResponse()); // sets up all of the default headers for the system
 restServer.use(restify.plugins.bodyParser()); // remaps the body content of a request to the req.params variable, allowing both GET and POST/PUT routes to use the same interface
 
-restServer.pre(cors.preflight)
-restServer.use(cors.actual)
+restServer.pre(cors.preflight);
+restServer.use(cors.actual);
 
 
 
