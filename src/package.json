@@ -4,25 +4,25 @@
   "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
+    "@octokit/rest": "^15.8.1",
     "any-base": "^1.0.0",
-    "config": "^1.21.0",
+    "config": "^1.30.0",
     "dict": "^1.4.0",
-    "fs-extra": "^5.0.0",
-    "github": "^13.1.0",
+    "fs-extra": "^6.0.1",
     "mkdirp": "^0.5.1",
-    "mqtt": "^2.15.3",
+    "mqtt": "^2.18.0",
     "node-slack": "0.0.7",
     "qrs": "^2.0.2",
     "qsocks": "^3.0.1",
-    "restify": "^6.3.4",
+    "restify": "^6.4.0",
     "restify-cors-middleware": "^1.1.0",
     "serializeapp": "^3.0.0",
-    "winston": "^2.3.0"
+    "winston": "^2.4.2"
   },
   "devDependencies": {
-    "eslint": "^4.18.0",
+    "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
-    "mocha": "*",
+    "mocha": "^5.2.0",
     "should": "*",
     "verb": "^0.8.10"
   },
