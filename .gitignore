@@ -1,5 +1,8 @@
 src/node_modules/*
 src/config/production.json
+src/config/production.yaml
+src/config/default.json
+src/config/default.yaml
 docs/*
 doc/*
 butler-docs/site/
