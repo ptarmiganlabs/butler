@@ -1,19 +1,22 @@
+// Load code from sub modules
 var globals = require('../globals');
+
 var mkdirp = require('mkdirp');
 
 // Function for handling /createDirQVD REST endpoint
 module.exports.respondCreateDirQVD = function (req, res, next) {
-    globals.logger.log('info', 'Creating dir: %s', req.params);
-    // console.info(req.params);
+    globals.logger.log('info', 'Creating dir: %s', req.query);
 
-    mkdirp(globals.qvdFolder + '/' + req.params.directory, function(err) {
+    mkdirp(globals.qvdFolder + '/' + req.query.directory, function (err) {
         // path was created unless there was error
-        globals.logger.log('error', 'created dir ' + req.params.directory);
-        globals.logger.log('error', err);
-        // console.info(err);
-        // console.info('created QVD dir ' + req.params.directory);
+        if (err) {
+            globals.logger.log('error', 'Error while creating dir ' + req.query.directory + ': ' + err);
+        } else {
+            globals.logger.log('verbose', 'Created dir ' + req.query.directory);
+
+        }
     });
 
-    res.send(req.params);
+    res.send(req.query);
     next();
 };
