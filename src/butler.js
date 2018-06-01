@@ -35,10 +35,10 @@ const cors = corsMiddleware({
     origins: ['*'],
     allowHeaders: ['API-Token'],
     exposeHeaders: ['API-Token-Expiry']
-})
+});
 
-restServer.pre(cors.preflight)
-restServer.use(cors.actual)
+restServer.pre(cors.preflight);
+restServer.use(cors.actual);
 
 // Set up endpoints for REST server
 //restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);

@@ -54,16 +54,16 @@ var configEngine = {
 
 
 // QRS config
-var configQRS = {
+const configQRS = {
     authentication: config.get('Butler.configQRS.authentication'),
     host: config.get('Butler.configQRS.host'),
     port: config.get('Butler.configQRS.port'),
     useSSL: config.get('Butler.configQRS.useSSL'),
     headerKey: config.get('Butler.configQRS.headerKey'),
     headerValue: config.get('Butler.configQRS.headerValue'),
-    cert: config.get('Butler.configQRS.cert'),
-    key: config.get('Butler.configQRS.key'),
-    ca: config.get('Butler.configQRS.ca')
+    cert: readCert(config.get('Butler.configQRS.cert')),
+    key: readCert(config.get('Butler.configQRS.key')),
+    ca: readCert(config.get('Butler.configQRS.ca'))
 };
 
 // ------------------------------------
