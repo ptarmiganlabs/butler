@@ -1,7 +1,7 @@
 var globals = require('../globals');
 
-var enigma = require('enigma.js');
-var WebSocket = require('ws');
+const enigma = require('enigma.js');
+const WebSocket = require('ws');
 
 
 // Set up enigma.js configuration

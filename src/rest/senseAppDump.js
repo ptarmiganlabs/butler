@@ -1,45 +1,73 @@
 var globals = require('../globals');
-// var serializeApp = require('serializeapp');
+var serializeApp = require('serializeapp');
+
+const enigma = require('enigma.js');
+const WebSocket = require('ws');
+
+
+// Set up enigma.js configuration
+const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
 
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
     globals.logger.log('info', 'Dumping app: ' + req.query.appId);
     // console.info('Dumping app: ' + req.query.appId);
 
-    // qsocks.Connect(globals.configEngine).then(function (global) {
-    //     global.openDoc(req.query.appId, '', '', '', true)
-    //         .then(function (app) {
-    //             return serializeApp(app);
-    //         })
-    //         .then(function (data) {
-    //             var d = data;
+    // create a new session
+    const configEnigma = {
+        schema: qixSchema,
+        url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
+        createSocket: url => new WebSocket(url, {
+            key: globals.configEngine.key,
+            cert: globals.configEngine.cert,
+            headers: {
+                'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
+            },
+            rejectUnauthorized: false
+        }),
+    };
 
-    //             // Close connection to Sense server
-    //             try {
-    //                 global.connection.ws.close();
-    //             } catch (ex) {
-    //                 globals.logger.log('error', ex);
-    //                 // console.error(ex);
-    //             }
+    var session = enigma.create(configEnigma);
+    session.open()
+        .then((global) => {
 
-    //             res.send(d);
-    //         })
-    //         .catch(function (error) {
-    //             globals.logger.log('error', error);
-    //             // console.error(error);
+            // We can now interact with the global object, for example get the document list.
+            // Please refer to the Engine API documentation for available methods.
 
-    //             try {
-    //                 global.connection.ws.close();
-    //             } catch (ex) {
-    //                 globals.logger.log('error', ex);
-    //                 // console.error(ex);
-    //             }
+            global.openDoc(req.query.appId, '', '', '', true)
+                .then(function (app) {
+                    return serializeApp(app);
+                })
+                .then(function (data) {
+                    var d = data;
 
-    //             res.send(error);
-    //             return next(error);
-    //         });
+                    // Close connection to Sense server
+                    try {
+                        session.close();
+                    } catch (ex) {
+                        globals.logger.log('error', ex);
+                        // console.error(ex);
+                    }
 
-    //     return next();
-    // });
+                    res.send(d);
+                })
+                .catch(function (error) {
+                    globals.logger.log('error', error);
+                    // console.error(error);
+
+                    try {
+                        session.close();
+                    } catch (ex) {
+                        globals.logger.log('error', ex);
+                        // console.error(ex);
+                    }
+
+                    res.send(error);
+                    return next(error);
+                });
+
+            return next();
+
+        });
 
 };
