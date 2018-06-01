@@ -8,8 +8,8 @@ module.exports.respondActiveUsers = function (req, res, next) {
         activeUsers.push(key);
     });
 
-    req.params.response = JSON.stringify(activeUsers);
+    req.query.response = JSON.stringify(activeUsers);
 
-    res.send(req.params);
+    res.send(req.query);
     next();
 };

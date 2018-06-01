@@ -6,7 +6,7 @@ module.exports.respondSlackPostMessage = function (req, res, next) {
     globals.logger.log('info', req.query);
     // console.info(req.query);
 
-    globals.slack.send({
+    globals.slackObj.send({
         text: req.query.msg,
         channel: req.query.channel,
         username: req.query.from_user,

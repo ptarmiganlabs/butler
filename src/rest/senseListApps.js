@@ -2,7 +2,6 @@ var globals = require('../globals');
 
 var enigma = require('enigma.js');
 var WebSocket = require('ws');
-var fs = require('fs-extra');
 
 
 // Set up enigma.js configuration

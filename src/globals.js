@@ -22,7 +22,7 @@ var logger = new(winston.Logger)({
 var github = new gitHubApi({
     debug: false,
     headers: {
-        "user-agent": "Butler-Sense-App" // GitHub is happy with a unique user agent 
+        'user-agent': 'Butler-Sense-App' // GitHub is happy with a unique user agent 
     },
     timeout: 5000
 });
@@ -73,7 +73,7 @@ var slackLoginNotificationChannel = config.get('Butler.slackConfig.loginNotifica
 var slackTaskFailureChannel = config.get('Butler.slackConfig.taskFailureChannel');
 
 // Create Slack object
-var slack = new slack(slackWebhookURL);
+var slackObj = new slack(slackWebhookURL);
 
 
 // ------------------------------------
@@ -100,14 +100,14 @@ var udp_host = config.get('Butler.udpServerConfig.serverIP');
 
 // Prepare to listen on port X for incoming UDP connections regarding session starting/stoping, or connection opening/closing
 var udpServerSessionConnectionSocket = dgram.createSocket({
-    type: "udp4",
+    type: 'udp4',
     reuseAddr: true
 });
 var udp_port_session_connection = config.get('Butler.udpServerConfig.portSessionConnectionEvents');
 
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
 var udpServerTaskFailureSocket = dgram.createSocket({
-    type: "udp4",
+    type: 'udp4',
     reuseAddr: true
 });
 var udp_port_take_failure = config.get('Butler.udpServerConfig.portTaskFailure');
