@@ -8,9 +8,12 @@ var gitHubApi = require('@octokit/rest');
 var winston = require('winston');
 
 // Set up default log format for Winston logger
-var logger = new (winston.Logger) ({
+var logger = new(winston.Logger)({
     transports: [
-      new (winston.transports.Console)({'timestamp': true, 'colorize': true})
+        new(winston.transports.Console)({
+            'timestamp': true,
+            'colorize': true
+        })
     ]
 });
 
@@ -32,30 +35,35 @@ var github = new gitHubApi({
 // Load our own libs
 var qrsUtil = require('./qrsUtil');
 
+// Helper function to read the contents of the certificate files:
+// const readCert = filename => fs.readFileSync(path.resolve(__dirname, certificatesPath, filename));
+const readCert = filename => fs.readFileSync(filename);
+
 
 //  Engine config
 var configEngine = {
-  host: config.get('Butler.configEngine.server'),
-  port: config.get('Butler.configEngine.serverPort'),
-  isSecure: config.get('Butler.configEngine.isSecure'),
-  headers: config.get('Butler.configEngine.headers'),
-  cert: fs.readFileSync(config.get('Butler.configEngine.cert')),
-  key: fs.readFileSync(config.get('Butler.configEngine.key')),
-  rejectUnauthorized: config.get('Butler.configEngine.rejectUnauthorized')
+    engineVersion: config.get('Butler.configEngine.engineVersion'),
+    host: config.get('Butler.configEngine.server'),
+    port: config.get('Butler.configEngine.serverPort'),
+    isSecure: config.get('Butler.configEngine.isSecure'),
+    headers: config.get('Butler.configEngine.headers'),
+    cert: readCert(config.get('Butler.configEngine.cert')),
+    key: readCert(config.get('Butler.configEngine.key')),
+    rejectUnauthorized: config.get('Butler.configEngine.rejectUnauthorized')
 };
 
 
 // QRS config
 var configQRS = {
-  authentication: config.get('Butler.configQRS.authentication'),
-  host: config.get('Butler.configQRS.host'),
-  port: config.get('Butler.configQRS.port'),
-  useSSL: config.get('Butler.configQRS.useSSL'),
-  headerKey: config.get('Butler.configQRS.headerKey'),
-  headerValue: config.get('Butler.configQRS.headerValue'),
-  cert: config.get('Butler.configQRS.cert'),
-  key: config.get('Butler.configQRS.key'),
-  ca: config.get('Butler.configQRS.ca')
+    authentication: config.get('Butler.configQRS.authentication'),
+    host: config.get('Butler.configQRS.host'),
+    port: config.get('Butler.configQRS.port'),
+    useSSL: config.get('Butler.configQRS.useSSL'),
+    headerKey: config.get('Butler.configQRS.headerKey'),
+    headerValue: config.get('Butler.configQRS.headerValue'),
+    cert: config.get('Butler.configQRS.cert'),
+    key: config.get('Butler.configQRS.key'),
+    ca: config.get('Butler.configQRS.ca')
 };
 
 // ------------------------------------
@@ -91,11 +99,17 @@ var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
 var udp_host = config.get('Butler.udpServerConfig.serverIP');
 
 // Prepare to listen on port X for incoming UDP connections regarding session starting/stoping, or connection opening/closing
-var udpServerSessionConnectionSocket = dgram.createSocket({type:"udp4", reuseAddr:true});
+var udpServerSessionConnectionSocket = dgram.createSocket({
+    type: "udp4",
+    reuseAddr: true
+});
 var udp_port_session_connection = config.get('Butler.udpServerConfig.portSessionConnectionEvents');
 
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-var udpServerTaskFailureSocket = dgram.createSocket({type:"udp4", reuseAddr:true});
+var udpServerTaskFailureSocket = dgram.createSocket({
+    type: "udp4",
+    reuseAddr: true
+});
 var udp_port_take_failure = config.get('Butler.udpServerConfig.portTaskFailure');
 
 
@@ -105,22 +119,22 @@ var qvdFolder = config.get('Butler.qvdPath');
 
 
 module.exports = {
-  config,
-  qrsUtil,
-  configEngine,
-  configQRS,
-  slack,
-  slackLoginNotificationChannel,
-  slackTaskFailureChannel,
-  currentUsers,
-  currentUsersPerServer,
-  udpServerSessionConnectionSocket,
-  udpServerTaskFailureSocket,
-  udp_host,
-  udp_port_session_connection,
-  udp_port_take_failure,
-  mqttClient,
-  qvdFolder,
-  github,
-  logger
+    config,
+    qrsUtil,
+    configEngine,
+    configQRS,
+    slack,
+    slackLoginNotificationChannel,
+    slackTaskFailureChannel,
+    currentUsers,
+    currentUsersPerServer,
+    udpServerSessionConnectionSocket,
+    udpServerTaskFailureSocket,
+    udp_host,
+    udp_port_session_connection,
+    udp_port_take_failure,
+    mqttClient,
+    qvdFolder,
+    github,
+    logger
 };

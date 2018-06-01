@@ -1,40 +1,65 @@
 var globals = require('../globals');
-var qsocks = require('qsocks');
+
+var enigma = require('enigma.js');
+var WebSocket = require('ws');
+var fs = require('fs-extra');
+
+
+// Set up enigma.js configuration
+const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
+
 
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
     globals.logger.log('info', 'Getting list of all apps');
     // console.info('Getting list of all apps');
 
-    qsocks.Connect(globals.configEngine).then(function (global) {
+    // create a new session
+    const configEnigma = {
+        schema: qixSchema,
+        url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
+        createSocket: url => new WebSocket(url, {
+            key: globals.configEngine.key,
+            cert: globals.configEngine.cert,
+            headers: {
+                'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
+            },
+            rejectUnauthorized: false
+        }),
+    };
 
-        //We can now interact with the global class, for example fetch the document list.
-        //qsocks mimics the Engine API, refer to the Engine API documentation for available methods.
-        global.getDocList().then(function (docList) {
-                var jsonArray = [];
-                docList.forEach(function (doc) {
-                    jsonArray = jsonArray.concat([{
-                        'id': doc.qDocId.toString(),
-                        'name': doc.qDocName.toString()
-                    }]);
+    var session = enigma.create(configEnigma);
+    session.open()
+        .then((global) => {
+
+            // We can now interact with the global object, for example get the document list.
+            // Please refer to the Engine API documentation for available methods.
+            // Note: getting a list of all apps could also be done using QRS
+            global.getDocList()
+                .then(function (docList) {
+                    var jsonArray = [];
+                    docList.forEach(function (doc) {
+                        jsonArray = jsonArray.concat([{
+                            'id': doc.qDocId.toString(),
+                            'name': doc.qDocName.toString()
+                        }]);
+                    });
+
+                    res.send(jsonArray);
+
+                    // Close connection to Sense server
+                    try {
+                        session.close();
+                    } catch (ex) {
+                        globals.logger.log('error', ex);
+                        next();
+                    }
+                })
+                .catch(function (error) {
+                    globals.logger.log('error', error);
                 });
 
-                res.send(jsonArray);
+            next();
+        });
 
-                // Close connection to Sense server
-                try {
-                    global.connection.ws.close();
-                } catch (ex) {
-                    globals.logger.log('error', ex);
-                    // console.error(ex);
-                    next();
-                }
-            })
-            .catch(function (error) {
-                globals.logger.log('error', error);
-                // console.error();(error);
-            });
-
-        next();
-    });
 };
