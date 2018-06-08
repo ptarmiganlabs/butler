@@ -84,7 +84,10 @@ var currentUsersPerServer = dict();
 
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker
-var mqttClient = mqtt.connect('mqtt://' + config.get('Butler.mqttConfig.brokerIP'));
+var mqttClient = mqtt.connect({host: 'mqtt://' + config.get('Butler.mqttConfig.brokerIP'), port: config.get('Butler.mqttConfig.brokerPort')});
+if (!mqttClient.connected) {
+    logger.log('warning', 'Failed connecting to MQTT server %s:%s', config.get('Butler.mqttConfig.brokerIP'), config.get('Butler.mqttConfig.brokerPort'));
+}
 /*
 Following might be needed for conecting to older Mosquitto versions
 var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
