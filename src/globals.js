@@ -123,7 +123,7 @@ module.exports = {
     qrsUtil,
     configEngine,
     configQRS,
-    slack,
+    slackObj,
     slackLoginNotificationChannel,
     slackTaskFailureChannel,
     currentUsers,
