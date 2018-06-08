@@ -5,7 +5,7 @@ Butler:
     loginNotificationChannel: sense-user-activity
     taskFailureChannel: sense-task-failure
   mqttConfig:
-    brokerIP: <FQDN or IP of MQTT server>
+    brokerHost: <FQDN or IP of MQTT server>
     brokerPort: 1883
     taskFailureTopic: qliksense/task_failure
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
