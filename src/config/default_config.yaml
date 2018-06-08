@@ -6,6 +6,7 @@ Butler:
     taskFailureChannel: sense-task-failure
   mqttConfig:
     brokerIP: <FQDN or IP of MQTT server>
+    brokerPort: 1883
     taskFailureTopic: qliksense/task_failure
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
     sessionStartTopic: qliksense/session/start
@@ -22,6 +23,7 @@ Butler:
   restServerConfig:
     serverPort: 8080
   configEngine:
+    engineVersion: 12.20.0        # Qlik Associative Engine version to use with Enigma.js
     server: <FQDN or IP of Sense server where Sense Engine is running>
     serverPort: '<Port to connect to, usually 4747>'
     isSecure: 'true'
