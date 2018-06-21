@@ -4,7 +4,6 @@ var config = require('config');
 var dgram = require('dgram');
 var fs = require('fs-extra');
 var dict = require('dict');
-var gitHubApi = require('@octokit/rest');
 var winston = require('winston');
 
 // Set up default log format for Winston logger
@@ -17,20 +16,6 @@ var logger = new(winston.Logger)({
     ]
 });
 
-
-// GitHub access
-var github = new gitHubApi({
-    debug: false,
-    headers: {
-        'user-agent': 'Butler-Sense-App' // GitHub is happy with a unique user agent 
-    },
-    timeout: 5000
-});
-// protocol: "https",
-// host: config.get('Butler.gitHub.host'),
-// pathPrefix: config.get('Butler.gitHub.pathPrefix'),  
-// Promise: require('bluebird'),
-// followRedirects: false, // default: true; there's currently an issue with non-get redirects, so allow ability to disable follow-redirects 
 
 // Load our own libs
 var qrsUtil = require('./qrsUtil');
@@ -81,13 +66,15 @@ var slackObj = new slack(slackWebhookURL);
 var currentUsers = dict();
 var currentUsersPerServer = dict();
 
-
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker
-var mqttClient = mqtt.connect({host: 'mqtt://' + config.get('Butler.mqttConfig.brokerIP'), port: config.get('Butler.mqttConfig.brokerPort')});
-if (!mqttClient.connected) {
-    logger.log('warning', 'Failed connecting to MQTT server %s:%s', config.get('Butler.mqttConfig.brokerIP'), config.get('Butler.mqttConfig.brokerPort'));
-}
+
+var mqttOptions = {
+    host: config.get('Butler.mqttConfig.brokerIP'),
+    port: config.get('Butler.mqttConfig.brokerPort')
+};
+
+var mqttClient = mqtt.connect(mqttOptions);
 /*
 Following might be needed for conecting to older Mosquitto versions
 var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
@@ -138,6 +125,5 @@ module.exports = {
     udp_port_take_failure,
     mqttClient,
     qvdFolder,
-    github,
     logger
 };
