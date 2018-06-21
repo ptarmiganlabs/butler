@@ -2,6 +2,8 @@
 
 > Proxy app for carrying out features that Qlik Sense cannot do out of the box.
 
+[![Known Vulnerabilities](https://snyk.io/test/github/ptarmiganlabs/butler/badge.svg?targetFile=src%2Fpackage.json)](https://snyk.io/test/github/ptarmiganlabs/butler?targetFile=src%2Fpackage.json)
+
 ## Overview
 
 Node.js based proxy app providing various add-on features to Qlik Sense, such as starting reload tasks or posting to Slack from the load script, keeping track of currently active users and much more.  
