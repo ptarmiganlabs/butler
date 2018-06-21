@@ -44,7 +44,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // console.info('%s: Task "%s" failed, associated with app "%s', msg[0], msg[1], msg[2], msg[3]);
 
         // Post to Slack when a task has failed
-        globals.slack.send({
+        globals.slackObj.send({
             text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
             channel: globals.config.get('Butler.slackConfig.taskFailureChannel'),
             username: msg[0],
@@ -99,7 +99,7 @@ module.exports.udpInitSessionConnectionServer = function () {
         // console.info('%s: %s for user %s/%s', msg[0], msg[1], msg[2], msg[3]);
 
         // Send Slack message when session starts/stops, or a connection open/close
-        globals.slack.send({
+        globals.slackObj.send({
             text: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
             channel: globals.config.get('Butler.slackConfig.loginNotificationChannel'),
             username: msg[0],
