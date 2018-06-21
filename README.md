@@ -10,6 +10,13 @@ The app started out as a way of posting to [Slack](https://slack.com/) from [Qli
 
 Full documenation available [here](https://ptarmiganlabs.github.io/butler).
 
+
+## Version history
+
+Available in the [changelog file](changelog.md).
+
+
+
 ## Main features
 * Integration with MQTT pub-sub protocol
 * Sending messages to [Slack](https://slack.com) instant messaging system
