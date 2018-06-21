@@ -70,7 +70,7 @@ var currentUsersPerServer = dict();
 // Create MQTT client object and connect to MQTT broker
 
 var mqttOptions = {
-    host: config.get('Butler.mqttConfig.brokerIP'),
+    host: config.get('Butler.mqttConfig.brokerHost'),
     port: config.get('Butler.mqttConfig.brokerPort')
 };
 

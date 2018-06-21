@@ -11,13 +11,13 @@ module.exports.mqttInitHandlers = function () {
         var oldLogLevel = globals.logger.transports.console.level;
         globals.logger.transports.console.level = 'info';
 
-        globals.logger.log('info', 'Connected to MQTT server %s:%s, with client ID %s', globals.config.get('Butler.mqttConfig.brokerIP'), globals.config.get('Butler.mqttConfig.brokerPort'), globals.mqttClient.options.clientId);
+        globals.logger.log('info', 'Connected to MQTT server %s:%s, with client ID %s', globals.config.get('Butler.mqttConfig.brokerHost'), globals.config.get('Butler.mqttConfig.brokerPort'), globals.mqttClient.options.clientId);
 
         globals.logger.transports.console.level = oldLogLevel;
 
         // Let the world know that Butler is connected to MQTT
         // console.info('Connected to MQTT broker');
-        globals.mqttClient.publish('qliksense/butler/mqtt/status', 'Connected to MQTT broker ' + globals.config.get('Butler.mqttConfig.brokerIP') + ':' + globals.config.get('Butler.mqttConfig.brokerPort') + ' with client ID ' + globals.mqttClient.options.clientId);
+        globals.mqttClient.publish('qliksense/butler/mqtt/status', 'Connected to MQTT broker ' + globals.config.get('Butler.mqttConfig.brokerHost') + ':' + globals.config.get('Butler.mqttConfig.brokerPort') + ' with client ID ' + globals.mqttClient.options.clientId);
        
         // Have Butler listen to all messages in the qliksense/ subtree
         globals.mqttClient.subscribe('qliksense/#');
