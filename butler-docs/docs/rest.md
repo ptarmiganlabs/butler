@@ -74,12 +74,6 @@ This allows Butler to support multiple versions, and old versions to be (possibl
       Example    : curl http://<FQDN or IP of Butler>:8080/v2/createDirQVD?directory=abc/def
       Returns    : {"directory":"abc/def"}
 
-### /v2/getDiskSpace
-      Purpose    : Get free space information for all disks connected to the server where Butler is running.
-      Parameters : path
-      Returns    : curl http://<FQDN or IP of Butler>:8080/v2/getDiskSpace?path=z:/
-      Example    : {"path":"z:/","available":<number>,"free":<number>,"total":<number>}
-
 ### /v2/mqttPublishMessage
       Purpose    : Publish a message to a MQTT topic, using a MQTT broker defined in the Butler config file
       Parameters : topic, message

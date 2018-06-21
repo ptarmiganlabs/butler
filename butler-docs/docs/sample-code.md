@@ -95,44 +95,9 @@ To dynamically control which app is serialized you can use the "with connection"
     ...
 
 
-Here is what the Sense data model looks like for a Sense 2.2.4 app:
+Here is what the Sense data model can look like for a Sense app:
 
 ![alt text](img/data_model_of_a_qlik_sense_app.png "Qlik Sense app data model")  
-
-
-### Get free disk space
-
-Create a data connection (for example "Free disk space") using the REST connector, against http://<FQDN or IP of Butler server>:8080/getDiskSpace  
-Use the "with connection..." syntax to specify in the script which drive/path to check available disk space for.
-
-By using this connector, it is easy to create a basic disk status check in load scripts. 
-If disk space is running low, a message could be posted to a Slack channel, pinging a system administrator etc.
-
-
-    let vPath='d:\';
-
-    LIB CONNECT TO 'Free disk space';
-
-    RestConnectorMasterTable:
-    SQL SELECT 
-        "path",
-        "available",
-        "free",
-        "total"
-    FROM JSON (wrap on) "root"
-        WITH CONNECTION (
-        QUERY "path" "$(vPath)")
-    ;
-
-    FreeDiskSpace:
-    LOAD	
-        path,
-        available,
-        free,
-        [total]
-    RESIDENT RestConnectorMasterTable;
-
-    DROP TABLE RestConnectorMasterTable;  
 
 
 ## Use MQTT to start Sense tasks

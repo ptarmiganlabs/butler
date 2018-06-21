@@ -23,7 +23,7 @@ The app started out as a way of posting to [Slack](https://slack.com/) from Qlik
 | `/v2/butlerPing` | Checks if Butler is running |  
 | `/v2/createDir` | Create directories (anywhere in the file system) on the server where Butler is running |  
 | `/v2/createDirQVD` | Create directories (relative to a hard coded path) on the server where Butler is running |  
-| `/v2/getDiskSpace` | Check available disk space |  
+| <strike>`/v2/getDiskSpace`<strike> | <strike>Check available disk space</strike><br>Removed in v2.1 due to difficulties getting consistent behaviour across Windows, Linux and Mac OS |  
 | `/v2/mqttPublishMessage` | Publish message to MQTT topic |  
 | `/v2/senseAppDump` | Retrieves metadata (load script etc) about a Sense app |  
 | `/v2/senseListApps` | List name and GUID of all Sense apps in the system |  

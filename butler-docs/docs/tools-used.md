@@ -13,8 +13,7 @@ On a high level, Butler development is done on OSX, using [Visual Studio Code](h
 * Command line parameter parsing in node.js: [yargs](https://github.com/yargs/yargs)
 * MkDocs for creating doc site: [MkDocs](http://www.mkdocs.org/)
 * GitHub Pages (github.io) for hosting docs. Pushing docs to github.io: `mkdocs gh-deploy --clean`
-* [node-windows](https://www.npmjs.com/package/node-windows) for auto-starting Butler after server reboot.  
-  Autostarting node apps on Windows is tricky... node-windows makes it relatively easy though.
+* [PM2](http://pm2.keymetrics.io) for auto-starting Butler after server reboot.
 
 ## Documentation
 The main documentation is built using [MkDocs](http://www.mkdocs.org/).

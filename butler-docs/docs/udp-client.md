@@ -6,18 +6,23 @@ The client is built using node.js, and is found in the src/udp_client directory.
 
 Run the app to show its help text (in this case the UDP client is executed from a Mac):
 
-    $ node udp_client.js
-    Butler UDP client test app
 
-    Options:
-      --about, -a  This app sends messages to the UDP server(s) built into Butler
-                   (or any other UDP server)
-      --ip, -i     IP address of UDP server message will be sent to       [required]
-      --port, -p   Port on UDP server                            [number] [required]
-      --msg, -m    Message to send                         [default: "Test message"]
 
-    Missing required arguments: ip, port
-    $
+	$ node udp_client.js
+	Usage: node udp_client.js [options]
+	
+	This app sends messages to the UDP server(s) built into Butler (or any other UDP
+	server)
+	
+	Options:
+	  --version   Show version number                                      [boolean]
+	  -i, --ip    IP address of UDP server message will be sent to        [required]
+	  -p, --port  Port on UDP server                                      [required]
+	  -m, --msg   Message to send                          [default: "Test message"]
+	  -h, --help  Show help                                                [boolean]
+	
+	Missing required arguments: i, p
+	$
 
 
 ## Testing the session start/stop, connection open/close UDP server

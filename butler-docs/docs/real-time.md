@@ -8,7 +8,9 @@ There is however a downside to this approach.
 When Butler is first started, it will not know what sessions are currently active. Instead, it will collect that inforamation as time passes.  
 This means that the active user count, as well as what specific users are active, might be incorrect when Butler is first started. 
 The data will then become more and more exact as users end their sessions, and later restart them (Butler will then capture the session restart, and update its data structures accordingly).
-  
+
+If there are demands for enterprise grade monitoring of a Qlik Sense environment, the [Butler SOS](https://github.com/ptarmiganlabs/butler-sos) tool focuses exclusively on this and might be worth looking into.
+
 ## Active users data as MQTT messages
 
 Butler publishes a set of MQTT messages relating to active sessions.  
