@@ -23,7 +23,7 @@ Butler:
   restServerConfig:
     serverPort: 8080
   configEngine:
-    engineVersion: 12.20.0        # Qlik Associative Engine version to use with Enigma.js
+    engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js
     server: <FQDN or IP of Sense server where Sense Engine is running>
     serverPort: <Port to connect to, usually 4747>
     isSecure: true
