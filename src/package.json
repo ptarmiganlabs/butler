@@ -24,7 +24,7 @@
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "mocha": "^5.2.0",
-    "should": "*"
+    "should": "^13.2.3"
   },
   "homepage": "https://github.com/mountaindude/qliksensebutler",
   "author": "Göran Sander (https://ptarmiganlabs.com)",
