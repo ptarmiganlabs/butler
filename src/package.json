@@ -17,7 +17,7 @@
     "restify-cors-middleware": "^1.1.1",
     "serializeapp": "^3.0.0",
     "winston": "^2.4.2",
-    "ws": "^5.2.0"
+    "ws": "^6.0.0"
   },
   "devDependencies": {
     "eslint": "^5.6.0",
