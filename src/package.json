@@ -5,7 +5,7 @@
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
     "any-base": "^1.1.0",
-    "config": "^1.30.0",
+    "config": "^2.0.1",
     "dict": "^1.4.0",
     "enigma.js": "^2.3.0",
     "fs-extra": "^7.0.0",
