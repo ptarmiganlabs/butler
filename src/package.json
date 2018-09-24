@@ -12,6 +12,7 @@
     "mkdirp": "^0.5.1",
     "mqtt": "^2.18.1",
     "node-slack": "0.0.7",
+    "promise": "^8.0.2",
     "qrs-interact": "^3.0.1",
     "restify": "^6.4.0",
     "restify-cors-middleware": "^1.1.1",
