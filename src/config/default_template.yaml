@@ -25,13 +25,13 @@ Butler:
   configEngine:
     engineVersion: 12.20.0        # Qlik Associative Engine version to use with Enigma.js
     server: <FQDN or IP of Sense server where Sense Engine is running>
-    serverPort: '<Port to connect to, usually 4747>'
-    isSecure: 'true'
+    serverPort: <Port to connect to, usually 4747>
+    isSecure: true
     headers:
       X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
     cert: <Path to cert file>
     key: <Path to key file>
-    rejectUnauthorized: 'false'
+    rejectUnauthorized: false
   configQRS:
     authentication: certificates
     host: <FQDN or IP of Sense server where QRS is running>

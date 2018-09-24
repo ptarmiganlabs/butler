@@ -3,6 +3,8 @@ src/config/production.json
 src/config/production.yaml
 src/config/default.json
 src/config/default.yaml
+src/config/development.yaml
+src/config/development.json
 docs/*
 doc/*
 butler-docs/site/
