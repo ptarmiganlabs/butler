@@ -1,6 +1,6 @@
 {
   "name": "Butler",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {
@@ -25,11 +25,11 @@
     "mocha": "^5.2.0",
     "should": "^13.2.3"
   },
-  "homepage": "https://github.com/mountaindude/qliksensebutler",
+  "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander (https://ptarmiganlabs.com)",
-  "repository": "mountaindude/qliksensebutler",
+  "repository": "ptarmiganlabs/butler",
   "bugs": {
-    "url": "https://github.com/mountaindude/qliksensebutler/issues"
+    "url": "https://github.com/ptarmiganlabs/butler/issues"
   },
   "license": "MIT",
   "files": [
