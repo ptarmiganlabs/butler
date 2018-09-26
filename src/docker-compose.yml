@@ -1,0 +1,18 @@
+# docker-compose.yml
+version: '2.2'
+services:
+  verisure-mqtt:
+    image: ptarmiganlabs/butler:latest
+    container_name: butler
+    restart: always
+    ports:
+      - "8180:8080"     # REST API available on port 8180 to services outside the container
+      - "9997:9997"     # UDP port for session connection events
+      - "9998:9998"     # UDP port for task failure events
+    volumes:
+      # Make config file accessible outside of container
+      - "./config:/nodeapp/config"
+    environment:
+      - "NODE_ENV=production"
+    logging:
+      driver: json-file
