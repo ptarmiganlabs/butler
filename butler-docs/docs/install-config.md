@@ -14,8 +14,8 @@ If you opt to run Butler nateively on Node.js installed on a computer, the follo
 
 ## Running on Docker
 
-If you have access or can set up a Docker runtime environment, this is by far the preferred solution for running Butler. 
-Installation is less error prone that installing Butler natively, you get all the benefits from the Docker ecosystem (monitoring of running containers etc), and upgrades to future Butler versions become trivial.
+If you have access or can set up a Docker runtime environment, this is by far the preferred solution for running Butler.  
+Installation is less error prone compared to installing Butler natively, you get all the benefits from the Docker ecosystem (monitoring of running containers etc), and upgrades to future Butler versions become trivial.
 
 | What | Comment |  
 | ---- | ------- |  
@@ -31,7 +31,6 @@ Butler has been succesfully used - both during development and production use - 
 # Installation
 
 Below are the general steps needed to install Butler. Please note that you might need to adapt these to your particular system configuration.  
-
 
 ## Install on native Node.js
 
@@ -69,8 +68,7 @@ Butler has been developed and tested using [Mosquitto](https://mosquitto.org/) r
 
 The following steps should give some guidance on how to get Butler running on Docker.
 
-
-```bash 
+```bash
 proton:~ goran$ mkdir /Users/goran/butler
 proton:~ goran$ cd /Users/goran/butler
 proton:butler goran$ mkdir -p config/certificate
@@ -110,7 +108,7 @@ proton:butler goran$
 
 ```
 
-At this point you should 
+At this point you should
 
 1. copy the certificates that you have exported from the Qlik Sense QMC, and
 2. copy the [template config file](https://github.com/ptarmiganlabs/butler/blob/master/src/config/default_template.yaml) from the GitHub repository to the ./config directory, modify it as needed based on your system(s), and rename it to production.yaml.
@@ -174,7 +172,7 @@ proton:~ goran$
 
 ```
 
-Nice, looking good. 
+Nice, looking good.
 
 In the terminal where you ran docker-compose, you will see a new line saying that a app list was retrieved:
 
