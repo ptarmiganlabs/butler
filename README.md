@@ -12,6 +12,9 @@ The app started out as a way of posting to [Slack](https://slack.com/) from [Qli
 
 This tool/micro service is one of several tools in the wider [Butler family of tools](https://github.com/ptarmiganlabs) for enhancing Qlik Sense with new capabilities.
 
+As of version 2.1.2, this repository includes files and instructions for running Butler in a Docker container.  
+This makes is vastly easier to install, run and upgrade Butler when new versions become available. It also means you don't have to install any new, native software on your servers (assuming you already have a Docker runtime environment somewhere).
+
 ## Version history
 
 Available in the [changelog file](changelog.md).
