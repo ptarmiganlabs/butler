@@ -187,8 +187,6 @@ butler           | 2018-09-26T14:43:05.381Z - info: Getting list of all apps
 
 ```
 
-
-
 # Security considerations
 
 * You should make sure to configure the firewall of the server where Buter is running, so it only accepts connections from the desired clients/IP addresses.
@@ -291,7 +289,6 @@ Future versions may make MQTT, Slack and other similar channels optional, using 
 The files to use are `client.pem` and `client_key.pem`. The config file can point straight to these files.  
 Or export a new client cert/keys from the QMC and use these with Butler.
 
-
 # log4net extender config files
 
 Butler includes a couple of xml files that when deployed to the Sense server will create real-time UDP messages for certain events (tasks failing, user sessions starting/ending etc).  
@@ -307,6 +304,6 @@ These xml files should be deployed as follows:
 
 # Customisation
 
-As Butler offers a rather diverse set of features, everyone might not need all features. There is no single config file in which individual features can be turned on/off, 
-but given the structure of the Butler source code it is relatively easy to disable speciifc features, or add new ones.  
+As Butler offers a rather diverse set of features, everyone might not need all features. There is no single config file in which individual features can be turned on/off, but given the structure of the Butler source code it is relatively easy to disable speciifc features, or add new ones.
+
 For example, to disable a particular REST API endpoint, you could just remove the registration of that endpoint from within the src/butler.js file.
