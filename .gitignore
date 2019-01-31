@@ -5,6 +5,7 @@ src/config/default.json
 src/config/default.yaml
 src/config/development.yaml
 src/config/development.json
+src/config/certificate/*.pem
 docs/*
 doc/*
 butler-docs/site/
