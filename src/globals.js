@@ -6,14 +6,33 @@ var fs = require('fs-extra');
 var dict = require('dict');
 var winston = require('winston');
 
-// Set up default log format for Winston logger
-var logger = new(winston.Logger)({
+// Get app version from package.json file
+var appVersion = require('./package.json').version;
+
+
+// Set up logger with timestamps and colors
+const logTransports = {
+    console: new winston.transports.Console({
+        name: 'console_log',
+        level: config.get('Butler.logLevel'),
+        format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.colorize(),
+            winston.format.simple(),
+            winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+        )
+    })
+};
+
+
+const logger = winston.createLogger({
     transports: [
-        new(winston.transports.Console)({
-            'timestamp': true,
-            'colorize': true
-        })
-    ]
+        logTransports.console
+    ],
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+    )
 });
 
 
@@ -125,5 +144,7 @@ module.exports = {
     udp_port_take_failure,
     mqttClient,
     qvdFolder,
-    logger
+    logger,
+    logTransports,
+    appVersion
 };

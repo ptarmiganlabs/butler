@@ -1,5 +1,8 @@
 ---
 Butler:
+  # Possible log levels are silly, debug, verbose, info, warn, error
+  logLevel: debug
+
   slackConfig:
     webhookURL: <fill in your web hook URL from Slack>
     loginNotificationChannel: sense-user-activity

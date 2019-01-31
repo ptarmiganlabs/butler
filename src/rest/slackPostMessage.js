@@ -3,8 +3,7 @@ var globals = require('../globals');
 
 // Function for handling /slackPostMessage REST endpoint
 module.exports.respondSlackPostMessage = function (req, res, next) {
-    globals.logger.log('info', req.query);
-    // console.info(req.query);
+    globals.logger.verbose(`Posting Slack message: ${req.query}`);
 
     globals.slackObj.send({
         text: req.query.msg,

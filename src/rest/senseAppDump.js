@@ -10,8 +10,7 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
-    globals.logger.log('info', 'Dumping app: ' + req.query.appId);
-    // console.info('Dumping app: ' + req.query.appId);
+    globals.logger.info(`Dumping app: ${req.query.appId}`);
 
     // create a new session
     const configEnigma = {
@@ -45,21 +44,18 @@ module.exports.respondSenseAppDump = function (req, res, next) {
                     try {
                         session.close();
                     } catch (ex) {
-                        globals.logger.log('error', ex);
-                        // console.error(ex);
+                        globals.logger.error(ex);
                     }
 
                     res.send(d);
                 })
                 .catch(function (error) {
-                    globals.logger.log('error', error);
-                    // console.error(error);
+                    globals.logger.error(error);
 
                     try {
                         session.close();
                     } catch (ex) {
-                        globals.logger.log('error', ex);
-                        // console.error(ex);
+                        globals.logger.error(ex);
                     }
 
                     res.send(error);

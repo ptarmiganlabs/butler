@@ -10,8 +10,7 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
-    globals.logger.log('info', 'Getting list of all apps');
-    // console.info('Getting list of all apps');
+    globals.logger.verbose('Getting list of all apps');
 
     // create a new session
     const configEnigma = {
@@ -50,12 +49,12 @@ module.exports.respondSenseListApps = function (req, res, next) {
                     try {
                         session.close();
                     } catch (ex) {
-                        globals.logger.log('error', ex);
+                        globals.logger.error(ex);
                         next();
                     }
                 })
                 .catch(function (error) {
-                    globals.logger.log('error', error);
+                    globals.logger.error(error);
                 });
 
             next();
