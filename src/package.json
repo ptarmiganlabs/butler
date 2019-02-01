@@ -1,6 +1,6 @@
 {
   "name": "Butler",
-  "version": "2.3.0",
+  "version": "2.3.0beta2",
   "description": "Proxy for carrying out features that Qlik Sense or Qlikview cannot do out of the box.",
   "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
   "dependencies": {

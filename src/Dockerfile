@@ -11,16 +11,14 @@ RUN npm install
 # Copy app's source files
 COPY . .
 
-# Use dumb-init for startup
-RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64
-RUN chmod +x /usr/local/bin/dumb-init
-
-
 # Create and use non-root user 
 RUN groupadd -r nodejs \
    && useradd -m -r -g nodejs nodejs
 
 USER nodejs
 
+# Set up Docker healthcheck
+#HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "healthcheck.js"]
 
-CMD ["dumb-init", "node", "butler.js"]
+CMD ["node", "butler.js"]
+
