@@ -7,6 +7,7 @@ Butler:
     webhookURL: <fill in your web hook URL from Slack>
     loginNotificationChannel: sense-user-activity
     taskFailureChannel: sense-task-failure
+
   mqttConfig:
     brokerHost: <FQDN or IP of MQTT server>
     brokerPort: 1883
@@ -19,12 +20,16 @@ Butler:
     sessionServerStatusTopic: qliksense/butler/session_server
     activeUserCountTopic: qliksense/users/active/count
     activeUsersTopic: qliksense/users/active/usernames
+
   udpServerConfig:
-    serverIP: <FQDN or IP of server where Butler is running>
+    serverIP: <FQDN or IP (or localhost) of server where Butler is running>
     portSessionConnectionEvents: 9997
     portTaskFailure: 9998
+
   restServerConfig:
+    serverHost: <FQDN or IP (or localhost) of server where Butler is running>
     serverPort: 8080
+
   configEngine:
     engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js
     server: <FQDN or IP of Sense server where Sense Engine is running>
@@ -35,6 +40,7 @@ Butler:
     cert: <Path to cert file>
     key: <Path to key file>
     rejectUnauthorized: false
+
   configQRS:
     authentication: certificates
     host: <FQDN or IP of Sense server where QRS is running>
@@ -45,7 +51,9 @@ Butler:
     cert: <Path to client.pem>
     key: <Path to client_key.pem>
     ca: <Path to root.pem>
+
   qvdPath: <Path to folder under which QVDs are stored>
+
   gitHub:
     host: api.github.com
     pathPrefix: ''

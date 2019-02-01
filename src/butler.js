@@ -111,7 +111,9 @@ udp.udp.udpInitSessionConnectionServer();
 // ---------------------------------------------------
 // Start REST server on port 8080
 
-restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), function () {
+globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
+globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
+restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function () {
     globals.logger.info(`REST server listening on ${restServer.url}`);
 });
 
