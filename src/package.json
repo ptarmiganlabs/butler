@@ -20,10 +20,10 @@
     "ws": "^6.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.6.0",
-    "eslint-config-google": "^0.10.0",
-    "mocha": "^5.2.0",
-    "should": "^13.2.3"
+    "eslint": "5.6.0",
+    "eslint-config-google": "0.10.0",
+    "mocha": "5.2.0",
+    "should": "13.2.3"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander (https://ptarmiganlabs.com)",
