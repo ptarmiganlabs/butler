@@ -1,14 +1,18 @@
 ---
 Butler:
-  # Possible log levels are silly, debug, verbose, info, warn, error
-  logLevel: debug
+  # Logging configuration
+  logLevel: info          # Log level. Possible log levels are silly, debug, verbose, info, warn, error
+  fileLogging: false       # true/false to enable/disable logging to disk file
+  logDirectory: log      # Subdirectory where log files are stored (no trailing / )
 
   slackConfig:
+    enable: true
     webhookURL: <fill in your web hook URL from Slack>
     loginNotificationChannel: sense-user-activity
     taskFailureChannel: sense-task-failure
 
   mqttConfig:
+    enable: false
     brokerHost: <FQDN or IP of MQTT server>
     brokerPort: 1883
     taskFailureTopic: qliksense/task_failure
@@ -22,23 +26,33 @@ Butler:
     activeUsersTopic: qliksense/users/active/usernames
 
   udpServerConfig:
+    enable: false
     serverIP: <FQDN or IP (or localhost) of server where Butler is running>
     portSessionConnectionEvents: 9997
     portTaskFailure: 9998
 
   restServerConfig:
+    enable: false
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>
     serverPort: 8080
 
+  # Certificates to use when querying Sense for healthcheck data. Get these from the Certificate Export in QMC.
+  cert:
+    clientCert: <path/to/cert/client.pem>
+    clientCertKey: <path/to/cert/client_key.pem>
+    clientCertCA: <path/to/cert/root.pem>
+    # If running Butler in a Docker container, the cert paths MUST be the following
+    # clientCert: /nodeapp/config/certificate/client.pem
+    # clientCertKey: /nodeapp/config/certificate/client_key.pem
+    # clientCertCA: /nodeapp/config/certificate/root.pem
+
   configEngine:
     engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js
-    server: <FQDN or IP of Sense server where Sense Engine is running>
-    serverPort: <Port to connect to, usually 4747>
-    isSecure: true
+    host: <FQDN or IP of Sense server where Sense Engine is running>
+    port: <Port to connect to, usually 4747>
+    useSSL: true
     headers:
       X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
-    cert: <Path to cert file>
-    key: <Path to key file>
     rejectUnauthorized: false
 
   configQRS:
@@ -48,9 +62,6 @@ Butler:
     port: 4242
     headerKey: X-Qlik-User
     headerValue: UserDirectory=Internal; UserId=sa_repository
-    cert: <Path to client.pem>
-    key: <Path to client_key.pem>
-    ca: <Path to root.pem>
 
   qvdPath: <Path to folder under which QVDs are stored>
 
