@@ -8,7 +8,7 @@
     "config": "^2.0.1",
     "dict": "^1.4.0",
     "enigma.js": "^2.3.0",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^8.0.0",
     "mkdirp": "^0.5.1",
     "mqtt": "^2.18.8",
     "node-slack": "0.0.7",
