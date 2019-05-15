@@ -20,7 +20,7 @@
         "serializeapp": "^3.0.0",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^3.8.0",
-        "ws": "^6.2.1"
+        "ws": "^7.0.0"
     },
     "devDependencies": {
         "eslint": "^5.16.0",
