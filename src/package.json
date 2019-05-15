@@ -15,7 +15,7 @@
         "mqtt": "^2.18.8",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
-        "restify": "^8.3.1",
+        "restify": "^8.3.2",
         "restify-cors-middleware": "^1.1.1",
         "serializeapp": "^3.0.0",
         "winston": "^3.2.1",
