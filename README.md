@@ -2,8 +2,6 @@
 
 > Proxy app for carrying out features that Qlik Sense cannot do out of the box.
 
-[![Known Vulnerabilities](https://snyk.io/test/github/ptarmiganlabs/butler/badge.svg?targetFile=src%2Fpackage.json)](https://snyk.io/test/github/ptarmiganlabs/butler?targetFile=src%2Fpackage.json)
-
 ## Overview
 
 Node.js based proxy app providing various add-on features to Qlik Sense, such as starting reload tasks or posting to Slack from the load script, keeping track of currently active users and much more.  
@@ -65,5 +63,9 @@ Göran Sander
 
 Copyright © 2016-2018 Göran Sander
 Released under the MIT license.
+
+## Security / Disclosure
+
+If you discover any important bug with Butler that may pose a security problem, please disclose it confidentially to security@ptarmiganlabs.com first, so that it can be assessed and hopefully fixed prior to being exploited. Please do not raise GitHub issues for security-related doubts or problems.
 
 ---
