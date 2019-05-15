@@ -1,6 +1,6 @@
 {
     "name": "Butler",
-    "version": "2.4.0",
+    "version": "3.0.0beta1",
     "description": "Microservice providing features that Qlik Sense or Qlikview cannot do out of the box.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
@@ -10,6 +10,7 @@
         "enigma.js": "^2.4.0",
         "fs-extra": "^7.0.1",
         "js-yaml": "^3.13.1",
+        "jshint": "^2.10.2",
         "mkdirp": "^0.5.1",
         "mqtt": "^2.18.8",
         "node-slack": "0.0.7",
@@ -49,6 +50,6 @@
         "node": ">=0.10.0"
     },
     "scripts": {
-        "test": "node_modules/jshint/bin/jshint index.js"
+        "test": "node_modules/jshint/bin/jshint butler.js"
     }
 }

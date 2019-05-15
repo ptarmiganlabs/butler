@@ -11,9 +11,9 @@ var options = {
         'x-qlik-xrfkey': 'abcdefghijklmnop',
         'X-Qlik-User': 'UserDirectory= Internal; UserId= sa_repository '
     },
-    key: fs.readFileSync(config.get('Butler.configQRS.key')),
-    cert: fs.readFileSync(config.get('Butler.configQRS.cert')),
-    ca: fs.readFileSync(config.get('Butler.configQRS.ca'))
+    key: fs.readFileSync(config.get('Butler.cert.clientCertKey')),
+    cert: fs.readFileSync(config.get('Butler.cert.clientCert')),
+    ca: fs.readFileSync(config.get('Butler.cert.clientCertCA'))
 };
 
 

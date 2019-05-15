@@ -1,4 +1,12 @@
-# v2.1
+# Change log
+
+## 3.0.0
+
+This version brings a general refresh of the tool, both in terms of updated dependencies, streamlined configuration settings and more up-to-date documentation.
+
+* **Breaking change** Streamline the names of configuration options in the production_template.yaml config file. This change however means that the config files for existing Butler environments need to be updated. Please refer to the [documentation site](https://ptarmiganlabs.github.io/butler/install-config/#config_file_syntax) file for info on the most recent config options.
+
+## 2.1
 
 1. Switched to using YAML config files. JSON config files will still work, but YAML is superior when it comes to readability.
 2. Updated to latest versions of modules that Butler uses.
