@@ -1,6 +1,10 @@
 # Use Node 8 LTS
 FROM node:8
 
+# Add metadata about the image
+LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
+LABEL description="Extensible micro service adding features that Qlik Sense do not offer out of the box."
+
 # Create app dir inside container
 WORKDIR /nodeapp
 
