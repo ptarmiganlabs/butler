@@ -1,4 +1,6 @@
+// Load global variables and functions
 var globals = require('../globals');
+
 var serializeApp = require('serializeapp');
 
 const enigma = require('enigma.js');
@@ -10,6 +12,10 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
+    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+
     globals.logger.info(`Dumping app: ${req.query.appId}`);
 
     // create a new session

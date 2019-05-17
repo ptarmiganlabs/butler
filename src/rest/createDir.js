@@ -1,11 +1,13 @@
-// Load code from sub modules
+// Load global variables and functions
 var globals = require('../globals');
 
 var mkdirp = require('mkdirp');
 
 // Function for handling /createDir REST endpoint
 module.exports.respondCreateDir = function (req, res, next) {
-    globals.logger.verbose(`Creating dir: ${req.query}`);
+    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     mkdirp(req.query.directory, function (err) {
         // path was created unless there was error

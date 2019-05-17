@@ -1,9 +1,13 @@
+// Load global variables and functions
 var globals = require('../globals');
+
 var disk = require('diskusage');
 
 // Function for handling /getDiskSpace REST endpoint
 module.exports.respondGetDiskSpace = function (req, res, next) {
-    globals.logger.verbose(`Get disk space: ${req.query}`);
+    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     // Windows: get disk usage. Takes path as first parameter
     disk.check(req.query.path, function (err, info) {

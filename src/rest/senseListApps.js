@@ -1,3 +1,4 @@
+// Load global variables and functions
 var globals = require('../globals');
 
 const enigma = require('enigma.js');
@@ -10,7 +11,9 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
-    globals.logger.verbose('Getting list of all apps');
+    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     // create a new session
     const configEnigma = {
