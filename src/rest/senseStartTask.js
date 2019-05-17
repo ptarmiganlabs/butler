@@ -1,5 +1,7 @@
 // Load global variables and functions
 var globals = require('../globals');
+const errors = require('restify-errors');
+
 
 // Function for handling /senseStartTask REST endpoint
 module.exports.respondSenseStartTask = function (req, res, next) {
@@ -11,7 +13,8 @@ module.exports.respondSenseStartTask = function (req, res, next) {
     globals.logger.verbose(`Starting task: ${req.query.taskId}`);
 
     globals.qrsUtil.senseStartTask.senseStartTask(req.query.taskId);
-
     res.send(req.query);
     next();
+
+    
 };

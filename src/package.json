@@ -17,6 +17,7 @@
         "promise": "^8.0.3",
         "restify": "^8.3.2",
         "restify-cors-middleware": "^1.1.1",
+        "restify-errors": "^8.0.0",
         "serializeapp": "^3.0.0",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^3.9.0",
