@@ -1,8 +1,8 @@
 # docker-compose.yml
-version: '2.2'
+version: '3.3'
 services:
   butler:
-    image: ptarmiganlabs/butler:latest
+    image: ptarmiganlabs/butler:3.0.0
     container_name: butler
     restart: always
     ports:

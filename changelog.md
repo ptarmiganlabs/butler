@@ -5,8 +5,20 @@
 This version brings a general refresh of the tool, both in terms of updated dependencies, streamlined configuration settings and more up-to-date documentation.
 
 1. **Breaking change** Streamline the names of configuration options in the production_template.yaml config file. This change however means that the config files for existing Butler environments need to be updated. Please refer to the [documentation site](https://ptarmiganlabs.github.io/butler/install-config/#config_file_syntax) file for info on the most recent config options.
-2. Much improved logging of requests to the REST API endpoints. Turning on verbose logging will output lots of info on the requests, including what IP address the request comes from.
-3. Better error messages when connection to Sense server for some reason fails.
+2. Each REST API endpoint can be enabled/disabled. This is useful for deployment scarios when some endpoints for whatever reasons should not be available. 
+3. Much improved logging of requests to the REST API endpoints. Turning on verbose logging will output lots of info on the requests, including what IP address the request comes from.
+4. Better error messages when connection to Sense server for some reason fails.
+
+## 2.2
+
+Support for running Butler as a Docker container is finally here.
+
+While it is still possible to run Butler as a normal Node.js app, deploying Butler as a Docker container has many benefits:
+
+- No need to install Node.js on your server(s).
+- Make use of your existing Docker runtime environments, or use those offered by Amazon, Google, Microsoft etc.
+- Benefit from the extremely comprehensive tools ecosystem (monitoring, deployment etc) that is available for Docker.
+- Updating Butler to the latest version is as easy as doing a "docker pull ptarmiganlabs/butler:latest".
 
 ## 2.1
 

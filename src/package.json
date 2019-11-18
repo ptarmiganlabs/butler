@@ -1,31 +1,31 @@
 {
     "name": "butler",
-    "version": "3.0.0beta2",
+    "version": "3.0.0",
     "description": "Microservice providing features that Qlik Sense or Qlikview cannot do out of the box.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
         "any-base": "^1.1.0",
-        "config": "^3.1.0",
+        "config": "^3.2.4",
         "dict": "^1.4.0",
-        "enigma.js": "^2.4.0",
-        "fs-extra": "^8.0.1",
+        "enigma.js": "^2.6.0",
+        "fs-extra": "^8.1.0",
         "js-yaml": "^3.13.1",
-        "jshint": "^2.10.2",
+        "jshint": "^2.10.3",
         "mkdirp": "^0.5.1",
-        "mqtt": "^2.18.8",
+        "mqtt": "^3.0.0",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
-        "restify": "^8.3.2",
+        "restify": "^8.4.0",
         "restify-cors-middleware": "^1.1.1",
-        "restify-errors": "^8.0.0",
+        "restify-errors": "^8.0.1",
         "serializeapp": "^3.0.0",
         "winston": "^3.2.1",
-        "winston-daily-rotate-file": "^3.9.0",
-        "ws": "^7.0.0"
+        "winston-daily-rotate-file": "^4.2.1",
+        "ws": "^7.2.0"
     },
     "devDependencies": {
-        "eslint": "^5.16.0",
-        "eslint-config-google": "^0.13.0"
+        "eslint": "^6.6.0",
+        "eslint-config-google": "^0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
     "author": "Göran Sander",

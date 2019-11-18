@@ -129,7 +129,7 @@ var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
 
 // ------------------------------------
 // UDP server connection parameters
-var udp_host = config.get('Butler.udpServerConfig.serverIP');
+var udp_host = config.get('Butler.udpServerConfig.serverHost');
 
 // Prepare to listen on port X for incoming UDP connections regarding session starting/stoping, or connection opening/closing
 var udpServerSessionConnectionSocket = dgram.createSocket({

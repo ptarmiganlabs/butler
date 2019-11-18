@@ -1,5 +1,4 @@
-# Use Node 8 LTS
-FROM node:8
+FROM node:12-stretch
 
 # Add metadata about the image
 LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
@@ -22,7 +21,7 @@ RUN groupadd -r nodejs \
 USER nodejs
 
 # Set up Docker healthcheck
-#HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "healthcheck.js"]
+HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "docker-healthcheck.js"]
 
 CMD ["node", "butler.js"]
 
