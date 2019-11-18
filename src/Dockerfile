@@ -1,5 +1,8 @@
-# Use Node 8 LTS
-FROM node:8
+FROM node:12-stretch
+
+# Add metadata about the image
+LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
+LABEL description="Extensible micro service adding features that Qlik Sense do not offer out of the box."
 
 # Create app dir inside container
 WORKDIR /nodeapp
@@ -11,16 +14,14 @@ RUN npm install
 # Copy app's source files
 COPY . .
 
-# Use dumb-init for startup
-RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64
-RUN chmod +x /usr/local/bin/dumb-init
-
-
 # Create and use non-root user 
 RUN groupadd -r nodejs \
    && useradd -m -r -g nodejs nodejs
 
 USER nodejs
 
+# Set up Docker healthcheck
+HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "docker-healthcheck.js"]
 
-CMD ["dumb-init", "node", "butler.js"]
+CMD ["node", "butler.js"]
+

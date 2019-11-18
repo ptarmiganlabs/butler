@@ -1,8 +1,9 @@
+// Load global variables and functions
 var globals = require('../globals');
 
 const enigma = require('enigma.js');
 const WebSocket = require('ws');
-
+const errors = require('restify-errors');
 
 // Set up enigma.js configuration
 const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
@@ -10,8 +11,9 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
-    globals.logger.log('info', 'Getting list of all apps');
-    // console.info('Getting list of all apps');
+    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     // create a new session
     const configEnigma = {
@@ -49,16 +51,33 @@ module.exports.respondSenseListApps = function (req, res, next) {
                     // Close connection to Sense server
                     try {
                         session.close();
-                    } catch (ex) {
-                        globals.logger.log('error', ex);
+                    } catch (err) {
+                        globals.logger.error(`Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
                         next();
                     }
                 })
                 .catch(function (error) {
-                    globals.logger.log('error', error);
+                    globals.logger.error(`Èrror while getting app list: ${JSON.stringify(error, null, 2)}`);
+
+                    try {
+                        session.close();
+                    } catch (err) {
+                        globals.logger.error(`Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                    }
                 });
 
             next();
-        });
+        })
+        .catch(function (error) {
+            globals.logger.error(`Error while opening session to Sense engine during app listing: ${JSON.stringify(error, null, 2)}`);
 
+            try {
+                session.close();
+            } catch (err) {
+                globals.logger.error(`Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+            }
+
+            // res.send(error);
+            return next(new errors.RequestTimeoutError('Failed to open session to Sense engine.'));
+        });
 };

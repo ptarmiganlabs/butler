@@ -11,9 +11,10 @@ var options = {
         'x-qlik-xrfkey': 'abcdefghijklmnop',
         'X-Qlik-User': 'UserDirectory= Internal; UserId= sa_repository '
     },
-    key: fs.readFileSync(config.get('Butler.configQRS.key')),
-    cert: fs.readFileSync(config.get('Butler.configQRS.cert')),
-    ca: fs.readFileSync(config.get('Butler.configQRS.ca'))
+    key: fs.readFileSync(config.get('Butler.cert.clientCertKey')),
+    cert: fs.readFileSync(config.get('Butler.cert.clientCert')),
+    ca: fs.readFileSync(config.get('Butler.cert.clientCertCA')),
+    rejectUnauthorized: false
 };
 
 
@@ -23,19 +24,20 @@ module.exports.senseStartTask = function (taskId) {
     var globals = require('../globals');
 
     // QRS config
-    globals.logger.log('info', 'Starting task ' + taskId);
-    // console.info('Starting task ' + taskId);
     options.path = '/qrs/task/' + taskId + '/start?xrfkey=abcdefghijklmnop';
 
     https.get(options, function (res) {
-        globals.logger.log('info', 'Got response: ' + res.statusCode);
-        // console.info('Got response: ' + res.statusCode);
+        globals.logger.verbose(`Got response: ${res.statusCode}`);
+
         res.on('data', function (chunk) {
-            globals.logger.log('info', 'BODY: ' + chunk);
-            // console.info('BODY: ' + chunk);  
+            globals.logger.debug(`BODY: ${chunk}`);
         });
-    }).on('error', function (e) {
-        globals.logger.log('error', 'Got error: ' + e.message);
-        console.error('Got error: ' + e.message);
+
+        return res.statusCode;
+
+    }).on('error', function (error) {
+        globals.logger.error(`Error while starting Sense task: ${JSON.stringify(error, null, 2)}`);
+
+        return 400;
     });
 };
