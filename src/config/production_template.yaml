@@ -27,7 +27,7 @@ Butler:
 
   udpServerConfig:
     enable: false
-    serverIP: <FQDN or IP (or localhost) of server where Butler is running>
+    serverHost: <FQDN or IP (or localhost) of server where Butler is running>
     portSessionConnectionEvents: 9997
     portTaskFailure: 9998
 
