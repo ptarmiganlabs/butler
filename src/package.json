@@ -51,6 +51,9 @@
         "node": ">=0.10.0"
     },
     "scripts": {
-        "test": "node_modules/jshint/bin/jshint butler.js"
-    }
+        "test": "node_modules/jshint/bin/jshint butler.js",
+        "format1": "npm run format",
+        "format": "npm run format:prettier",
+        "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write"
+        }
 }

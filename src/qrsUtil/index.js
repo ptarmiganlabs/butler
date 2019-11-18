@@ -1,3 +1,3 @@
 module.exports = {
-    senseStartTask: require('./senseStartTask.js')
+  senseStartTask: require('./senseStartTask.js'),
 };

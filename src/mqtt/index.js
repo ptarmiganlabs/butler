@@ -1,3 +1,3 @@
 module.exports = {
-    mqtt: require('./mqtt_handlers.js')
+  mqtt: require('./mqtt_handlers.js'),
 };

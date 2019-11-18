@@ -1,164 +1,188 @@
 var dict = require('dict');
 
-
 // Load global variables and functions
 var globals = require('../globals');
 
-module.exports.mqttInitHandlers = function () {
-    // Handler for MQTT connect messages. Called when connection to MQTT broker has been established
-    globals.mqttClient.on('connect', function () {
+module.exports.mqttInitHandlers = function() {
+  // Handler for MQTT connect messages. Called when connection to MQTT broker has been established
+  globals.mqttClient.on('connect', function() {
+    globals.logger.info(
+      `Connected to MQTT server ${globals.config.get(
+        'Butler.mqttConfig.brokerHost',
+      )}:${globals.config.get('Butler.mqttConfig.brokerPort')}, with client ID ${
+        globals.mqttClient.options.clientId
+      }`,
+    );
 
-        globals.logger.info(`Connected to MQTT server ${globals.config.get('Butler.mqttConfig.brokerHost')}:${globals.config.get('Butler.mqttConfig.brokerPort')}, with client ID ${globals.mqttClient.options.clientId}`);
+    // Let the world know that Butler is connected to MQTT
+    // console.info('Connected to MQTT broker');
+    globals.mqttClient.publish(
+      'qliksense/butler/mqtt/status',
+      `Connected to MQTT broker ${globals.config.get(
+        'Butler.mqttConfig.brokerHost',
+      )}:${globals.config.get('Butler.mqttConfig.brokerPort')} with client ID ${
+        globals.mqttClient.options.clientId
+      }`,
+    );
 
-        // Let the world know that Butler is connected to MQTT
-        // console.info('Connected to MQTT broker');
-        globals.mqttClient.publish('qliksense/butler/mqtt/status', `Connected to MQTT broker ${globals.config.get('Butler.mqttConfig.brokerHost')}:${globals.config.get('Butler.mqttConfig.brokerPort')} with client ID ${globals.mqttClient.options.clientId}`);
-       
-        // Have Butler listen to all messages in the qliksense/ subtree
-        globals.mqttClient.subscribe('qliksense/#');
-    });
+    // Have Butler listen to all messages in the qliksense/ subtree
+    globals.mqttClient.subscribe('qliksense/#');
+  });
 
+  // Handler for MQTT messages matching the previously set up subscription
+  globals.mqttClient.on('message', function(topic, message) {
+    globals.logger.info('MQTT message received');
+    globals.logger.info(topic.toString());
+    globals.logger.info(message.toString());
 
-    // Handler for MQTT messages matching the previously set up subscription
-    globals.mqttClient.on('message', function (topic, message) {
-        globals.logger.info('MQTT message received');
-        globals.logger.info(topic.toString());
-        globals.logger.info(message.toString());
+    // **MQTT message dispatch**
+    // Start Sense task
+    if (topic == 'qliksense/start_task') {
+      globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
+    }
 
-        // **MQTT message dispatch**
-        // Start Sense task
-        if (topic == 'qliksense/start_task') {
-            globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
-        }
+    var array1, array2, serverName, directoryName, userName;
+    var activeUsers = [],
+      activeUsersJSON;
+    var activeUsersPerServer = [],
+      activeUsersPerServerJSON;
+    var serverObj;
 
+    if (
+      topic == globals.config.get('Butler.mqttConfig.sessionStartTopic') ||
+      topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic')
+    ) {
+      // Handle dict of currently active users
+      // Message arrives as "serverName: directoryName/userName
+      array1 = message.toString().split(': ');
+      array2 = array1[1].split('/');
 
-        var array1, array2, serverName, directoryName, userName;
-        var activeUsers = [],
-            activeUsersJSON;
-        var activeUsersPerServer = [],
-            activeUsersPerServerJSON;
-        var serverObj;
+      serverName = array1[0];
+      directoryName = array2[0];
+      userName = array2[1];
 
-        if ((topic == globals.config.get('Butler.mqttConfig.sessionStartTopic')) ||
-            (topic == globals.config.get('Butler.mqttConfig.connectionOpenTopic'))) {
+      globals.logger.info('Adding active user');
+      // console.info('Adding active user');
+      globals.currentUsers.set(userName, serverName); // Add user as active
 
-            // Handle dict of currently active users
-            // Message arrives as "serverName: directoryName/userName
-            array1 = message.toString().split(': ');
-            array2 = array1[1].split('/');
+      // Build JSON of all active users
+      globals.currentUsers.forEach(function(value, key) {
+        activeUsers.push(key); // Push to overall list of active users
+      });
 
-            serverName = array1[0];
-            directoryName = array2[0];
-            userName = array2[1];
+      activeUsersJSON = JSON.stringify(activeUsers);
 
-            globals.logger.info('Adding active user');
-            // console.info('Adding active user');
-            globals.currentUsers.set(userName, serverName); // Add user as active
+      // Handle dict of currently active users, split on proxy they are connected through
+      if (globals.currentUsersPerServer.has(serverName)) {
+        // Server already exists in dict - get it
+        serverObj = globals.currentUsersPerServer.get(serverName);
+      } else {
+        serverObj = dict();
+      }
 
-            // Build JSON of all active users
-            globals.currentUsers.forEach(function (value, key) {
-                activeUsers.push(key); // Push to overall list of active users
-            });
+      serverObj.set(userName, 'active');
+      globals.currentUsersPerServer.set(serverName, serverObj);
 
-            activeUsersJSON = JSON.stringify(activeUsers);
+      // Send active user count messages to MQTT, one for each proxy node
+      globals.currentUsersPerServer.forEach(function(value, key) {
+        globals.logger.info('server:' + key + ', users:' + JSON.stringify(value));
+        // console.info('server:' + key + ', users:' + JSON.stringify(value));
+        //                console.log('=========');
+        //                console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
 
+        //                value.forEach(function(value2, key2) {
+        //                    console.log('key2:' + key2);
+        //                    console.log('value2:' + value2);
+        //                });
 
-            // Handle dict of currently active users, split on proxy they are connected through
-            if (globals.currentUsersPerServer.has(serverName)) {
-                // Server already exists in dict - get it
-                serverObj = globals.currentUsersPerServer.get(serverName);
-            } else {
-                serverObj = dict();
-            }
+        // Send MQTT message with info on # of active users per proxy
+        //                console.log('--------');
+        //                console.log(globals.currentUsersPerServer.get(key).size);
+        globals.mqttClient.publish(
+          `qliksense/users/activeperserver/${key}/count`,
+          globals.currentUsersPerServer.get(key).size.toString(),
+        );
+        //                console.log('--------');
+      });
 
-            serverObj.set(userName, 'active');
-            globals.currentUsersPerServer.set(serverName, serverObj);
+      // Send MQTT messages relating to active users
+      globals.mqttClient.publish(
+        globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(),
+        globals.currentUsers.size.toString(),
+      );
+      globals.mqttClient.publish(
+        globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(),
+        activeUsersJSON,
+      );
 
-            // Send active user count messages to MQTT, one for each proxy node 
-            globals.currentUsersPerServer.forEach(function (value, key) {
-                globals.logger.info('server:' + key + ', users:' + JSON.stringify(value));
-                // console.info('server:' + key + ', users:' + JSON.stringify(value));
-                //                console.log('=========');
-                //                console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
+      globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
+    }
 
-                //                value.forEach(function(value2, key2) {
-                //                    console.log('key2:' + key2);
-                //                    console.log('value2:' + value2);
-                //                });
+    if (topic == globals.config.get('Butler.mqttConfig.sessionStopTopic')) {
+      // Handle dict of currently active users
+      // Message arrives as "serverName: directoryName/userName
+      array1 = message.toString().split(': ');
+      array2 = array1[1].split('/');
 
-                // Send MQTT message with info on # of active users per proxy
-                //                console.log('--------');
-                //                console.log(globals.currentUsersPerServer.get(key).size);
-                globals.mqttClient.publish(`qliksense/users/activeperserver/${key}/count`, globals.currentUsersPerServer.get(key).size.toString());
-                //                console.log('--------');
-            });
+      serverName = array1[0];
+      directoryName = array2[0];
+      userName = array2[1];
 
+      globals.logger.info('Removing active user');
+      globals.currentUsers.delete(userName); // Remove user from list of active users
 
-            // Send MQTT messages relating to active users
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(), globals.currentUsers.size.toString());
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(), activeUsersJSON);
+      // Build JSON of all active users
+      globals.currentUsers.forEach(function(value, key) {
+        activeUsers.push(key);
+      });
 
-            globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
-        }
+      activeUsersJSON = JSON.stringify(activeUsers);
 
-        if (topic == globals.config.get('Butler.mqttConfig.sessionStopTopic')) {
-            // Handle dict of currently active users
-            // Message arrives as "serverName: directoryName/userName
-            array1 = message.toString().split(': ');
-            array2 = array1[1].split('/');
+      // Handle dict of currently active users, split on proxy they are connected through
+      if (globals.currentUsersPerServer.has(serverName)) {
+        // Server already exists in dict - get it.
+        // If the server does not exist in dict there is no reason to proceed
+        serverObj = globals.currentUsersPerServer.get(serverName);
 
-            serverName = array1[0];
-            directoryName = array2[0];
-            userName = array2[1];
+        serverObj.delete(userName);
+        globals.currentUsersPerServer.set(serverName, serverObj); // Update the main users-per-server dict
+        globals.logger.verbose(`---- Removed user ${userName} from server ${serverName}`);
 
-            globals.logger.info('Removing active user');
-            globals.currentUsers.delete(userName); // Remove user from list of active users
+        // Send active user count messages to MQTT, one for each proxy node
+        globals.currentUsersPerServer.forEach(function(value, key) {
+          //                    console.log('=========');
+          //                    console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
 
-            // Build JSON of all active users
-            globals.currentUsers.forEach(function (value, key) {
-                activeUsers.push(key);
-            });
+          //                    value.forEach(function(value2, key2) {
+          //                        console.log('key2:' + key2);
+          //                        console.log('value2:' + value2);
+          //                    });
 
-            activeUsersJSON = JSON.stringify(activeUsers);
+          // Send MQTT message with info on # of active users per proxy
+          globals.mqttClient.publish(
+            `qliksense/users/activeperserver/${key}/count`,
+            globals.currentUsersPerServer.get(key).size.toString(),
+          );
+        });
+      }
 
-            // Handle dict of currently active users, split on proxy they are connected through
-            if (globals.currentUsersPerServer.has(serverName)) {
-                // Server already exists in dict - get it.
-                // If the server does not exist in dict there is no reason to proceed
-                serverObj = globals.currentUsersPerServer.get(serverName);
+      // Send MQTT messages relating to active users
+      globals.mqttClient.publish(
+        globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(),
+        globals.currentUsers.size.toString(),
+      );
+      globals.mqttClient.publish(
+        globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(),
+        activeUsersJSON,
+      );
 
-                serverObj.delete(userName);
-                globals.currentUsersPerServer.set(serverName, serverObj); // Update the main users-per-server dict
-                globals.logger.verbose(`---- Removed user ${userName} from server ${serverName}`);
+      globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
+    }
+  });
 
-                // Send active user count messages to MQTT, one for each proxy node 
-                globals.currentUsersPerServer.forEach(function (value, key) {
-                    //                    console.log('=========');
-                    //                    console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
-
-                    //                    value.forEach(function(value2, key2) {
-                    //                        console.log('key2:' + key2);
-                    //                        console.log('value2:' + value2);
-                    //                    });
-
-                    // Send MQTT message with info on # of active users per proxy
-                    globals.mqttClient.publish(`qliksense/users/activeperserver/${key}/count`, globals.currentUsersPerServer.get(key).size.toString());
-                });
-            }
-
-            // Send MQTT messages relating to active users
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUserCountTopic').toString(), globals.currentUsers.size.toString());
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.activeUsersTopic').toString(), activeUsersJSON);
-
-            globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
-        }
-
-    });
-
-
-    // Handler for MQTT errors
-    globals.mqttClient.on('error', function (topic, message) {
-        // Error occured
-        globals.logger.error('MQTT error: ' + message);
-    });
+  // Handler for MQTT errors
+  globals.mqttClient.on('error', function(topic, message) {
+    // Error occured
+    globals.logger.error('MQTT error: ' + message);
+  });
 };

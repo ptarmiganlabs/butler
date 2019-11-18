@@ -10,3 +10,6 @@ notifications:
     on_success: always
     on_failure: always
     on_pull_requests: true
+script: 
+  - cd src
+  - npm run format1
