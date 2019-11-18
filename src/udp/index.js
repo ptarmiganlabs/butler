@@ -1,3 +1,3 @@
 module.exports = {
-    udp: require('./udp_handlers.js')
+  udp: require('./udp_handlers.js'),
 };
