@@ -7,7 +7,7 @@
         "any-base": "^1.1.0",
         "config": "^3.2.4",
         "dict": "^1.4.0",
-        "enigma.js": "^2.6.0",
+        "enigma.js": "^2.6.3",
         "fs-extra": "^8.1.0",
         "js-yaml": "^3.13.1",
         "jshint": "^2.10.3",
@@ -15,16 +15,16 @@
         "mqtt": "^3.0.0",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
-        "restify": "^8.4.0",
+        "restify": "^8.4.1",
         "restify-cors-middleware": "^1.1.1",
         "restify-errors": "^8.0.1",
         "serializeapp": "^3.0.0",
         "winston": "^3.2.1",
-        "winston-daily-rotate-file": "^4.2.1",
+        "winston-daily-rotate-file": "^4.3.0",
         "ws": "^7.2.0"
     },
     "devDependencies": {
-        "eslint": "6.6.0",
+        "eslint": "6.7.1",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
@@ -55,5 +55,5 @@
         "format1": "npm run format",
         "format": "npm run format:prettier",
         "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write"
-        }
+    }
 }
