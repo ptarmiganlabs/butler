@@ -1,0 +1,16 @@
+kind: pipeline
+name: default
+
+steps:
+- name: docker  
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_username
+    repo: ptarmiganlabs/butler
+    auto_tag: true
+    tags: 
+      - latest
+      - '3.0.3'
