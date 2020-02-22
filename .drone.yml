@@ -17,9 +17,9 @@ steps:
     - latest
     - 'v3.0.3'
     - '3.0.3'
-  # when:
-  #   event:
-  #   - tag
+  when:
+    event:
+    - tag
 
 # trigger:
 #   event:
