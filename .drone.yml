@@ -21,13 +21,14 @@ steps:
     repo: mountaindude/butler
     dockerfile: src/Dockerfile
     context: src
-    auto_tag: true
+    # auto_tag: true
     tags: 
+      - latest
       - '3.0.3'
     # when: 
     #   branch: master
     #   event: push
 
-trigger: 
-  branch: 
-  - master
+# trigger: 
+#   branch: 
+#   - master
