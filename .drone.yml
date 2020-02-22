@@ -7,6 +7,7 @@ steps:
   #  environment:
   #    - NODE_ENV=production
    commands:
+     - pwd
      - npm install
 
 - name: docker  
@@ -20,8 +21,8 @@ steps:
     dockerfile: src/Dockerfile_drone
     auto_tag: true
     tags: 
-      - latest
-      - '3.0.3'
+    - latest
+    - '3.0.3'
     when: 
       branch: master
       event: push
