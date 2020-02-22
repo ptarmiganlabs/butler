@@ -8,21 +8,22 @@ steps:
   #    - NODE_ENV=production
    commands:
      - pwd
+     - cd src
      - npm install
 
-- name: docker  
-  image: plugins/docker
-  settings:
-    username:
-      from_secret: dockerhub_username
-    password:
-      from_secret: dockerhub_password
-    repo: mountaindude/butler
-    dockerfile: src/Dockerfile_drone
-    auto_tag: true
-    tags: 
-    - latest
-    - '3.0.3'
-    when: 
-      branch: master
-      event: push
+# - name: docker  
+#   image: plugins/docker
+#   settings:
+#     username:
+#       from_secret: dockerhub_username
+#     password:
+#       from_secret: dockerhub_password
+#     repo: mountaindude/butler
+#     dockerfile: src/Dockerfile_drone
+#     auto_tag: true
+#     tags: 
+#     - latest
+#     - '3.0.3'
+#     when: 
+#       branch: master
+#       event: push
