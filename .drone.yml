@@ -14,7 +14,13 @@ steps:
     context: src
     # auto_tag: true
     tags:
-      - latest
+      # - latest
       - 'v3.0.3'
       - '3.0.3'
+  # when:
+  #   event:
+  #   - tag
 
+# trigger:
+#   event:
+#   - tag
