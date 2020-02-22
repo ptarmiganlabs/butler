@@ -19,11 +19,10 @@ steps:
     password:
       from_secret: dockerhub_password
     repo: mountaindude/butler
-    dockerfile: src/Dockerfile_drone
+    dockerfile: src/Dockerfile
     context: src
     auto_tag: true
     tags: 
-      - latest
       - '3.0.3'
     # when: 
     #   branch: master
