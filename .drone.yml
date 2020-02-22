@@ -19,7 +19,7 @@ steps:
     password:
       from_secret: dockerhub_password
     repo: mountaindude/butler
-    dockerfile: Dockerfile_drone
+    dockerfile: src/Dockerfile_drone
     context: src
     auto_tag: true
     tags: 
