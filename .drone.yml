@@ -8,8 +8,9 @@ steps:
     username:
       from_secret: dockerhub_username
     password:
-      from_secret: dockerhub_username
-    repo: ptarmiganlabs/butler
+      from_secret: dockerhub_password
+    repo: mountaindude/butler
+    dockerfile: src/Dockerfile
     auto_tag: true
     tags: 
       - latest
