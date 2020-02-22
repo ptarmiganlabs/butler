@@ -13,7 +13,8 @@ steps:
     dockerfile: src/Dockerfile
     context: src
     # auto_tag: true
-    tags: 
+    tags:
       - latest
+      - 'v3.0.3'
       - '3.0.3'
 
