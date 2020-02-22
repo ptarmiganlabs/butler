@@ -23,8 +23,8 @@ steps:
     context: src
     auto_tag: true
     tags: 
-    - latest
-    - '3.0.3'
+      - latest
+      - '3.0.3'
     # when: 
     #   branch: master
     #   event: push
