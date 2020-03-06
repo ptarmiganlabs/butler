@@ -15,8 +15,8 @@ steps:
     # auto_tag: true
     tags:
     - latest
-    - 'v3.0.3'
-    - '3.0.3'
+    - 'v3.0.4'
+    - '3.0.4'
   when:
     event:
     - tag
