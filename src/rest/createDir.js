@@ -1,13 +1,15 @@
 // Load global variables and functions
 var globals = require('../globals');
+var logRESTCall = require('./logRESTCall');
 
 var mkdirp = require('mkdirp');
 
 // Function for handling /createDir REST endpoint
 module.exports.respondCreateDir = function (req, res, next) {
-    globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-    globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-    globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+    logRESTCall(req);
+    // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+    // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+    // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     mkdirp(req.query.directory, function (err) {
         // path was created unless there was error
