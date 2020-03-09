@@ -11,11 +11,20 @@ var anyBase = require('any-base'),
     '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
   );
 
-// Conversion base62 to base16
-module.exports.respondBase62ToBase16 = function(req, res, next) {
+
+let logIt = function (req) {
   globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
   globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
   globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+};
+
+// Conversion base62 to base16
+module.exports.respondBase62ToBase16 = function(req, res, next) {
+  logIt(req);
+
+  // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+  // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+  // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
   var base16 = base62_to_Hex(req.query.base62);
 
@@ -25,9 +34,11 @@ module.exports.respondBase62ToBase16 = function(req, res, next) {
 
 // Conversion base16 to base62
 module.exports.respondBase16ToBase62 = function(req, res, next) {
-  globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-  globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-  globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+  logIt(req);
+
+  // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
+  // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
+  // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
   var base62 = hex_to_base62(req.query.base16);
 
