@@ -8,11 +8,18 @@ const errors = require('restify-errors');
 // Set up enigma.js configuration
 const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
 
-// Function for handling /senseListApps REST endpoint
-module.exports.respondSenseListApps = function(req, res, next) {
+
+
+let logIt = function (req) {
   globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
   globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
   globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+};
+
+
+// Function for handling /senseListApps REST endpoint
+module.exports.respondSenseListApps = function(req, res, next) {
+  logIt(req);
 
   // create a new session
   const configEnigma = {
