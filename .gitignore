@@ -12,3 +12,4 @@ butler-docs/site/
 src/udp_client/node_modules/*
 npm-debug.log
 .DS_Store
+**/log
