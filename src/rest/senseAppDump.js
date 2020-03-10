@@ -1,6 +1,6 @@
 // Load global variables and functions
 var globals = require('../globals');
-var logRESTCall = require('./logRESTCall');
+var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 var serializeApp = require('serializeapp');
 
@@ -14,9 +14,6 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
 // Function for handling /senseAppDump REST endpoint
 module.exports.respondSenseAppDump = function (req, res, next) {
     logRESTCall(req);
-    // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-    // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-    // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     globals.logger.info(`Dumping app: ${req.query.appId}`);
 

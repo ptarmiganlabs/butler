@@ -1,6 +1,6 @@
 // Load global variables and functions
 var globals = require('../globals');
-var logRESTCall = require('./logRESTCall');
+var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 const enigma = require('enigma.js');
 const WebSocket = require('ws');

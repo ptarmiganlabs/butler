@@ -1,13 +1,10 @@
 // Load global variables and functions
 var globals = require('../globals');
-var logRESTCall = require('./logRESTCall');
+var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 // Function for handling /slackPostMessage REST endpoint
 module.exports.respondSlackPostMessage = function (req, res, next) {
     logRESTCall(req);
-    // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-    // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-    // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     globals.slackObj.send({
         text: req.query.msg,

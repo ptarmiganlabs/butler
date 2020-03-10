@@ -1,6 +1,5 @@
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('./logRESTCall');
+var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 
 var anyBase = require('any-base'),
@@ -19,10 +18,6 @@ var anyBase = require('any-base'),
 module.exports.respondBase62ToBase16 = function (req, res, next) {
     logRESTCall(req);
 
-    // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-    // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-    // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
-
     var base16 = base62_to_Hex(req.query.base62);
 
     res.send(base16);
@@ -32,10 +27,6 @@ module.exports.respondBase62ToBase16 = function (req, res, next) {
 // Conversion base16 to base62
 module.exports.respondBase16ToBase62 = function (req, res, next) {
     logRESTCall(req);
-
-    // globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-    // globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-    // globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
 
     var base62 = hex_to_base62(req.query.base16);
 
