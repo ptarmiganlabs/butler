@@ -5,6 +5,12 @@ Butler:
   fileLogging: false       # true/false to enable/disable logging to disk file
   logDirectory: log      # Subdirectory where log files are stored (no trailing / )
 
+  # Heartbeats can be used to send "I'm alive" messages to any other tool, e.g. a infrastructure monitoring tool
+  heartbeat:
+    enabled: false
+    remoteURL: http://my.monitoring.server/some/path/
+    frequency: every 1 hour         # https://bunkat.github.io/later/parsers.html
+
   slackConfig:
     enable: true
     webhookURL: <fill in your web hook URL from Slack>
