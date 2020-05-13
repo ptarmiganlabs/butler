@@ -1,5 +1,12 @@
 # Change log
 
+## 3.1.0
+
+Stayin' alive: hearbeats are here.
+
+1. Added user configurable heartbeat option. Butler can now (optionally) do http calls to a url, indicating it is alive and well. This is useful in enterprise settings, for use together with network monitoring tools etc.
+2. Updated dependencies to their latest versions.
+
 ## 3.0.0
 
 This version brings a general refresh of the tool, both in terms of updated dependencies, streamlined configuration settings and more up-to-date documentation.
