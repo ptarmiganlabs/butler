@@ -1,14 +1,12 @@
 // Load global variables and functions
-var globals = require('../globals');
+var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 // Function for handling /butlerPing REST endpoint
-module.exports.respondButlerPing = function(req, res, next) {
-  globals.logger.info(`${req.url} called from ${req.client.remoteAddress}`);
-  globals.logger.verbose(`Query: ${JSON.stringify(req.query, null, 2)}`);
-  globals.logger.verbose(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+module.exports.respondButlerPing = function (req, res, next) {
+    logRESTCall(req);
 
-  req.params.response = 'Butler reporting for duty';
+    req.params.response = 'Butler reporting for duty';
 
-  res.send(req.params);
-  next();
+    res.send(req.params);
+    next();
 };

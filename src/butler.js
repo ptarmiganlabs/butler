@@ -7,6 +7,7 @@ var globals = require('./globals');
 var rest = require('./rest');
 var mqtt = require('./mqtt');
 var udp = require('./udp');
+heartbeat = require('./lib/heartbeat.js');
 
 // Load certificates to use when connecting to healthcheck API
 // var fs = require('fs'),
@@ -237,6 +238,13 @@ if (globals.config.get('Butler.restServerConfig.enable')) {
         },
     );
 }
+
+
+// Set up heartbeats
+if (globals.config.get('Butler.heartbeat.enabled') == true) {
+    heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
+}
+
 
 
 // Start Docker healthcheck REST server on port 12398
