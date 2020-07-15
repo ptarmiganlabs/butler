@@ -1,9 +1,10 @@
 kind: pipeline
 type: docker
-name: butler-amd64
+name: linux-amd64
 
 platform:
   arch: amd64
+  os: linux
 
 steps:
 - name: docker  
@@ -13,30 +14,29 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
-    repo: ptarmiganlabs/butler
-    dockerfile: src/Dockerfile
+    repo: mountaindude/butler
+    dockerfile: src/Dockerfile.amd64
     context: src
-    # auto_tag: true
-    tags:
-    - latest
-    - '3.1.0'
-    - '3.1'
-    - '3'
+    auto_tag: true
+    auto_tag_suffix: linux-amd64
+    # tags:
+    # - latest-amd64
+    # - '3.1.0-amd64'
+    # - '3.1-amd64'
+    # - '3-amd64'
   when:
     event:
+    - push
     - tag
-
-# trigger:
-#   event:
-#   - tag
 
 ---
 kind: pipeline
 type: docker
-name: butler-arm64
+name: linux-arm64
 
 platform:
   arch: arm64
+  os: linux
 
 steps:
 - name: docker  
@@ -46,15 +46,83 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
-    repo: ptarmiganlabs/butler
-    dockerfile: src/Dockerfile
+    repo: mountaindude/butler
+    dockerfile: src/Dockerfile.arm64
     context: src
-    # auto_tag: true
-    tags:
-    - latest
-    - '3.1.0'
-    - '3.1'
-    - '3'
+    auto_tag: true
+    auto_tag_suffix: linux-arm64
+    # tags:
+    # - latest-arm64
+    # - '3.1.0-arm64'
+    # - '3.1-arm64'
+    # - '3-arm64'
   when:
     event:
+    - push
     - tag
+
+  depends_on:
+  - linux-amd64
+
+---
+kind: pipeline
+type: docker
+name: linux-arm
+
+platform:
+  arch: arm
+  os: linux
+
+steps:
+- name: docker  
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_password
+    repo: mountaindude/butler
+    dockerfile: src/Dockerfile.arm
+    context: src
+    auto_tag: true
+    auto_tag_suffix: linux-arm
+    # tags:
+    # - latest-arm64
+    # - '3.1.0-arm64'
+    # - '3.1-arm64'
+    # - '3-arm64'
+  when:
+    event:
+    - push
+    - tag
+
+  depends_on:
+  - linux-amd64
+
+
+
+---
+kind: pipeline
+type: docker
+name: manifest
+
+steps:
+- name: publish
+  image: plugins/manifest:1.2
+  settings:
+    auto_tag: true
+    ignore_missing: true
+    spec: docker/manifest.tmpl
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+
+trigger:
+  event:
+  - push
+  - tag
+
+depends_on:
+- linux-arm64
+- linux-arm
