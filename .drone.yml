@@ -14,16 +14,11 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
-    repo: mountaindude/butler
+    repo: ptarmiganlabs/butler
     dockerfile: src/Dockerfile.amd64
     context: src
     auto_tag: true
     auto_tag_suffix: linux-amd64
-    # tags:
-    # - latest-amd64
-    # - '3.1.0-amd64'
-    # - '3.1-amd64'
-    # - '3-amd64'
   when:
     event:
     - push
@@ -46,16 +41,11 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
-    repo: mountaindude/butler
+    repo: ptarmiganlabs/butler
     dockerfile: src/Dockerfile.arm64
     context: src
     auto_tag: true
     auto_tag_suffix: linux-arm64
-    # tags:
-    # - latest-arm64
-    # - '3.1.0-arm64'
-    # - '3.1-arm64'
-    # - '3-arm64'
 
 trigger:
   event:
@@ -83,16 +73,11 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
-    repo: mountaindude/butler
+    repo: ptarmiganlabs/butler
     dockerfile: src/Dockerfile.arm
     context: src
     auto_tag: true
     auto_tag_suffix: linux-arm
-    # tags:
-    # - latest-arm64
-    # - '3.1.0-arm64'
-    # - '3.1-arm64'
-    # - '3-arm64'
 
 trigger:
   event:
