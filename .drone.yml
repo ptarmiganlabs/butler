@@ -1,5 +1,9 @@
 kind: pipeline
-name: default
+type: docker
+name: butler-amd64
+
+platform:
+  arch: amd64
 
 steps:
 - name: docker  
@@ -25,3 +29,32 @@ steps:
 # trigger:
 #   event:
 #   - tag
+
+---
+kind: pipeline
+type: docker
+name: butler-arm64
+
+platform:
+  arch: arm64
+
+steps:
+- name: docker  
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_password
+    repo: ptarmiganlabs/butler
+    dockerfile: src/Dockerfile
+    context: src
+    # auto_tag: true
+    tags:
+    - latest
+    - '3.1.0'
+    - '3.1'
+    - '3'
+  when:
+    event:
+    - tag
