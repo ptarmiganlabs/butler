@@ -56,13 +56,15 @@ steps:
     # - '3.1.0-arm64'
     # - '3.1-arm64'
     # - '3-arm64'
-  when:
-    event:
-    - push
-    - tag
 
-  depends_on:
-  - linux-amd64
+trigger:
+  event:
+  - push
+  - tag
+
+depends_on:
+- linux-amd64
+
 
 ---
 kind: pipeline
@@ -91,14 +93,14 @@ steps:
     # - '3.1.0-arm64'
     # - '3.1-arm64'
     # - '3-arm64'
-  when:
-    event:
-    - push
-    - tag
 
-  depends_on:
-  - linux-amd64
+trigger:
+  event:
+  - push
+  - tag
 
+depends_on:
+- linux-amd64
 
 
 ---
