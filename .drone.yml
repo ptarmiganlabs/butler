@@ -116,9 +116,9 @@ steps:
     ignore_missing: true
     spec: docker/manifest.tmpl
     username:
-      from_secret: docker_username
+      from_secret: dockerhub_username
     password:
-      from_secret: docker_password
+      from_secret: dockerhub_password
 
 trigger:
   event:
