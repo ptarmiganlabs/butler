@@ -17,6 +17,11 @@ Butler:
     loginNotificationChannel: sense-user-activity
     taskFailureChannel: sense-task-failure
 
+  # Scheduler for Qlik Sense tasks
+  scheduler:
+    enable: true
+    configfile: config/schedule.yaml
+
   mqttConfig:
     enable: false
     brokerHost: <FQDN or IP of MQTT server>

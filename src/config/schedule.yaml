@@ -1,0 +1,15 @@
+---
+ButlerSchedule:
+  - name: 'Schedule #1'
+    schedule: '* * * * *'
+    qlikSenseTaskId: b37f8034-faee-4e9b-bbca-5aba0cdf5df2
+    tags: 
+      - 'tag 1'
+      - tag2
+      - 'tag 3'
+  - name: 'Schedule for App2'
+    schedule: '* * * * *'
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    tags: 
+      - 'tag 3'
+      - tag4

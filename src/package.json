@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "3.1.0",
+    "version": "3.2.0",
     "description": "Microservice providing features that Qlik Sense or Qlikview cannot do out of the box.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
@@ -15,6 +15,7 @@
         "later": "^1.2.0",
         "mkdirp": "^1.0.4",
         "mqtt": "^4.2.1",
+        "node-cron": "^2.0.3",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
         "restify": "^8.4.1",
