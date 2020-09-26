@@ -6,15 +6,15 @@
     "dependencies": {
         "any-base": "^1.1.0",
         "axios": "^0.20.0",
-        "config": "^3.3.1",
+        "config": "^3.3.2",
         "dict": "^1.4.0",
-        "enigma.js": "^2.7.1",
+        "enigma.js": "^2.7.2",
         "fs-extra": "^9.0.1",
         "js-yaml": "^3.14.0",
-        "jshint": "^2.11.1",
+        "jshint": "^2.12.0",
         "later": "^1.2.0",
         "mkdirp": "^1.0.4",
-        "mqtt": "^4.1.0",
+        "mqtt": "^4.2.1",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
         "restify": "^8.4.1",
@@ -26,7 +26,7 @@
         "ws": "^7.3.1"
     },
     "devDependencies": {
-        "eslint": "7.9.0",
+        "eslint": "^7.9.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",

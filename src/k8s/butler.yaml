@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: butler
+  namespace: butler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: deployment-butler-butler
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        workload.user.cattle.io/workloadselector: deployment-butler-butler
+    spec:
+      containers:
+      - env:
+        - name: NODE_ENV
+          value: production
+        image: ptarmiganlabs/butler:3.1.0
+        imagePullPolicy: Always
+        name: butler
+        ports:
+        - containerPort: 8080
+          name: rest
+          protocol: TCP
+        - containerPort: 9997
+          name: sessionevent
+          protocol: UDP
+        - containerPort: 9998
+          name: taskevent
+          protocol: UDP
+        resources: {}
+        volumeMounts:
+        - mountPath: /nodeapp/config
+          name: config
+          readOnly: true
+        - mountPath: /nodeapp/config/certificate/
+          name: cert
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - configMap:
+          defaultMode: 292
+          name: config
+          optional: false
+        name: config
+      - name: cert
+        secret:
+          defaultMode: 292
+          optional: false
+          secretName: qliksense-cert
