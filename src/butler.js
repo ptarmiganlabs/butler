@@ -1,6 +1,7 @@
 // Add dependencies
 var restify = require('restify');
 var corsMiddleware = require('restify-cors-middleware');
+var restifySwaggerJsdoc = require('restify-swagger-jsdoc');
 
 // Load code from sub modules
 var globals = require('./globals');
@@ -9,7 +10,15 @@ var mqtt = require('./mqtt');
 var udp = require('./udp');
 var heartbeat = require('./lib/heartbeat.js');
 var scheduler = require('./lib/scheduler.js');
-var restifySwaggerJsdoc = require('restify-swagger-jsdoc');
+const serviceUptime = require('./lib/service_uptime');
+
+// Set up connection to Influxdb (if enabled)
+globals.initInfluxDB();
+
+if (globals.config.get('Butler.uptimeMonitor.enable') == true) {
+    serviceUptime.serviceUptimeStart();
+}
+
 
 // Load certificates to use when connecting to healthcheck API
 // var fs = require('fs'),
