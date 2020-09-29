@@ -19,7 +19,6 @@ if (globals.config.get('Butler.uptimeMonitor.enable') == true) {
     serviceUptime.serviceUptimeStart();
 }
 
-
 // Load certificates to use when connecting to healthcheck API
 // var fs = require('fs'),
 var path = require('path'),
@@ -226,6 +225,27 @@ if (globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
     restServer.get({ path: '/v3/base16ToBase62' }, rest.base16ToBase62.respondBase16ToBase62);
 }
 
+if (globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) { 
+    globals.logger.debug('Registering REST endpoint GET /v3/keyvaluenamespaces');
+    restServer.get({ path: '/v3/keyvaluenamespaces' }, rest.keyValueStore.respondGET_keyvaluenamespaces);
+
+    globals.logger.debug('Registering REST endpoint GET /v3/keyvalue');
+    restServer.get({ path: '/v3/keyvalue/:namespace/:key' }, rest.keyValueStore.respondGET_keyvalue);
+    restServer.get({ path: '/v3/keyvalue/:namespace' }, rest.keyValueStore.respondGET_keyvalue);
+    restServer.get({ path: '/v3/keyvalue' }, rest.keyValueStore.respondGET_keyvalue);
+
+    globals.logger.debug('Registering REST endpoint POST /v3/keyvalue');
+    restServer.post({ path: '/v3/keyvalue/:namespace' }, rest.keyValueStore.respondPOST_keyvalue);
+
+    globals.logger.debug('Registering REST endpoint DELETE /v3/keyvalue/{namespace}/{key}');
+    restServer.del({ path: '/v3/keyvalue/:namespace/:key' }, rest.keyValueStore.respondDELETE_keyvalue);
+
+    globals.logger.debug('Registering REST endpoint POST /v3/keyvalue/{namespace}/clear');
+    restServer.post({ path: '/v3/keyvalue/:namespace/clear' }, rest.keyValueStore.respondPOST_keyvalueClear);
+}
+
+
+
 if (globals.config.get('Butler.scheduler.enable')) {
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v3/schedule');
@@ -249,19 +269,15 @@ if (globals.config.get('Butler.scheduler.enable')) {
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v3/schedulestart');
 
-        restServer.post(
-            { path: '/v3/schedulestart/:scheduleId' },
-            rest.scheduler.respondPOST_scheduleStart,
-        );
+        restServer.post({ path: '/v3/schedulestart/:scheduleId' }, rest.scheduler.respondPOST_scheduleStart);
+        restServer.post({ path: '/v3/schedulestart' }, rest.scheduler.respondPOST_scheduleStart);
     }
 
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v3/schedulestop');
 
-        restServer.post(
-            { path: '/v3/schedulestop/:scheduleId' },
-            rest.scheduler.respondPOST_scheduleStop,
-        );
+        restServer.post({ path: '/v3/schedulestop/:scheduleId' }, rest.scheduler.respondPOST_scheduleStop);
+        restServer.post({ path: '/v3/schedulestop' }, rest.scheduler.respondPOST_scheduleStop);
     }
 }
 
@@ -280,10 +296,7 @@ if (globals.config.get('Butler.udpServerConfig.enable')) {
     globals.logger.debug(`Server for UDP server: ${globals.udp_host}`);
 
     // Start UDP server for Session and Connection events
-    globals.udpServerSessionConnectionSocket.bind(
-        globals.udp_port_session_connection,
-        globals.udp_host,
-    );
+    globals.udpServerSessionConnectionSocket.bind(globals.udp_port_session_connection, globals.udp_host);
 
     // Start UDP server for failed task events
     globals.udpServerTaskFailureSocket.bind(globals.udp_port_take_failure, globals.udp_host);
@@ -292,20 +305,12 @@ if (globals.config.get('Butler.udpServerConfig.enable')) {
 // ---------------------------------------------------
 // Start REST server on port 8080
 if (globals.config.get('Butler.restServerConfig.enable')) {
-    globals.logger.debug(
-        `REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`,
-    );
-    globals.logger.debug(
-        `REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`,
-    );
+    globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
+    globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
-    restServer.listen(
-        globals.config.get('Butler.restServerConfig.serverPort'),
-        globals.config.get('Butler.restServerConfig.serverHost'),
-        function () {
-            globals.logger.info(`MAIN: REST server listening on ${restServer.url}`);
-        },
-    );
+    restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function () {
+        globals.logger.info(`MAIN: REST server listening on ${restServer.url}`);
+    });
 }
 
 // Load already defined schedules

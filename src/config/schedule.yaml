@@ -1,23 +1,144 @@
 butlerSchedule:
-  - name: Schedule 1
-    cronSchedule: '*/15 * * * * *'
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 1a
-    stateStartupStarted: true
-    created: '2020-09-27T08:32:12.864Z'
-    timezone: Europe/Stockholm
-    stateStarted: true
-  - name: New schedule 123åäö
+  - name: Every 5 sec
     cronSchedule: '*/5 * * * * *'
     timezone: Europe/Stockholm
     qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
     tags:
       - tag 3
       - abc 123 åäö
-    id: 9c0e2423-96d4-425c-892e-18c92f76325f
-    stateStartupStarted: true
-    created: '2020-09-28T05:00:42.325Z'
-    stateStarted: true
+    id: c7ec214c-e9ca-40b2-acb4-54648f90dd73
+    created: '2020-09-29T14:29:12.283Z'
+    lastKnownState: started
+  - name: Every 2 hours
+    cronSchedule: '* */2 * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 2f7a6c38-46df-416d-83de-44bdea5cedaa
+    created: '2020-09-29T17:14:35.154Z'
+    lastKnownState: started
+  - name: Every 2 hours
+    cronSchedule: '* */2 * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+    created: '2020-09-29T17:14:56.207Z'
+    lastKnownState: started
+  - name: Every 2 hours
+    cronSchedule: '* */2 * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 18a74567-1d91-4a50-ac56-075a69de62a1
+    created: '2020-09-29T17:15:09.220Z'
+    lastKnownState: started
+  - name: Every 10 min
+    cronSchedule: '*/10 * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 71639d8e-89fd-46c6-865e-d58c002a7cbf
+    created: '2020-09-29T17:15:20.547Z'
+    lastKnownState: started
+  - name: Every 10 min
+    cronSchedule: '*/10 * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 2b8c0876-a9c7-4ac7-bd09-358739e7de43
+    created: '2020-09-29T17:15:34.213Z'
+    lastKnownState: started
+  - name: Every 10 min
+    cronSchedule: '*/10 * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: c28ccbed-5cd0-4f40-b45f-29572440af3a
+    created: '2020-09-29T17:15:53.710Z'
+    lastKnownState: started
+  - name: Every 2 hours
+    cronSchedule: '* */2 * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 2c69c17e-a717-4c12-9e8a-37e63d131c39
+    created: '2020-09-29T17:15:53.775Z'
+    lastKnownState: started
+  - name: Every 45 sec
+    cronSchedule: '*/45 * * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: e2d71fa9-0363-4e1b-bb03-d1e22310f48a
+    created: '2020-09-29T17:16:06.948Z'
+    lastKnownState: started
+  - name: Every 10 min
+    cronSchedule: '*/10 * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 8c5d7a3e-a1a0-49bf-90bf-536acb36b7b9
+    created: '2020-09-29T17:16:07.013Z'
+    lastKnownState: started
+  - name: Every 2 hours
+    cronSchedule: '* */2 * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 3d5173fb-f6d7-43fc-9592-b6d936911435
+    created: '2020-09-29T17:16:07.083Z'
+    lastKnownState: started
+  - name: Every 45 sec
+    cronSchedule: '*/45 * * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 3327508b-a180-4bd0-ae98-deb2242968be
+    created: '2020-09-29T17:17:11.996Z'
+    lastKnownState: started
+  - name: Every 45 sec
+    cronSchedule: '*/45 * * * * *'
+    timezone: Europe/London
+    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
+    startupState: started
+    tags:
+      - tag 3
+      - abc 123 åäö
+    id: 7ca8f346-3a8e-4668-9241-62d1d655d26e
+    created: '2020-09-29T17:17:12.350Z'
+    lastKnownState: started

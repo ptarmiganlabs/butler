@@ -93,21 +93,30 @@ module.exports.respondPOST_scheduleStart = function (req, res, next) {
     logRESTCall(req);
 
     try {
-        globals.logger.debug('REST SCHEDULER: Starting schedule ID: ' + req.params.scheduleId);
-        if (scheduler.startSchedule(req.params.scheduleId) == true) {
-            // Start succeeded
-            res.send(`Started schedule ${req.params.scheduleId}`);
+        // Is there a schedule ID passed along?
+        if (req.params.scheduleId !== undefined) {
+            globals.logger.debug('REST SCHEDULER: Starting schedule ID: ' + req.params.scheduleId);
+            if (scheduler.startSchedule(req.params.scheduleId) == true) {
+                // Start succeeded
+                res.send(`Started schedule ${req.params.scheduleId}`);
+                globals.logger.info('REST SCHEDULER: Started schedule ID: ' + req.params.scheduleId);
+            } else {
+                // Start failed. Return error
+                res.send(
+                    new errors.ResourceNotFoundError(
+                        {},
+                        `REST SCHEDULER: Failed starting schedule ID ${req.params.scheduleId}.`,
+                    ),
+                );
+                globals.logger.info('REST SCHEDULER: Failed starting schedule ID: ' + req.params.scheduleId);
+            }
         } else {
-            // Start failed. Return error
-            res.send(
-                new errors.ResourceNotFoundError(
-                    {},
-                    `REST SCHEDULER: Failed starting schedule ID ${req.params.scheduleId}.`,
-                ),
-            );
+            // Start all schedules
+            globals.configSchedule.forEach(item => scheduler.startSchedule(item.id));
+            res.send('Started all schedules');
+            globals.logger.info('REST SCHEDULER: Started all schedules.');
         }
-
-        globals.logger.info('REST SCHEDULER: Started schedule ID: ' + req.params.scheduleId);
+        
         next();
     } catch (err) {
         globals.logger.error(
@@ -126,21 +135,30 @@ module.exports.respondPOST_scheduleStop = function (req, res, next) {
     logRESTCall(req);
 
     try {
-        globals.logger.debug('REST SCHEDULER: Stoping schedule ID: ' + req.params.scheduleId);
-        if (scheduler.stopSchedule(req.params.scheduleId) == true) {
-            // Start succeeded
-            res.send(`Stopped schedule ${req.params.scheduleId}`);
+        // Is there a schedule ID passed along?
+        if (req.params.scheduleId !== undefined) {
+            globals.logger.debug('REST SCHEDULER: Stoping schedule ID: ' + req.params.scheduleId);
+            if (scheduler.stopSchedule(req.params.scheduleId) == true) {
+                // Start succeeded
+                res.send(`Stopped schedule ${req.params.scheduleId}`);
+                globals.logger.info('REST SCHEDULER: Stopped schedule ID: ' + req.params.scheduleId);
+            } else {
+                // Start failed. Return error
+                res.send(
+                    new errors.ResourceNotFoundError(
+                        {},
+                        `REST SCHEDULER: Failed stopping schedule ID ${req.params.scheduleId}.`,
+                    ),
+                );
+                globals.logger.error('REST SCHEDULER: Failed stopping schedule ID: ' + req.params.scheduleId);
+            }
         } else {
-            // Start failed. Return error
-            res.send(
-                new errors.ResourceNotFoundError(
-                    {},
-                    `REST SCHEDULER: Failed stopping schedule ID ${req.params.scheduleId}.`,
-                ),
-            );
+            // Stop all schedules
+            globals.configSchedule.forEach(item => scheduler.stopSchedule(item.id));
+            res.send('Stopped all schedules');
+            globals.logger.info('REST SCHEDULER: Stopped all schedules.');
         }
 
-        globals.logger.info('REST SCHEDULER: Stopped schedule ID: ' + req.params.scheduleId);
         next();
     } catch (err) {
         globals.logger.error(

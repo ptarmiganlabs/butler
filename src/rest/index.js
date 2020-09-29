@@ -13,5 +13,6 @@ module.exports = {
     base62ToBase16: require('./baseConversion.js'),
     base16ToBase62: require('./baseConversion.js'),
     scheduler: require('./scheduler.js'),
+    keyValueStore: require('./keyValueStore.js'),
 };
 //getDiskSpace: require('./getDiskSpace.js'),

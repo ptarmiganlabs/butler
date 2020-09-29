@@ -7,14 +7,19 @@ const CronJobManager = require('cron-job-manager');
 var cronManager = new CronJobManager();
 // const cron = require('node-cron');
 
+function saveSchedulesToDisk() {
+    // First add a top level for readability
+    let diskSchedule = yaml.safeDump({ butlerSchedule: globals.configSchedule }, 4);
+    fs.writeFileSync(globals.config.get('Butler.scheduler.configfile'), diskSchedule, 'utf8');
+}
+
 function loadSchedulesFromDisk() {
     // Load scheduler config, if available
     try {
         if (globals.config.has('Butler.scheduler')) {
             if (globals.config.get('Butler.scheduler.enable') == true) {
                 let scheduleFile = globals.config.get('Butler.scheduler.configfile');
-                let tmpScheduleArray = yaml.safeLoad(fs.readFileSync(scheduleFile, 'utf8'))
-                    .butlerSchedule;
+                let tmpScheduleArray = yaml.safeLoad(fs.readFileSync(scheduleFile, 'utf8')).butlerSchedule;
 
                 // Create schedules, incl cron jobs for all schedules
                 tmpScheduleArray.forEach(element => {
@@ -22,13 +27,7 @@ function loadSchedulesFromDisk() {
                 });
 
                 globals.logger.info('SCHEDULER: Successfully loaded schedule from file.');
-                globals.logger.debug(
-                    `SCHEDULER: Loaded schedules: ${JSON.stringify(
-                        globals.configSchedule,
-                        null,
-                        2,
-                    )}`,
-                );
+                globals.logger.debug(`SCHEDULER: Loaded schedules: ${JSON.stringify(globals.configSchedule, null, 2)}`);
             }
         }
     } catch (err) {
@@ -36,9 +35,9 @@ function loadSchedulesFromDisk() {
     }
 }
 
-// Launch all schedules that are currently defined
-function launchAllSchedules() {
-    globals.logger.debug('SCHEDULER: Launching all schedules');
+// Start all currently defined schedules
+function startAllSchedules() {
+    globals.logger.debug('SCHEDULER: Starting all schedules');
 
     try {
         globals.configSchedule.forEach(element => {
@@ -49,6 +48,19 @@ function launchAllSchedules() {
     }
 }
 
+// Stop all currently defined schedules
+function stopAllSchedules() {
+    globals.logger.debug('SCHEDULER: Stopping all schedules');
+
+    try {
+        globals.configSchedule.forEach(element => {
+            cronManager.stop(element.id.toString());
+        });
+    } catch (err) {
+        globals.logger.error(`SCHEDULER: Failed stopping all schedules: ${err}`);
+    }
+}
+
 // Get list of all schedules
 function getAllSchedules() {
     globals.logger.debug('SCHEDULER: Getting all schedules');
@@ -56,48 +68,43 @@ function getAllSchedules() {
     return globals.configSchedule;
 }
 
+// Add cron entry for schedule
+function addCronEntry(newSchedule) {
+    cronManager.add(
+        newSchedule.id.toString(),
+        newSchedule.cronSchedule,
+        () => {
+            let schedule = newSchedule;
+            qrsUtil.senseStartTask.senseStartTask(schedule.qlikSenseTaskId);
+
+            globals.logger.info(`SCHEDULER: Firing schedule ID ${schedule.id.toString()}: ${schedule.name}`);
+        },
+        {
+            start: newSchedule.lastKnownState,
+            timeZone: newSchedule.timeZone,
+        },
+    );
+}
+
 // Add new schedule
 function addSchedule(newSchedule) {
     try {
-        globals.logger.debug(
-            `SCHEDULER: Adding new schedule: ${JSON.stringify(newSchedule, null, 2)}`,
-        );
+        globals.logger.debug(`SCHEDULER: Adding new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
 
         globals.configSchedule.push(newSchedule);
 
+        newSchedule.lastKnownState = newSchedule.startupState == 'started' || newSchedule.startupState == 'start' ? 'started' : 'stopped';
+
         // Persist schedule to disk
-        // First add a top level for readability
-        let diskSchedule = yaml.safeDump({ butlerSchedule: globals.configSchedule }, 4);
-        fs.writeFileSync(globals.config.get('Butler.scheduler.configfile'), diskSchedule, 'utf8');
+        saveSchedulesToDisk();
 
-        startSchedule(newSchedule.id.toString());
-        newSchedule.stateStarted = newSchedule.stateStartupStarted == true ? true : false;
-    
         // Add schedule to cron manager
-        cronManager.add(
-            newSchedule.id.toString(),
-            newSchedule.cronSchedule,
-            () => {
-                let schedule = newSchedule;
-                qrsUtil.senseStartTask.senseStartTask(schedule.qlikSenseTaskId);
-        
-                globals.logger.info(`SCHEDULER: Firing schedule ID ${schedule.id.toString()}: ${schedule.name}`);
-            },
-            {
-                start: newSchedule.stateStarted,
-                timeZone: newSchedule.timeZone,
-            },
-        );
+        addCronEntry(newSchedule);
+        startSchedule(newSchedule.id);
 
-        globals.logger.verbose(`SCHEDULER: Added new schedule: ${diskSchedule}`);
+        globals.logger.verbose(`SCHEDULER: Added new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
     } catch (err) {
-        globals.logger.error(
-            `SCHEDULER: Failed adding new schedule ${JSON.stringify(
-                newSchedule,
-                null,
-                2,
-            )}: ${JSON.stringify(err, null, 2)}`,
-        );
+        globals.logger.error(`SCHEDULER: Failed adding new schedule ${JSON.stringify(newSchedule, null, 2)}: ${JSON.stringify(err, null, 2)}`);
     }
 }
 
@@ -111,9 +118,7 @@ function deleteSchedule(deleteScheduleId) {
             // Remove the  schedule
             let newSchedules = globals.configSchedule.filter(item => item.id != deleteScheduleId);
 
-            globals.logger.debug(
-                'SCHEDULER: Schedules after delete: ' + JSON.stringify(newSchedules, null, 2),
-            );
+            globals.logger.debug('SCHEDULER: Schedules after delete: ' + JSON.stringify(newSchedules, null, 2));
 
             globals.configSchedule = newSchedules;
 
@@ -121,37 +126,22 @@ function deleteSchedule(deleteScheduleId) {
             cronManager.deleteJob(deleteScheduleId.toString());
 
             // Persist schedule to disk
-            // First add a top level for readability
-            let diskSchedule = yaml.safeDump({ butlerSchedule: globals.configSchedule }, 4);
-            fs.writeFileSync(
-                globals.config.get('Butler.scheduler.configfile'),
-                diskSchedule,
-                'utf8',
-            );
+            saveSchedulesToDisk();
 
             return true;
         } else {
             return false;
         }
     } catch (err) {
-        globals.logger.error(
-            `SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${JSON.stringify(
-                err,
-                null,
-                2,
-            )}`,
-        );
+        globals.logger.error(`SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${JSON.stringify(err, null, 2)}`);
     }
 }
 
 // Does a particular schedule exist?
 function existsSchedule(scheduleId) {
     // Does the schedule ID exist?
-    let idExists =
-        globals.configSchedule.find(item => item.id == scheduleId) == undefined ? false : true;
-    globals.logger.debug(
-        `SCHEDULER: Does schedule id ${scheduleId} exist: ${JSON.stringify(idExists, null, 2)}`,
-    );
+    let idExists = globals.configSchedule.find(item => item.id == scheduleId) == undefined ? false : true;
+    globals.logger.debug(`SCHEDULER: Does schedule id ${scheduleId} exist: ${JSON.stringify(idExists, null, 2)}`);
 
     if (idExists) {
         // Id exists among current schedules
@@ -166,13 +156,14 @@ function startSchedule(scheduleId) {
         cronManager.start(scheduleId.toString());
 
         // Set schedule status
-        globals.configSchedule.find(item => item.id == scheduleId).stateStarted = true;
+        globals.configSchedule.find(item => item.id == scheduleId).lastKnownState = 'started';
+
+        // Persist schedule to disk
+        saveSchedulesToDisk();
 
         return true;
     } catch (err) {
-        globals.logger.error(
-            `SCHEDULER: Failed starting schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`,
-        );
+        globals.logger.error(`SCHEDULER: Failed starting schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`);
     }
 }
 
@@ -181,23 +172,25 @@ function stopSchedule(scheduleId) {
         cronManager.stop(scheduleId.toString());
 
         // Set schedule status
-        globals.configSchedule.find(item => item.id == scheduleId).stateStarted = false;
+        globals.configSchedule.find(item => item.id == scheduleId).lastKnownState = 'stopped';
+
+        // Persist schedule to disk
+        saveSchedulesToDisk();
 
         return true;
     } catch (err) {
-        globals.logger.error(
-            `SCHEDULER: Failed stopping schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`,
-        );
+        globals.logger.error(`SCHEDULER: Failed stopping schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`);
     }
 }
 
 module.exports = {
     loadSchedulesFromDisk,
-    launchAllSchedules,
+    startAllSchedules,
+    stopAllSchedules,
+    startSchedule,
+    stopSchedule,
     getAllSchedules,
     addSchedule,
     deleteSchedule,
     existsSchedule,
-    startSchedule,
-    stopSchedule,
 };
