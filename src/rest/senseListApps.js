@@ -9,8 +9,6 @@ const errors = require('restify-errors');
 // Set up enigma.js configuration
 const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
 
-
-
 // Function for handling /senseListApps REST endpoint
 module.exports.respondSenseListApps = function (req, res, next) {
     logRESTCall(req);
@@ -42,10 +40,12 @@ module.exports.respondSenseListApps = function (req, res, next) {
                 .then(function (docList) {
                     var jsonArray = [];
                     docList.forEach(function (doc) {
-                        jsonArray = jsonArray.concat([{
-                            id: doc.qDocId.toString(),
-                            name: doc.qDocName.toString(),
-                        }, ]);
+                        jsonArray = jsonArray.concat([
+                            {
+                                id: doc.qDocId.toString(),
+                                name: doc.qDocName.toString(),
+                            },
+                        ]);
                     });
 
                     res.send(jsonArray);
@@ -55,19 +55,29 @@ module.exports.respondSenseListApps = function (req, res, next) {
                         session.close();
                     } catch (err) {
                         globals.logger.error(
-                            `Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`,
+                            `Error closing connection to Sense engine: ${JSON.stringify(
+                                err,
+                                null,
+                                2,
+                            )}`,
                         );
                         next();
                     }
                 })
                 .catch(function (error) {
-                    globals.logger.error(`Èrror while getting app list: ${JSON.stringify(error, null, 2)}`);
+                    globals.logger.error(
+                        `Èrror while getting app list: ${JSON.stringify(error, null, 2)}`,
+                    );
 
                     try {
                         session.close();
                     } catch (err) {
                         globals.logger.error(
-                            `Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`,
+                            `Error closing connection to Sense engine: ${JSON.stringify(
+                                err,
+                                null,
+                                2,
+                            )}`,
                         );
                     }
                 });
@@ -77,10 +87,10 @@ module.exports.respondSenseListApps = function (req, res, next) {
         .catch(function (error) {
             globals.logger.error(
                 `Error while opening session to Sense engine during app listing: ${JSON.stringify(
-          error,
-          null,
-          2,
-        )}`,
+                    error,
+                    null,
+                    2,
+                )}`,
             );
 
             try {
