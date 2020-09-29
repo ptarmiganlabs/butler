@@ -12,7 +12,6 @@ module.exports = {
     butlerPing: require('./butlerPing.js'),
     base62ToBase16: require('./baseConversion.js'),
     base16ToBase62: require('./baseConversion.js'),
-    respondGET_schedule: require('./scheduler.js'),
-    respondPOST_schedule: require('./scheduler.js'),
+    scheduler: require('./scheduler.js'),
 };
 //getDiskSpace: require('./getDiskSpace.js'),

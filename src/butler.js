@@ -7,7 +7,9 @@ var globals = require('./globals');
 var rest = require('./rest');
 var mqtt = require('./mqtt');
 var udp = require('./udp');
-heartbeat = require('./lib/heartbeat.js');
+var heartbeat = require('./lib/heartbeat.js');
+var scheduler = require('./lib/scheduler.js');
+var restifySwaggerJsdoc = require('restify-swagger-jsdoc');
 
 // Load certificates to use when connecting to healthcheck API
 // var fs = require('fs'),
@@ -38,7 +40,8 @@ var restServerDockerHealthCheck = restify.createServer({
 restServerDockerHealthCheck.use(restify.plugins.queryParser());
 
 // Set up endpoint for Docker healthcheck REST server
-restServerDockerHealthCheck.get({
+restServerDockerHealthCheck.get(
+    {
         path: '/',
         flags: 'i',
     },
@@ -60,6 +63,9 @@ var restServer = restify.createServer({
 // Enable parsing of http parameters
 restServer.use(restify.plugins.queryParser());
 
+// Enable parsing of request body
+restServer.use(restify.plugins.bodyParser());
+
 // Set up CORS handling
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional
@@ -71,14 +77,25 @@ const cors = corsMiddleware({
 restServer.pre(cors.preflight);
 restServer.use(cors.actual);
 
+restServer.pre(restify.pre.sanitizePath());
+
+restifySwaggerJsdoc.createSwaggerPage({
+    title: 'API documentation', // Page title
+    version: globals.appVersion, // Server version
+    server: restServer, // Restify server instance created with restify.createServer()
+    path: '/docs/swagger', // Public url where the swagger page will be available
+    apis: ['butler.js'],
+});
+
 // Set up endpoints for REST server
-//restServer.get('/v2/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
-//restServer.get('/v2/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
+//restServer.get('/v3/getDiskSpace', rest.getDiskSpace.respondGetDiskSpace);
+//restServer.get('/v3/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
 
 if (globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
-    globals.logger.debug('Registering REST endpoint /v2/activeUserCount');
-    restServer.get({
-            path: '/v2/activeUserCount',
+    globals.logger.debug('Registering REST endpoint /v3/activeUserCount');
+    restServer.get(
+        {
+            path: '/v3/activeUserCount',
             flags: 'i',
         },
         rest.activeUserCount.respondActiveUserCount,
@@ -86,9 +103,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
-    globals.logger.debug('Registering REST endpoint /v2/activeUsers');
-    restServer.get({
-            path: '/v2/activeUsers',
+    globals.logger.debug('Registering REST endpoint /v3/activeUsers');
+    restServer.get(
+        {
+            path: '/v3/activeUsers',
             flags: 'i',
         },
         rest.activeUsers.respondActiveUsers,
@@ -96,9 +114,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
-    globals.logger.debug('Registering REST endpoint /v2/slackPostMessage');
-    restServer.get({
-            path: '/v2/slackPostMessage',
+    globals.logger.debug('Registering REST endpoint /v3/slackPostMessage');
+    restServer.get(
+        {
+            path: '/v3/slackPostMessage',
             flags: 'i',
         },
         rest.slackPostMessage.respondSlackPostMessage,
@@ -106,9 +125,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
-    globals.logger.debug('Registering REST endpoint /v2/createDir');
-    restServer.get({
-            path: '/v2/createDir',
+    globals.logger.debug('Registering REST endpoint /v3/createDir');
+    restServer.get(
+        {
+            path: '/v3/createDir',
             flags: 'i',
         },
         rest.createDir.respondCreateDir,
@@ -116,9 +136,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
-    globals.logger.debug('Registering REST endpoint /v2/createDirQVD');
-    restServer.get({
-            path: '/v2/createDirQVD',
+    globals.logger.debug('Registering REST endpoint /v3/createDirQVD');
+    restServer.get(
+        {
+            path: '/v3/createDirQVD',
             flags: 'i',
         },
         rest.createDirQVD.respondCreateDirQVD,
@@ -126,9 +147,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
-    globals.logger.debug('Registering REST endpoint /v2/mqttPublishMessage');
-    restServer.get({
-            path: '/v2/mqttPublishMessage',
+    globals.logger.debug('Registering REST endpoint /v3/mqttPublishMessage');
+    restServer.get(
+        {
+            path: '/v3/mqttPublishMessage',
             flags: 'i',
         },
         rest.mqttPublishMessage.respondMQTTPublishMessage,
@@ -136,9 +158,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
-    globals.logger.debug('Registering REST endpoint /v2/senseStartTask');
-    restServer.get({
-            path: '/v2/senseStartTask',
+    globals.logger.debug('Registering REST endpoint /v3/senseStartTask');
+    restServer.get(
+        {
+            path: '/v3/senseStartTask',
             flags: 'i',
         },
         rest.senseStartTask.respondSenseStartTask,
@@ -146,9 +169,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
-    globals.logger.debug('Registering REST endpoint /v2/senseAppDump');
-    restServer.get({
-            path: '/v2/senseAppDump',
+    globals.logger.debug('Registering REST endpoint /v3/senseAppDump');
+    restServer.get(
+        {
+            path: '/v3/senseAppDump',
             flags: 'i',
         },
         rest.senseAppDump.respondSenseAppDump,
@@ -156,9 +180,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
-    globals.logger.debug('Registering REST endpoint /v2/senseListApps');
-    restServer.get({
-            path: '/v2/senseListApps',
+    globals.logger.debug('Registering REST endpoint /v3/senseListApps');
+    restServer.get(
+        {
+            path: '/v3/senseListApps',
             flags: 'i',
         },
         rest.senseListApps.respondSenseListApps,
@@ -166,9 +191,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
-    globals.logger.debug('Registering REST endpoint /v2/butlerping');
-    restServer.get({
-            path: '/v2/butlerping',
+    globals.logger.debug('Registering REST endpoint /v3/butlerping');
+    restServer.get(
+        {
+            path: '/v3/butlerping',
             flags: 'i',
         },
         rest.butlerPing.respondButlerPing,
@@ -176,9 +202,10 @@ if (globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
-    globals.logger.debug('Registering REST endpoint /v2/base62ToBase16');
-    restServer.get({
-            path: '/v2/base62ToBase16',
+    globals.logger.debug('Registering REST endpoint /v3/base62ToBase16');
+    restServer.get(
+        {
+            path: '/v3/base62ToBase16',
             flags: 'i',
         },
         rest.base62ToBase16.respondBase62ToBase16,
@@ -186,13 +213,47 @@ if (globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
-    globals.logger.debug('Registering REST endpoint /v2/base16ToBase62');
-    restServer.get({
-            path: '/v2/base16ToBase62',
-            flags: 'i',
-        },
-        rest.base16ToBase62.respondBase16ToBase62,
-    );
+    globals.logger.debug('Registering REST endpoint /v3/base16ToBase62');
+    restServer.get({ path: '/v3/base16ToBase62' }, rest.base16ToBase62.respondBase16ToBase62);
+}
+
+if (globals.config.get('Butler.scheduler.enable')) {
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
+        globals.logger.debug('Registering REST endpoint POST /v3/schedule');
+
+        restServer.post({ path: '/v3/schedule' }, rest.scheduler.respondPOST_schedule);
+    }
+
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
+        globals.logger.debug('Registering REST endpoint GET /v3/schedule');
+
+        restServer.get({ path: '/v3/schedule/:scheduleId' }, rest.scheduler.respondGET_schedule);
+        restServer.get({ path: '/v3/schedule' }, rest.scheduler.respondGET_schedule);
+    }
+
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')) {
+        globals.logger.debug('Registering REST endpoint DELETE /v3/schedule');
+
+        restServer.del({ path: '/v3/schedule/:scheduleId' }, rest.scheduler.respondDELETE_schedule);
+    }
+
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
+        globals.logger.debug('Registering REST endpoint POST /v3/schedulestart');
+
+        restServer.post(
+            { path: '/v3/schedulestart/:scheduleId' },
+            rest.scheduler.respondPOST_scheduleStart,
+        );
+    }
+
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
+        globals.logger.debug('Registering REST endpoint POST /v3/schedulestop');
+
+        restServer.post(
+            { path: '/v3/schedulestop/:scheduleId' },
+            rest.scheduler.respondPOST_scheduleStop,
+        );
+    }
 }
 
 // ---------------------------------------------------
@@ -221,7 +282,6 @@ if (globals.config.get('Butler.udpServerConfig.enable')) {
 
 // ---------------------------------------------------
 // Start REST server on port 8080
-
 if (globals.config.get('Butler.restServerConfig.enable')) {
     globals.logger.debug(
         `REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`,
@@ -234,18 +294,27 @@ if (globals.config.get('Butler.restServerConfig.enable')) {
         globals.config.get('Butler.restServerConfig.serverPort'),
         globals.config.get('Butler.restServerConfig.serverHost'),
         function () {
-            globals.logger.info(`REST server listening on ${restServer.url}`);
+            globals.logger.info(`MAIN: REST server listening on ${restServer.url}`);
         },
     );
 }
 
-
-// Set up heartbeats
-if (globals.config.get('Butler.heartbeat.enabled') == true) {
-    heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
+// Load already defined schedules
+if (globals.config.has('Butler.scheduler')) {
+    if (globals.config.get('Butler.scheduler.enable') == true) {
+        scheduler.loadSchedulesFromDisk();
+        // scheduler.launchAllSchedules();
+    } else {
+        globals.logger.info('MAIN: Didn\'t load schedules from file');
+    }
 }
 
+// Set up heartbeats
+if (globals.config.get('Butler.heartbeat.enable') == true) {
+    heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
 
+    globals.logger.info('MAIN: Heartbeat timer has been set up');
+}
 
 // Start Docker healthcheck REST server on port 12398
 restServerDockerHealthCheck.listen(12398, function () {

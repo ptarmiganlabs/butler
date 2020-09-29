@@ -1,12 +1,13 @@
 {
     "name": "butler",
-    "version": "3.2.0",
+    "version": "4.0.0",
     "description": "Microservice providing features that Qlik Sense or Qlikview cannot do out of the box.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
         "any-base": "^1.1.0",
         "axios": "^0.20.0",
         "config": "^3.3.2",
+        "cron-job-manager": "^2.1.4",
         "dict": "^1.4.0",
         "enigma.js": "^2.7.2",
         "fs-extra": "^9.0.1",
@@ -15,19 +16,20 @@
         "later": "^1.2.0",
         "mkdirp": "^1.0.4",
         "mqtt": "^4.2.1",
-        "node-cron": "^2.0.3",
         "node-slack": "0.0.7",
         "promise": "^8.0.3",
         "restify": "^8.4.1",
         "restify-cors-middleware": "^1.1.1",
-        "restify-errors": "^8.0.1",
+        "restify-errors": "^8.0.2",
+        "restify-swagger-jsdoc": "^3.2.4",
         "serializeapp": "^3.0.0",
+        "uuid": "^8.3.0",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.0",
         "ws": "^7.3.1"
     },
     "devDependencies": {
-        "eslint": "7.9.0",
+        "eslint": "^7.10.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
