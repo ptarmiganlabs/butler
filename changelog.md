@@ -1,5 +1,16 @@
 # Change log
 
+## 4.0
+
+- Scheduler
+- Key-value store
+- Swagger API docs
+- Uptime logging, incl memory usage stored in Influx db for charting/monitoring in Grafana
+- Updated dependencies (adresses security issues etc)
+- Breaking
+  - http method changed for some API endpoints, with this follows changes in how parameters are passed (e.g. body parameters are used for PUT requests, rather than the query parameters that were previously used)
+  - API endpoints are all lowercase
+
 ## 3.1.0
 
 Stayin' alive: hearbeats are here.
