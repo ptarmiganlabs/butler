@@ -74,13 +74,12 @@ function addCronEntry(newSchedule) {
         newSchedule.id.toString(),
         newSchedule.cronSchedule,
         () => {
-            let schedule = newSchedule;
-            qrsUtil.senseStartTask.senseStartTask(schedule.qlikSenseTaskId);
+            qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
 
-            globals.logger.info(`SCHEDULER: Firing schedule ID ${schedule.id.toString()}: ${schedule.name}`);
+            globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
         },
         {
-            start: newSchedule.lastKnownState,
+            start: ((newSchedule.startupState == 'started') || (newSchedule.startupState == 'start')) ? true : false,
             timeZone: newSchedule.timeZone,
         },
     );
@@ -100,7 +99,7 @@ function addSchedule(newSchedule) {
 
         // Add schedule to cron manager
         addCronEntry(newSchedule);
-        startSchedule(newSchedule.id);
+        // startSchedule(newSchedule.id);
 
         globals.logger.verbose(`SCHEDULER: Added new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
     } catch (err) {

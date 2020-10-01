@@ -1,8 +1,19 @@
 // Load global variables and functions
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
-// Function for handling /butlerPing REST endpoint
-module.exports.respondButlerPing = function (req, res, next) {
+/**
+ * @swagger
+ *
+ * /v4/butlerping:
+ *   get:
+ *     description: Tests if Butler is alive and responding.
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 
+ */
+module.exports.respondGET_butlerPing = function (req, res, next) {
     logRESTCall(req);
 
     req.params.response = 'Butler reporting for duty';
