@@ -106,7 +106,7 @@ restifySwaggerJsdoc.createSwaggerPage({
 
 if (globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/filedelete');
-    restServer.put({ path: '/v4/filedelete' }, rest.disk_utils.respondPUT_fileDelete);
+    restServer.del({ path: '/v4/filedelete' }, rest.disk_utils.respondPUT_fileDelete);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
