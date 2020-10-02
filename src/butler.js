@@ -89,7 +89,8 @@ restServer.pre(restify.pre.sanitizePath());
 
 restifySwaggerJsdoc.createSwaggerPage({
     title: 'Butler API documentation', // Page title
-    description: 'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.<br>Butler offers both a REST API and things like failed reload notifications etc.<p>This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
+    description:
+        'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.<br>Butler offers both a REST API and things like failed reload notifications etc.<p>This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
     version: globals.appVersion, // Server version
     server: restServer, // Restify server instance created with restify.createServer()
     path: '/docs/swagger', // Public url where the swagger page will be available
@@ -104,8 +105,13 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
 
+if (globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
+    globals.logger.debug('Registering REST endpoint PGETUT /v4/configfile/endpointsenabled');
+    restServer.get({ path: '/v4/configfile/endpointsenabled' }, rest.api.respondGET_configFileListEnbledEndpoints);
+}
+
 if (globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
-    globals.logger.debug('Registering REST endpoint PUT /v4/filedelete');
+    globals.logger.debug('Registering REST endpoint DELETE /v4/filedelete');
     restServer.del({ path: '/v4/filedelete' }, rest.disk_utils.respondPUT_fileDelete);
 }
 
@@ -266,18 +272,22 @@ if (globals.config.has('Butler.scheduler')) {
         scheduler.loadSchedulesFromDisk();
         // scheduler.launchAllSchedules();
     } else {
-        globals.logger.info('MAIN: Didn\'t load schedules from file');
+        globals.logger.info("MAIN: Didn't load schedules from file");
     }
 }
 
-// Set up heartbeats
+// Set up heartbeats, if enabled in the config file
 if (globals.config.get('Butler.heartbeat.enable') == true) {
     heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
 
     globals.logger.info('MAIN: Heartbeat timer has been set up');
 }
 
-// Start Docker healthcheck REST server on port 12398
-restServerDockerHealthCheck.listen(12398, function () {
-    globals.logger.info('MAIN: Docker healthcheck server now listening');
-});
+// Start Docker healthcheck REST server on port set in config file
+if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
+    globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
+
+    restServerDockerHealthCheck.listen(globals.config.get('Butler.dockerHealthCheck.port'), function () {
+        globals.logger.info('MAIN: Docker healthcheck server now listening');
+    });
+}

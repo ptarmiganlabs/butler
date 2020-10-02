@@ -14,6 +14,7 @@ module.exports = {
     base16ToBase62: require('./baseConversion.js'),
     scheduler: require('./scheduler.js'),
     keyValueStore: require('./keyValueStore.js'),
-    disk_utils: require('./disk_utils.js')
+    disk_utils: require('./disk_utils.js'),
+    api: require('./api.js'),
 };
 // getDiskSpace: require('./getDiskSpace.js'),

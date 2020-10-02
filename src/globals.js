@@ -6,6 +6,7 @@ var fs = require('fs-extra');
 var dict = require('dict');
 const path = require('path');
 const Influx = require('influx');
+const { IncomingWebhook } = require('ms-teams-webhook');
 
 const winston = require('winston');
 require('winston-daily-rotate-file');
@@ -101,6 +102,16 @@ var slackTaskFailureChannel = config.get('Butler.slackConfig.taskFailureChannel'
 var slackObj = new slack(slackWebhookURL);
 
 // ------------------------------------
+// MS Teams config
+if (config.has('Butler.teamsConfig.enable') && config.has('Butler.teamsConfig.taskFailureWebhookURL') && config.get('Butler.teamsConfig.enable') == true) {
+    let teamsTaskFailureURL = config.get('Butler.teamsConfig.taskFailureWebhookURL');
+
+    // Create MS Teams object
+    var teamsTaskFailureObj = new IncomingWebhook(teamsTaskFailureURL);
+
+}
+
+// ------------------------------------
 // Data structures needed to keep track of currently active users/sessions
 var currentUsers = dict();
 var currentUsersPerServer = dict();
@@ -175,6 +186,29 @@ if (config.has('Butler.fileDeleteApprovedDirectories')) {
         fileDeleteDirectories.push(deleteDir);
     });
 }
+
+// Create list of enabled API endpoints
+var endpointsEnabled = [];
+
+const getEnabledApiEndpoints = function (obj) {
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'object' && value !== null) {
+            // Sub-object
+            getEnabledApiEndpoints(value);
+        }
+
+        if (value == true) {
+            endpointsEnabled.push(key);
+        }
+    }
+};
+
+if (config.has('Butler.restServerEndpointsEnable')) {
+    let endpoints = config.get('Butler.restServerEndpointsEnable');
+    getEnabledApiEndpoints(endpoints);
+}
+
+logger.info(`Enabled API endpoints: ${JSON.stringify(endpointsEnabled, null, 2)}`);
 
 // Set up InfluxDB
 logger.info(`CONFIG: Influxdb enabled: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.enable')}`);
@@ -254,6 +288,7 @@ module.exports = {
     slackObj,
     slackLoginNotificationChannel,
     slackTaskFailureChannel,
+    teamsTaskFailureObj,
     currentUsers,
     currentUsersPerServer,
     udpServerSessionConnectionSocket,
@@ -272,4 +307,5 @@ module.exports = {
     influx,
     fileMoveDirectories,
     fileDeleteDirectories,
+    endpointsEnabled,
 };
