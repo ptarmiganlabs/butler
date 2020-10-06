@@ -10,7 +10,7 @@ const errors = require('restify-errors');
  * /v4/configfile/endpointsenabled:
  *   get:
  *     description: |
- *       Get a list of all enabled API endpoints, using the key names from the Butler config file.
+ *       Get an array of all enabled API endpoints, using the key names from the Butler config file.
  *
  *       Note: Endpoints are enabled/disabled in the Butler main configuration file.
  *     produces:
@@ -18,15 +18,22 @@ const errors = require('restify-errors');
  *     responses:
  *       200:
  *         description: Enabled enpooints returned.
+ *         schema:
+ *           type: array
+ *           items: {}
+ *           example:
+ *             - "activeUserCount"
+ *             - "activeUsers"
+ *             - "apiListEnbledEndpoints"
  *       500:
- *         description: Internal error, or file overwrite was not allowed.
+ *         description: Internal error.
  *
  */
 module.exports.respondGET_configFileListEnbledEndpoints = async function (req, res, next) {
     logRESTCall(req);
 
     try {
-        res.send(201, globals.endpointsEnabled);
+        res.send(200, globals.endpointsEnabled);
         next();
     } catch (err) {
         globals.logger.error(`FILEMOVE: Failed moving file ${req.body.fromFile} to ${req.body.toFile}`);

@@ -18,19 +18,27 @@ var keyv = [];
  *     responses:
  *       200:
  *         description: Array of all namespaces.
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Namespace name.
+ *                 example: "Weekly sales app"
  *       500:
  *         description: Internal error.
  *
  */
-module.exports.respondGET_keyvaluenamespaces = function (req, res, next) {
+module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
     logRESTCall(req);
 
     try {
         let ns = [];
         keyv.forEach(item => ns.push(item.namespace));
 
-        // res.send(JSON.stringify(ns, null, 2));
-        res.send(200, { namespaces: ns });
+        res.send(200, ns);
         next();
     } catch (err) {
         globals.logger.error('KEYVALUE: Failed getting all namespaces');
@@ -42,7 +50,7 @@ module.exports.respondGET_keyvaluenamespaces = function (req, res, next) {
 /**
  * @swagger
  *
- * /v4/keyvalue/{namespace}:
+ * /v4/keyvalues/{namespace}:
  *   get:
  *     description: |
  *       Get the value associated with a key, in a specific namespace.
@@ -62,15 +70,30 @@ module.exports.respondGET_keyvaluenamespaces = function (req, res, next) {
  *     responses:
  *       200:
  *         description: Key and it's associated value returned.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             namespace:
+ *               type: string
+ *               description: Namespace name.
+ *               example: "Sales data ETL, step 2"
+ *             key:
+ *               type: string
+ *               description: Key name.
+ *               example: "Last extract timestamp"
+ *             value:
+ *               value: string
+ *               description: Value stored in key-value pair.
+ *               example: "2020-09-29 17:14:56"
  *       404:
- *         description: Key not found.
+ *         description: Namespace or key not found.
  *       409:
  *         description: Missing namespace or key.
  *       500:
  *         description: Internal error.
  *
  */
-module.exports.respondGET_keyvalue = async function (req, res, next) {
+module.exports.respondGET_keyvalues = async function (req, res, next) {
     logRESTCall(req);
 
     try {
@@ -80,7 +103,7 @@ module.exports.respondGET_keyvalue = async function (req, res, next) {
 
         if (kv == undefined) {
             // Namespace does not exist. Error.
-            globals.logger.error(`KEYVALUE: Namespace not found: ${req.params.namespace}`);
+            globals.logger.error('KEYVALUE: Namespace parameter missing.');
 
             kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
             res.send(kvRes);
@@ -91,6 +114,8 @@ module.exports.respondGET_keyvalue = async function (req, res, next) {
                 // No key specified.
                 // In future version: Return list of all key-value pairs in this namespace
                 // Now: Return error
+                globals.logger.error(`KEYVALUE: Key parameter missing. Namespace: ${req.params.namespace}.`);
+
                 kvRes = new errors.MissingParameterError({}, `No key specified for namespace: ${req.params.namespace}`);
                 res.send(kvRes);
             } else {
@@ -98,11 +123,12 @@ module.exports.respondGET_keyvalue = async function (req, res, next) {
                 let value = await kv.keyv.get(req.query.key);
                 if (value == undefined) {
                     // Key does not exist
+                    globals.logger.error(`KEYVALUE: Key ${req.query.key} not found in namespace ${req.params.namespace}.`);
                     kvRes = new errors.ResourceNotFoundError({}, `Key '${req.query.key}' not found in namespace: ${req.params.namespace}`);
                     res.send(kvRes);
                 } else {
                     // Key found and value returned
-                    kvRes = { key: req.query.key, value: value };
+                    kvRes = { namespace: req.params.namespace, key: req.query.key, value: value };
                     res.send(200, kvRes);
                 }
             }
@@ -119,42 +145,170 @@ module.exports.respondGET_keyvalue = async function (req, res, next) {
 /**
  * @swagger
  *
- * /v4/keyvalue/{namespace}:
+ * /v4/keyvalues/{namespace}/keyexists:
+ *   get:
+ *     description: |
+ *       Checks if a key exists in a namespace.
+ *
+ *       Returns true if the specified key exists, otherwise false.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: namespace
+ *         description: Name of namespace.
+ *         in: path
+ *         required: true
+ *         type: string
+ *       - name: key
+ *         description: Name of key.
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Key exist/no-exist returned, together with the data if the does exist.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             keyExists:
+ *               type: string
+ *               description: true or false depending on whether the key exists or not
+ *               example: "true"
+ *             keyValue:
+ *               type: object
+ *               description: Key-value data, if the key has been found.
+ *               properties:
+ *                 namespace:
+ *                   type: string
+ *                   description: Namespace name.
+ *                   example: "Sales data ETL, step 2"
+ *                 key:
+ *                   type: string
+ *                   description: Key name.
+ *                   example: "Last extract timestamp"
+ *                 value:
+ *                   value: string
+ *                   description: Value stored in key-value pair.
+ *                   example: "2020-09-29 17:14:56"
+ *       409:
+ *         description: Namespace does not exist.
+ *       500:
+ *         description: Internal error.
+ *
+ */
+module.exports.respondGET_keyvalueExists = async function (req, res, next) {
+    logRESTCall(req);
+
+    try {
+        // Does namespace exist?
+        let kv = keyv.find(item => item.namespace == req.params.namespace);
+        let kvRes;
+
+        if (kv == undefined) {
+            // Namespace does not exist. Error.
+            globals.logger.error('KEYVALUE: Namespace parameter missing.');
+
+            kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
+            res.send(kvRes);
+        } else {
+            // Namespace exists. Is there a key specified?
+
+            if (req.query.key == undefined) {
+                // No key specified.
+                // In future version: Return list of all key-value pairs in this namespace
+                // Now: Return error
+                globals.logger.error(`KEYVALUE: Key parameter missing. Namespace: ${req.params.namespace}.`);
+
+                kvRes = new errors.MissingParameterError({}, `No key specified for namespace: ${req.params.namespace}`);
+                res.send(kvRes);
+            } else {
+                // Key specified
+                let value = await kv.keyv.get(req.query.key);
+                if (value == undefined) {
+                    // Key does not exist
+                    kvRes = { keyExists: false };
+                    kvRes.keyValue = {};
+                } else {
+                    // Key exists
+                    kvRes = { keyExists: false };
+                    kvRes.keyValue = { namespace: req.params.namespace, key: req.query.key, value: value };
+                }
+                res.send(200, kvRes);
+            }
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}`);
+        res.send(new errors.InternalError({}, 'Failed getting key-value data'));
+        next();
+    }
+};
+
+/**
+ * @swagger
+ *
+ * /v4/keyvalues/{namespace}:
  *   post:
  *     description: |
- *       Set the value associated with a key, in a specific namespace.
+ *       Create a new key-value pair in the specified namespace.
+ *
+ *       If the specified key already exists it will be overwritten.
+ *       If the posted data has a TTL, it will start counting when the post occur. 
+ *       I.e. if a previouly posted key also had a TTL, it will be replace with the most recent TTL.
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: message
- *         description: Key-value pair to set
+ *         description: Key-value pair to create
  *         in: body
- *         schema: 
+ *         schema:
  *           type: object
- *           required: 
+ *           required:
  *             - key
  *             - value
  *           properties:
  *             key:
  *               type: string
- *               example: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
+ *               description: Key to use.
+ *               example: "ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1"
  *             value:
  *               type: string
- *               example: 12345.789
+ *               description: Value to set.
+ *               example: "12345.789"
+ *             ttl:
+ *               type: string
+ *               description: Time to live = how long (milliseconds) the key-value pair should exist before being automatically deleted.
+ *               example: "10000"
  *     responses:
  *       201:
- *         description: Key and it's associated value returned.
+ *         description: Key successfully set. 
+ *         schema:
+ *           type: object
+ *           properties:
+ *             namespace:
+ *               type: string
+ *               description: Namespace name.
+ *               example: "Sales data ETL, step 2"
+ *             key:
+ *               type: string
+ *               description: Key name.
+ *               example: "ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1"
+ *             value:
+ *               value: string
+ *               description: Value stored in key-value pair.
+ *               example: "12345.789"
  *       409:
  *         description: Missing namespace or key.
  *       500:
  *         description: Internal error.
  *
  */
-module.exports.respondPOST_keyvalue = async function (req, res, next) {
+module.exports.respondPOST_keyvalues = async function (req, res, next) {
     logRESTCall(req);
 
     try {
-        if (req.params.namespace == undefined || req.body.key == undefined ||  req.body.key == '') {
+        if (req.params.namespace == undefined || req.body.key == undefined || req.body.key == '') {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter is missing'));
         } else {
@@ -179,8 +333,7 @@ module.exports.respondPOST_keyvalue = async function (req, res, next) {
 
                 keyv.push({
                     keyv: newKeyvObj,
-                    namespace: req.params.namespace,
-                    keys: [req.body.key],
+                    namespace: req.params.namespace
                 });
             } else {
                 // Namespace already exists
@@ -191,7 +344,7 @@ module.exports.respondPOST_keyvalue = async function (req, res, next) {
                 }
             }
 
-            res.send(201, `Added key ${req.body.key} to namespace ${req.params.namespace}`);
+            res.send(201, {'namespace': req.params.namespace, 'key': req.body.key, 'value': req.body.value});
         }
         next();
     } catch (err) {
@@ -204,69 +357,10 @@ module.exports.respondPOST_keyvalue = async function (req, res, next) {
 /**
  * @swagger
  *
- * /v4/keyvalueclear/{namespace}:
- *   put:
- *     description: |
- *       Removes all key-value pairs from specified namespace.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: namespace
- *         description: Name of namespace.
- *         in: path
- *         required: true
- *         type: string
- *     responses:
- *       201:
- *         description: Namespace has been emptied.
- *       409:
- *         description: Missing namespace.
- *       500:
- *         description: Internal error.
- *
- */
-module.exports.respondPUT_keyvalueClear = async function (req, res, next) {
-    logRESTCall(req);
-
-    try {
-        if (req.params.namespace == undefined) {
-            // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'No namespace specified'));
-        } else {
-            // Does namespace exist?
-            let kv = keyv.find(item => item.namespace == req.params.namespace);
-            let kvRes;
-
-            if (kv == undefined) {
-                // Namespace does not exist. Error.
-                globals.logger.error(`KEYVALUE: Namespace not found: ${req.params.namespace}`);
-
-                kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
-                res.send(kvRes);
-            } else {
-                // Namespace exists
-                await kv.keyv.clear();
-
-                globals.logger.verbose(`KEYVALUE: Cleared namespace: ${req.params.namespace}`);
-                res.send(201, `Cleared namespace: ${req.params.namespace}`);
-            }
-        }
-
-        next();
-    } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${req.params.namespace}`);
-        res.send(new errors.InternalError({}, 'Failed clearing namespace'));
-        next();
-    }
-};
-
-/**
- * @swagger
- *
- * /v4/keyvalue/{namespace}:
+ * /v4/keyvalue/{namespace}/{key}:
  *   delete:
  *     description: |
- *       Removes all key-value pairs from specified namespace.
+ *       Delete a key-value pair in a specific namespace.
  *     produces:
  *       - application/json
  *     parameters:
@@ -281,7 +375,7 @@ module.exports.respondPUT_keyvalueClear = async function (req, res, next) {
  *         required: true
  *         type: string
  *     responses:
- *       201:
+ *       204:
  *         description: Key-value pair has been deleted.
  *       409:
  *         description: Missing namespace or key.
@@ -289,11 +383,11 @@ module.exports.respondPUT_keyvalueClear = async function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondDELETE_keyvalue = async function (req, res, next) {
+module.exports.respondDELETE_keyvalues = async function (req, res, next) {
     logRESTCall(req);
 
     try {
-        if (req.params.namespace == undefined || req.body.key == undefined ||  req.body.key == '') {
+        if (req.params.namespace == undefined || req.body.key == undefined || req.body.key == '') {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter is missing'));
         } else {
@@ -325,7 +419,7 @@ module.exports.respondDELETE_keyvalue = async function (req, res, next) {
                         res.send(kvRes);
                     } else {
                         // Key found and deleted
-                        res.send(200, `Key '${req.params.key}' deleted from namespace: ${req.params.namespace}`);
+                        res.send(204);
                     }
                 }
             }
@@ -335,6 +429,72 @@ module.exports.respondDELETE_keyvalue = async function (req, res, next) {
     } catch (err) {
         globals.logger.error(`KEYVALUE: Failed deleting key '${req.params.key}' in namespace: ${req.params.namespace}`);
         res.send(new errors.InternalError({}, 'Failed deleting key-value data'));
+        next();
+    }
+};
+
+
+
+/**
+ * @swagger
+ *
+ * /v4/keyvalue/{namespace}:
+ *   delete:
+ *     description: |
+ *       Delete a namespace and all key-value pairs in it.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: namespace
+ *         description: Name of namespace.
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       204:
+ *         description: Namespace has been deleted.
+ *       409:
+ *         description: Missing namespace.
+ *       500:
+ *         description: Internal error.
+ *
+ */
+module.exports.respondDELETE_keyvaluesDelete = async function (req, res, next) {
+    logRESTCall(req);
+
+    try {
+        if (req.params.namespace == undefined) {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'No namespace specified'));
+        } else {
+            // Does namespace exist?
+            let kv = keyv.find(item => item.namespace == req.params.namespace);
+            let kvRes;
+
+            if (kv == undefined) {
+                // Namespace does not exist. Error.
+                globals.logger.error(`KEYVALUE: Namespace not found: ${req.params.namespace}`);
+
+                kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
+                res.send(kvRes);
+            } else {
+                // Namespace exists
+
+                // Remove all KV pairs from namespace
+                await kv.keyv.clear();
+
+                // Delete the namespace
+                keyv = keyv.filter(item => item.namespace == req.params.namespace);
+
+                globals.logger.verbose(`KEYVALUE: Cleared namespace: ${req.params.namespace}`);
+                res.send(204);
+            }
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${req.params.namespace}`);
+        res.send(new errors.InternalError({}, 'Failed clearing namespace'));
         next();
     }
 };

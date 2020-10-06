@@ -19,11 +19,16 @@ const errors = require('restify-errors');
  *         in: body
  *         required: true
  *         type: string
- *         example: {taskId: 210832b5-6174-4572-bd19-3e61eda675ef}
+ *         example: "{taskId: 210832b5-6174-4572-bd19-3e61eda675ef}"
  *     responses:
  *       201:
  *         description: Task successfully started.
- *       409:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             taskId:
+ *               type: string
+  *       409:
  *         description: Required parameter missing.
  *       500:
  *         description: Internal error.

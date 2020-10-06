@@ -29,7 +29,7 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
  *     responses:
  *       200:
- *         description: App dump successful.
+ *         description: App dump successful. App metadata returned as JSON.
  *       408:
  *         description: App not found in Qlik Sense.
  *       409:

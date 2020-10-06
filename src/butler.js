@@ -85,7 +85,31 @@ const cors = corsMiddleware({
 restServer.pre(cors.preflight);
 restServer.use(cors.actual);
 
-restServer.pre(restify.pre.sanitizePath());
+restServer.pre(function (req, res, next) {
+    // Is there a X-HTTP-Method-Override header?
+    // If so, change the http method to the one specified
+
+    // if ( req.headers.find(item => i) )
+
+
+    for (const [key, value] of Object.entries(req.headers)) {
+        if (key.toLowerCase() == 'x-http-method-override') {
+            req.method = value;
+        }
+    }
+
+
+    req.headers.accept = 'application/json';
+    return next();
+});
+
+// Cleans up sloppy URLs on the request object
+// TODO Test that sloppy URLs are cleaned up
+restServer.pre(restify.plugins.pre.sanitizePath());
+
+// Dedupe slashes in URL before routing
+// TODO Test that deduping works.
+restServer.pre(restify.plugins.pre.dedupeSlashes());
 
 restifySwaggerJsdoc.createSwaggerPage({
     title: 'Butler API documentation', // Page title
@@ -136,13 +160,13 @@ if (globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
-    globals.logger.debug('Registering REST endpoint PUT /v4/createdir');
-    restServer.put({ path: '/v4/createdir' }, rest.createDir.respondPUT_createDir);
+    globals.logger.debug('Registering REST endpoint POST /v4/createdir');
+    restServer.post({ path: '/v4/createdir' }, rest.disk_utils.respondPOST_createDir);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
-    globals.logger.debug('Registering REST endpoint PUT /v4/createdirqvd');
-    restServer.put({ path: '/v4/createdirqvd' }, rest.createDirQVD.respondPUT_createDirQVD);
+    globals.logger.debug('Registering REST endpoint POST /v4/createdirqvd');
+    restServer.post({ path: '/v4/createdirqvd' }, rest.disk_utils.respondPOST_createDirQVD);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
@@ -152,12 +176,12 @@ if (globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/sensestarttask');
-    restServer.put({ path: '/v4/sensestarttask' }, rest.senseStartTask.respondPUT_senseStartTask);
+    restServer.put({ path: '/v4/reloadtask/:taskId/start' }, rest.senseStartTask.respondPUT_senseStartTask);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
-    restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
+    restServer.get({ path: '/v4/senseappdump' }, rest.senseAppDump.respondGET_senseAppDump);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
@@ -182,55 +206,53 @@ if (globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
 
 if (globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
     globals.logger.debug('Registering REST endpoint GET /v4/keyvaluenamespaces');
-    restServer.get({ path: '/v4/keyvaluenamespaces' }, rest.keyValueStore.respondGET_keyvaluenamespaces);
+    restServer.get({ path: '/v4/keyvaluesnamespaces' }, rest.keyValueStore.respondGET_keyvaluesnamespaces);
 
-    globals.logger.debug('Registering REST endpoint GET /v4/keyvalue');
-    restServer.get({ path: '/v4/keyvalue/:namespace/:key' }, rest.keyValueStore.respondGET_keyvalue);
-    restServer.get({ path: '/v4/keyvalue/:namespace' }, rest.keyValueStore.respondGET_keyvalue);
-    restServer.get({ path: '/v4/keyvalue' }, rest.keyValueStore.respondGET_keyvalue);
+    globals.logger.debug('Registering REST endpoint GET /v4/keyvalues/:namespace/keyexists');
+    restServer.get({ path: '/v4/keyvalues/:namespace/keyexists' }, rest.keyValueStore.respondGET_keyvalueExists);
 
-    globals.logger.debug('Registering REST endpoint POST /v4/keyvalue');
-    restServer.post({ path: '/v4/keyvalue/:namespace' }, rest.keyValueStore.respondPOST_keyvalue);
+    globals.logger.debug('Registering REST endpoint GET /v4/keyvalues');
+    restServer.get({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondGET_keyvalues);
 
-    globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalue/{namespace}/{key}');
-    restServer.del({ path: '/v4/keyvalue/:namespace/:key' }, rest.keyValueStore.respondDELETE_keyvalue);
+    globals.logger.debug('Registering REST endpoint POST /v4/keyvalues');
+    restServer.post({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondPOST_keyvalues);
 
-    globals.logger.debug('Registering REST endpoint PUT /v4/keyvalue/{namespace}/clear');
-    restServer.put({ path: '/v4/keyvalue/:namespace/clear' }, rest.keyValueStore.respondPUT_keyvalueClear);
+    globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}/{key}');
+    restServer.del({ path: '/v4/keyvalues/:namespace/:key' }, rest.keyValueStore.respondDELETE_keyvalues);
+
+    globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}');
+    restServer.del({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondDELETE_keyvaluesDelete);
 }
 
 if (globals.config.get('Butler.scheduler.enable')) {
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
-        globals.logger.debug('Registering REST endpoint POST /v4/schedule');
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
+        globals.logger.debug('Registering REST endpoint POST /v4/schedules');
 
-        restServer.post({ path: '/v4/schedule' }, rest.scheduler.respondPOST_schedule);
+        restServer.post({ path: '/v4/schedules' }, rest.scheduler.respondPOST_schedules);
     }
 
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
-        globals.logger.debug('Registering REST endpoint GET /v4/schedule');
+    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
+        globals.logger.debug('Registering REST endpoint GET /v4/schedules');
 
-        restServer.get({ path: '/v4/schedule/:scheduleId' }, rest.scheduler.respondGET_schedule);
-        restServer.get({ path: '/v4/schedule' }, rest.scheduler.respondGET_schedule);
+        restServer.get({ path: '/v4/schedules' }, rest.scheduler.respondGET_schedules);
     }
 
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')) {
-        globals.logger.debug('Registering REST endpoint DELETE /v4/schedule');
+        globals.logger.debug('Registering REST endpoint DELETE /v4/schedules');
 
-        restServer.del({ path: '/v4/schedule/:scheduleId' }, rest.scheduler.respondDELETE_schedule);
+        restServer.del({ path: '/v4/schedules/:scheduleId' }, rest.scheduler.respondDELETE_schedules);
     }
 
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
 
-        restServer.post({ path: '/v4/schedulestart/:scheduleId' }, rest.scheduler.respondPOST_scheduleStart);
-        restServer.post({ path: '/v4/schedulestart' }, rest.scheduler.respondPOST_scheduleStart);
+        restServer.put({ path: '/v4/schedules/:scheduleId/start' }, rest.scheduler.respondPUT_schedulesStart);
     }
 
     if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
 
-        restServer.post({ path: '/v4/schedulestop/:scheduleId' }, rest.scheduler.respondPOST_scheduleStop);
-        restServer.post({ path: '/v4/schedulestop' }, rest.scheduler.respondPOST_scheduleStop);
+        restServer.put({ path: '/v4/schedules/:scheduleId/stop' }, rest.scheduler.respondPUT_schedulesStop);
     }
 }
 
@@ -272,7 +294,7 @@ if (globals.config.has('Butler.scheduler')) {
         scheduler.loadSchedulesFromDisk();
         // scheduler.launchAllSchedules();
     } else {
-        globals.logger.info("MAIN: Didn't load schedules from file");
+        globals.logger.info('MAIN: Didn\'t load schedules from file');
     }
 }
 

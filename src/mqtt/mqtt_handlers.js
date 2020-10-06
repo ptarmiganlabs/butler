@@ -61,7 +61,7 @@ module.exports.mqttInitHandlers = function () {
             directoryName = array2[0];
             userName = array2[1];
 
-            globals.logger.info('Adding active user');
+            globals.logger.info('MQTT: Adding active user');
             // console.info('Adding active user');
             globals.currentUsers.set(userName, serverName); // Add user as active
 
@@ -85,7 +85,7 @@ module.exports.mqttInitHandlers = function () {
 
             // Send active user count messages to MQTT, one for each proxy node
             globals.currentUsersPerServer.forEach(function (value, key) {
-                globals.logger.info('server:' + key + ', users:' + JSON.stringify(value));
+                globals.logger.info('MQTT: server:' + key + ', users:' + JSON.stringify(value));
                 // console.info('server:' + key + ', users:' + JSON.stringify(value));
                 //                console.log('=========');
                 //                console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
@@ -115,7 +115,7 @@ module.exports.mqttInitHandlers = function () {
                 activeUsersJSON,
             );
 
-            globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
+            globals.logger.info(`MQTT: # of active users: ${globals.currentUsers.size}`);
         }
 
         if (topic == globals.config.get('Butler.mqttConfig.sessionStopTopic')) {
@@ -128,7 +128,7 @@ module.exports.mqttInitHandlers = function () {
             directoryName = array2[0];
             userName = array2[1];
 
-            globals.logger.info('Removing active user');
+            globals.logger.info('MQTT: Removing active user');
             globals.currentUsers.delete(userName); // Remove user from list of active users
 
             // Build JSON of all active users
@@ -146,7 +146,7 @@ module.exports.mqttInitHandlers = function () {
 
                 serverObj.delete(userName);
                 globals.currentUsersPerServer.set(serverName, serverObj); // Update the main users-per-server dict
-                globals.logger.verbose(`---- Removed user ${userName} from server ${serverName}`);
+                globals.logger.verbose(`MQTT: ---- Removed user ${userName} from server ${serverName}`);
 
                 // Send active user count messages to MQTT, one for each proxy node
                 globals.currentUsersPerServer.forEach(function (value, key) {
@@ -176,13 +176,13 @@ module.exports.mqttInitHandlers = function () {
                 activeUsersJSON,
             );
 
-            globals.logger.info(`# of active users: ${globals.currentUsers.size}`);
+            globals.logger.info(`MQTT: # of active users: ${globals.currentUsers.size}`);
         }
     });
 
     // Handler for MQTT errors
     globals.mqttClient.on('error', function (topic, message) {
         // Error occured
-        globals.logger.error('MQTT error: ' + message);
+        globals.logger.error('MQTT: MQTT error: ' + message);
     });
 };

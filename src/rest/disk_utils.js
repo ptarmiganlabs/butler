@@ -6,6 +6,8 @@ const isDirectoryChildOf = require('../lib/disk_utils').isDirectoryChildOf;
 const errors = require('restify-errors');
 var fs = require('fs-extra');
 const path = require('path');
+var mkdirp = require('mkdirp');
+
 
 /**
  * @swagger
@@ -31,18 +33,33 @@ const path = require('path');
  *             fromFile:
  *               type: string
  *               description: Name of source file
- *               example: subfolder/file1.qvd
+ *               example: "subfolder/file1.qvd"
  *             toFile:
  *               type: string
  *               description: Name of destination file. Can be different from source file name, if needed
- *               example: archive/file1_20200925.qvd
+ *               example: "archive/file1_20200925.qvd"
  *             overwrite:
  *               type: boolean
  *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
- *               example: false
+ *               example: "false"
  *     responses:
- *       201:
+ *       200:
  *         description: File moved.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             fromFile:
+ *               type: string
+ *               description: Name of source file
+ *               example: "subfolder/file1.qvd"
+ *             toFile:
+ *               type: string
+ *               description: Name of destination file. Can be different from source file name, if needed
+ *               example: "archive/file1_20200925.qvd"
+ *             overwrite:
+ *               type: boolean
+ *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
+ *               example: "false"
  *       403:
  *         description: No approved fromDir/toDir for file move.
  *       404:
@@ -93,7 +110,7 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
 
                 if (moveIsOk) {
                     await fs.moveFile(fromFile, toFile, { overwrite: overwrite });
-                    res.send(201, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
+                    res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
                 } else {
                     globals.logger.error(`FILEMOVE: No approved fromDir/toDir for file move ${req.body.fromFile} to ${req.body.toFile}`);
                     res.send(new errors.ForbiddenError({}, 'No approved fromDir/toDir for file move'));
@@ -136,9 +153,9 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
  *             deleteFile:
  *               type: string
  *               description: Name of file to be deleted. Use forward/backward slashes in paths as needed, depending on whether Butler runs on Windows/non-Windows platform.
- *               example: /data/qvdstore/sales/file1.qvd
+ *               example: "/data/qvdstore/sales/file1.qvd"
  *     responses:
- *       201:
+ *       204:
  *         description: File deleted.
  *       403:
  *         description: No approved directory matches the delete request.
@@ -180,7 +197,7 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
                 if (await fs.pathExists(deleteFile)) {
                     // Finally, make sure that file realy exists
                     await fs.remove(deleteFile);
-                    res.send(201, { deleteFile: deleteFile });
+                    res.send(204);
                 } else {
                     // deleteFile does not exist
                     globals.logger.error(`FILEDELETE: Delete failed, file ${req.body.deleteFile} does not exist`);
@@ -196,6 +213,145 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
     } catch (err) {
         globals.logger.error(`FILEDELETE: Failed deleting file ${req.body.deleteFile}`);
         res.send(new errors.InternalError({}, 'Failed deleting file'));
+        next();
+    }
+};
+
+
+
+/**
+ * @swagger
+ *
+ * /v4/createdirqvd:
+ *   post:
+ *     description: |
+ *       Creates a directory in QVD directory (which is defined in Butler's config file).
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: directory
+ *         description: Path to directory that should be created. The created directory will always be relative to the QVD folder defined in the Butler config file..
+ *         in: body
+ *         schema:
+ *           type: object
+ *           properties:
+ *             directory:
+ *               type: string
+ *               required: true
+ *               description: Path to created directory.
+ *               example: "subfolder/2020-10"
+ *     responses:
+ *       201:
+ *         description: Directory created.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             directory:
+ *               type: string
+ *               description: Path to created directory.
+ *               example: "subfolder/2020-10"
+ * 
+ *       409:
+ *         description: Missing parameter.
+ *       500:
+ *         description: Internal error (file system permissions etc).
+ *
+ */
+module.exports.respondPOST_createDirQVD = function (req, res, next) {
+    logRESTCall(req);
+
+    // TODO: Add check to make sure the created dir is really a subpath of the QVD folder
+
+    try {
+        if (req.body.directory == undefined) {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'No path/directory specified'));
+        } else {
+            mkdirp(globals.qvdFolder + '/' + req.body.directory)
+                .then(dir => globals.logger.verbose(`Created dir ${dir}`))
+
+                .catch(function (error) {
+                    globals.logger.error(`CREATEDIRQVD: ${JSON.stringify(error, null, 2)}`);
+                    return next(new errors.InternalServerError('Failed to create directory.'));
+                });
+
+            res.send(201, req.body);
+        }
+        next();
+    } catch (err) {
+        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${req.body.directory}`);
+        res.send(new errors.InternalError({}, 'Failed creating directory'));
+        next();
+    }
+};
+
+
+/**
+ * @swagger
+ *
+ * /v4/createdir:
+ *   post:
+ *     description: |
+ *       Creates a directory in file system.
+ *       If the directory already exists nothing will happen. 
+ *       If permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.
+ *
+ *       __WARNING: This method can create folders anywhere (where the account running Butler has permissions) in the filesystem.__
+ *       Use with caution. 
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: body
+ *         description: 
+ *         in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - directory
+ *           properties:
+ *             directory:
+ *               type: string
+ *               description: Path to directory that should be created. Can be a relative or absolute path.
+ *               example: "/Users/joe/data/qvds/2020"
+ *     responses:
+ *       201:
+ *         description: Directory created.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             directory:
+ *               type: string
+ *               description: Path to created directory.
+ *               example: "/Users/joe/data/qvds/2020"
+ *       409:
+ *         description: Missing parameter.
+ *       500:
+ *         description: Internal error (file system permissions etc).
+ *
+ */
+module.exports.respondPOST_createDir = function (req, res, next) {
+    logRESTCall(req);
+
+    try {
+        if (req.body.directory == undefined) {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'No path/directory specified'));
+        } else {
+            mkdirp(req.body.directory)
+                .then(dir => globals.logger.verbose(`Created dir ${dir}`))
+
+                .catch(function (error) {
+                    globals.logger.error(`CREATEDIR: ${JSON.stringify(error, null, 2)}`);
+                    return next(new errors.InternalServerError('Failed to create directory.'));
+                });
+
+            res.send(201, req.body);
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}`);
+        res.send(new errors.InternalError({}, 'Failed creating directory'));
         next();
     }
 };

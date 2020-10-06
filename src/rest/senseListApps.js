@@ -21,6 +21,17 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *     responses:
  *       200:
  *         description: App list successfully retrieved.
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: App ID.
+ *               name: 
+ *                 type: string
+ *                 description: App name.
  *       500:
  *         description: Internal error.
  *

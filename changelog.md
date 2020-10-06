@@ -11,7 +11,7 @@
 - Updated dependencies (adresses security issues etc)
 - Breaking
   - http method changed for some API endpoints, with this follows changes in how parameters are passed (e.g. body parameters are used for PUT requests, rather than the query parameters that were previously used)
-  - API endpoints are all lowercase
+  - API endpoint names are all lowercase (previously camelCase)
   - Some keys in the main configuration have new names. For example, there was not a single way of using 'enable' vs 'enabled' keys.
     The config file had both _Butler.heartbeat.enabled_, as well as _Butler.mqttConfig.enable_.
     Confusing - in v4 only _.enable_ is used.

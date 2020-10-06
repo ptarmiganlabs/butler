@@ -112,7 +112,7 @@ if (config.has('Butler.teamsConfig.enable') && config.has('Butler.teamsConfig.ta
 }
 
 // ------------------------------------
-// Data structures needed to keep track of currently active users/sessions
+// Data structures used to keep track of currently active users/sessions
 var currentUsers = dict();
 var currentUsersPerServer = dict();
 

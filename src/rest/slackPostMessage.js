@@ -28,16 +28,28 @@ const errors = require('restify-errors');
  *               example: "#reload-notification"
  *             from_user:
  *               type: string
- *               example: Butler the Bot
+ *               example: "Butler the Bot"
  *             msg:
  *               type: string
- *               example: This is a message from Qlik Sense
+ *               example: "This is a message from Qlik Sense"
  *             emoji:
  *               type: string
- *               example: thumbsup
+ *               example: "thumbsup"
  *     responses:
  *       201:
  *         description: Message successfully sent to Slack.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             channel:
+ *               type: string
+ *             from_user:
+ *               type: string
+ *             msg:
+ *               type: string
+ *             emoji:
+ *               type: string
+ *                  
  *       409:
  *         description: Required parameter missing.
  *       500:
@@ -60,7 +72,7 @@ module.exports.respondPUT_slackPostMessage = function (req, res, next) {
                 icon_emoji: req.body.emoji,
             });
         
-            res.send(201, req.query);
+            res.send(201, req.body);
         }
     
         next();    

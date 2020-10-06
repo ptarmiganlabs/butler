@@ -61,11 +61,18 @@ function stopAllSchedules() {
     }
 }
 
-// Get list of all schedules
+// Get array with all schedules
 function getAllSchedules() {
     globals.logger.debug('SCHEDULER: Getting all schedules');
 
     return globals.configSchedule;
+}
+
+// Get object with a single schedule
+function getSchedule(scheduleId) {
+    globals.logger.debug('SCHEDULER: Getting schedule');
+
+    return globals.configSchedule.find(item => item.id == scheduleId);
 }
 
 // Add cron entry for schedule
@@ -79,7 +86,7 @@ function addCronEntry(newSchedule) {
             globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
         },
         {
-            start: ((newSchedule.startupState == 'started') || (newSchedule.startupState == 'start')) ? true : false,
+            start: newSchedule.startupState == 'started' || newSchedule.startupState == 'start' ? true : false,
             timeZone: newSchedule.timeZone,
         },
     );
@@ -190,6 +197,7 @@ module.exports = {
     stopSchedule,
     getAllSchedules,
     addSchedule,
+    getSchedule,
     deleteSchedule,
     existsSchedule,
 };
