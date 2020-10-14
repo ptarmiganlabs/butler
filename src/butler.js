@@ -104,11 +104,11 @@ restServer.pre(function (req, res, next) {
 });
 
 // Cleans up sloppy URLs on the request object
-// TODO Test that sloppy URLs are cleaned up
+// TODO Verify that sloppy URLs are really cleaned up
 restServer.pre(restify.plugins.pre.sanitizePath());
 
 // Dedupe slashes in URL before routing
-// TODO Test that deduping works.
+// TODO Verify that deduping really works.
 restServer.pre(restify.plugins.pre.dedupeSlashes());
 
 restifySwaggerJsdoc.createSwaggerPage({
@@ -181,7 +181,7 @@ if (globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
-    restServer.get({ path: '/v4/senseappdump' }, rest.senseAppDump.respondGET_senseAppDump);
+    restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
 }
 
 if (globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {

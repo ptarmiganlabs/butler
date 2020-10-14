@@ -2,19 +2,25 @@
 
 ## 4.0
 
-- Scheduler
+### New features
+
+- Task scheduler
 - Key-value store
 - Swagger API docs
+- Move and delete files in the file system
 - Uptime logging, incl memory usage stored in Influx db for charting/monitoring in Grafana
 - Configurable Docker healthcheck
 - Added option to send task failure notifications to MS Teams
 - Updated dependencies (adresses security issues etc)
-- Breaking
-  - http method changed for some API endpoints, with this follows changes in how parameters are passed (e.g. body parameters are used for PUT requests, rather than the query parameters that were previously used)
-  - API endpoint names are all lowercase (previously camelCase)
-  - Some keys in the main configuration have new names. For example, there was not a single way of using 'enable' vs 'enabled' keys.
-    The config file had both _Butler.heartbeat.enabled_, as well as _Butler.mqttConfig.enable_.
-    Confusing - in v4 only _.enable_ is used.
+
+### Breaking changes
+
+- http method changed for some API endpoints. This means that some API endpoints are now called in different ways compared to earlier Butler versions. The parameters have also changed in some cases.
+- API endpoint names are all lowercase (previously camelCase).
+- Some keys in the main configuration have new names. For example, there was not a single way of using 'enable' vs 'enabled' keys.
+  The config file had both _Butler.heartbeat.enabled_, as well as _Butler.mqttConfig.enable_.
+  Confusing - in v4 only _.enable_ is used.
+- In the sample `production.yaml` config file, all features are now turned off by default. This is done for several reasons: Force a thorough review of the configuration file before Butler can be used (most problems arise from incorrect config files!), performance (fewer enabled features = less memory used) and Security (fewer enabled features = fewer potential security risks).
 
 ## 3.1.0
 
@@ -38,10 +44,10 @@ Support for running Butler as a Docker container is finally here.
 
 While it is still possible to run Butler as a normal Node.js app, deploying Butler as a Docker container has many benefits:
 
-- No need to install Node.js on your server(s).
-- Make use of your existing Docker runtime environments, or use those offered by Amazon, Google, Microsoft etc.
-- Benefit from the extremely comprehensive tools ecosystem (monitoring, deployment etc) that is available for Docker.
-- Updating Butler to the latest version is as easy as doing a "docker pull ptarmiganlabs/butler:latest".
+-   No need to install Node.js on your server(s).
+-   Make use of your existing Docker runtime environments, or use those offered by Amazon, Google, Microsoft etc.
+-   Benefit from the extremely comprehensive tools ecosystem (monitoring, deployment etc) that is available for Docker.
+-   Updating Butler to the latest version is as easy as doing a "docker pull ptarmiganlabs/butler:latest".
 
 ## 2.1
 

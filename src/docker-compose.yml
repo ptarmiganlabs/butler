@@ -19,9 +19,5 @@ services:
       options:
         max-file: "5"
         max-size: "5m"
-    labels:
-      kompose.service.type: nodeport        # Used when creating Kubernetes resource files from this docker-compose file 
-      kompose.service.export: "true"        # Used when creating Kubernetes resource files from this docker-compose file
-      kompose.controller.type: deployment   # Used when creating Kubernetes resource files from this docker-compose file
       
 

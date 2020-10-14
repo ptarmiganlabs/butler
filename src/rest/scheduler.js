@@ -22,7 +22,7 @@ var scheduler = require('../lib/scheduler.js');
  *       - name: scheduleId
  *         description: Schedule ID
  *         in: query
- *         required: true
+ *         required: false
  *         type: string
  *         example: "e4b1c455-aa15-4a51-a9cf-c5e4cfc91339"
  *     responses:
@@ -277,12 +277,11 @@ module.exports.respondDELETE_schedules = function (req, res, next) {
  *     description: |
  *       Start a schedule.
  * 
- *       Skip the schedule ID and all schedules will be started.
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: scheduleId
- *         description: Schedule ID. If not provided, all schedules will be started.
+ *         description: Schedule ID.
  *         in: path
  *         required: false
  *         type: string
@@ -381,17 +380,16 @@ module.exports.respondPUT_schedulesStart = function (req, res, next) {
 /**
  * @swagger
  *
- * /v4/schedules{scheduleId}/stop:
+ * /v4/schedules/{scheduleId}/stop:
  *   put:
  *     description: |
  *       Stop a schedule.
-
- *       Skip the schedule ID and all schedules will be stopped.
+ *
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: scheduleId
- *         description: Schedule ID. If not provided, all schedules will be stopped.
+ *         description: Schedule ID.
  *         in: path
  *         required: false
  *         type: string

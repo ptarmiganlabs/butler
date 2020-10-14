@@ -46,7 +46,7 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
         } else {
-            globals.logger.info(`APPDUMP: Dumping app: ${req.params.appId}`);
+            globals.logger.info(`APPDUMP: Dumping app: ${req.params.appIi}`);
 
             // create a new session
             const configEnigma = {

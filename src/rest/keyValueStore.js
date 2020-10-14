@@ -9,7 +9,7 @@ var keyv = [];
 /**
  * @swagger
  *
- * /v4/keyvaluenamespaces:
+ * /v4/keyvaluesnamespaces:
  *   get:
  *     description: |
  *       List all currently defined namespaces.
@@ -85,6 +85,10 @@ module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
  *               value: string
  *               description: Value stored in key-value pair.
  *               example: "2020-09-29 17:14:56"
+ *             ttl:
+ *               value: integer
+ *               description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.
+ *               example: 60000
  *       404:
  *         description: Namespace or key not found.
  *       409:
@@ -128,7 +132,7 @@ module.exports.respondGET_keyvalues = async function (req, res, next) {
                     res.send(kvRes);
                 } else {
                     // Key found and value returned
-                    kvRes = { namespace: req.params.namespace, key: req.query.key, value: value };
+                    kvRes = { namespace: req.params.namespace, key: req.query.key, value: value, ttl: kv.ttl };
                     res.send(200, kvRes);
                 }
             }
@@ -190,6 +194,10 @@ module.exports.respondGET_keyvalues = async function (req, res, next) {
  *                   value: string
  *                   description: Value stored in key-value pair.
  *                   example: "2020-09-29 17:14:56"
+ *                 ttl:
+ *                   value: integer
+ *                   description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.
+ *                   example: 60000
  *       409:
  *         description: Namespace does not exist.
  *       500:
@@ -230,8 +238,13 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
                     kvRes.keyValue = {};
                 } else {
                     // Key exists
-                    kvRes = { keyExists: false };
-                    kvRes.keyValue = { namespace: req.params.namespace, key: req.query.key, value: value };
+                    kvRes = { keyExists: true };
+                    kvRes.keyValue = {
+                        namespace: req.params.namespace,
+                        key: req.query.key,
+                        value: value,
+                        ttl: kv.ttl,
+                    };
                 }
                 res.send(200, kvRes);
             }
@@ -254,14 +267,21 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
  *       Create a new key-value pair in the specified namespace.
  *
  *       If the specified key already exists it will be overwritten.
- *       If the posted data has a TTL, it will start counting when the post occur. 
+ *       If the posted data has a TTL, it will start counting when the post occur.
  *       I.e. if a previouly posted key also had a TTL, it will be replace with the most recent TTL.
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: message
+ *       - name: namespace
+ *         description: Namespace in which the key-value pair will be stored.
+ *         in: path
+ *         type: string
+ *         required: true
+ *         example: "Sales data ETL, step 2"
+ *       - name: Key-value pair
  *         description: Key-value pair to create
  *         in: body
+ *         required: true
  *         schema:
  *           type: object
  *           required:
@@ -282,7 +302,7 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
  *               example: "10000"
  *     responses:
  *       201:
- *         description: Key successfully set. 
+ *         description: Key successfully set.
  *         schema:
  *           type: object
  *           properties:
@@ -298,6 +318,10 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
  *               value: string
  *               description: Value stored in key-value pair.
  *               example: "12345.789"
+ *             ttl:
+ *               value: integer
+ *               description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.
+ *               example: 60000
  *       409:
  *         description: Missing namespace or key.
  *       500:
@@ -315,6 +339,12 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
             // Does namespace already exist?
             let kv = keyv.find(item => item.namespace == req.params.namespace);
 
+            let ttl = 0;
+            if (req.body.ttl != undefined) {
+                // TTL parameter available, use it
+                ttl = parseInt(req.body.ttl, 10);
+            }
+
             if (kv == undefined) {
                 // New namespace. Create keyv object.
 
@@ -324,27 +354,35 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
                 }
 
                 let newKeyvObj = new Keyv(null, { namespace: req.params.namespace, maxSize: maxKeys });
-                if (req.body.ttl != undefined) {
-                    // TTL parameter available, use it
-                    await newKeyvObj.set(req.body.key, req.body.value, parseInt(req.body.ttl, 10));
+
+                if (ttl > 0) {
+                    await newKeyvObj.set(req.body.key, req.body.value, ttl);
                 } else {
                     await newKeyvObj.set(req.body.key, req.body.value);
                 }
 
                 keyv.push({
                     keyv: newKeyvObj,
-                    namespace: req.params.namespace
+                    namespace: req.params.namespace,
+                    ttl: ttl,
                 });
             } else {
                 // Namespace already exists
-                if (req.body.ttl != undefined) {
-                    await kv.keyv.set(req.body.key, req.body.value, parseInt(req.body.ttl, 10));
+                kv.ttl = ttl;
+
+                if (ttl > 0) {
+                    await kv.keyv.set(req.body.key, req.body.value, ttl);
                 } else {
                     await kv.keyv.set(req.body.key, req.body.value);
                 }
             }
 
-            res.send(201, {'namespace': req.params.namespace, 'key': req.body.key, 'value': req.body.value});
+            res.send(201, {
+                namespace: req.params.namespace,
+                key: req.body.key,
+                value: req.body.value,
+                ttl: ttl,
+            });
         }
         next();
     } catch (err) {
@@ -432,8 +470,6 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
         next();
     }
 };
-
-
 
 /**
  * @swagger
