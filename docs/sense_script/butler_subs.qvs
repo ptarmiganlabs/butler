@@ -1,0 +1,84 @@
+// ------------------------------------------------------------
+// ** Time stamped trace messages **
+//
+// Get nice trace lines in the reload log by calling the line with 
+// CALL NiceTrace('My trace message. Variable value=$(vVariableName)');
+//
+// Paramaters:
+// vMsg                  : Message sent to reload log
+// ------------------------------------------------------------
+sub NiceTrace(vMsg)
+	let vNow = Now(1);
+	TRACE >>> $(vNow): $(vMsg);
+    
+    // Clear timestamp variable
+    set vNow=;
+end sub
+
+
+
+// ------------------------------------------------------------
+// ** Add key-value pair to a namespace **
+//
+// Paramaters:
+// vNamespace            : Namespace in which the KV pair will be stored
+// vKey                  : Key name
+// vValue                : Value to store together with key
+// vTimeToLive           : How long should the KV pair exist before being automatically deleted?
+//                         Set to 0 to disable TTL feature (=no auto-delete of KV pair)
+// ------------------------------------------------------------
+sub AddKeyValue(vNamespace, vKey, vValue, vTimeToLive)
+    LIB CONNECT TO 'Butler_POST';
+
+	if (vTimeToLive>0) then
+	    let vRequestBody = '{"key": "$(vKey)", "value": "$(vValue)", "ttl": "$(vTimeToLive)"}';
+    else
+		let vRequestBody = '{"key": "$(vKey)", "value": "$(vValue)"}';    
+    end if
+    
+    // Escape " in request body 
+    let vRequestBody = replace(vRequestBody,'"', chr(34)&chr(34));
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "namespace",
+        "key",
+        "value",
+        "ttl"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvalues/$(vNamespace)",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "Content-Type" "application/json"
+    );
+
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
+// ------------------------------------------------------------
+// ** Get key-value pair from a namespace **
+//
+// Paramaters:
+// vNamespace            : Namespace in which the KV pair will be stored
+// vKey                  : Key name
+// vResultVarName		 : Name of variable in wich value will be placed
+// ------------------------------------------------------------
+sub GetKeyValue(vNamespace, vKey, vResultVarName)
+    LIB CONNECT TO 'Butler_GET';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "key",
+        "value"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvalues/$(vNamespace)?key=$(vKey)"
+    );
+
+	let $(vResultVarName) = Peek('value', 0, 'RestConnectorMasterTable');
+    set vResultVarName=;
+    
+    DROP TABLE RestConnectorMasterTable;
+end sub
