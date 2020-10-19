@@ -14,12 +14,12 @@ var scheduler = require('../lib/scheduler.js');
  *     description: |
  *       Get all information available for existing schedule(s).
  *
- *       If a schedule ID is specified using a query parameter (and there exists a schedule with that ID), information about that sschedule will be returned.
+ *       If a schedule ID is specified using a query parameter (and there exists a schedule with that ID), information about that schedule will be returned.
  *       If no schedule ID is specified, all schedules will be returned.
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: scheduleId
+ *       - name: id
  *         description: Schedule ID
  *         in: query
  *         required: false
@@ -75,6 +75,10 @@ var scheduler = require('../lib/scheduler.js');
  *                   type: integer
  *                 minItems: 0
  *                 example: ["tag 1", "tag 2"]
+ *               lastKnownState:
+ *                 type: string
+ *                 description: Last known state (started/stopped) for the schedule.
+ *                 example: started
  *       404:
  *         description: Schedule not found.
  *       500:
@@ -87,13 +91,13 @@ module.exports.respondGET_schedules = function (req, res, next) {
 
     try {
         // Is there a schedule ID passed along?
-        if (req.query.scheduleId !== undefined) {
+        if (req.query.id !== undefined) {
             // Return specific schedule, if it exists
-            if (scheduler.existsSchedule(req.query.scheduleId)) {
-                let sched = scheduler.getAllSchedules().find(item => item.id == req.query.scheduleId);
+            if (scheduler.existsSchedule(req.query.id)) {
+                let sched = scheduler.getAllSchedules().find(item => item.id == req.query.id);
                 res.send(sched);
             } else {
-                res.send(new errors.ResourceNotFoundError({}, `REST SCHEDULER: Schedule ID ${req.query.scheduleId} not found.`));
+                res.send(new errors.ResourceNotFoundError({}, `REST SCHEDULER: Schedule ID ${req.query.id} not found.`));
             }
         } else {
             // Return all schedules
@@ -102,7 +106,7 @@ module.exports.respondGET_schedules = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed retrieving schedule with ID ${req.query.scheduleId}.`);
+        globals.logger.error(`REST SCHEDULER: Failed retrieving schedule with ID ${req.query.id}.`);
         res.send(new errors.InternalError({}, 'Failed retrieving schedule'));
         next();
     }
