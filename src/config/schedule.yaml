@@ -1,100 +1,31 @@
 butlerSchedule:
   - name: Every 30 sec
-    cronSchedule: '*/30 * * * * *'
+    cronSchedule: "*/30 * * * * *"
     timezone: Europe/Stockholm
     qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
     startupState: started
     tags:
-      - tag 3
+      - tag 2
       - abc 123 åäö
     id: c7ec214c-e9ca-40b2-acb4-54648f90dd73
     created: '2020-09-29T14:29:12.283Z'
     lastKnownState: started
   - name: Every 2 hours
-    cronSchedule: 0 */2 * * *
+    cronSchedule: "0 */2 * * *"
     timezone: Europe/London
     qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
     startupState: started
     tags:
-      - tag 3
-      - abc 123 åäö
+      - sales ETL
     id: 2f7a6c38-46df-416d-83de-44bdea5cedaa
     created: '2020-09-29T17:14:35.154Z'
     lastKnownState: started
-  - name: Every 2 hours
-    cronSchedule: 0 */2 * * *
-    timezone: Europe/London
+  - name: "Every 5th minute from 0 through 30 past every hour from 6 through 18 on every day-of-week from Monday through Friday"
+    cronSchedule: "0-30/5 6-18 * * 1-5"
+    timezone: Europe/Paris
     qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
     startupState: started
     tags:
-      - tag 3
-      - abc 123 åäö
-    id: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
-    created: '2020-09-29T17:14:56.207Z'
-    lastKnownState: started
-  - name: Every 2 hours
-    cronSchedule: 0 */2 * * *
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 18a74567-1d91-4a50-ac56-075a69de62a1
-    created: '2020-09-29T17:15:09.220Z'
-    lastKnownState: started
-  - name: Every 10 min
-    cronSchedule: '*/10 * * * *'
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 71639d8e-89fd-46c6-865e-d58c002a7cbf
-    created: '2020-09-29T17:15:20.547Z'
-    lastKnownState: started
-  - name: Every 10 min
-    cronSchedule: '*/10 * * * *'
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 2b8c0876-a9c7-4ac7-bd09-358739e7de43
-    created: '2020-09-29T17:15:34.213Z'
-    lastKnownState: started
-  - name: Every 10 min
-    cronSchedule: '*/10 * * * *'
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: c28ccbed-5cd0-4f40-b45f-29572440af3a
-    created: '2020-09-29T17:15:53.710Z'
-    lastKnownState: started
-  - name: Every 2 hours
-    cronSchedule: 0 */2 * * *
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 2c69c17e-a717-4c12-9e8a-37e63d131c39
-    created: '2020-09-29T17:15:53.775Z'
-    lastKnownState: started
-  - name: Every 10 min
-    cronSchedule: '*/10 * * * *'
-    timezone: Europe/London
-    qlikSenseTaskId: 0fe447a9-ba1f-44a9-ac23-68c3a1d88d8b
-    startupState: started
-    tags:
-      - tag 3
-      - abc 123 åäö
-    id: 8c5d7a3e-a1a0-49bf-90bf-536acb36b7b9
-    created: '2020-09-29T17:16:07.013Z'
-    lastKnownState: started
+      - finance ETL
+      - weekdays
+    id: Manually-added-schedule-1
