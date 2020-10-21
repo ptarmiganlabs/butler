@@ -409,7 +409,7 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
  *         type: string
  *       - name: key
  *         description: Name of key.
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
@@ -425,7 +425,7 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
     logRESTCall(req);
 
     try {
-        if (req.params.namespace == undefined || req.body.key == undefined || req.body.key == '') {
+        if (req.params.namespace == undefined || req.params.key == undefined || req.params.key == '') {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter is missing'));
         } else {
@@ -451,7 +451,7 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
                 } else {
                     // Key specified
                     let value = await kv.keyv.delete(req.params.key);
-                    if (value != undefined) {
+                    if (value == false) {
                         // Key does not exist
                         kvRes = new errors.ResourceNotFoundError({}, `Key '${req.params.key}' not found in namespace: ${req.params.namespace}`);
                         res.send(kvRes);
