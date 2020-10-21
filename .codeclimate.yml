@@ -1,4 +1,14 @@
 version: "2"         # required to adjust maintainability checks
+plugins:
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+  markdownlint:
+    enabled: true
+  nodesecurity:
+    enabled: true
+
 checks:
   argument-count:
     config:
@@ -17,7 +27,7 @@ checks:
       threshold: 20
   method-lines:
     config:
-      threshold: 25
+      threshold: 50
   nested-control-flow:
     config:
       threshold: 4
@@ -31,24 +41,5 @@ checks:
     config:
       threshold: # language-specific defaults. an override will affect all languages.
 
-plugins:
-  eslint:
-    enabled: true
-    # channel: "eslint-6"
-#   csslint:
-#     enabled: true
-  markdownlint:
-    enabled: true
-
 exclude_patterns:
-#   - "config/"
-  - "db/"
-  - "dist/"
-  - "features/"
   - "**/node_modules/"
-  - "script/"
-  - "**/spec/"
-  - "**/test/"
-  - "**/tests/"
-  - "Tests/"
-  - "**/vendor/"
