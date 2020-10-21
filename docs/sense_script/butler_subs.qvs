@@ -4,7 +4,7 @@
 // Get nice trace lines in the reload log by calling the line with 
 // CALL NiceTrace('My trace message. Variable value=$(vVariableName)');
 //
-// Paramaters:
+// Parameters:
 // vMsg                  : Message sent to reload log
 // ------------------------------------------------------------
 sub NiceTrace(vMsg)
@@ -14,6 +14,127 @@ sub NiceTrace(vMsg)
     // Clear timestamp variable
     set vNow=;
 end sub
+
+
+// ------------------------------------------------------------
+// ** Initialize Butler data structures **
+//
+// Create mapping table for conversion from utf8 to URL encoded
+// Could be a good idea to save this to a QVD rather than to read it from online, in order to
+// prevent reloads to break if there is no Internet connectivity.
+//
+// The sub assumes there is a web data connection called "URL encode table", pointing
+// to http://www.w3schools.com/tags/ref_urlencode.asp
+// This is the mapping table used to do the URL encoding.
+// ------------------------------------------------------------
+sub ButlerInit
+  // Initialize mapping table needed for URL encoding
+	URL_EncodingReferenceMap:
+	Mapping LOAD
+		Replace([Character], 'space', ' ') as ASCII_Character,
+		//     Text([From Windows-1252]) as URL_encoding,
+		Text([From UTF-8]) as URL_encoding
+	FROM
+	[lib://URL encode table] (html, utf8, embedded labels, table is @1);
+end sub
+
+
+// ------------------------------------------------------------
+// ** Create directory on disk **
+//
+// Call Butler's /createdir endpoint.
+// Note: Butler will create any missing directories in the path.
+//
+// Parameters:
+// vDir                  : Path and name of directory to be created
+//
+// ------------------------------------------------------------
+sub CreateDir(vDir)
+	let vDir = Replace('$(vDir)', '\', '/');
+	let vDir = Replace('$(vDir)', '#', '%23');
+
+    let vRequestBody = '{""directory"":""$(vDir)""}';
+
+	LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "directory"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/createdir",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "Content-Type" "application/json"
+    );
+
+    set vRequestBody=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+// ------------------------------------------------------------
+// ** Create directory on disk, under the QVD folder specified in Butler's config file **
+//
+// Call Butler's /createdirqvd endpoint.
+// Note: Butler will create any missing directories in the path.
+//
+// Parameters:
+// vDir                  : Path and name of directory to be created
+//
+// ------------------------------------------------------------
+sub CreateDirQVD(vDir)
+	let vDir = Replace('$(vDir)', '\', '/');
+	let vDir = Replace('$(vDir)', '#', '%23');
+
+    let vRequestBody = '{""directory"":""$(vDir)""}';
+
+	LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "directory"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/createdirqvd",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "Content-Type" "application/json"
+    );
+
+    set vRequestBody=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
+// ------------------------------------------------------------
+// ** List enabled API endpoints **
+//
+// Parameters:
+// vResultTable			 : Name of table to which names of enabled API 
+//                         endpoints will be added
+// ------------------------------------------------------------
+sub GetEnabledButlerAPIEndpoints(vResultTable)
+	LIB CONNECT TO 'Butler_GET';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "@Value"
+    FROM JSON (wrap on) "root" ArrayValueAlias "@Value"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/configfile/endpointsenabled",
+    );
+
+    [$(vResultTable)]:
+    NoConcatenate LOAD	
+    	[@Value]	as "Endpoint name"
+    RESIDENT RestConnectorMasterTable;
+
+	set vResultTable=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
 
 
 
@@ -52,8 +173,13 @@ sub AddKeyValue(vNamespace, vKey, vValue, vTimeToLive)
     HTTPHEADER "Content-Type" "application/json"
     );
 
+	set vNamespace=;
+    set vKey=;
+    set vValue=;
+    set vTimeToLive=;
     DROP TABLE RestConnectorMasterTable;
 end sub
+
 
 
 
@@ -69,7 +195,8 @@ sub GetKeyValue(vNamespace, vKey, vResultVarName)
     LIB CONNECT TO 'Butler_GET';
 
     RestConnectorMasterTable:
-    SQL SELECT 
+    SQL 
+    SELECT 
         "key",
         "value"
     FROM JSON (wrap on) "root"
@@ -78,7 +205,137 @@ sub GetKeyValue(vNamespace, vKey, vResultVarName)
     );
 
 	let $(vResultVarName) = Peek('value', 0, 'RestConnectorMasterTable');
-    set vResultVarName=;
-    
+
+	set vResultVarName=;
+	set vNamespace=;
+    set vKey=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
+
+// ------------------------------------------------------------
+// ** Delete a key-value pair from a namespace **
+//
+// Paramaters:
+// vNamespace            : Namespace in which the KV pair will be stored
+// vKey                  : Key name
+// ------------------------------------------------------------
+sub DeleteKeyValue(vNamespace, vKey)
+    LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvalues/$(vNamespace)/$(vKey)",
+    HTTPHEADER "X-HTTP-Method-Override" "DELETE"
+    );
+
+	set vNamespace=;
+    set vKey=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+// ------------------------------------------------------------
+// ** Does a key exist in a specific namespace? **
+//
+// Paramaters:
+// vNamespace            : Namespace in which the KV pair will be stored
+// vKey                  : Key name
+// vResultVarName        : Name of variable in which result will be placed
+// ------------------------------------------------------------
+sub ExistsKeyValue(vNamespace, vKey, vResultVarName)
+    LIB CONNECT TO 'Butler_GET';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "keyExists",
+        "__KEY_root",
+        (SELECT 
+            "namespace",
+            "key",
+            "value",
+            "ttl",
+            "__FK_keyValue"
+        FROM "keyValue" FK "__FK_keyValue")
+    FROM JSON (wrap on) "root" PK "__KEY_root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvalues/$(vNamespace)/keyexists?key=$(vKey)",
+    );
+
+    [keyValue]:
+    LOAD	
+        [namespace],
+        [key],
+        [value],
+        [ttl],
+        [__FK_keyValue] AS [__KEY_root]
+    RESIDENT RestConnectorMasterTable
+    WHERE NOT IsNull([__FK_keyValue]);
+
+    [root]:
+    LOAD	
+    	[keyExists],
+        [__KEY_root]
+    RESIDENT RestConnectorMasterTable
+    WHERE NOT IsNull([__KEY_root]);
+
+	let $(vResultVarName) = Peek('keyExists', 0, 'root');
+
+	set vResultVarName=;
+    set vNamespace=;
+    set vKey=;
+    DROP TABLE RestConnectorMasterTable, root, keyValue;
+end sub
+
+
+// ------------------------------------------------------------
+// ** Delete a namespace and all key-value pairs in it **
+//
+// Paramaters:
+// vNamespace            : Namespace in which the KV pair will be stored
+// ------------------------------------------------------------
+sub DeleteKeyValueNamespace(vNamespace)
+    LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvalues/$(vNamespace)",
+    HTTPHEADER "X-HTTP-Method-Override" "DELETE"
+    );
+
+	set vNamespace=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+// ------------------------------------------------------------
+// ** Get names of all namespaces in a table  **
+//
+// Paramaters:
+// vResultTableName      : Name of table in which namespace names will be placed
+// ------------------------------------------------------------
+sub GetKeyValueNamespaces(vResultTableName)
+    LIB CONNECT TO 'Butler_GET';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+        "@Value"
+    FROM JSON (wrap on) "root" ArrayValueAlias "@Value"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/keyvaluesnamespaces",
+    );
+
+    [$(vResultTableName)]:
+    NoConcatenate LOAD	
+    	[@Value]	as [Namespace name]
+    RESIDENT RestConnectorMasterTable;
+
+	set vResultTableName=;
     DROP TABLE RestConnectorMasterTable;
 end sub
