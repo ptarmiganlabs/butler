@@ -1,12 +1,13 @@
 src/node_modules/*
 src/config/production.json
 src/config/production.yaml
+src/config/schedule.yaml
+src/config/schedule.json
 src/config/default.json
 src/config/default.yaml
 src/config/development.yaml
 src/config/development.json
 src/config/certificate/*.pem
-docs/*
 doc/*
 butler-docs/site/
 src/udp_client/node_modules/*
