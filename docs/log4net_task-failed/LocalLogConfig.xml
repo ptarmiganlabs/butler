@@ -27,6 +27,7 @@
         </layout>
     </appender>
 
+    <!--Detect scheduled reload failures, set up UDP message to Butler-->
     <appender name="NodeTaskFailureLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Message from ReloadProvider" />
@@ -43,7 +44,7 @@
         </layout>
     </appender>
 
-    <!--Send mail on task failure-->
+    <!--Send mail and event to Butler on task failure-->
     <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
 	<!--Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
         <appender-ref ref="MailAppender" />
