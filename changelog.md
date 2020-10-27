@@ -10,6 +10,7 @@
 
 - Updated dependencies to latest versions.
 - Minor stability changes/improvements to filemove and filedelete API methods.
+- Change parsing of config file to make Butler more forgiving if some parts of the config file are missing.
 
 ### Breaking changes
 
