@@ -81,7 +81,20 @@ Butler:
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>
     serverPort: 8080
 
-  fileCopyApprovedDirectories:                        # List of directories between which file copying via the REST API can be done.
+  # List of directories between which file copying via the REST API can be done.
+  # Butler will try to clean up messy paths like this one, which resolves to /Users/goran/butler-test-dir1
+  # How? First you have /Users/goran/butler-test-dir1//abc which cleans up to /Users/goran/butler-test-dir1/abc, 
+  # then up one level (..).
+  fileCopyApprovedDirectories:                        
+    - fromDirectory: /Users/goran/butler-test-dir1//abc//..     
+      toDirectory: /Users/goran/butler-test-dir2
+    - fromDirectory: /Users/goran/butler-test-dir2
+      toDirectory: /Users/goran/butler-test-dir1
+    - fromDirectory: /from/some/directory2
+      toDirectory: /to/some/directory2
+
+  # List of directories between which file moves via the REST API can be done.
+  fileMoveApprovedDirectories:                        
     - fromDirectory: /Users/goran/butler-test-dir1//abc//..
       toDirectory: /Users/goran/butler-test-dir2
     - fromDirectory: /Users/goran/butler-test-dir2
@@ -89,18 +102,12 @@ Butler:
     - fromDirectory: /from/some/directory2
       toDirectory: /to/some/directory2
 
-  fileMoveApprovedDirectories:                        # List of directories between which file moves via the REST API can be done.
-    - fromDirectory: /Users/goran/butler-test-dir1//abc//..
-      toDirectory: /Users/goran/butler-test-dir2
-    - fromDirectory: /Users/goran/butler-test-dir2
-      toDirectory: /Users/goran/butler-test-dir1
-    - fromDirectory: /from/some/directory2
-      toDirectory: /to/some/directory2
-
-  fileDeleteApprovedDirectories:                      # List of directories in which file deletes via the REST API can be done.
+  # List of directories in which file deletes via the REST API can be done.
+  fileDeleteApprovedDirectories:                      
     - /Users/goran/butler-test-dir1
     - /Users/goran/butler-test-dir1//abc//..
     - /Users/goran/butler-test-dir2
+  
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
     activeUserCount: false

@@ -6,6 +6,11 @@
 
 - File copy method in the REST API.
 
+### Fixes and patches
+
+- Updated dependencies to latest versions.
+- Minor stability changes/improvements to filemove and filedelete API methods.
+
 ### Breaking changes
 
 None.
