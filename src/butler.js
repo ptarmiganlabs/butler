@@ -144,6 +144,11 @@ if (globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
     restServer.put({ path: '/v4/filemove' }, rest.disk_utils.respondPUT_fileMove);
 }
 
+if (globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
+    globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
+    restServer.put({ path: '/v4/filecopy' }, rest.disk_utils.respondPUT_fileCopy);
+}
+
 if (globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
     globals.logger.debug('Registering REST endpoint GET /v4/activeusercount');
     restServer.get({ path: '/v4/activeusercount' }, rest.activeUserCount.respondGET_activeUserCount);

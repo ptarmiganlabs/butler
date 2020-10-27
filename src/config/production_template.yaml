@@ -81,6 +81,14 @@ Butler:
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>
     serverPort: 8080
 
+  fileCopyApprovedDirectories:                        # List of directories between which file copying via the REST API can be done.
+    - fromDirectory: /Users/goran/butler-test-dir1//abc//..
+      toDirectory: /Users/goran/butler-test-dir2
+    - fromDirectory: /Users/goran/butler-test-dir2
+      toDirectory: /Users/goran/butler-test-dir1
+    - fromDirectory: /from/some/directory2
+      toDirectory: /to/some/directory2
+
   fileMoveApprovedDirectories:                        # List of directories between which file moves via the REST API can be done.
     - fromDirectory: /Users/goran/butler-test-dir1//abc//..
       toDirectory: /Users/goran/butler-test-dir2
@@ -105,6 +113,7 @@ Butler:
     createDirQVD: false
     fileDelete: false
     fileMove: false
+    fileCopy: false
     keyValueStore: false
     mqttPublishMessage: false
     scheduler:

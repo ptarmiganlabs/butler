@@ -12,6 +12,127 @@ var mkdirp = require('mkdirp');
 /**
  * @swagger
  *
+ * /v4/filecopy:
+ *   put:
+ *     description: |
+ *       Copy a file between well defined, approved locations.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: body
+ *         description: |
+ *           Copying of files is only posttible between pre-approved directories.
+ *           Defining approved source and destination directories is done in Butler's config file.
+ *         in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - fromFile
+ *             - toFile
+ *           properties:
+ *             fromFile:
+ *               type: string
+ *               description: Name of source file
+ *               example: "subfolder/file1.qvd"
+ *             toFile:
+ *               type: string
+ *               description: Name of destination file. Can be different from source file name, if needed
+ *               example: "archive/file1_20200925.qvd"
+ *             overwrite:
+ *               type: boolean
+ *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
+ *               example: "false"
+ *     responses:
+ *       200:
+ *         description: File copied.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             fromFile:
+ *               type: string
+ *               description: Name of source file
+ *               example: "subfolder/file1.qvd"
+ *             toFile:
+ *               type: string
+ *               description: Name of destination file. Can be different from source file name, if needed
+ *               example: "archive/file1_20200925.qvd"
+ *             overwrite:
+ *               type: boolean
+ *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
+ *               example: "false"
+ *       403:
+ *         description: No approved fromDir/toDir for file move.
+ *       404:
+ *         description: fromFile not found.
+ *       409:
+ *         description: Required parameter missing.
+ *       500:
+ *         description: Internal error, or file overwrite was not allowed.
+ *
+ */
+module.exports.respondPUT_fileCopy = async function (req, res, next) {
+    logRESTCall(req);
+
+    try {
+        let overwrite = false;
+
+        if (req.body.fromFile == undefined || req.body.toFile == undefined || req.body.fromFile == '' || req.body.toFile == '') {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+        } else {
+            if (req.body.overwrite == 'true') {
+                overwrite = true;
+            }
+
+            // Make sure that
+            // 1. fromFile is in a valid source directory (or subdirectory thereof),
+            // 2. toFile is in a valid associated destiation directory (or subdirectory thereof)
+
+            let fromFile = path.normalize(req.body.fromFile),
+                toFile = path.normalize(req.body.toFile);
+
+            let fromDir = path.dirname(fromFile),
+                toDir = path.dirname(toFile);
+
+            let copyIsOk = false; // Only allow move if this flag is true
+
+            // Ensure fromFile exists
+            if (await fs.pathExists(fromFile)) {
+                globals.fileCopyDirectories.forEach(element => {
+                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
+                        // The fromFile passed as parameter matches an approved fromDir specified in the config file
+                        // AND
+                        // toFile passed as parameter matches the associated approved toDir specified in the config file
+
+                        copyIsOk = true;
+                    }
+                });
+
+                if (copyIsOk) {
+                    await fs.copyFile(fromFile, toFile, { overwrite: overwrite });
+                    res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
+                } else {
+                    globals.logger.error(`FILECOPY: No approved fromDir/toDir for file copy ${req.body.fromFile} to ${req.body.toFile}`);
+                    res.send(new errors.ForbiddenError({}, 'No approved fromDir/toDir for file copy'));
+                }
+            } else {
+                // fromFile does not exist
+                globals.logger.error(`FILECOPY: From file ${req.body.fromFile} does not exist`);
+                res.send(new errors.ResourceNotFoundError({}, 'fromFile does not exist'));
+            }
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`FILECOPY: Failed copying file ${req.body.fromFile} to ${req.body.toFile}`);
+        res.send(new errors.InternalError({}, 'Failed copying file'));
+        next();
+    }
+};
+
+/**
+ * @swagger
+ *
  * /v4/filemove:
  *   put:
  *     description: |
