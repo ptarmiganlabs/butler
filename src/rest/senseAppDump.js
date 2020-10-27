@@ -49,6 +49,7 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
             globals.logger.info(`APPDUMP: Dumping app: ${req.params.appIi}`);
 
             // create a new session
+            // TODO Maybe should use https://github.com/qlik-oss/enigma.js/blob/master/docs/api.md#senseutilitiesbuildurlconfig ?
             const configEnigma = {
                 schema: qixSchema,
                 url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
