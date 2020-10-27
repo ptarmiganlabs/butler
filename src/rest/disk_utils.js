@@ -243,7 +243,7 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
                 });
 
                 if (moveIsOk) {
-                    await fs.moveFile(fromFile, toFile, { overwrite: overwrite });
+                    await fs.moveSync(fromFile, toFile, { overwrite: overwrite });
                     res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
                 } else {
                     globals.logger.error(`FILEMOVE: No approved fromDir/toDir for file move ${req.body.fromFile} to ${req.body.toFile}`);
@@ -330,7 +330,7 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
             if (deleteIsOk) {
                 if (await fs.pathExists(deleteFile)) {
                     // Finally, make sure that file realy exists
-                    await fs.remove(deleteFile);
+                    await fs.removeSync(deleteFile);
                     res.send(204);
                 } else {
                     // deleteFile does not exist
