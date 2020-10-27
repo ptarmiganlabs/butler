@@ -129,8 +129,9 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
 
+// TODO First test if config entry exists => Make Butler less picky about new formats in the config file
 if (globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
-    globals.logger.debug('Registering REST endpoint PGETUT /v4/configfile/endpointsenabled');
+    globals.logger.debug('Registering REST endpoint GET /v4/configfile/endpointsenabled');
     restServer.get({ path: '/v4/configfile/endpointsenabled' }, rest.api.respondGET_configFileListEnbledEndpoints);
 }
 
@@ -144,7 +145,7 @@ if (globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
     restServer.put({ path: '/v4/filemove' }, rest.disk_utils.respondPUT_fileMove);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.fileCopy') && globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
     restServer.put({ path: '/v4/filecopy' }, rest.disk_utils.respondPUT_fileCopy);
 }

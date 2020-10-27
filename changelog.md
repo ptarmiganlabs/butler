@@ -1,6 +1,16 @@
 # Change log
 
-## 4.0
+## 4.1.0
+
+### New features
+
+- File copy method in the REST API.
+
+### Breaking changes
+
+None.
+
+## 4.0.0
 
 ### New features
 
