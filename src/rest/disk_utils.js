@@ -8,6 +8,140 @@ var fs = require('fs-extra');
 const path = require('path');
 var mkdirp = require('mkdirp');
 
+/**
+ * @swagger
+ *
+ * /v4/filecopy:
+ *   put:
+ *     description: |
+ *       Copy a file between well defined, approved locations.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: body
+ *         description: |
+ *           Copying of files is only posttible between pre-approved directories.
+ *           Defining approved source and destination directories is done in Butler's config file.
+ *           If the source directory contains subdirectories, these will be copied too.
+ *         in: body
+ *         schema:
+ *           type: object
+ *           required:
+ *             - fromFile
+ *             - toFile
+ *           properties:
+ *             fromFile:
+ *               type: string
+ *               description: Name of source file
+ *               example: "subfolder/file1.qvd"
+ *             toFile:
+ *               type: string
+ *               description: Name of destination file. Can be different from source file name, if needed
+ *               example: "archive/file1_20200925.qvd"
+ *             overwrite:
+ *               type: boolean
+ *               description: Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.
+ *               example: "false"
+ *             preserveTimestamp:
+ *               type: boolean
+ *               description: When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.
+ *               example: "false"
+ *     responses:
+ *       200:
+ *         description: File copied.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             fromFile:
+ *               type: string
+ *               description: Name of source file
+ *               example: "subfolder/file1.qvd"
+ *             toFile:
+ *               type: string
+ *               description: Name of destination file. Can be different from source file name, if needed
+ *               example: "archive/file1_20200925.qvd"
+ *             overwrite:
+ *               type: boolean
+ *               description: Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.
+ *               example: "false"
+ *             preserveTimestamp:
+ *               type: boolean
+ *               description: When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.
+ *               example: "false"
+ *       403:
+ *         description: No approved fromDir/toDir for file move.
+ *       404:
+ *         description: fromFile not found.
+ *       409:
+ *         description: Required parameter missing.
+ *       500:
+ *         description: Internal error, or file overwrite was not allowed.
+ *
+ */
+module.exports.respondPUT_fileCopy = async function (req, res, next) {
+    logRESTCall(req);
+
+    try {
+        let overwrite = false;
+        let preserveTimestamp = false;
+
+        if (req.body.fromFile == undefined || req.body.toFile == undefined || req.body.fromFile == '' || req.body.toFile == '') {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+        } else {
+            if (req.body.overwrite == 'true') {
+                overwrite = true;
+            }
+
+            if (req.body.preserveTimestamp == 'true') {
+                preserveTimestamp = true;
+            }
+
+            // Make sure that
+            // 1. fromFile is in a valid source directory (or subdirectory thereof),
+            // 2. toFile is in a valid associated destiation directory (or subdirectory thereof)
+
+            let fromFile = path.normalize(req.body.fromFile),
+                toFile = path.normalize(req.body.toFile);
+
+            let fromDir = path.dirname(fromFile),
+                toDir = path.dirname(toFile);
+
+            let copyIsOk = false; // Only allow copy if this flag is true
+
+            // Ensure fromFile exists
+            if (await fs.pathExists(fromFile)) {
+                globals.fileCopyDirectories.forEach(element => {
+                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
+                        // The fromFile passed as parameter matches an approved fromDir specified in the config file
+                        // AND
+                        // toFile passed as parameter matches the associated approved toDir specified in the config file
+
+                        copyIsOk = true;
+                    }
+                });
+
+                if (copyIsOk) {
+                    await fs.copySync(fromFile, toFile, { overwrite: overwrite, preserveTimestamps: preserveTimestamp });
+                    res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite, preserveTimestamp: preserveTimestamp });
+                } else {
+                    globals.logger.error(`FILECOPY: No approved fromDir/toDir for file copy ${req.body.fromFile} to ${req.body.toFile}`);
+                    res.send(new errors.ForbiddenError({}, 'No approved fromDir/toDir for file copy'));
+                }
+            } else {
+                // fromFile does not exist
+                globals.logger.error(`FILECOPY: From file ${req.body.fromFile} does not exist`);
+                res.send(new errors.ResourceNotFoundError({}, 'fromFile does not exist'));
+            }
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`FILECOPY: Failed copying file ${req.body.fromFile} to ${req.body.toFile}`);
+        res.send(new errors.InternalError({}, 'Failed copying file'));
+        next();
+    }
+};
 
 /**
  * @swagger
@@ -109,7 +243,7 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
                 });
 
                 if (moveIsOk) {
-                    await fs.moveFile(fromFile, toFile, { overwrite: overwrite });
+                    await fs.moveSync(fromFile, toFile, { overwrite: overwrite });
                     res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
                 } else {
                     globals.logger.error(`FILEMOVE: No approved fromDir/toDir for file move ${req.body.fromFile} to ${req.body.toFile}`);
@@ -196,7 +330,7 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
             if (deleteIsOk) {
                 if (await fs.pathExists(deleteFile)) {
                     // Finally, make sure that file realy exists
-                    await fs.remove(deleteFile);
+                    await fs.removeSync(deleteFile);
                     res.send(204);
                 } else {
                     // deleteFile does not exist
@@ -216,8 +350,6 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
         next();
     }
 };
-
-
 
 /**
  * @swagger
@@ -250,7 +382,7 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
  *               type: string
  *               description: Path to created directory.
  *               example: "subfolder/2020-10"
- * 
+ *
  *       409:
  *         description: Missing parameter.
  *       500:
@@ -285,7 +417,6 @@ module.exports.respondPOST_createDirQVD = function (req, res, next) {
     }
 };
 
-
 /**
  * @swagger
  *
@@ -293,16 +424,16 @@ module.exports.respondPOST_createDirQVD = function (req, res, next) {
  *   post:
  *     description: |
  *       Creates a directory in file system.
- *       If the directory already exists nothing will happen. 
+ *       If the directory already exists nothing will happen.
  *       If permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.
  *
  *       __WARNING: This method can create folders anywhere (where the account running Butler has permissions) in the filesystem.__
- *       Use with caution. 
+ *       Use with caution.
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: body
- *         description: 
+ *         description:
  *         in: body
  *         schema:
  *           type: object

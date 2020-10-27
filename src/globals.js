@@ -154,6 +154,25 @@ var udp_port_take_failure = config.get('Butler.udpServerConfig.portTaskFailure')
 // Folder under which QVD folders are to be created
 var qvdFolder = config.get('Butler.configDirectories.qvdPath');
 
+// Load approved fromDir and toDir for fileCopy operation
+var fileCopyDirectories = [];
+
+if (config.has('Butler.fileCopyApprovedDirectories')) {
+    config.get('Butler.fileCopyApprovedDirectories').forEach(element => {
+        logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
+
+        let newDirCombo = {
+            fromDir: path.normalize(element.fromDirectory),
+            toDir: path.normalize(element.toDirectory),
+        };
+
+        logger.info(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
+
+        fileCopyDirectories.push(newDirCombo);
+    });
+}
+
+
 // Load approved fromDir and toDir for fileMove operation
 var fileMoveDirectories = [];
 
@@ -305,6 +324,7 @@ module.exports = {
     configSchedule,
     initInfluxDB,
     influx,
+    fileCopyDirectories,
     fileMoveDirectories,
     fileDeleteDirectories,
     endpointsEnabled,

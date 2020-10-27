@@ -1,6 +1,23 @@
 # Change log
 
-## 4.0
+## 4.1.0
+
+### New features
+
+- File copy method in the REST API.
+- Added Qlik Sense app "Butler 4.1 demo app" which contains examples of how Butler's API can be called from Sense load scripts.
+
+### Fixes and patches
+
+- Updated dependencies to latest versions.
+- Minor stability changes/improvements to filemove and filedelete API methods.
+- Change parsing of config file to make Butler more forgiving if some parts of the config file are missing.
+
+### Breaking changes
+
+None.
+
+## 4.0.0
 
 ### New features
 

@@ -129,82 +129,88 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
-    globals.logger.debug('Registering REST endpoint PGETUT /v4/configfile/endpointsenabled');
+// TODO First test if config entry exists => Make Butler less picky about new formats in the config file
+if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') && globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
+    globals.logger.debug('Registering REST endpoint GET /v4/configfile/endpointsenabled');
     restServer.get({ path: '/v4/configfile/endpointsenabled' }, rest.api.respondGET_configFileListEnbledEndpoints);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.fileDelete') && globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
     globals.logger.debug('Registering REST endpoint DELETE /v4/filedelete');
     restServer.del({ path: '/v4/filedelete' }, rest.disk_utils.respondPUT_fileDelete);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.fileMove') && globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/filemove');
     restServer.put({ path: '/v4/filemove' }, rest.disk_utils.respondPUT_fileMove);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.fileCopy') && globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
+    globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
+    restServer.put({ path: '/v4/filecopy' }, rest.disk_utils.respondPUT_fileCopy);
+}
+
+if (globals.config.has('Butler.restServerEndpointsEnable.activeUserCount') && globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
     globals.logger.debug('Registering REST endpoint GET /v4/activeusercount');
     restServer.get({ path: '/v4/activeusercount' }, rest.activeUserCount.respondGET_activeUserCount);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.activeUsers') && globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
     globals.logger.debug('Registering REST endpoint GET /v4/activeusers');
     restServer.get({ path: '/v4/activeusers' }, rest.activeUsers.respondGET_activeUsers);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.slackPostMessage') && globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/slackpostmessage');
     restServer.put({ path: '/v4/slackpostmessage' }, rest.slackPostMessage.respondPUT_slackPostMessage);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.createDir') && globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
     globals.logger.debug('Registering REST endpoint POST /v4/createdir');
     restServer.post({ path: '/v4/createdir' }, rest.disk_utils.respondPOST_createDir);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.createDirQVD') && globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
     globals.logger.debug('Registering REST endpoint POST /v4/createdirqvd');
     restServer.post({ path: '/v4/createdirqvd' }, rest.disk_utils.respondPOST_createDirQVD);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') && globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/mqttpublishmessage');
     restServer.put({ path: '/v4/mqttpublishmessage' }, rest.mqttPublishMessage.respondPUT_mqttPublishMessage);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') && globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
     globals.logger.debug('Registering REST endpoint PUT /v4/sensestarttask');
     restServer.put({ path: '/v4/reloadtask/:taskId/start' }, rest.senseStartTask.respondPUT_senseStartTask);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') && globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
     restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.senseListApps') && globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
     restServer.get({ path: '/v4/senselistapps' }, rest.senseListApps.respondGET_senseListApps);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.butlerping') && globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
     globals.logger.debug('Registering REST endpoint GET /v4/butlerping');
     restServer.get({ path: '/v4/butlerping' }, rest.butlerPing.respondGET_butlerPing);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') && globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
     globals.logger.debug('Registering REST endpoint GET /v4/base62tobase16');
     restServer.get({ path: '/v4/base62tobase16' }, rest.base62ToBase16.respondGET_base62ToBase16);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.base16ToBase62') && globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
     globals.logger.debug('Registering REST endpoint GET /v4/base16tobase62');
     restServer.get({ path: '/v4/base16tobase62' }, rest.base16ToBase62.respondGET_base16ToBase62);
 }
 
-if (globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
+if (globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') && globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
     globals.logger.debug('Registering REST endpoint GET /v4/keyvaluenamespaces');
     restServer.get({ path: '/v4/keyvaluesnamespaces' }, rest.keyValueStore.respondGET_keyvaluesnamespaces);
 
@@ -224,32 +230,32 @@ if (globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
     restServer.del({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondDELETE_keyvaluesDelete);
 }
 
-if (globals.config.get('Butler.scheduler.enable')) {
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
+if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedules');
 
         restServer.post({ path: '/v4/schedules' }, rest.scheduler.respondPOST_schedules);
     }
 
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
         globals.logger.debug('Registering REST endpoint GET /v4/schedules');
 
         restServer.get({ path: '/v4/schedules' }, rest.scheduler.respondGET_schedules);
     }
 
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')) {
         globals.logger.debug('Registering REST endpoint DELETE /v4/schedules');
 
         restServer.del({ path: '/v4/schedules/:scheduleId' }, rest.scheduler.respondDELETE_schedules);
     }
 
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
 
         restServer.put({ path: '/v4/schedules/:scheduleId/start' }, rest.scheduler.respondPUT_schedulesStart);
     }
 
-    if (globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
 
         restServer.put({ path: '/v4/schedules/:scheduleId/stop' }, rest.scheduler.respondPUT_schedulesStop);
