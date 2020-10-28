@@ -7,7 +7,7 @@ const errors = require('restify-errors');
 /**
  * @swagger
  *
- * /v4/sensestarttask:
+ * /v4/reloadtask/{taskId}/start:
  *   put:
  *     description: |
  *       Start a Qlik Sense task
@@ -16,10 +16,10 @@ const errors = require('restify-errors');
  *     parameters:
  *       - name: taskId
  *         description: ID of Qlik Sense task
- *         in: body
+ *         in: path
  *         required: true
  *         type: string
- *         example: "{taskId: 210832b5-6174-4572-bd19-3e61eda675ef}"
+ *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
  *     responses:
  *       201:
  *         description: Task successfully started.
@@ -28,7 +28,8 @@ const errors = require('restify-errors');
  *           properties:
  *             taskId:
  *               type: string
-  *       409:
+ *               description: Task ID of started task.
+ *       409:
  *         description: Required parameter missing.
  *       500:
  *         description: Internal error.
@@ -47,7 +48,7 @@ module.exports.respondPUT_senseStartTask = function (req, res, next) {
             globals.logger.verbose(`STARTTASK: Starting task: ${req.params.taskId}`);
 
             globals.qrsUtil.senseStartTask.senseStartTask(req.params.taskId);
-            res.send(201, {taskId: req.params.taskId});
+            res.send(201, {'taskId': req.params.taskId});
             next();
         }
     } catch (err) {
