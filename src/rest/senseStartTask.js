@@ -39,19 +39,19 @@ module.exports.respondPUT_senseStartTask = function (req, res, next) {
     // TODO: Add task exists test. Return error if not.
 
     try {
-        if (req.body.taskId == undefined) {
+        if (req.params.taskId == undefined) {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
         } else {
             // Use data in request to start Qlik Sense task
-            globals.logger.verbose(`STARTTASK: Starting task: ${req.body.taskId}`);
+            globals.logger.verbose(`STARTTASK: Starting task: ${req.params.taskId}`);
 
-            globals.qrsUtil.senseStartTask.senseStartTask(req.body.taskId);
-            res.send(201, req.body);
+            globals.qrsUtil.senseStartTask.senseStartTask(req.params.taskId);
+            res.send(201, {taskId: req.params.taskId});
             next();
         }
     } catch (err) {
-        globals.logger.error(`STARTTASK: Failed starting task: ${req.body.taskId}`);
+        globals.logger.error(`STARTTASK: Failed starting task: ${req.params.taskId}`);
         res.send(new errors.InternalError({}, 'Failed starting task'));
         next();
     }
