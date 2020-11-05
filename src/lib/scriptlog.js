@@ -56,7 +56,6 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                     fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
                     executingNodeName: result1.body.operational.lastExecutionResult.executingNodeName,
                     executionDetailsSorted: result1.body.operational.lastExecutionResult.details.sort(compareTaskDetails),
-                    executionStopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
                     executionStatusNum: result1.body.operational.lastExecutionResult.status,
                     executionStatusText: taskStatusLookup[result1.body.operational.lastExecutionResult.status],
                     // scriptLogAvailable = result1.body.operational.lastExecutionResult.scriptLogAvailable,
@@ -64,49 +63,80 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 };
 
                 // Add duration as JSON
-                // TODO Round seconds to integer.
                 let taskDuration = luxon.Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
                 taskInfo.executionDuration = taskDuration.shiftTo('hours', 'minutes', 'seconds').toObject();
+                taskInfo.executionDuration.seconds = Math.floor(taskInfo.executionDuration.seconds);
 
                 // Add start datetime in various formats
-                // TODO Add check if date actually exists. Return "-" if not.
-                let luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
-                taskInfo.executionStartTime = {
-                    startTimeUTC: result1.body.operational.lastExecutionResult.startTime,
-                    startTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                    startTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                    startTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                    startTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                    startTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                };
+                if (result1.body.operational.lastExecutionResult.startTime.substring(0,4) == '1753') {
+                    taskInfo.executionStartTime = {
+                        startTimeUTC: '-',
+                        startTimeLocal1: '-',
+                        startTimeLocal2: '-',
+                        startTimeLocal3: '-',
+                        startTimeLocal4: '-',
+                        startTimeLocal5: '-',
+                    };
+                } else {
+                    let luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
+                    taskInfo.executionStartTime = {
+                        startTimeUTC: result1.body.operational.lastExecutionResult.startTime,
+                        startTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
+                        startTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
+                        startTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
+                        startTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        startTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                    };
+                }
 
                 // Add stop datetime in various formats
-                // TODO Add check if date actually exists. Return "-" if not.
-                luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
-                taskInfo.executionstopTime = {
-                    stopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
-                    stopTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                    stopTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                    stopTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                    stopTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                    stopTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                };
+                if (result1.body.operational.lastExecutionResult.stopTime.substring(0,4) == '1753') {
+                    taskInfo.executionStopTime = {
+                        stopTimeUTC: '-',
+                        stopTimeLocal1: '-',
+                        stopTimeLocal2: '-',
+                        stopTimeLocal3: '-',
+                        stopTimeLocal4: '-',
+                        stopTimeLocal5: '-',
+                    };
+                } else {
+                    let luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
+                    taskInfo.executionStopTime = {
+                        stopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
+                        stopTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
+                        stopTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
+                        stopTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
+                        stopTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        stopTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                    };
+                }
 
                 // Add various datetime formats to task history entries
                 taskInfo.executionDetailsSorted = taskInfo.executionDetailsSorted.map(item => {
-                    // TODO Add check if date actually exists. Return "-" if not.
-                    luxonDT = luxon.DateTime.fromISO(item.detailCreatedDate);
-
-                    return {
-                        timestampUTC: item.detailCreatedDate,
-                        timestampLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                        timestampLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                        timestampLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                        timestampLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                        timestampLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                        message: item.message,
-                        detailsType: item.detailsType,
-                    };
+                    if (item.detailCreatedDate.substring(0,4) == '1753') {
+                        return {
+                            timestampUTC: '-',
+                            timestampLocal1: '-',
+                            timestampLocal2: '-',
+                            timestampLocal3: '-',
+                            timestampLocal4: '-',
+                            timestampLocal5: '-',
+                            message: item.message,
+                            detailsType: item.detailsType,
+                        };
+                    } else {
+                        let luxonDT = luxon.DateTime.fromISO(item.detailCreatedDate);
+                        return {
+                            timestampUTC: item.detailCreatedDate,
+                            timestampLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
+                            timestampLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
+                            timestampLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
+                            timestampLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                            timestampLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                            message: item.message,
+                            detailsType: item.detailsType,
+                        };
+                    }
                 });
 
                 // Step 2
@@ -157,7 +187,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                                 executionDetails: taskInfo.executionDetailsSorted,
                                 executionDuration: taskInfo.executionDuration,
                                 executionStartTime: taskInfo.executionStartTime,
-                                executionStopTime: taskInfo.executionstopTime,
+                                executionStopTime: taskInfo.executionStopTime,
                                 executionStatusNum: taskInfo.executionStatusNum,
                                 executionStatusText: taskInfo.executionStatusText,
                                 scriptLogSize: taskInfo.scriptLogSize,
@@ -176,7 +206,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                         executionDetails: taskInfo.executionDetailsSorted,
                         executionDuration: taskInfo.executionDuration,
                         executionStartTime: taskInfo.executionStartTime,
-                        executionStopTime: taskInfo.executionstopTime,
+                        executionStopTime: taskInfo.executionStopTime,
                         executionStatusNum: taskInfo.executionStatusNum,
                         executionStatusText: taskInfo.executionStatusText,
                         scriptLogSize: 0,
