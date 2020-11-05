@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <configuration>
-    <!-- Mail appender-->
+    <!-- Mail appender. Not dependent on Butler. Works as a basic solution, but does not support templating, script logs etc that Butler offers -->
     <appender name="MailAppender" type="log4net.Appender.SmtpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Message from ReloadProvider" />
@@ -27,10 +27,10 @@
         </layout>
     </appender>
 
-    <!--Detect scheduled reload failures, set up UDP message to Butler-->
-    <appender name="NodeTaskFailureLogger" type="log4net.Appender.UdpAppender">
+	<!-- Appender for detecting reload task failures. Only the last of potentially several retries is reported -->
+    <appender name="TaskFailureLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Message from ReloadProvider" />
+            <param name="stringToMatch" value="Max retries reached" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
@@ -40,15 +40,40 @@
                 <param name="name" value="hostname" />
                 <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
              </converter>
-            <param name="conversionpattern" value="%hostname;%property{TaskName};%property{AppName};%property{UserId}" />
+            <param name="conversionpattern" value="%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message" />
         </layout>
     </appender>
 
-    <!--Send mail and event to Butler on task failure-->
+    <!-- Appender for detecting aborted reloads -->
+    <appender name="AbortedReloadTaskLogger" type="log4net.Appender.UdpAppender">
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Execution State Change to Aborting" />
+        </filter>
+        <filter type="log4net.Filter.DenyAllFilter" />
+        <param name="remoteAddress" value="<IP of server where Butler is running>" />
+        <param name="remotePort" value="9998" />
+        <layout type="log4net.Layout.PatternLayout">
+            <converter>
+                <param name="name" value="hostname" />
+                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+             </converter>
+            <param name="conversionpattern" value="/scheduler-reload-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message" />
+        </layout>
+    </appender>
+
+
+    <!-- Send message to Butler on task failure -->
+    <!-- Send message to Butler on task abort -->
+    <logger name="System.Scheduler.Scheduler.Master.Task.TaskSession">
+        <appender-ref ref="TaskFailureLogger" />
+        <appender-ref ref="AbortedReloadTaskLogger" />
+    </logger>
+
+
+    <!--Send email on task failure-->
     <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
 	<!--Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
         <appender-ref ref="MailAppender" />
-        <appender-ref ref="NodeTaskFailureLogger" />
 		<!--appender-ref should match the name identifying the appender. More than one appender can be configured in the same configuration file-->
     </logger>
 </configuration>

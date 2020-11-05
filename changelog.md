@@ -1,17 +1,29 @@
 # Change log
 
-## 4.1.0
+## 4.2.0
 
 ### New features
 
-- File copy method in the REST API.
-- Added Qlik Sense app "Butler 4.1 demo app" which contains examples of how Butler's API can be called from Sense load scripts.
+- Notifications by email when scheduled reload tasks fail. Notification email are fully customizable using Handlebars templating syntax. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
+- Notification emails include data such as task execution details, customisable number of rows from the reload script log, email priority, support for most email providers and more. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
+- Email rate limits used to avoid spamming your inbox. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
+- Notifications by email, Slack, MS Teams and MQTT when reload tasks are **aborted** in QMC. Email notifications use Handlebars templating syntax. [#93](https://github.com/ptarmiganlabs/butler/issues/93). New config file properties to control which Slack/Teams channel these notifications are sent to.
+
+## 4.1.2
+
+### New features
 
 ### Fixes and patches
 
-- Updated dependencies to latest versions.
-- Minor stability changes/improvements to filemove and filedelete API methods.
-- Change parsing of config file to make Butler more forgiving if some parts of the config file are missing.
+- The included Sense demo app now correctly uses the Butler API endpoint used to start reload tasks.
+
+## 4.1.1
+
+### New features
+
+### Fixes and patches
+
+- API endpoint documentation for starting Sense reload tasks has been corrected.
 
 ### Breaking changes
 

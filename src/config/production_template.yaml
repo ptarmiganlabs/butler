@@ -40,11 +40,65 @@ Butler:
         name: 10d
         duration: 10d
 
+  # Qlik Sense related links used in notification messages (currently emails)
+  qlikSenseUrls:
+    qmc: <Link to Qlik Sense QMC>
+    hub: <Link to Qlik Sense Hub>
+
   slackConfig:
     enable: false
     webhookURL: <fill in your web hook URL from Slack>
     loginNotificationChannel: sense-user-activity     # Slack channel to which user activity data is sent
     taskFailureChannel: sense-task-failure            # Slack channel to which task failure notifications are sent
+    taskAbortedChannel: sense-task-aborted            # Slack channel to which task stopped notifications are sent
+
+  teamsConfig:
+    enable: false
+    taskFailureWebhookURL: <fill in your web hook URL from MS Teams>
+
+  # Info needed to send email notifications when for example reloads fail.
+  # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
+  emailNotification:
+    enable: false
+    reladTaskAborted:
+      enable: true
+      rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      headScriptLogLines: 0                           # # of lines from start of script to include in email
+      tailScriptLogLines: 25                          # # of lines from end of script to include in email
+      priority: high                                  # high/normal/low
+      subject: 'Qlik Sense reload aborted: "{{taskName}}"'  # Email subject. Can use template fields
+      bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
+      htmlTemplateFile: aborted-reload                # Name of email body template file to use
+      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
+      toAdress:                                       # Array of email addresses to which the notification email will be sent
+        - <Email address 1>
+        - <Email address 2>
+    reladTaskFailure:
+      enable: false
+      rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      headScriptLogLines: 30                          # # of lines from start of script to include in email
+      tailScriptLogLines: 25                          # # of lines from end of script to include in email
+      priority: high                                  # high/normal/low
+      subject: 'Qlik Sense reload failed: "{{taskName}}"'   # Email subject. Can use template fields
+      bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
+      htmlTemplateFile: failed-reload                 # Name of email body template file to use
+      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      toAdress:                                       # Array of email addresses to which the notification email will be sent
+        - <Email address 1>
+        - <Email address 2>
+    smtp:                                             # Email server settings
+      host: <FQDN or IP or email server, e.g. smtp.gmail.com>
+      port: 465
+      secure: true
+      tls: 
+        serverName: 
+        ignoreTLS: false
+        requireTLS: true
+        rejectUnauthorized: false
+      auth:
+        enable: true
+        user: <Username, email address etc>
+        password: <my-secret-password>
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -62,6 +116,7 @@ Butler:
     brokerPort: 1883
     taskFailureTopic: qliksense/task_failure
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
+    taskAbortedTopic: qliksense/task_aborted
     sessionStartTopic: qliksense/session/start
     sessionStopTopic: qliksense/session/stop
     connectionOpenTopic: qliksense/connection/open

@@ -20,7 +20,6 @@ if (globals.config.get('Butler.uptimeMonitor.enable') == true) {
 }
 
 // Load certificates to use when connecting to healthcheck API
-// var fs = require('fs'),
 var path = require('path'),
     certFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCert')),
     keyFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertKey')),
@@ -89,15 +88,11 @@ restServer.pre(function (req, res, next) {
     // Is there a X-HTTP-Method-Override header?
     // If so, change the http method to the one specified
 
-    // if ( req.headers.find(item => i) )
-
-
     for (const [key, value] of Object.entries(req.headers)) {
         if (key.toLowerCase() == 'x-http-method-override') {
             req.method = value;
         }
     }
-
 
     req.headers.accept = 'application/json';
     return next();
@@ -130,7 +125,10 @@ restifySwaggerJsdoc.createSwaggerPage({
 // }
 
 // TODO First test if config entry exists => Make Butler less picky about new formats in the config file
-if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') && globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
+if (
+    globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
+    globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
+) {
     globals.logger.debug('Registering REST endpoint GET /v4/configfile/endpointsenabled');
     restServer.get({ path: '/v4/configfile/endpointsenabled' }, rest.api.respondGET_configFileListEnbledEndpoints);
 }
@@ -231,31 +229,46 @@ if (globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') && glob
 }
 
 if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')
+    ) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedules');
 
         restServer.post({ path: '/v4/schedules' }, rest.scheduler.respondPOST_schedules);
     }
 
-    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')
+    ) {
         globals.logger.debug('Registering REST endpoint GET /v4/schedules');
 
         restServer.get({ path: '/v4/schedules' }, rest.scheduler.respondGET_schedules);
     }
 
-    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')
+    ) {
         globals.logger.debug('Registering REST endpoint DELETE /v4/schedules');
 
         restServer.del({ path: '/v4/schedules/:scheduleId' }, rest.scheduler.respondDELETE_schedules);
     }
 
-    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
+    ) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
 
         restServer.put({ path: '/v4/schedules/:scheduleId/start' }, rest.scheduler.respondPUT_schedulesStart);
     }
 
-    if (globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') && globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
+    ) {
         globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
 
         restServer.put({ path: '/v4/schedules/:scheduleId/stop' }, rest.scheduler.respondPUT_schedulesStop);
@@ -319,3 +332,4 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
         globals.logger.info('MAIN: Docker healthcheck server now listening');
     });
 }
+
