@@ -333,3 +333,22 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
     });
 }
 
+// process.on('SIGUSR2', () => {
+//     // Run with
+//     // node -- expose-gc butler.js
+//     //
+//     // Trigger with 
+//     // kill -SIGUSR2 $(pgrep -lfa node | grep butler.js | awk '{print $1}'
+//     try {
+//         if (global.gc) {
+//             console.info('SIGUSR2 signal received. GC starting');
+//             global.gc();
+//         } else {
+//             console.log('`node --expose-gc index.js`');
+//             process.exit();
+//         }
+//     } catch (e) {
+//         console.log('`node --expose-gc index.js`');
+//         process.exit();
+//     }
+// });
