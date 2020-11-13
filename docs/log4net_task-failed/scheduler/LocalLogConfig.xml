@@ -35,6 +35,7 @@
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
         <param name="remotePort" value="9998" />
+        <param name="encoding" value="utf-8" />
         <layout type="log4net.Layout.PatternLayout">
             <converter>
                 <param name="name" value="hostname" />
@@ -52,6 +53,7 @@
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
         <param name="remotePort" value="9998" />
+        <param name="encoding" value="utf-8" />
         <layout type="log4net.Layout.PatternLayout">
             <converter>
                 <param name="name" value="hostname" />
