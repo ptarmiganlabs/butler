@@ -1,4 +1,7 @@
 /* eslint-disable no-unused-vars */
+/* eslint strict: ["error", "global"] */
+
+'use strict';
 
 // Load global variables and functions
 var globals = require('../globals');
@@ -69,7 +72,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // mag[8]  : Message
 
         try {
-            var msg = message.toString().split(';');
+            let msg = message.toString().split(';');
 
             if (msg[0].toLowerCase() == '/engine-reload-failed/') {
                 // Engine log appender detecting failed reload, also ones initiated interactively by users
@@ -132,7 +135,7 @@ module.exports.udpInitTaskErrorServer = function () {
                     });
                 }
 
-                // Publish MQTT message when a task has failed, if MQTT enabled
+                // Publish MQTT message when a task has been aborted, if MQTT enabled
                 if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true && globals.config.has('Butler.mqttConfig.taskAbortedTopic')) {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
                 }

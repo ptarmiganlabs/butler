@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var globals = require('../globals');
 var qrsInteract = require('qrs-interact');
 const axios = require('axios');

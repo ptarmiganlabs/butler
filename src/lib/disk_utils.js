@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 const isDirectoryChildOf = (child, parent) => {
     if (child === parent) return true;
 

@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 // Load global variables and functions
 var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
@@ -47,8 +52,8 @@ module.exports.respondGET_getDiskSpace = async function (req, res, next) {
         res.send(200, info);
         next();
     } catch (err) {
-        globals.logger.error(`DISKSPACE: Failed creating directory: ${req.body.directory}`);
-        res.send(new errors.InternalError({}, 'Failed creating directory'));
+        globals.logger.error(`DISKSPACE: Failed getting disk space: ${req.body.directory}`);
+        res.send(new errors.InternalError({}, 'Failed getting disk space'));
         next();
     }
 };

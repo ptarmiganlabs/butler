@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var globals = require('../globals');
 var scriptLog = require('./scriptlog.js');
 
@@ -42,7 +47,7 @@ function isSmtpConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: SMTP notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: SMTP notifications are disabled in config file - won\'t send email');
             return false;
         }
 
@@ -73,7 +78,7 @@ function isEmailReloadFailedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reladTaskFailure.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: Reload failure email notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: Reload failure email notifications are disabled in config file - won\'t send email');
             return false;
         }
 
@@ -104,7 +109,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reladTaskAborted.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: Reload aborted email notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: Reload aborted email notifications are disabled in config file - won\'t send email');
             return false;
         }
 

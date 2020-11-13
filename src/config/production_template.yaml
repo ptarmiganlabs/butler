@@ -61,7 +61,7 @@ Butler:
   emailNotification:
     enable: false
     reladTaskAborted:
-      enable: true
+      enable: false
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 0                           # # of lines from start of script to include in email
       tailScriptLogLines: 25                          # # of lines from end of script to include in email
@@ -86,19 +86,19 @@ Butler:
       toAdress:                                       # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
-    smtp:                                             # Email server settings
+    smtp:                                             # Email server settings. See https://nodemailer.com/smtp/ for details on the meaning of these fields.
       host: <FQDN or IP or email server, e.g. smtp.gmail.com>
-      port: 465
-      secure: true
-      tls: 
-        serverName: 
+      port: <port on which SMTP server is listening>
+      secure: true                                    # true/false
+      tls:
+        serverName:                                   # If specified the serverName field will be used for TLS verification instead of the host field.
         ignoreTLS: false
         requireTLS: true
         rejectUnauthorized: false
       auth:
         enable: true
         user: <Username, email address etc>
-        password: <my-secret-password>
+        password: <your-secret-password>
 
   # Scheduler for Qlik Sense tasks
   scheduler:

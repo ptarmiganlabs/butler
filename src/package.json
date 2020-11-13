@@ -9,7 +9,6 @@
         "config": "^3.3.2",
         "cron-job-manager": "^2.1.4",
         "dict": "^1.4.0",
-        "diskusage": "^1.1.3",
         "enigma.js": "^2.7.2",
         "express-handlebars": "^5.2.0",
         "fs-extra": "^9.0.1",
@@ -20,14 +19,15 @@
         "keyv": "^4.0.3",
         "keyv-file": "^0.2.0",
         "later": "^1.2.0",
+        "lodash": "^4.17.20",
         "luxon": "^1.25.0",
         "mkdirp": "^1.0.4",
         "moment": "^2.29.1",
         "moment-precise-range-plugin": "^1.3.0",
-        "mqtt": "^4.2.4",
+        "mqtt": "^4.2.5",
         "ms-teams-webhook": "^1.0.3",
         "node-slack": "0.0.7",
-        "nodemailer": "^6.4.14",
+        "nodemailer": "^6.4.16",
         "nodemailer-express-handlebars": "^4.0.0",
         "promise": "^8.0.3",
         "qrs-interact": "^6.1.0",
@@ -40,10 +40,10 @@
         "uuid": "^8.3.1",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.0",
-        "ws": "^7.3.1"
+        "ws": "^7.4.0"
     },
     "devDependencies": {
-        "eslint": "7.12.1",
+        "eslint": "^7.13.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",

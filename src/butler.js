@@ -124,7 +124,6 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
 
-// TODO First test if config entry exists => Make Butler less picky about new formats in the config file
 if (
     globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
     globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')

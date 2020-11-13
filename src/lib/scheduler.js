@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var globals = require('../globals');
 var qrsUtil = require('../qrsUtil');
 const fs = require('fs');
@@ -80,7 +85,7 @@ function addCronEntry(newSchedule) {
     cronManager.add(
         newSchedule.id.toString(),
         newSchedule.cronSchedule,
-        () => {
+        function cronEventHandler () {
             qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
 
             globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);

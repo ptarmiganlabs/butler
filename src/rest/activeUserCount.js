@@ -1,4 +1,9 @@
-// Load global variables and functions
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
+// Load global variables and functions0
 var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 const errors = require('restify-errors');

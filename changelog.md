@@ -4,10 +4,16 @@
 
 ### New features
 
-- Notifications by email when scheduled reload tasks fail. Notification email are fully customizable using Handlebars templating syntax. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
-- Notification emails include data such as task execution details, customisable number of rows from the reload script log, email priority, support for most email providers and more. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
+- Notifications by email when scheduled reload tasks fail. Notification email (both body and subject) are fully customizable using [Handlebars](https://handlebarsjs.com/guide/) templating syntax. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
+- Notification emails include data such as task execution details, customizable number of rows from beginning and end of the reload script log, email priority, support for most email providers and more. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
 - Email rate limits used to avoid spamming your inbox. [#92](https://github.com/ptarmiganlabs/butler/issues/92)
-- Notifications by email, Slack, MS Teams and MQTT when reload tasks are **aborted** in QMC. Email notifications use Handlebars templating syntax. [#93](https://github.com/ptarmiganlabs/butler/issues/93). New config file properties to control which Slack/Teams channel these notifications are sent to.
+- Notifications by email, Slack, MS Teams and MQTT when reload tasks are **aborted** in QMC. Email notifications use Handlebars templating syntax. New config file properties control which Slack/Teams channel these notifications are sent to. [#93](https://github.com/ptarmiganlabs/butler/issues/93)
+- Much improved documentation, especially in the [getting started/setup section of butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com/docs/getting-started/setup/).
+- Include non-heap memory in server uptime logging. Also store this metric to InfluxDB. [#100](https://github.com/ptarmiganlabs/butler/issues/100).
+
+### Fiexs and patches
+
+- Refactored code that starts Qlik Sense reload tasks. [#101](https://github.com/ptarmiganlabs/butler/issues/101)
 
 ## 4.1.2
 
