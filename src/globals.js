@@ -61,7 +61,7 @@ const getLoggingLevel = () => {
 };
 
 // Load our own libs
-var qrsUtil = require('./qrsUtil');
+// var qrsUtil = require('./qrsUtil');
 
 // Helper function to read the contents of the certificate files:
 const readCert = filename => fs.readFileSync(filename);
@@ -254,6 +254,7 @@ const influx = new Influx.InfluxDB({
             fields: {
                 heap_used: Influx.FieldType.FLOAT,
                 heap_total: Influx.FieldType.FLOAT,
+                external: Influx.FieldType.FLOAT,
                 process_memory: Influx.FieldType.FLOAT,
             },
             tags: ['butler_instance'],
@@ -307,7 +308,7 @@ function initInfluxDB() {
 
 module.exports = {
     config,
-    qrsUtil,
+    // qrsUtil,
     configEngine,
     configQRS,
     slackObj,
