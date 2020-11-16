@@ -10,4 +10,4 @@ Butler is a utility toolbox for [Qlik Sense](https://www.qlik.com/us/products/ql
 \
 **Documentation is available at [https://butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com).**
 \
-Commercial getting-started services for Butler is available, more info [here](https://ptarmiganlabs.com/butler-assist/).
+Commercial getting-started services for Butler are available, more info [here](https://ptarmiganlabs.com/butler-assist/).
