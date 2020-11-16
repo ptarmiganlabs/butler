@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var later = require('later');
 const axios = require('axios');
 
@@ -27,7 +32,7 @@ function setupHeartbeatTimer(config, logger) {
 
 
         var sched = later.parse.text(config.get('Butler.heartbeat.frequency'));
-        var t = later.setInterval(function () {
+        later.setInterval(function () {
             callRemoteURL(config.get('Butler.heartbeat.remoteURL'), logger);
         }, sched);
 

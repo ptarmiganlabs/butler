@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var dict = require('dict');
 
 // Load global variables and functions
@@ -41,11 +46,12 @@ module.exports.mqttInitHandlers = function () {
             globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
         }
 
-        var array1, array2, serverName, directoryName, userName;
+        var array1, array2, serverName, userName;
+        // var directoryName;
         var activeUsers = [],
             activeUsersJSON;
-        var activeUsersPerServer = [],
-            activeUsersPerServerJSON;
+        // var activeUsersPerServer = [],
+        //     activeUsersPerServerJSON;
         var serverObj;
 
         if (
@@ -58,7 +64,7 @@ module.exports.mqttInitHandlers = function () {
             array2 = array1[1].split('/');
 
             serverName = array1[0];
-            directoryName = array2[0];
+            // directoryName = array2[0];
             userName = array2[1];
 
             globals.logger.info('MQTT: Adding active user');
@@ -125,7 +131,7 @@ module.exports.mqttInitHandlers = function () {
             array2 = array1[1].split('/');
 
             serverName = array1[0];
-            directoryName = array2[0];
+            // directoryName = array2[0];
             userName = array2[1];
 
             globals.logger.info('MQTT: Removing active user');

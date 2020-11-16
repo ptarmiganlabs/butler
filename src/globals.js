@@ -61,11 +61,14 @@ const getLoggingLevel = () => {
 };
 
 // Load our own libs
-var qrsUtil = require('./qrsUtil');
+// var qrsUtil = require('./qrsUtil');
 
 // Helper function to read the contents of the certificate files:
-// const readCert = filename => fs.readFileSync(path.resolve(__dirname, certificatesPath, filename));
 const readCert = filename => fs.readFileSync(filename);
+
+var certPath = path.resolve(__dirname, config.get('Butler.cert.clientCert')),
+    keyPath = path.resolve(__dirname, config.get('Butler.cert.clientCertKey')),
+    caPath = path.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
 
 //  Engine config
 var configEngine = {
@@ -87,9 +90,14 @@ const configQRS = {
     useSSL: config.get('Butler.configQRS.useSSL'),
     headerKey: config.get('Butler.configQRS.headerKey'),
     headerValue: config.get('Butler.configQRS.headerValue'),
-    cert: readCert(config.get('Butler.cert.clientCert')),
-    key: readCert(config.get('Butler.cert.clientCertKey')),
-    ca: readCert(config.get('Butler.cert.clientCertCA')),
+    cert: readCert(certPath),
+    key: readCert(keyPath),
+    ca: readCert(caPath),
+    certPaths: {
+        certPath: certPath,
+        keyPath: keyPath,
+        capath: caPath,
+    },
 };
 
 // ------------------------------------
@@ -108,7 +116,6 @@ if (config.has('Butler.teamsConfig.enable') && config.has('Butler.teamsConfig.ta
 
     // Create MS Teams object
     var teamsTaskFailureObj = new IncomingWebhook(teamsTaskFailureURL);
-
 }
 
 // ------------------------------------
@@ -171,7 +178,6 @@ if (config.has('Butler.fileCopyApprovedDirectories')) {
         fileCopyDirectories.push(newDirCombo);
     });
 }
-
 
 // Load approved fromDir and toDir for fileMove operation
 var fileMoveDirectories = [];
@@ -248,6 +254,7 @@ const influx = new Influx.InfluxDB({
             fields: {
                 heap_used: Influx.FieldType.FLOAT,
                 heap_total: Influx.FieldType.FLOAT,
+                external: Influx.FieldType.FLOAT,
                 process_memory: Influx.FieldType.FLOAT,
             },
             tags: ['butler_instance'],
@@ -301,7 +308,7 @@ function initInfluxDB() {
 
 module.exports = {
     config,
-    qrsUtil,
+    // qrsUtil,
     configEngine,
     configQRS,
     slackObj,

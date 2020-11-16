@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 module.exports = {
     activeUserCount: require('./activeUserCount.js'),
     activeUsers: require('./activeUsers.js'),

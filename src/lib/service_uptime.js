@@ -1,3 +1,8 @@
+/*eslint strict: ["error", "global"]*/
+/*eslint no-invalid-this: "error"*/
+
+'use strict';
+
 var later = require('later');
 var moment = require('moment');
 require('moment-precise-range-plugin');
@@ -38,7 +43,8 @@ function serviceUptimeStart() {
 
         let heapTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100,
             heapUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100,
-            processMemory = Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100;
+            processMemory = Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+            external = Math.round((process.memoryUsage().external / 1024 / 1024) * 100) / 100 ;
 
         globals.logger.log(uptimeLogLevel, '--------------------------------');
         globals.logger.log(
@@ -47,7 +53,7 @@ function serviceUptimeStart() {
                 formatter.format(startIterations) +
                 ', Uptime: ' +
                 moment.preciseDiff(0, uptimeMilliSec) +
-                `, Heap used ${heapUsed} MB of total heap ${heapTotal} MB. Memory allocated to process: ${processMemory} MB.`,
+                `, Heap used ${heapUsed} MB of total heap ${heapTotal} MB. External (off-heap): ${external} MB. Memory allocated to process: ${processMemory} MB.`,
         );
 
         // Store to Influxdb
@@ -62,6 +68,7 @@ function serviceUptimeStart() {
                 instanceTag: butlerMemoryInfluxTag,
                 heapUsed: heapUsed,
                 heapTotal: heapTotal,
+                external: external,
                 processMemory: processMemory,
             });
         }

@@ -14,7 +14,8 @@
             "env": {
                 "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
                 "NODE_ENV": "production"
-            }
+            },
+            "outFiles": ["${workspaceFolder}/**/*.js"]
         }
     ]
 }
