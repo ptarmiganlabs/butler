@@ -6,12 +6,13 @@ services:
     container_name: butler
     restart: always
     ports:
-      - "8080:8080"     # REST API available on port 8180 to services outside the container
-      - "9997:9997"     # UDP port for session connection events
-      - "9998:9998"     # UDP port for task failure events
+      - "8080:8080"       # REST API available on port 8180 to services outside the container
+      - "9997:9997/udp"   # UDP port for session connection events
+      - "9998:9998/udp"   # UDP port for task failure events
     volumes:
       # Make config file accessible outside of container
       - "./config:/nodeapp/config"
+      - "./log:/nodeapp/log"
     environment:
       - "NODE_ENV=production"
     logging:
