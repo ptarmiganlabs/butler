@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "4.2.0",
+    "version": "4.2.1",
     "description": "Superpowers to Qlik Sense. Task scheduling, key-value store, advanved alerting and more.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
