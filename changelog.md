@@ -1,5 +1,13 @@
 # Change log
 
+## 4.2.1
+
+### New features
+
+### Fixes and patches
+
+- Dependencies updated to stay sharp and secure.
+
 ## 4.2.0
 
 ### New features

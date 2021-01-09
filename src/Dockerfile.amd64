@@ -1,10 +1,9 @@
 # Build Docker image for Amd64
-
 FROM node:12-stretch
 
 # Add metadata about the image
 LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
-LABEL description="Extensible micro service adding features that Qlik Sense do not offer out of the box."
+LABEL description="Adding superpowers to Qlik Sense Enterprise on Windows."
 
 # Create app dir inside container
 WORKDIR /nodeapp

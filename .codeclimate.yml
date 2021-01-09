@@ -12,7 +12,7 @@ plugins:
 checks:
   argument-count:
     config:
-      threshold: 4
+      threshold: 6
   complex-logic:
     config:
       threshold: 4
@@ -21,13 +21,13 @@ checks:
       threshold: 250
   method-complexity:
     config:
-      threshold: 5
+      threshold: 10
   method-count:
     config:
       threshold: 20
   method-lines:
     config:
-      threshold: 50
+      threshold: 75
   nested-control-flow:
     config:
       threshold: 4
@@ -35,8 +35,7 @@ checks:
     config:
       threshold: 4
   similar-code:
-    config:
-      threshold: # language-specific defaults. an override will affect all languages.
+    enabled: false
   identical-code:
     config:
       threshold: # language-specific defaults. an override will affect all languages.
