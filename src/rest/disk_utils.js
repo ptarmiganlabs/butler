@@ -104,7 +104,7 @@ module.exports.respondPUT_fileCopy = async function (req, res, next) {
 
             // Make sure that
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
-            // 2. toFile is in a valid associated destiation directory (or subdirectory thereof)
+            // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
             let fromFile = path.normalize(req.body.fromFile),
                 toFile = path.normalize(req.body.toFile);
@@ -142,7 +142,7 @@ module.exports.respondPUT_fileCopy = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`FILECOPY: Failed copying file ${req.body.fromFile} to ${req.body.toFile}`);
+        globals.logger.error(`FILECOPY: Failed copying file ${req.body.fromFile} to ${req.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed copying file'));
         next();
     }
@@ -225,7 +225,7 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
 
             // Make sure that
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
-            // 2. toFile is in a valid associated destiation directory (or subdirectory thereof)
+            // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
             let fromFile = path.normalize(req.body.fromFile),
                 toFile = path.normalize(req.body.toFile);
@@ -263,7 +263,7 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`FILEMOVE: Failed moving file ${req.body.fromFile} to ${req.body.toFile}`);
+        globals.logger.error(`FILEMOVE: Failed moving file ${req.body.fromFile} to ${req.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed moving file'));
         next();
     }
@@ -350,7 +350,7 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`FILEDELETE: Failed deleting file ${req.body.deleteFile}`);
+        globals.logger.error(`FILEDELETE: Failed deleting file ${req.body.deleteFile}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed deleting file'));
         next();
     }
@@ -416,7 +416,7 @@ module.exports.respondPOST_createDirQVD = function (req, res, next) {
         }
         next();
     } catch (err) {
-        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${req.body.directory}`);
+        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed creating directory'));
         next();
     }
@@ -486,7 +486,7 @@ module.exports.respondPOST_createDir = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}`);
+        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed creating directory'));
         next();
     }

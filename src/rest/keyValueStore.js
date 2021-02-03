@@ -46,7 +46,7 @@ module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
         res.send(200, ns);
         next();
     } catch (err) {
-        globals.logger.error('KEYVALUE: Failed getting all namespaces');
+        globals.logger.error(`KEYVALUE: Failed getting all namespaces, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed getting all namespaces'));
         next();
     }
@@ -145,7 +145,7 @@ module.exports.respondGET_keyvalues = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}`);
+        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed getting key-value data'));
         next();
     }
@@ -257,7 +257,7 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}`);
+        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed getting key-value data'));
         next();
     }
@@ -391,7 +391,7 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
         }
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed adding key-value to namespace: ${req.params.namespace}`);
+        globals.logger.error(`KEYVALUE: Failed adding key-value to namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed adding key-value to namespace'));
         next();
     }
@@ -470,7 +470,7 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed deleting key '${req.params.key}' in namespace: ${req.params.namespace}`);
+        globals.logger.error(`KEYVALUE: Failed deleting key '${req.params.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed deleting key-value data'));
         next();
     }
@@ -534,7 +534,7 @@ module.exports.respondDELETE_keyvaluesDelete = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${req.params.namespace}`);
+        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed clearing namespace'));
         next();
     }

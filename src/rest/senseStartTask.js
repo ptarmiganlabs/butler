@@ -5,7 +5,7 @@
 
 // Load global variables and functions
 var globals = require('../globals');
-// const errors = require('restify-errors');
+var qrsUtil = require('../qrs_util');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 const errors = require('restify-errors');
 
@@ -52,12 +52,12 @@ module.exports.respondPUT_senseStartTask = function (req, res, next) {
             // Use data in request to start Qlik Sense task
             globals.logger.verbose(`STARTTASK: Starting task: ${req.params.taskId}`);
 
-            globals.qrsUtil.senseStartTask.senseStartTask(req.params.taskId);
+            qrsUtil.senseStartTask.senseStartTask(req.params.taskId);
             res.send(201, {'taskId': req.params.taskId});
             next();
         }
     } catch (err) {
-        globals.logger.error(`STARTTASK: Failed starting task: ${req.params.taskId}`);
+        globals.logger.error(`STARTTASK: Failed starting task: ${req.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed starting task'));
         next();
     }

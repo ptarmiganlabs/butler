@@ -62,7 +62,7 @@ module.exports.respondGET_base62ToBase16 = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`BASECONVERT: Failed converting from base62 to base16: ${req.query.base62}`);
+        globals.logger.error(`BASECONVERT: Failed converting from base62 to base16: ${req.query.base62}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed converting from base62 to base16'));
         next();
     }
@@ -117,7 +117,7 @@ module.exports.respondGET_base16ToBase62 = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`BASECONVERT: Failed converting from base16 to base62: ${req.query.base62}`);
+        globals.logger.error(`BASECONVERT: Failed converting from base16 to base62: ${req.query.base62}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed converting from base16 to base62'));
         next();
     }

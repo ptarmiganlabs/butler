@@ -123,7 +123,7 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
                 });
         }
     } catch (err) {
-        globals.logger.error(`APPDUMP: Failed dumping app: ${req.params.appId}`);
+        globals.logger.error(`APPDUMP: Failed dumping app: ${req.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed dumping app'));
         next();
     }

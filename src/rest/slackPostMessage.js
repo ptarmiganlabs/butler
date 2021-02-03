@@ -82,7 +82,7 @@ module.exports.respondPUT_slackPostMessage = function (req, res, next) {
     
         next();    
     } catch (err) {
-        globals.logger.error(`SLACK: Failed sending Slack message: ${JSON.stringify(req.body, null, 2)}`);
+        globals.logger.error(`SLACK: Failed sending Slack message: ${JSON.stringify(req.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed sending Slack message'));
         next();
     }

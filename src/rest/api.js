@@ -41,8 +41,8 @@ module.exports.respondGET_configFileListEnbledEndpoints = async function (req, r
         res.send(200, globals.endpointsEnabled);
         next();
     } catch (err) {
-        globals.logger.error(`FILEMOVE: Failed moving file ${req.body.fromFile} to ${req.body.toFile}`);
-        res.send(new errors.InternalError({}, 'Failed moving file'));
+        globals.logger.error(`API: Failed retrieving list of enabled API endpoints, error is: ${JSON.stringify(err, null, 2)}`);
+        res.send(new errors.InternalError({}, 'Failed retrieving list of enabled API endpoints'));
         next();
     }
 };

@@ -4,7 +4,7 @@
 'use strict';
 
 var globals = require('../globals');
-var qrsUtil = require('../qrsUtil');
+var qrsUtil = require('../qrs_util');
 const fs = require('fs');
 const yaml = require('js-yaml');
 
@@ -14,7 +14,7 @@ var cronManager = new CronJobManager();
 
 function saveSchedulesToDisk() {
     // First add a top level for readability
-    let diskSchedule = yaml.safeDump({ butlerSchedule: globals.configSchedule }, 4);
+    let diskSchedule = yaml.dump({ butlerSchedule: globals.configSchedule }, 4);
     fs.writeFileSync(globals.config.get('Butler.scheduler.configfile'), diskSchedule, 'utf8');
 }
 
@@ -24,7 +24,7 @@ function loadSchedulesFromDisk() {
         if (globals.config.has('Butler.scheduler')) {
             if (globals.config.get('Butler.scheduler.enable') == true) {
                 let scheduleFile = globals.config.get('Butler.scheduler.configfile');
-                let tmpScheduleArray = yaml.safeLoad(fs.readFileSync(scheduleFile, 'utf8')).butlerSchedule;
+                let tmpScheduleArray = yaml.load(fs.readFileSync(scheduleFile, 'utf8')).butlerSchedule;
 
                 // Create schedules, incl cron jobs for all schedules
                 tmpScheduleArray.forEach(element => {
@@ -86,9 +86,8 @@ function addCronEntry(newSchedule) {
         newSchedule.id.toString(),
         newSchedule.cronSchedule,
         function cronEventHandler () {
-            qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
-
             globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
+            qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
         },
         {
             start: newSchedule.startupState == 'started' || newSchedule.startupState == 'start' ? true : false,
