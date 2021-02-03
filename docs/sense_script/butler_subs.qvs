@@ -1,10 +1,22 @@
+// ------------------------
+// INSTRUCTIONS
+//
+// All of thee subs below that deal with Butler's API assume two variables exist:
+//   vButlerHost : The host, fully-qualified-domain-name or IP of the server where Butler is running
+//   vButlerPort : The port on which Butler's REST API is exposed
+//
+// Both the settings above are set in Butler's main config file.
+// ------------------------
+
+
+
 // ------------------------------------------------------------
 // ** Time stamped trace messages **
 //
 // Get nice trace lines in the reload log by calling the line with 
 // CALL NiceTrace('My trace message. Variable value=$(vVariableName)');
 //
-// Parameters:
+// Paramaters:
 // vMsg                  : Message sent to reload log
 // ------------------------------------------------------------
 sub NiceTrace(vMsg)
@@ -14,6 +26,8 @@ sub NiceTrace(vMsg)
     // Clear timestamp variable
     set vNow=;
 end sub
+
+
 
 
 // ------------------------------------------------------------
@@ -39,10 +53,134 @@ sub ButlerInit
 end sub
 
 
+
+// ------------------------------------------------------------
+// ** Copy files/directories **
+//
+// Note: Butler will create any missing directories in the path.
+//
+// Parameters:
+// vSource
+// vDest
+// vOverwrite
+// vPreserveTimestamp
+//
+// ------------------------------------------------------------
+sub CopyFile(vSource, vDest, vOverwrite, vPreserveTimestamp)
+	let vSource = Replace('$(vSource)', '\', '/');
+	let vSource = Replace('$(vSource)', '#', '%23');
+
+	let vDest = Replace('$(vDest)', '\', '/');
+	let vDest = Replace('$(vDest)', '#', '%23');
+
+	let vRequestBody = '{""fromFile"":""$(vSource)"", ""toFile"":""$(vDest)"", ""overwrite"":""$(vOverwrite)"", ""preserveTimestamp"":""$(vPreserveTimestamp)""}';
+
+    LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    	"fromFile",
+        "toFile",
+        "overwrite",
+        "preserveTimestamp"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/filecopy",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "X-HTTP-Method-Override" "PUT"
+    );
+
+	set vSource=;
+    set vDest=;
+    set vOverwrite=;
+    set vPreserveTimestamp=;
+
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
+
+// ------------------------------------------------------------
+// ** Move file **
+//
+// File moves are only allowed between the source and destination directories
+// approved in the Butler config file.
+//
+// Paramaters:
+// vSource             : Source file
+// vDest               : Destination file
+// vOverwrite		   : true/false. Should destination file be overwritten if it already exists?
+// ------------------------------------------------------------
+sub MoveFile(vSource, vDest, vOverwrite)
+	let vSource = Replace('$(vSource)', '\', '/');
+	let vSource = Replace('$(vSource)', '#', '%23');
+
+	let vDest = Replace('$(vDest)', '\', '/');
+	let vDest = Replace('$(vDest)', '#', '%23');
+
+	let vRequestBody = '{""fromFile"":""$(vSource)"", ""toFile"":""$(vDest)"", ""overwrite"":""$(vOverwrite)""}';
+
+    LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    	"fromFile",
+        "toFile",
+        "overwrite"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/filemove",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "X-HTTP-Method-Override" "PUT"
+    );
+
+	set vSource=;
+    set vDest=;
+    set vOverwrite=;
+
+    DROP TABLE RestConnectorMasterTable;
+end sub
+	
+
+// ------------------------------------------------------------
+// ** Delete file **
+//
+// Files can only be deleted in folders (and subfolders of) directories that 
+// have been approved in the Butler config file.
+//
+// Paramaters:
+// vFile                : File to be deleted. 
+// ------------------------------------------------------------
+sub DeleteFile(vFile)
+	let vFile = Replace('$(vFile)', '\', '/');
+	let vFile = Replace('$(vFile)', '#', '%23');
+
+	let vRequestBody = '{""deleteFile"":""$(vFile)""}';
+
+    LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    	"vFile"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/filedelete",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "X-HTTP-Method-Override" "DELETE"
+    );
+
+	set vFile=;
+
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
+
+
 // ------------------------------------------------------------
 // ** Create directory on disk **
 //
-// Call Butler's /createdir endpoint.
 // Note: Butler will create any missing directories in the path.
 //
 // Parameters:
@@ -71,11 +209,9 @@ sub CreateDir(vDir)
     DROP TABLE RestConnectorMasterTable;
 end sub
 
-
 // ------------------------------------------------------------
 // ** Create directory on disk, under the QVD folder specified in Butler's config file **
 //
-// Call Butler's /createdirqvd endpoint.
 // Note: Butler will create any missing directories in the path.
 //
 // Parameters:
@@ -135,9 +271,6 @@ end sub
 
 
 
-
-
-
 // ------------------------------------------------------------
 // ** Add key-value pair to a namespace **
 //
@@ -181,8 +314,6 @@ sub AddKeyValue(vNamespace, vKey, vValue, vTimeToLive)
 end sub
 
 
-
-
 // ------------------------------------------------------------
 // ** Get key-value pair from a namespace **
 //
@@ -214,7 +345,6 @@ end sub
 
 
 
-
 // ------------------------------------------------------------
 // ** Delete a key-value pair from a namespace **
 //
@@ -239,14 +369,7 @@ sub DeleteKeyValue(vNamespace, vKey)
 end sub
 
 
-// ------------------------------------------------------------
-// ** Does a key exist in a specific namespace? **
-//
-// Paramaters:
-// vNamespace            : Namespace in which the KV pair will be stored
-// vKey                  : Key name
-// vResultVarName        : Name of variable in which result will be placed
-// ------------------------------------------------------------
+
 sub ExistsKeyValue(vNamespace, vKey, vResultVarName)
     LIB CONNECT TO 'Butler_GET';
 
@@ -292,12 +415,8 @@ sub ExistsKeyValue(vNamespace, vKey, vResultVarName)
 end sub
 
 
-// ------------------------------------------------------------
-// ** Delete a namespace and all key-value pairs in it **
-//
-// Paramaters:
-// vNamespace            : Namespace in which the KV pair will be stored
-// ------------------------------------------------------------
+
+
 sub DeleteKeyValueNamespace(vNamespace)
     LIB CONNECT TO 'Butler_POST';
 
@@ -314,12 +433,6 @@ sub DeleteKeyValueNamespace(vNamespace)
 end sub
 
 
-// ------------------------------------------------------------
-// ** Get names of all namespaces in a table  **
-//
-// Paramaters:
-// vResultTableName      : Name of table in which namespace names will be placed
-// ------------------------------------------------------------
 sub GetKeyValueNamespaces(vResultTableName)
     LIB CONNECT TO 'Butler_GET';
 
@@ -339,3 +452,34 @@ sub GetKeyValueNamespaces(vResultTableName)
 	set vResultTableName=;
     DROP TABLE RestConnectorMasterTable;
 end sub
+
+
+
+
+// ------------------------------------------------------------
+// ** Start Sense task **
+//
+// Use Butler to start the task identified by the ID in parameter vTaskId.
+//
+// Paramaters:
+// vTaskId               : 
+// ------------------------------------------------------------
+sub StartTask(vTaskId)
+	LIB CONNECT TO 'Butler_POST';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    	"taskId"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "http://$(vButlerHost):$(vButlerPort)/v4/reloadtask/$(vTaskId)/start",
+    HTTPHEADER "X-HTTP-Method-Override" "PUT"
+    );
+
+    set vTaskId=;
+
+    DROP TABLE RestConnectorMasterTable;    
+end sub
+	
+
+
