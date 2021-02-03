@@ -115,7 +115,7 @@ module.exports.respondGET_senseListApps = function (req, res, next) {
                 return next(new errors.RequestTimeoutError('Failed to open session to Sense engine'));
             });
     } catch (err) {
-        globals.logger.error(`LISTAPPS: getting list of Sense apps: ${req.body.taskId}`);
+        globals.logger.error(`LISTAPPS: getting list of Sense apps: ${req.body.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed getting list of Sense apps'));
         next();
     }

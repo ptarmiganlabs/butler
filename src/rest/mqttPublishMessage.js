@@ -59,7 +59,7 @@ module.exports.respondPUT_mqttPublishMessage = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(req.body, null, 2)}`);
+        globals.logger.error(`PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(req.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed publishing MQTT message'));
         next();
     }

@@ -1,5 +1,16 @@
 # Change log
 
+
+## 4.3.0
+
+### New features
+
+- More/better/improved [concents overview](https://butler.ptarmiganlabs.com/docs/concepts/) and [examples](https://butler.ptarmiganlabs.com/docs/examples/) on [butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com/). For example, that site now includes examples on how to move/copy/delete files using Butler.
+
+### Fixes and patches
+
+- Fixed a [bug](https://github.com/ptarmiganlabs/butler/issues/114) which prevented Sense reload tasks being started from Butler's REST API.
+
 ## 4.2.1
 
 ### New features

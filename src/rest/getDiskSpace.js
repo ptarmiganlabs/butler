@@ -52,7 +52,7 @@ module.exports.respondGET_getDiskSpace = async function (req, res, next) {
         res.send(200, info);
         next();
     } catch (err) {
-        globals.logger.error(`DISKSPACE: Failed getting disk space: ${req.body.directory}`);
+        globals.logger.error(`DISKSPACE: Failed getting disk space: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed getting disk space'));
         next();
     }

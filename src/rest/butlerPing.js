@@ -38,7 +38,7 @@ module.exports.respondGET_butlerPing = function (req, res, next) {
         res.send(req.params);
         next();
     } catch (err) {
-        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}`);
+        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed creating directory'));
         next();
     }

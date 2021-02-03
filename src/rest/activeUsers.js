@@ -51,7 +51,7 @@ module.exports.respondGET_activeUsers = function (req, res, next) {
         res.send(200, req.query);
         next();
     } catch (err) {
-        globals.logger.error('ACTIVEUSERCOUNT: Failed gettting active users.');
+        globals.logger.error(`ACTIVEUSERCOUNT: Failed gettting active users, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed gettting active users'));
         next();
     }

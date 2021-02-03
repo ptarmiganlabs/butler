@@ -111,7 +111,7 @@ module.exports.respondGET_schedules = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed retrieving schedule with ID ${req.query.id}.`);
+        globals.logger.error(`REST SCHEDULER: Failed retrieving schedule with ID ${req.query.id}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed retrieving schedule'));
         next();
     }
@@ -227,7 +227,7 @@ module.exports.respondPOST_schedules = function (req, res, next) {
         res.send(201, newSchedule);
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed adding new schedule ${JSON.stringify(req.body, null, 2)}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`REST SCHEDULER: Failed adding new schedule ${JSON.stringify(req.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed adding new schedule'));
         next();
     }
@@ -272,7 +272,7 @@ module.exports.respondDELETE_schedules = function (req, res, next) {
         }
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed deleting schedule ${req.params.scheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`REST SCHEDULER: Failed deleting schedule ${req.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed deleting schedule'));
         next();
     }
@@ -379,7 +379,7 @@ module.exports.respondPUT_schedulesStart = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed starting schedule ${req.params.scheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`REST SCHEDULER: Failed starting schedule ${req.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed starting schedule'));
         next();
     }
@@ -487,7 +487,7 @@ module.exports.respondPUT_schedulesStop = function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed stopping schedule ${req.params.scheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`REST SCHEDULER: Failed stopping schedule ${req.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`);
         res.send(new errors.InternalError({}, 'Failed stopping schedule'));
         next();
     }

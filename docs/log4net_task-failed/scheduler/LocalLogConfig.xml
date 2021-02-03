@@ -74,8 +74,8 @@
 
     <!--Send email on task failure-->
     <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
-	<!--Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
-        <appender-ref ref="MailAppender" />
+    	<!--Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
 		<!--appender-ref should match the name identifying the appender. More than one appender can be configured in the same configuration file-->
+        <appender-ref ref="MailAppender" />
     </logger>
 </configuration>
