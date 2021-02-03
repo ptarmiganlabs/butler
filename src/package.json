@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "4.2.1",
+    "version": "4.2.2",
     "description": "Superpowers to Qlik Sense. Task scheduling, key-value store, advanved alerting and more.",
     "docs": "node_modules/.bin/docco {mqtt,qrs}/{**/*,*} -l classic",
     "dependencies": {
@@ -11,10 +11,10 @@
         "dict": "^1.4.0",
         "enigma.js": "^2.7.2",
         "express-handlebars": "^5.2.0",
-        "fs-extra": "^9.0.1",
+        "fs-extra": "^9.1.0",
         "handlebars": "^4.7.6",
-        "influx": "^5.5.2",
-        "js-yaml": "^3.14.0",
+        "influx": "^5.7.0",
+        "js-yaml": "^4.0.0",
         "jshint": "^2.12.0",
         "keyv": "^4.0.3",
         "keyv-file": "^0.2.0",
@@ -30,8 +30,8 @@
         "nodemailer": "^6.4.17",
         "nodemailer-express-handlebars": "^4.0.0",
         "promise": "^8.0.3",
-        "qrs-interact": "^6.2.0",
-        "rate-limiter-flexible": "^2.1.16",
+        "qrs-interact": "^6.2.1",
+        "rate-limiter-flexible": "^2.2.1",
         "restify": "^8.4.1",
         "restify-cors-middleware": "^1.1.1",
         "restify-errors": "^8.0.2",
@@ -43,7 +43,7 @@
         "ws": "^7.4.2"
     },
     "devDependencies": {
-        "eslint": "7.17.0",
+        "eslint": "^7.19.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
