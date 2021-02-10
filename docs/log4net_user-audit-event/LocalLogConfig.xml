@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <configuration>
     <appender name="NodeUserLogger" type="log4net.Appender.UdpAppender">
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Start session" />
+            <param name="stringToMatch" value="Stop session" />
+        </filter>
+        <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<FQDN or IP of server where Butler is running>" />
         <param name="remotePort" value="9997" />
         <layout type="log4net.Layout.PatternLayout">
