@@ -3,6 +3,8 @@
     <appender name="NodeUserLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Start session" />
+        </filter>
+        <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Stop session" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
