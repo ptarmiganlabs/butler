@@ -103,8 +103,6 @@ const configQRS = {
 // ------------------------------------
 // Slack config
 var slackWebhookURL = config.get('Butler.slackConfig.webhookURL');
-var slackLoginNotificationChannel = config.get('Butler.slackConfig.loginNotificationChannel');
-var slackTaskFailureChannel = config.get('Butler.slackConfig.taskFailureChannel');
 
 // Create Slack object
 var slackObj = new slack(slackWebhookURL);
@@ -312,8 +310,6 @@ module.exports = {
     configEngine,
     configQRS,
     slackObj,
-    slackLoginNotificationChannel,
-    slackTaskFailureChannel,
     teamsTaskFailureObj,
     currentUsers,
     currentUsersPerServer,

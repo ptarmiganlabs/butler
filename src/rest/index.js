@@ -10,6 +10,7 @@ module.exports = {
     mqttPublishMessage: require('./mqttPublishMessage.js'),
     senseStartTask: require('./senseStartTask.js'),
     senseQRSPing: require('./senseQRSPing.js'),
+    senseApp: require('./senseApp.js'),
     senseAppDump: require('./senseAppDump.js'),
     senseListApps: require('./senseListApps.js'),
     butlerPing: require('./butlerPing.js'),

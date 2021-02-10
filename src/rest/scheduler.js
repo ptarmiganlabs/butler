@@ -284,7 +284,7 @@ module.exports.respondDELETE_schedules = function (req, res, next) {
  * /v4/schedules/{scheduleId}/start:
  *   put:
  *     description: |
- *       Start a schedule.
+ *       Start a schedule, i.e. have the scheduler run the associated reload task according to the schedule's cron settings.
  * 
  *     produces:
  *       - application/json
@@ -392,7 +392,7 @@ module.exports.respondPUT_schedulesStart = function (req, res, next) {
  * /v4/schedules/{scheduleId}/stop:
  *   put:
  *     description: |
- *       Stop a schedule.
+ *       Stop a schedule, i.e. tell the scheduler to no longer execute the schedule according to its cron settings.
  *
  *     produces:
  *       - application/json

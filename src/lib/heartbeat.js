@@ -6,9 +6,9 @@
 var later = require('later');
 const axios = require('axios');
 
-
 var callRemoteURL = function (remoteURL, logger) {
-    axios.get(remoteURL)
+    axios
+        .get(remoteURL)
         .then(function (response) {
             // handle success
             logger.debug(`HEARTBEAT: Sent heartbeat to ${remoteURL}`);
@@ -22,14 +22,9 @@ var callRemoteURL = function (remoteURL, logger) {
         });
 };
 
-
 function setupHeartbeatTimer(config, logger) {
-
     try {
-        logger.debug(
-            `HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`,
-        );
-
+        logger.debug(`HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`);
 
         var sched = later.parse.text(config.get('Butler.heartbeat.frequency'));
         later.setInterval(function () {
@@ -41,10 +36,7 @@ function setupHeartbeatTimer(config, logger) {
     } catch (err) {
         logger.error(`HEARTBEAT: ${err}`);
     }
-
 }
-
-
 
 module.exports = {
     setupHeartbeatTimer,

@@ -1,0 +1,108 @@
+{
+    "blocks": [{
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Qlik Sense reload stopped"
+            }            
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "fields": [{
+                    "type": "mrkdwn",
+                    "text": "*Task name:*\n{{taskName}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Task ID:*\n{{{taskId}}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*App name:*\n{{appName}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*App ID:*\n{{{appId}}}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [{
+                    "type": "mrkdwn",
+                    "text": "*Reload on node:*\n{{executingNodeName}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Stopped by user:*\n{{user}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Execution result:*\n{{executionStatusText}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Execution result code:*\n{{executionStatusNum}}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [{
+                    "type": "mrkdwn",
+                    "text": "*Duration:*\n{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": " "
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Execution started:*\n{{executionStartTime.startTimeLocal1}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Execution ended:*\n{{executionStopTime.stopTimeLocal1}}"
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Open QMC"
+                    },
+                    "style": "primary",
+                    "url": "{{qliksSenseQMC}}"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Open Hub"
+                    },
+                    "style": "primary",
+                    "url": "{{qliksSenseHub}}"
+                }                
+            ]
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "```{{executionDetailsConcatenated}}```"
+            }
+        }
+    ]
+}

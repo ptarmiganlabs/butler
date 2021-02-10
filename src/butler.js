@@ -182,14 +182,21 @@ if (globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') && glo
     restServer.put({ path: '/v4/reloadtask/:taskId/start' }, rest.senseStartTask.respondPUT_senseStartTask);
 }
 
+if (globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') && globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')) {
+    globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
+    restServer.put({ path: '/v4/app/:appId/reload' }, rest.senseApp.respondPUT_senseAppReload);
+}
+
 if (globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') && globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
     restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
+    restServer.get({ path: '/v4/app/:appId/dump' }, rest.senseAppDump.respondGET_senseAppDump);
 }
 
 if (globals.config.has('Butler.restServerEndpointsEnable.senseListApps') && globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
     restServer.get({ path: '/v4/senselistapps' }, rest.senseListApps.respondGET_senseListApps);
+    restServer.get({ path: '/v4/apps/list' }, rest.senseListApps.respondGET_senseListApps);
 }
 
 if (globals.config.has('Butler.restServerEndpointsEnable.butlerping') && globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
@@ -331,6 +338,8 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
         globals.logger.info('MAIN: Docker healthcheck server now listening');
     });
 }
+
+// Code below used during development
 
 // process.on('SIGUSR2', () => {
 //     // Run with

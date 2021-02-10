@@ -6,6 +6,7 @@
 // Load global variables and functions
 var globals = require('../globals');
 var smtp = require('../lib/smtp');
+var slack = require('../lib/slack_notification');
 
 // --------------------------------------------------------
 // Set up UDP server handlers for acting on Sense failed task events
@@ -86,12 +87,21 @@ module.exports.udpInitTaskErrorServer = function () {
                 );
 
                 // Post to Slack when a reload task has been aborted (typically from the QMC, or via APIs), if Slack is enabled
-                if (globals.config.has('Butler.slackConfig.enable') && globals.config.get('Butler.slackConfig.enable') == true && globals.config.has('Butler.slackConfig.taskAbortedChannel')) {
-                    globals.slackObj.send({
-                        text: 'User ' + msg[4] + ' stopped running task: "' + msg[2] + '", linked to app "' + msg[3] + '".',
-                        channel: globals.config.get('Butler.slackConfig.taskAbortedChannel'),
-                        username: msg[1],
-                        icon_emoji: ':ghost:',
+                if (
+                    globals.config.has('Butler.slackNotification.enable') &&
+                    globals.config.get('Butler.slackNotification.enable') == true
+                ) {
+                    slack.sendReloadTaskAbortedNotificationSlack({
+                        hostName: msg[1],
+                        user: (msg[4]).replace(/\\/g, '/'),
+                        taskName: msg[2],
+                        taskId: msg[5],
+                        appName: msg[3],
+                        appId: msg[6],
+                        logTimeStamp: msg[7],
+                        logLevel: msg[8],
+                        executionId: msg[9],
+                        logMessage: msg[10],
                     });
                 }
 
@@ -136,7 +146,11 @@ module.exports.udpInitTaskErrorServer = function () {
                 }
 
                 // Publish MQTT message when a task has been aborted, if MQTT enabled
-                if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true && globals.config.has('Butler.mqttConfig.taskAbortedTopic')) {
+                if (
+                    globals.config.has('Butler.mqttConfig.enable') &&
+                    globals.config.get('Butler.mqttConfig.enable') == true &&
+                    globals.config.has('Butler.mqttConfig.taskAbortedTopic')
+                ) {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
                 }
             } else {
@@ -146,12 +160,21 @@ module.exports.udpInitTaskErrorServer = function () {
                 );
 
                 // Post to Slack when a task has failed, if Slack is enabled
-                if (globals.config.has('Butler.slackConfig.enable') && globals.config.get('Butler.slackConfig.enable') == true && globals.config.has('Butler.slackConfig.taskFailureChannel')) {
-                    globals.slackObj.send({
-                        text: 'Failed task: "' + msg[1] + '", linked to app "' + msg[2] + '".',
-                        channel: globals.config.get('Butler.slackConfig.taskFailureChannel'),
-                        username: msg[0],
-                        icon_emoji: ':ghost:',
+                if (
+                    globals.config.has('Butler.slackNotification.enable') &&
+                    globals.config.get('Butler.slackNotification.enable') == true
+                ) {
+                    slack.sendReloadTaskFailureNotificationSlack({
+                        hostName: msg[0],
+                        user: (msg[3]).replace(/\\/g, '/'),
+                        taskName: msg[1],
+                        taskId: msg[4],
+                        appName: msg[2],
+                        appId: msg[5],
+                        logTimeStamp: msg[6],
+                        logLevel: msg[7],
+                        executionId: msg[8],
+                        logMessage: msg[9],
                     });
                 }
 
@@ -183,7 +206,7 @@ module.exports.udpInitTaskErrorServer = function () {
                 ) {
                     smtp.sendReloadTaskFailureNotificationEmail({
                         hostName: msg[0],
-                        user: msg[3],
+                        user: (msg[3]).replace(/\\\\/g, '\\'),
                         taskName: msg[1],
                         taskId: msg[4],
                         appName: msg[2],
@@ -196,7 +219,11 @@ module.exports.udpInitTaskErrorServer = function () {
                 }
 
                 // Publish MQTT message when a task has failed, if MQTT enabled
-                if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true && globals.config.has('Butler.mqttConfig.taskFailureTopic')) {
+                if (
+                    globals.config.has('Butler.mqttConfig.enable') &&
+                    globals.config.get('Butler.mqttConfig.enable') == true &&
+                    globals.config.has('Butler.mqttConfig.taskFailureTopic')
+                ) {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
                 }
             }
