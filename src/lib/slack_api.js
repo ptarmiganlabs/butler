@@ -22,10 +22,11 @@ async function slackSend(slackConfig, logger) {
         };
 
         if (slackConfig.messageType == 'basic') {
-            body.text = slackConfig.text;
-            // Object.assign(body, slackConfig.text);
+            Object.assign(body, slackConfig.text);
         } else if (slackConfig.messageType == 'formatted') {
             Object.assign(body, JSON.parse(slackConfig.text));
+        } else if (slackConfig.messageType == 'useractivity') {
+            Object.assign(body, slackConfig.text);
         }
 
         let res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
