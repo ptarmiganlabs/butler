@@ -15,8 +15,8 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 var rateLimiterMemoryFailedReloads = undefined,
     rateLimiterMemoryAbortedReloads = undefined;
 
-if (globals.config.has('Butler.emailNotification.reladTaskFailure.rateLimit')) {
-    rateLimiterMemoryFailedReloads = new RateLimiterMemory({ points: 1, duration: globals.config.get('Butler.emailNotification.reladTaskFailure.rateLimit') });
+if (globals.config.has('Butler.emailNotification.reloadTaskFailure.rateLimit')) {
+    rateLimiterMemoryFailedReloads = new RateLimiterMemory({ points: 1, duration: globals.config.get('Butler.emailNotification.reloadTaskFailure.rateLimit') });
 } else {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({ points: 1, duration: 300 });
 }
@@ -62,21 +62,21 @@ function isEmailReloadFailedNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
         if (
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.enable') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.headScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.tailScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.priority') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.subject') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.bodyFileDirectory') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.fromAdress') ||
-            !globals.config.has('Butler.emailNotification.reladTaskFailure.toAdress') ||
-            globals.config.get('Butler.emailNotification.reladTaskFailure.toAdress').length == 0
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.headScriptLogLines') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.priority') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.subject') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAdress') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.toAdress') ||
+            globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress').length == 0
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload failure email config info missing in Butler config file');
             return false;
-        } else if (!globals.config.get('Butler.emailNotification.reladTaskFailure.enable')) {
+        } else if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
             globals.logger.error('SMTP: Reload failure email notifications are disabled in config file - won\'t send email');
             return false;
@@ -175,7 +175,7 @@ async function sendEmail(from, to, subjectHandlebars, bodyFileHandlebars, templa
 
         let sut = hbs({
             viewEngine: viewEngine,
-            viewPath: globals.config.get('Butler.emailNotification.reladTaskFailure.bodyFileDirectory'),
+            viewPath: globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
         });
 
         // Attach the template plugin to the nodemailer transporter
@@ -187,7 +187,7 @@ async function sendEmail(from, to, subjectHandlebars, bodyFileHandlebars, templa
 
         // Set up mail object
         let message = {
-            priority: globals.config.get('Butler.emailNotification.reladTaskFailure.priority'),
+            priority: globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
             from: from,
             to: to,
             subject: subject,
@@ -230,8 +230,8 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 // Get script logs, if enabled in the config file
                 let scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.headScriptLogLines'),
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.tailScriptLogLines'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines'),
                 );
                 globals.logger.debug(`SMTPFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -261,15 +261,15 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     scriptLogTail: scriptLogData.scriptLogTail,
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
-                    qliksSenseQMC: senseUrls.qmcUrl,
-                    qliksSenseHub: senseUrls.hubUrl,
+                    qlikSenseQMC: senseUrls.qmcUrl,
+                    qlikSenseHub: senseUrls.hubUrl,
                 };
 
                 sendEmail(
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.fromAdress'),
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.toAdress'),
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.subject'),
-                    globals.config.get('Butler.emailNotification.reladTaskFailure.htmlTemplateFile'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
                     templateContext,
                 );
             } catch (err) {
@@ -332,8 +332,8 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     scriptLogTail: scriptLogData.scriptLogTail,
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
-                    qliksSenseQMC: senseUrls.qmcUrl,
-                    qliksSenseHub: senseUrls.hubUrl,
+                    qlikSenseQMC: senseUrls.qmcUrl,
+                    qlikSenseHub: senseUrls.hubUrl,
                 };
 
                 sendEmail(
