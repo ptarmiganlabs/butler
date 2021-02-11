@@ -1,4 +1,3 @@
-var slack = require('node-slack');
 var mqtt = require('mqtt');
 const config = require('config');
 var dgram = require('dgram');
@@ -100,20 +99,45 @@ const configQRS = {
     },
 };
 
-// ------------------------------------
-// Slack config
-var slackWebhookURL = config.get('Butler.slackConfig.webhookURL');
-
-// Create Slack object
-var slackObj = new slack(slackWebhookURL);
 
 // ------------------------------------
-// MS Teams config
-if (config.has('Butler.teamsConfig.enable') && config.has('Butler.teamsConfig.taskFailureWebhookURL') && config.get('Butler.teamsConfig.enable') == true) {
-    let teamsTaskFailureURL = config.get('Butler.teamsConfig.taskFailureWebhookURL');
+// MS Teams reload task failed
+if (
+    config.has('Butler.teamsNotification.enable') &&
+    config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+    config.get('Butler.teamsNotification.enable') == true &&
+    config.get('Butler.teamsNotification.reloadTaskFailure.enable') == true
+) {
+    let webhookUrl = config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
 
     // Create MS Teams object
-    var teamsTaskFailureObj = new IncomingWebhook(teamsTaskFailureURL);
+    var teamsTaskFailureObj = new IncomingWebhook(webhookUrl);
+}
+
+// MS Teams reload task aborted
+if (
+    config.has('Butler.teamsNotification.enable') &&
+    config.has('Butler.teamsNotification.reladTaskAborted.enable') &&
+    config.get('Butler.teamsNotification.enable') == true &&
+    config.get('Butler.teamsNotification.reladTaskAborted.enable') == true
+) {
+    let webhookUrl = config.get('Butler.teamsNotification.reladTaskAborted.webhookURL');
+
+    // Create MS Teams object
+    var teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
+}
+
+// MS Teams user session events
+if (
+    config.has('Butler.teamsNotification.enable') &&
+    config.has('Butler.teamsNotification.userSessionEvents.enable') &&
+    config.get('Butler.teamsNotification.enable') == true &&
+    config.get('Butler.teamsNotification.userSessionEvents.enable') == true
+) {
+    let webhookUrl = config.get('Butler.teamsNotification.userSessionEvents.webhookURL');
+
+    // Create MS Teams object
+    var teamsUserSessionObj = new IncomingWebhook(webhookUrl);
 }
 
 // ------------------------------------
@@ -309,8 +333,9 @@ module.exports = {
     // qrsUtil,
     configEngine,
     configQRS,
-    slackObj,
     teamsTaskFailureObj,
+    teamsTaskAbortedObj,
+    teamsUserSessionObj,
     currentUsers,
     currentUsersPerServer,
     udpServerSessionConnectionSocket,
