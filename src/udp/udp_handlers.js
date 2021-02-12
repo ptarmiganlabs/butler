@@ -10,79 +10,146 @@ var slack = require('../lib/slack_notification');
 var slackApi = require('../lib/slack_api.js');
 var msteams = require('../lib/msteams_notification');
 
-
 // Handler for failed scheduler initiated reloads
-var schedulerFailed = function (msg) {
+var schedulerFailed = function (msg, legacyFlag) {
     globals.logger.verbose(
         `TASKFAILURE: Received reload failed UDP message from scheduler: Host=${msg[0]}, App name=${msg[2]}, Task name=${msg[1]}, Log level=${msg[7]}`,
     );
 
-    // Post to Slack when a task has failed, if Slack is enabled
-    if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
-        slack.sendReloadTaskFailureNotificationSlack({
-            hostName: msg[0],
-            user: msg[3].replace(/\\/g, '/'),
-            taskName: msg[1],
-            taskId: msg[4],
-            appName: msg[2],
-            appId: msg[5],
-            logTimeStamp: msg[6],
-            logLevel: msg[7],
-            executionId: msg[8],
-            logMessage: msg[9],
-        });
-    }
+    if (legacyFlag) {
+        // First field in message (msg[0]) is host name
+        // Post to Slack when a task has failed, if Slack is enabled
+        if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
+            slack.sendReloadTaskFailureNotificationSlack({
+                hostName: msg[0],
+                user: msg[3].replace(/\\/g, '/'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
 
-    // Post to MS Teams when a task has failed, if Teams is enabled
-    if (
-        globals.config.has('Butler.teamsNotification.enable') &&
-        globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
-        globals.config.get('Butler.teamsNotification.enable') == true &&
-        globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') == true
-    ) {
-        msteams.sendReloadTaskFailureNotificationTeams({
-            hostName: msg[0],
-            user: msg[3].replace(/\\/g, '/'),
-            taskName: msg[1],
-            taskId: msg[4],
-            appName: msg[2],
-            appId: msg[5],
-            logTimeStamp: msg[6],
-            logLevel: msg[7],
-            executionId: msg[8],
-            logMessage: msg[9],
-        });
-    }
+        // Post to MS Teams when a task has failed, if Teams is enabled
+        if (
+            globals.config.has('Butler.teamsNotification.enable') &&
+            globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.teamsNotification.enable') == true &&
+            globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') == true
+        ) {
+            msteams.sendReloadTaskFailureNotificationTeams({
+                hostName: msg[0],
+                user: msg[3].replace(/\\/g, '/'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
 
-    // Send notification email when task has failed, if this notification type is enabled
-    if (
-        globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
-        globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
-    ) {
-        smtp.sendReloadTaskFailureNotificationEmail({
-            hostName: msg[0],
-            user: msg[3].replace(/\\\\/g, '\\'),
-            taskName: msg[1],
-            taskId: msg[4],
-            appName: msg[2],
-            appId: msg[5],
-            logTimeStamp: msg[6],
-            logLevel: msg[7],
-            executionId: msg[8],
-            logMessage: msg[9],
-        });
-    }
+        // Send notification email when task has failed, if this notification type is enabled
+        if (
+            globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
+        ) {
+            smtp.sendReloadTaskFailureNotificationEmail({
+                hostName: msg[0],
+                user: msg[3].replace(/\\\\/g, '\\'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
 
-    // Publish MQTT message when a task has failed, if MQTT enabled
-    if (
-        globals.config.has('Butler.mqttConfig.enable') &&
-        globals.config.get('Butler.mqttConfig.enable') == true &&
-        globals.config.has('Butler.mqttConfig.taskFailureTopic')
-    ) {
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
-    }    
+        // Publish MQTT message when a task has failed, if MQTT enabled
+        if (
+            globals.config.has('Butler.mqttConfig.enable') &&
+            globals.config.get('Butler.mqttConfig.enable') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureTopic')
+        ) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
+        }
+    } else {
+        // First field in message (msg[0]) is message category (this is the modern/recent message format)
+        // Post to Slack when a task has failed, if Slack is enabled
+        if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
+            slack.sendReloadTaskFailureNotificationSlack({
+                hostName: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
+
+        // Post to MS Teams when a task has failed, if Teams is enabled
+        if (
+            globals.config.has('Butler.teamsNotification.enable') &&
+            globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.teamsNotification.enable') == true &&
+            globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') == true
+        ) {
+            msteams.sendReloadTaskFailureNotificationTeams({
+                hostName: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
+
+        // Send notification email when task has failed, if this notification type is enabled
+        if (
+            globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
+        ) {
+            smtp.sendReloadTaskFailureNotificationEmail({
+                hostName: msg[1],
+                user: msg[4].replace(/\\\\/g, '\\'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
+
+        // Publish MQTT message when a task has failed, if MQTT enabled
+        if (
+            globals.config.has('Butler.mqttConfig.enable') &&
+            globals.config.get('Butler.mqttConfig.enable') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureTopic')
+        ) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
+        }
+    }
 };
-
 
 // --------------------------------------------------------
 // Set up UDP server handlers for acting on Sense failed task events
@@ -145,7 +212,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // ----------------------------------------
         // === Message from Engine log appender ===
         //
-        // /engine/;%hostname;%property{AppId};%property{SessionId};%property{ActiveUserId};%date;%level;%message
+        // /engine-reload-failed/;%hostname;%property{AppId};%property{SessionId};%property{ActiveUserDirectory};%property{ActiveUserId};%date;%level;%message
         // mag[0]  : Identifies the message as coming from engine reload failedlog appender
         // mag[1]  : Host name
         // mag[2]  : App ID
@@ -161,7 +228,7 @@ module.exports.udpInitTaskErrorServer = function () {
         // This is kept for legacy reasons, to support those systems that still use the (much) older,
         // original log appender file that was included with early Butler versions.
         // It's strongly recommended to update the log appender XML to the format used in the most recent Butler version,
-        // as this gives much more flexibility to implement log initiated events in Butler. 
+        // as this gives much more flexibility to implement log initiated events in Butler.
         //
         // %hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message
         // msg[0]  : Host name
@@ -181,11 +248,13 @@ module.exports.udpInitTaskErrorServer = function () {
             if (msg[0].toLowerCase() == '/engine-reload-failed/') {
                 // Engine log appender detecting failed reload, also ones initiated interactively by users
                 globals.logger.verbose(
-                    `TASKFAILURE: Received reload failed UDP message from engine: Host=${msg[0]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
+                    `TASKFAILURE: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
                 );
             } else if (msg[0].toLowerCase() == '/scheduler-reload-failed/') {
                 // Scheduler log appender detecting failed scheduler-started reload
-                schedulerFailed(msg);
+                // 2nd parameter is used to detemine if the msg parameter is "legacy" (true) or not (false).
+                // Legacy format was the format used before the first field was changed to be used for command passing, i.e. /..../
+                schedulerFailed(msg, false);
             } else if (msg[0].toLowerCase() == '/scheduler-reload-aborted/') {
                 // Scheduler log appender detecting aborted scheduler-started reload
                 globals.logger.verbose(
@@ -259,7 +328,7 @@ module.exports.udpInitTaskErrorServer = function () {
             } else {
                 // Scheduler log appender detecting failed scheduler-started reload.
                 // This is default to better support legacy Butler installations. See above.
-                schedulerFailed(msg);
+                schedulerFailed(msg, true);
             }
         } catch (err) {
             globals.logger.error(`TASKFAILURE: Failed processing log event: ${err}`);
