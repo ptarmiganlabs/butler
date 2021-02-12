@@ -43,6 +43,33 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *         description: Internal error.
  *
  */
+/**
+ * @swagger
+ *
+ * /v4/app/{appId}/dump:
+ *   get:
+ *     description: |
+ *       Dump a specific Sense app to JSON
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: appId
+ *         description: ID of Qlik Sense app
+ *         in: path
+ *         required: true
+ *         type: string
+ *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
+ *     responses:
+ *       200:
+ *         description: App dump successful. App metadata returned as JSON.
+ *       408:
+ *         description: App not found in Qlik Sense.
+ *       409:
+ *         description: Required parameter missing.
+ *       500:
+ *         description: Internal error.
+ *
+ */
 module.exports.respondGET_senseAppDump = function (req, res, next) {
     logRESTCall(req);
 
