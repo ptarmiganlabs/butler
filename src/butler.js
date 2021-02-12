@@ -77,8 +77,8 @@ restServer.use(restify.plugins.bodyParser());
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional
     origins: ['*'],
-    allowHeaders: ['API-Token'],
-    exposeHeaders: ['API-Token-Expiry'],
+    // allowHeaders: ['API-Token'],
+    // exposeHeaders: ['API-Token-Expiry'],
 });
 
 restServer.pre(cors.preflight);
@@ -115,7 +115,6 @@ restifySwaggerJsdoc.createSwaggerPage({
     path: '/docs/swagger', // Public url where the swagger page will be available
     apis: ['./rest/*.js'],
 });
-
 // Set up endpoints for REST server
 //restServer.get('/v4/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
 
@@ -123,7 +122,6 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     globals.logger.debug('Registering REST endpoint GET /v4/getdiskspace');
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
-
 if (
     globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
     globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
@@ -319,7 +317,7 @@ if (globals.config.has('Butler.scheduler')) {
         scheduler.loadSchedulesFromDisk();
         // scheduler.launchAllSchedules();
     } else {
-        globals.logger.info('MAIN: Didn\'t load schedules from file');
+        globals.logger.info("MAIN: Didn't load schedules from file");
     }
 }
 
@@ -345,7 +343,7 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
 //     // Run with
 //     // node -- expose-gc butler.js
 //     //
-//     // Trigger with 
+//     // Trigger with
 //     // kill -SIGUSR2 $(pgrep -lfa node | grep butler.js | awk '{print $1}'
 //     try {
 //         if (global.gc) {

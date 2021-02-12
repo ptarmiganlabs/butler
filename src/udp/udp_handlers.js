@@ -18,7 +18,6 @@ var schedulerFailed = function (msg) {
     );
 
     // Post to Slack when a task has failed, if Slack is enabled
-    // TODO test basic notification for Slack
     if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
         slack.sendReloadTaskFailureNotificationSlack({
             hostName: msg[0],
