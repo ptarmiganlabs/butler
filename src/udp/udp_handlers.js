@@ -175,7 +175,6 @@ module.exports.udpInitTaskErrorServer = function () {
     });
 
     // Main handler for UDP messages relating to failed tasks
-    // TODO verify that new scheduler-reload-failed message commmand works as intended
     globals.udpServerTaskFailureSocket.on('message', async function (message, remote) {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===

@@ -1,6 +1,6 @@
 # Change log
 
-## 4.4.0
+## 5.0.0
 
 ### New features
 
@@ -15,7 +15,9 @@
 
 1. Lack of filtering in the custom log appender XML file used to catch user session events from the QSEoW log files resulted in Butler receiving too many session events (with spammy Slack notifications as a result, at least if Slack is enabled). Fixed in [#121](https://github.com/ptarmiganlabs/butler/issues/121). Now only session start and end events are forwarded to Butler. If more/less/other log messages should be captured this can be configured in the log appender xml files.
 
-2. Updated dependencies to stay safe.
+2. Updated dependencies. Staying as safe as possible!
+
+3. Lots and lots of documentation additions, fixes and clarifications. Both in the source code and at [butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com).
 
 ### Changed behavior and/or breaking changes
 
