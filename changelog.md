@@ -1,11 +1,35 @@
 # Change log
 
+## 4.4.0
+
+### New features
+
+1. A new API endpoint `/v4/app/{appId}/reload` added. It is used to reload apps without having to go via a reload task.  
+   The solution is based on [#117](https://github.com/ptarmiganlabs/butler/issues/117).  
+   Both full and partial reloads are supported.  
+   Regular Sense reload tasks can be triggered when the app reload succeeds or fails.
+2. New API endpoints for listing all apps and dumping app metadata ([#118](https://github.com/ptarmiganlabs/butler/issues/118)).  
+   Those features have been available in Butler for many years, they just get a couple of new endpoints that follow Butler's current naming conventions better.
+
+### Fixes and patches
+
+1. Lack of filtering in the custom log appender XML file used to catch user session events from the QSEoW log files resulted in Butler receiving too many session events (with spammy Slack notifications as a result, at least if Slack is enabled). Fixed in [#121](https://github.com/ptarmiganlabs/butler/issues/121). Now only session start and end events are forwarded to Butler. If more/less/other log messages should be captured this can be configured in the log appender xml files.
+
+2. Updated dependencies to stay safe.
+
+### Changed behavior and/or breaking changes
+
+1. **BREAKING**: New config file settings `Butler.slackNotification.*` used to configure everything Slack related, including notifications for failed and aborted reload tasks, as well as user start/stop session reporting.
+
+2. **BREAKING**: Related to 1 above. As part of improving Slack notifications for task reload failures, the `Butler.slackConfig.taskFailureChannel` config file setting has been split into two and moved to new locations in the config file: `Butler.slackNotification.reladTaskAborted.channel` and `Butler.slackNotification.reladTaskFailure.channel`.
+
+3. **BREAKING**: Similar to 1 above, all MS Teams configuration has been moved from `Butler.teamsConfig.*` into the larger/more generic `Butler.teamsNotification.*` section of the config file.
 
 ## 4.3.0
 
 ### New features
 
-- More/better/improved [concents overview](https://butler.ptarmiganlabs.com/docs/concepts/) and [examples](https://butler.ptarmiganlabs.com/docs/examples/) on [butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com/). For example, that site now includes examples on how to move/copy/delete files using Butler.
+- More/better/improved [concepts overview](https://butler.ptarmiganlabs.com/docs/concepts/) and [examples](https://butler.ptarmiganlabs.com/docs/examples/) on [butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com/). For example, that site now includes examples on how to move/copy/delete files using Butler.
 
 ### Fixes and patches
 
