@@ -7,6 +7,7 @@
 var globals = require('../globals');
 var smtp = require('../lib/smtp');
 var slack = require('../lib/slack_notification');
+var webhookOut = require('../lib/webhook_notification');
 var slackApi = require('../lib/slack_api.js');
 var msteams = require('../lib/msteams_notification');
 
@@ -74,6 +75,26 @@ var schedulerFailed = function (msg, legacyFlag) {
             });
         }
 
+        // Call outgoing webhooks when task has failed
+        if (
+            globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') == true
+        ) {
+            webhookOut.sendReloadTaskFailureNotificationWebhook({
+                hostName: msg[0],
+                user: msg[3].replace(/\\\\/g, '\\'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
+
+
         // Publish MQTT message when a task has failed, if MQTT enabled
         if (
             globals.config.has('Butler.mqttConfig.enable') &&
@@ -82,6 +103,32 @@ var schedulerFailed = function (msg, legacyFlag) {
         ) {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
         }
+
+        // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
+        if (
+            globals.config.has('Butler.mqttConfig.enable') &&
+            globals.config.get('Butler.mqttConfig.enable') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
+            globals.config.get('Butler.mqttConfig.taskFailureSendFull') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
+        ) {
+            globals.mqttClient.publish(
+                globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
+                JSON.stringify({
+                    hostName: msg[0],
+                    user: msg[3].replace(/\\\\/g, '\\'),
+                    taskName: msg[1],
+                    taskId: msg[4],
+                    appName: msg[2],
+                    appId: msg[5],
+                    logTimeStamp: msg[6],
+                    logLevel: msg[7],
+                    executionId: msg[8],
+                    logMessage: msg[9],
+                }),
+            );
+        }
+
     } else {
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
         // Post to Slack when a task has failed, if Slack is enabled
@@ -127,6 +174,25 @@ var schedulerFailed = function (msg, legacyFlag) {
             globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
         ) {
             smtp.sendReloadTaskFailureNotificationEmail({
+                hostName: msg[1],
+                user: msg[4].replace(/\\\\/g, '\\'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
+
+        // Call outgoing webhooks when task has failed
+        if (
+            globals.config.has('Butler.webhookNotification.enable') &&
+            globals.config.get('Butler.webhookNotification.enable') == true
+        ) {
+            webhookOut.sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[1],
                 user: msg[4].replace(/\\\\/g, '\\'),
                 taskName: msg[2],
@@ -304,9 +370,9 @@ module.exports.udpInitTaskErrorServer = function () {
                 // Post to MS Teams when a reload task been aborted (typically from the QMC, or via APIs), if Teams is enabled
                 if (
                     globals.config.has('Butler.teamsNotification.enable') &&
-                    globals.config.has('Butler.teamsNotification.reladTaskAborted.enable') &&
+                    globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
                     globals.config.get('Butler.teamsNotification.enable') == true &&
-                    globals.config.get('Butler.teamsNotification.reladTaskAborted.enable') == true
+                    globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') == true
                 ) {
                     msteams.sendReloadTaskAbortedNotificationTeams({
                         hostName: msg[1],
@@ -324,8 +390,8 @@ module.exports.udpInitTaskErrorServer = function () {
 
                 // Send notification email when task has been aborted (typically from the QMC, or via APIs), if this notification type is enabled
                 if (
-                    globals.config.has('Butler.emailNotification.reladTaskAborted.enable') &&
-                    globals.config.get('Butler.emailNotification.reladTaskAborted.enable') == true
+                    globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') &&
+                    globals.config.get('Butler.emailNotification.reloadTaskAborted.enable') == true
                 ) {
                     smtp.sendReloadTaskAbortedNotificationEmail({
                         hostName: msg[1],
@@ -340,6 +406,26 @@ module.exports.udpInitTaskErrorServer = function () {
                         logMessage: msg[10],
                     });
                 }
+
+                // Call outgoing webhooks when task has been aborted
+                if (
+                    globals.config.has('Butler.webhookNotification.enable') &&
+                    globals.config.get('Butler.webhookNotification.enable') == true
+                ) {
+                    webhookOut.sendReloadTaskAbortedNotificationWebhook({
+                        hostName: msg[1],
+                        user: msg[4],
+                        taskName: msg[2],
+                        taskId: msg[5],
+                        appName: msg[3],
+                        appId: msg[6],
+                        logTimeStamp: msg[7],
+                        logLevel: msg[8],
+                        executionId: msg[9],
+                        logMessage: msg[10],
+                    });
+                }
+
 
                 // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
                 if (

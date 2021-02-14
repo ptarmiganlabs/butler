@@ -8,8 +8,10 @@
    The solution is based on [#117](https://github.com/ptarmiganlabs/butler/issues/117).  
    Both full and partial reloads are supported.  
    Regular Sense reload tasks can be triggered when the app reload succeeds or fails.
-2. New API endpoints for listing all apps and dumping app metadata ([#118](https://github.com/ptarmiganlabs/butler/issues/118)).  
+2. New API endpoints for listing all apps and dumping app metadata. ([#118](https://github.com/ptarmiganlabs/butler/issues/118)).  
    Those features have been available in Butler for many years, they just get a couple of new endpoints that follow Butler's current naming conventions better.
+3. MQTT messages can now include full information about the reload task that failed or was aborted, rather than just the task name. A couple of new MQTT topics are used for these MQTT messages. [#128](https://github.com/ptarmiganlabs/butler/issues/128).
+4. Notifications for failed and aborted tasks can now be sent as outgoing webhooks. [#129](https://github.com/ptarmiganlabs/butler/issues/129). The idea is to provide a generic way of getting task alerts to 3rd party systems that can't interact with Butler or Qlik Sense in any other way.
 
 ### Fixes and patches
 

@@ -117,11 +117,11 @@ if (
 // MS Teams reload task aborted
 if (
     config.has('Butler.teamsNotification.enable') &&
-    config.has('Butler.teamsNotification.reladTaskAborted.enable') &&
+    config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
     config.get('Butler.teamsNotification.enable') == true &&
-    config.get('Butler.teamsNotification.reladTaskAborted.enable') == true
+    config.get('Butler.teamsNotification.reloadTaskAborted.enable') == true
 ) {
-    let webhookUrl = config.get('Butler.teamsNotification.reladTaskAborted.webhookURL');
+    let webhookUrl = config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
 
     // Create MS Teams object
     var teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
