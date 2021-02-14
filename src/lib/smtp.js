@@ -11,6 +11,7 @@ var hbs = require('nodemailer-express-handlebars');
 var expressHandlebars = require('express-handlebars');
 const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
+var emailValidator = require('email-validator');
 
 var rateLimiterMemoryFailedReloads = undefined,
     rateLimiterMemoryAbortedReloads = undefined;
@@ -22,7 +23,10 @@ if (globals.config.has('Butler.emailNotification.reloadTaskFailure.rateLimit')) 
 }
 
 if (globals.config.has('Butler.emailNotification.reloadTaskAborted.rateLimit')) {
-    rateLimiterMemoryAbortedReloads = new RateLimiterMemory({ points: 1, duration: globals.config.get('Butler.emailNotification.reloadTaskAborted.rateLimit') });
+    rateLimiterMemoryAbortedReloads = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.emailNotification.reloadTaskAborted.rateLimit'),
+    });
 } else {
     rateLimiterMemoryAbortedReloads = new RateLimiterMemory({ points: 1, duration: 300 });
 }
@@ -47,7 +51,7 @@ function isSmtpConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: SMTP notifications are disabled in config file - won\'t send email');
+            globals.logger.error("SMTP: SMTP notifications are disabled in config file - won't send email");
             return false;
         }
 
@@ -78,7 +82,7 @@ function isEmailReloadFailedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: Reload failure email notifications are disabled in config file - won\'t send email');
+            globals.logger.error("SMTP: Reload failure email notifications are disabled in config file - won't send email");
             return false;
         }
 
@@ -94,6 +98,10 @@ function isEmailReloadAbortedNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.username') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.username') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.headScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.priority') ||
@@ -109,7 +117,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: Reload aborted email notifications are disabled in config file - won\'t send email');
+            globals.logger.error("SMTP: Reload aborted email notifications are disabled in config file - won't send email");
             return false;
         }
 
@@ -158,7 +166,7 @@ function getQlikSenseUrls() {
     return { qmcUrl: qmcUrl, hubUrl: hubUrl };
 }
 
-async function sendEmail(from, to, subjectHandlebars, bodyFileHandlebars, templateContext) {
+async function sendEmail(from, recipientsEmail, subjectHandlebars, bodyFileHandlebars, templateContext) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
         if (isSmtpConfigOk() == false) {
@@ -185,26 +193,35 @@ async function sendEmail(from, to, subjectHandlebars, bodyFileHandlebars, templa
         const subjectTemplate = handlebars.compile(subjectHandlebars);
         let subject = subjectTemplate(templateContext);
 
-        // Set up mail object
-        let message = {
-            priority: globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
-            from: from,
-            to: to,
-            subject: subject,
-            template: bodyFileHandlebars,
-            context: templateContext,
-        };
+        // Loop over all email recipients
+        for (const recipientEmail of recipientsEmail) {
+            // Verify that email address is valid
+            if (emailValidator.validate(recipientEmail) == true) {
+                // Recipient email address has valid format
+                // Set up mail object
+                let message = {
+                    priority: globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
+                    from: from,
+                    to: recipientEmail,
+                    subject: subject,
+                    template: bodyFileHandlebars,
+                    context: templateContext,
+                };
 
-        // Verify SMTP configuration
-        let smtpStatus = await transporter.verify();
-        globals.logger.debug(`SMTP: SMTP status: ${smtpStatus}`);
-        globals.logger.debug(`SMTP: Message=${JSON.stringify(message, null, 2)}`);
+                // Verify SMTP configuration
+                let smtpStatus = await transporter.verify();
+                globals.logger.debug(`SMTP: SMTP status: ${smtpStatus}`);
+                globals.logger.debug(`SMTP: Message=${JSON.stringify(message, null, 2)}`);
 
-        if (smtpStatus) {
-            let result = await transporter.sendMail(message);
-            globals.logger.debug(`SMTP: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`);
-        } else {
-            globals.logger.warn('SMTP: SMTP transporter not ready');
+                if (smtpStatus) {
+                    let result = await transporter.sendMail(message);
+                    globals.logger.debug(`SMTP: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`);
+                } else {
+                    globals.logger.warn('SMTP: SMTP transporter not ready');
+                }
+            } else {
+                globals.logger.warn(`SMTP: Recipient email adress not valid: ${recipientEmail}`);
+            }
         }
     } catch (err) {
         globals.logger.error(`SMTP: ${err}`);
@@ -336,6 +353,7 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     qlikSenseHub: senseUrls.hubUrl,
                 };
 
+                // Note: Butler.emailNotification.reloadTaskAborted.toAdress is an array, sendEmail() should send individual emails to everyone in that array
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress'),

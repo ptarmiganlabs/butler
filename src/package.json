@@ -8,6 +8,7 @@
         "config": "^3.3.3",
         "cron-job-manager": "^2.1.4",
         "dict": "^1.4.0",
+        "email-validator": "^2.0.4",
         "enigma.js": "^2.7.2",
         "express-handlebars": "^5.2.0",
         "fs-extra": "^9.1.0",
