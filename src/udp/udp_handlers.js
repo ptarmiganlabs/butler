@@ -140,13 +140,38 @@ var schedulerFailed = function (msg, legacyFlag) {
             });
         }
 
-        // Publish MQTT message when a task has failed, if MQTT enabled
+        // Publish basic MQTT message containing task name when a task has failed, if MQTT is enabled
         if (
             globals.config.has('Butler.mqttConfig.enable') &&
             globals.config.get('Butler.mqttConfig.enable') == true &&
             globals.config.has('Butler.mqttConfig.taskFailureTopic')
         ) {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
+        }
+
+        // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
+        if (
+            globals.config.has('Butler.mqttConfig.enable') &&
+            globals.config.get('Butler.mqttConfig.enable') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
+            globals.config.get('Butler.mqttConfig.taskFailureSendFull') == true &&
+            globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
+        ) {
+            globals.mqttClient.publish(
+                globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
+                JSON.stringify({
+                    hostName: msg[1],
+                    user: msg[4].replace(/\\\\/g, '\\'),
+                    taskName: msg[2],
+                    taskId: msg[5],
+                    appName: msg[3],
+                    appId: msg[6],
+                    logTimeStamp: msg[7],
+                    logLevel: msg[8],
+                    executionId: msg[9],
+                    logMessage: msg[10],
+                }),
+            );
         }
     }
 };
@@ -316,13 +341,38 @@ module.exports.udpInitTaskErrorServer = function () {
                     });
                 }
 
-                // Publish MQTT message when a task has been aborted, if MQTT enabled
+                // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
                 if (
                     globals.config.has('Butler.mqttConfig.enable') &&
                     globals.config.get('Butler.mqttConfig.enable') == true &&
                     globals.config.has('Butler.mqttConfig.taskAbortedTopic')
                 ) {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
+                }
+
+                // Publish stringified MQTT message containing full, stringified JSON when a task has been aborted, if MQTT is enabled
+                if (
+                    globals.config.has('Butler.mqttConfig.enable') &&
+                    globals.config.get('Butler.mqttConfig.enable') == true &&
+                    globals.config.has('Butler.mqttConfig.taskAbortedSendFull') &&
+                    globals.config.get('Butler.mqttConfig.taskAbortedSendFull') == true &&
+                    globals.config.has('Butler.mqttConfig.taskAbortedFullTopic')
+                ) {
+                    globals.mqttClient.publish(
+                        globals.config.get('Butler.mqttConfig.taskAbortedFullTopic'),
+                        JSON.stringify({
+                            hostName: msg[1],
+                            user: msg[4].replace(/\\\\/g, '\\'),
+                            taskName: msg[2],
+                            taskId: msg[5],
+                            appName: msg[3],
+                            appId: msg[6],
+                            logTimeStamp: msg[7],
+                            logLevel: msg[8],
+                            executionId: msg[9],
+                            logMessage: msg[10],
+                        }),
+                    );
                 }
             } else {
                 // Scheduler log appender detecting failed scheduler-started reload.

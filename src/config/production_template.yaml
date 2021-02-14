@@ -44,7 +44,7 @@ Butler:
         name: 10d
         duration: 10d
 
-  # Qlik Sense related links used in notification messages (currently emails)
+  # Qlik Sense related links used in notification messages
   qlikSenseUrls:
     qmc: <Link to Qlik Sense QMC>
     hub: <Link to Qlik Sense Hub>
@@ -63,7 +63,7 @@ Butler:
       rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      markdownTemplateFile: /path/to/teams/template/directory/failed-reload.handlebars
+      templateFile: /path/to/teams/template/directory/failed-reload.handlebars
     reladTaskAborted:
       enable: true
       webhookURL: <web hook URL from MS Teams>
@@ -72,7 +72,7 @@ Butler:
       rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      markdownTemplateFile: /path/to/teams/template/directory/aborted-reload.handlebars
+      templateFile: /path/to/teams/template/directory/aborted-reload.handlebars
 
   # Settings for notifications and messages sent to Slack
   slackNotification:
@@ -95,7 +95,7 @@ Butler:
       rateLimit: 15                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      markdownTemplateFile: /path/to/slack/template/directory/failed-reload.handlebars
+      templateFile: /path/to/slack/template/directory/failed-reload.handlebars
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
     reladTaskAborted:
@@ -107,19 +107,19 @@ Butler:
       rateLimit: 15                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      markdownTemplateFile: /path/to/slack/template/directory/aborted-reload.handlebars
+      templateFile: /path/to/slack/template/directory/aborted-reload.handlebars
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
 
 
-  # Settings needed to send email notifications when for example reloads fail.
+  # Settings needed to send email notifications when for example reload tasks fail.
   # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
   emailNotification:
     enable: false
     reladTaskAborted:
       enable: false
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-      headScriptLogLines: 20                          # # of lines from start of script to include in email
+      headScriptLogLines: 15                          # # of lines from start of script to include in email
       tailScriptLogLines: 15                          # # of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'  # Email subject. Can use template fields
@@ -132,7 +132,7 @@ Butler:
     reloadTaskFailure:
       enable: false
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-      headScriptLogLines: 20                          # # of lines from start of script to include in email
+      headScriptLogLines: 15                          # # of lines from start of script to include in email
       tailScriptLogLines: 15                          # # of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload failed: "{{taskName}}"'   # Email subject. Can use template fields
@@ -170,9 +170,13 @@ Butler:
     enable: false                                     # Should Qlik Sense events be forwarded as MQTT messages?
     brokerHost: <FQDN or IP of MQTT server>
     brokerPort: 1883
+    taskFailureSendFull: true
+    taskAbortedSendFull: true
     taskFailureTopic: qliksense/task_failure
+    taskFailureFullTopic: qliksense/task_failure_full
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
     taskAbortedTopic: qliksense/task_aborted
+    taskAbortedFullTopic: qliksense/task_aborted_full
     sessionStartTopic: qliksense/session/start
     sessionStopTopic: qliksense/session/stop
     connectionOpenTopic: qliksense/connection/open
@@ -242,6 +246,7 @@ Butler:
       deleteSchedule: false
       startSchedule: false
       stopSchedule: false
+    senseAppReload: false
     senseAppDump: false
     senseListApps: false
     senseStartTask: false
@@ -258,7 +263,8 @@ Butler:
     # clientCertCA: /nodeapp/config/certificate/root.pem
 
   configEngine:
-    engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js. Ver 12.170.2 works with Feb 2019
+    # engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js. Ver 12.170.2 works with Feb 2019
+    engineVersion: 12.612.0         # Qlik Associative Engine version to use with Enigma.js. Works with Feb 2020 and others
     host: <FQDN or IP of Sense server where Sense Engine is running>
     port: <Port to connect to, usually 4747>
     useSSL: true
