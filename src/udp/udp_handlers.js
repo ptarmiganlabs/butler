@@ -94,7 +94,6 @@ var schedulerFailed = function (msg, legacyFlag) {
             });
         }
 
-
         // Publish MQTT message when a task has failed, if MQTT enabled
         if (
             globals.config.has('Butler.mqttConfig.enable') &&
@@ -128,7 +127,6 @@ var schedulerFailed = function (msg, legacyFlag) {
                 }),
             );
         }
-
     } else {
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
         // Post to Slack when a task has failed, if Slack is enabled
@@ -188,10 +186,7 @@ var schedulerFailed = function (msg, legacyFlag) {
         }
 
         // Call outgoing webhooks when task has failed
-        if (
-            globals.config.has('Butler.webhookNotification.enable') &&
-            globals.config.get('Butler.webhookNotification.enable') == true
-        ) {
+        if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') == true) {
             webhookOut.sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[1],
                 user: msg[4].replace(/\\\\/g, '\\'),
@@ -408,10 +403,7 @@ module.exports.udpInitTaskErrorServer = function () {
                 }
 
                 // Call outgoing webhooks when task has been aborted
-                if (
-                    globals.config.has('Butler.webhookNotification.enable') &&
-                    globals.config.get('Butler.webhookNotification.enable') == true
-                ) {
+                if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') == true) {
                     webhookOut.sendReloadTaskAbortedNotificationWebhook({
                         hostName: msg[1],
                         user: msg[4],
@@ -425,7 +417,6 @@ module.exports.udpInitTaskErrorServer = function () {
                         logMessage: msg[10],
                     });
                 }
-
 
                 // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
                 if (
