@@ -26,10 +26,10 @@ if (globals.config.has('Butler.slackNotification.reloadTaskFailure.rateLimit')) 
     });
 }
 
-if (globals.config.has('Butler.slackNotification.reladTaskAborted.rateLimit')) {
+if (globals.config.has('Butler.slackNotification.reloadTaskAborted.rateLimit')) {
     rateLimiterMemoryAbortedReloads = new RateLimiterMemory({
         points: 1,
-        duration: globals.config.get('Butler.slackNotification.reladTaskAborted.rateLimit'),
+        duration: globals.config.get('Butler.slackNotification.reloadTaskAborted.rateLimit'),
     });
 } else {
     rateLimiterMemoryAbortedReloads = new RateLimiterMemory({
@@ -112,64 +112,64 @@ function getSlackReloadAbortedNotificationConfigOk() {
     try {
         // First make sure Slack sending is enabled in the config file and that we have needed parameters
         if (
-            !globals.config.has('Butler.slackNotification.reladTaskAborted.enable') ||
-            !globals.config.has('Butler.slackNotification.reladTaskAborted.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.reladTaskAborted.messageType')
+            !globals.config.has('Butler.slackNotification.reloadTaskAborted.enable') ||
+            !globals.config.has('Butler.slackNotification.reloadTaskAborted.webhookURL') ||
+            !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
             globals.logger.error('SLACKABORTED: Reload aborted Slack config info missing in Butler config file');
             return false;
-        } else if (!globals.config.get('Butler.slackNotification.reladTaskAborted.enable')) {
+        } else if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
             // Slack task aborted notifications are disabled
             globals.logger.error("SLACKABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message");
             return false;
         } else if (
-            globals.config.get('Butler.slackNotification.reladTaskAborted.messageType') != 'basic' &&
-            globals.config.get('Butler.slackNotification.reladTaskAborted.messageType') != 'formatted'
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') != 'basic' &&
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') != 'formatted'
         ) {
             // Invalid Slack message type
-            globals.logger.error(`SLACKABORTED: Invalid Slack message type: ${globals.config.get('Butler.slackNotification.reladTaskAborted.messageType')}`);
+            globals.logger.error(`SLACKABORTED: Invalid Slack message type: ${globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType')}`);
             return false;
-        } else if (globals.config.get('Butler.slackNotification.reladTaskAborted.messageType') == 'basic') {
+        } else if (globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') == 'basic') {
             // Basic formatting. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reladTaskAborted.basicMsgTemplate')) {
+            if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')) {
                 // No message text in config file.
                 globals.logger.error('SLACKABORTED: No message text in config file.');
                 return false;
             }
-        } else if (globals.config.get('Butler.slackNotification.reladTaskAborted.messageType') == 'formatted') {
+        } else if (globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') == 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reladTaskAborted.templateFile')) {
+            if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.templateFile')) {
                 globals.logger.error('SLACKABORTED: Message template file not specified in config file.');
                 return false;
             }
         }
 
         return {
-            webhookUrl: globals.config.get('Butler.slackNotification.reladTaskAborted.webhookURL'),
-            messageType: globals.config.get('Butler.slackNotification.reladTaskAborted.messageType'),
-            templateFile: globals.config.get('Butler.slackNotification.reladTaskAborted.templateFile'),
+            webhookUrl: globals.config.get('Butler.slackNotification.reloadTaskAborted.webhookURL'),
+            messageType: globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType'),
+            templateFile: globals.config.get('Butler.slackNotification.reloadTaskAborted.templateFile'),
 
-            headScriptLogLines: globals.config.has('Butler.slackNotification.reladTaskAborted.headScriptLogLines')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.headScriptLogLines')
+            headScriptLogLines: globals.config.has('Butler.slackNotification.reloadTaskAborted.headScriptLogLines')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines')
                 : 15,
-            tailScriptLogLines: globals.config.has('Butler.slackNotification.reladTaskAborted.tailScriptLogLines')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.tailScriptLogLines')
+            tailScriptLogLines: globals.config.has('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines')
                 : 15,
-            fromUser: globals.config.has('Butler.slackNotification.reladTaskAborted.fromUser')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.fromUser')
+            fromUser: globals.config.has('Butler.slackNotification.reloadTaskAborted.fromUser')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.fromUser')
                 : '',
-            iconEmoji: globals.config.has('Butler.slackNotification.reladTaskAborted.iconEmoji')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.iconEmoji')
+            iconEmoji: globals.config.has('Butler.slackNotification.reloadTaskAborted.iconEmoji')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.iconEmoji')
                 : '',
-            rateLimit: globals.config.has('Butler.slackNotification.reladTaskAborted.rateLimit')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.rateLimit')
+            rateLimit: globals.config.has('Butler.slackNotification.reloadTaskAborted.rateLimit')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.rateLimit')
                 : '',
-            basicMsgTemplate: globals.config.has('Butler.slackNotification.reladTaskAborted.basicMsgTemplate')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.basicMsgTemplate')
+            basicMsgTemplate: globals.config.has('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')
                 : '',
-            channel: globals.config.has('Butler.slackNotification.reladTaskAborted.channel')
-                ? globals.config.get('Butler.slackNotification.reladTaskAborted.channel')
+            channel: globals.config.has('Butler.slackNotification.reloadTaskAborted.channel')
+                ? globals.config.get('Butler.slackNotification.reloadTaskAborted.channel')
                 : '',
         };
     } catch (err) {
@@ -350,8 +350,8 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 // Get script logs, if enabled in the config file
                 let scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.slackNotification.reladTaskAborted.headScriptLogLines'),
-                    globals.config.get('Butler.slackNotification.reladTaskAborted.tailScriptLogLines'),
+                    globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines'),
+                    globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines'),
                 );
                 globals.logger.debug(`SLACKABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
