@@ -69,7 +69,7 @@ function getSlackReloadFailedNotificationConfigOk() {
             }
         } else if (globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') == 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.markdownTemplateFile')) {
+            if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.templateFile')) {
                 globals.logger.error('SLACKFAILED: Message template file not specified in config file.');
                 return false;
             }
@@ -78,7 +78,7 @@ function getSlackReloadFailedNotificationConfigOk() {
         return {
             webhookUrl: globals.config.get('Butler.slackNotification.reloadTaskFailure.webhookURL'),
             messageType: globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType'),
-            markdownTemplateFile: globals.config.get('Butler.slackNotification.reloadTaskFailure.markdownTemplateFile'),
+            templateFile: globals.config.get('Butler.slackNotification.reloadTaskFailure.templateFile'),
 
             headScriptLogLines: globals.config.has('Butler.slackNotification.reloadTaskFailure.headScriptLogLines')
                 ? globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines')
@@ -139,7 +139,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
             }
         } else if (globals.config.get('Butler.slackNotification.reladTaskAborted.messageType') == 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reladTaskAborted.markdownTemplateFile')) {
+            if (!globals.config.has('Butler.slackNotification.reladTaskAborted.templateFile')) {
                 globals.logger.error('SLACKABORTED: Message template file not specified in config file.');
                 return false;
             }
@@ -148,7 +148,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
         return {
             webhookUrl: globals.config.get('Butler.slackNotification.reladTaskAborted.webhookURL'),
             messageType: globals.config.get('Butler.slackNotification.reladTaskAborted.messageType'),
-            markdownTemplateFile: globals.config.get('Butler.slackNotification.reladTaskAborted.markdownTemplateFile'),
+            templateFile: globals.config.get('Butler.slackNotification.reladTaskAborted.templateFile'),
 
             headScriptLogLines: globals.config.has('Butler.slackNotification.reladTaskAborted.headScriptLogLines')
                 ? globals.config.get('Butler.slackNotification.reladTaskAborted.headScriptLogLines')
@@ -247,7 +247,7 @@ async function sendSlack(slackConfig, templateContext) {
                 ],
             };
         } else if (slackConfig.messageType == 'formatted') {
-            var template = fs.readFileSync(slackConfig.markdownTemplateFile, 'utf8');
+            var template = fs.readFileSync(slackConfig.templateFile, 'utf8');
             compiledTemplate = handlebars.compile(template);
             slackMsg = compiledTemplate(templateContext);
         }

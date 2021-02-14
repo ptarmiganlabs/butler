@@ -68,7 +68,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
             }
         } else if (globals.config.get('Butler.teamsNotification.reloadTaskFailure.messageType') == 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
-            if (!globals.config.has('Butler.teamsNotification.reloadTaskFailure.markdownTemplateFile')) {
+            if (!globals.config.has('Butler.teamsNotification.reloadTaskFailure.templateFile')) {
                 globals.logger.error('TEAMSFAILED: Message template file not specified in config file.');
                 return false;
             }
@@ -77,7 +77,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
         return {
             webhookUrl: globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL'),
             messageType: globals.config.get('Butler.teamsNotification.reloadTaskFailure.messageType'),
-            markdownTemplateFile: globals.config.get('Butler.teamsNotification.reloadTaskFailure.markdownTemplateFile'),
+            templateFile: globals.config.get('Butler.teamsNotification.reloadTaskFailure.templateFile'),
 
             headScriptLogLines: globals.config.has('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines')
                 ? globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines')
@@ -129,7 +129,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
             }
         } else if (globals.config.get('Butler.teamsNotification.reladTaskAborted.messageType') == 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
-            if (!globals.config.has('Butler.teamsNotification.reladTaskAborted.markdownTemplateFile')) {
+            if (!globals.config.has('Butler.teamsNotification.reladTaskAborted.templateFile')) {
                 globals.logger.error('TEAMSABORTED: Message template file not specified in config file.');
                 return false;
             }
@@ -138,7 +138,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
         return {
             webhookUrl: globals.config.get('Butler.teamsNotification.reladTaskAborted.webhookURL'),
             messageType: globals.config.get('Butler.teamsNotification.reladTaskAborted.messageType'),
-            markdownTemplateFile: globals.config.get('Butler.teamsNotification.reladTaskAborted.markdownTemplateFile'),
+            templateFile: globals.config.get('Butler.teamsNotification.reladTaskAborted.templateFile'),
 
             headScriptLogLines: globals.config.has('Butler.teamsNotification.reladTaskAborted.headScriptLogLines')
                 ? globals.config.get('Butler.teamsNotification.reladTaskAborted.headScriptLogLines')
@@ -214,7 +214,7 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
                 
             };
         } else if (teamsConfig.messageType == 'formatted') {
-            var template = fs.readFileSync(teamsConfig.markdownTemplateFile, 'utf8');
+            var template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
             compiledTemplate = handlebars.compile(template);
             renderedText = compiledTemplate(templateContext);
 
