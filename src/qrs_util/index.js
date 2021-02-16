@@ -4,4 +4,5 @@
 
 module.exports = {
     senseStartTask: require('./senseStartTask.js'),
+    getAppOwner: require('./getAppOwner.js'),
 };

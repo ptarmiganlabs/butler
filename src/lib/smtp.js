@@ -5,6 +5,7 @@
 
 var globals = require('../globals');
 var scriptLog = require('./scriptlog.js');
+var qrs_util = require('../qrs_util');
 
 const nodemailer = require('nodemailer');
 var hbs = require('nodemailer-express-handlebars');
@@ -67,6 +68,10 @@ function isEmailReloadFailedNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.headScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.priority') ||
@@ -100,8 +105,8 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.username') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.username') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.headScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.priority') ||
@@ -166,7 +171,7 @@ function getQlikSenseUrls() {
     return { qmcUrl: qmcUrl, hubUrl: hubUrl };
 }
 
-async function sendEmail(from, recipientsEmail, subjectHandlebars, bodyFileHandlebars, templateContext) {
+async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
         if (isSmtpConfigOk() == false) {
@@ -183,7 +188,7 @@ async function sendEmail(from, recipientsEmail, subjectHandlebars, bodyFileHandl
 
         let sut = hbs({
             viewEngine: viewEngine,
-            viewPath: globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
+            viewPath: viewPath ,
         });
 
         // Attach the template plugin to the nodemailer transporter
@@ -200,7 +205,7 @@ async function sendEmail(from, recipientsEmail, subjectHandlebars, bodyFileHandl
                 // Recipient email address has valid format
                 // Set up mail object
                 let message = {
-                    priority: globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
+                    priority: emailPriority,
                     from: from,
                     to: recipientEmail,
                     subject: subject,
@@ -281,11 +286,45 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+                // If enabled in config file: Add app owners to list of recipients
+                let recipientEmails = [];
+                if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') == true) {
+                    // App owners (at least some of them - maybe all) should get notification email
+                    let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
+
+                    if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') == true) {
+                        // All app owners should get notification email. Disregard any include and exclude lists. 
+                        recipientEmails = appOwner.emails;                        
+                    } else {
+                        // Is app owner on include list, i.e. list of app owners that should get notification emails?
+                        let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user');
+                        let matchUsers = includeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                        if (matchUsers.length > 0) {
+                            // App owner is in list of included users
+                            recipientEmails = appOwner.emails;
+                        } else {
+                            recipientEmails = [];
+                        }
+                    }
+
+                    // Now evaluate the exclude list, if there is one
+                    let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
+                    let matchUsers = excludeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                    if (matchUsers.length > 0) {
+                        // App owner is in list of users to exclude from receiving notification emails
+                        recipientEmails = [];
+                    } else {
+                        recipientEmails = appOwner.emails;
+                    }
+                }
+
 
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress'),
+                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress')),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
                     templateContext,
                 );
@@ -353,11 +392,45 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     qlikSenseHub: senseUrls.hubUrl,
                 };
 
+                // If enabled in config file: Add app owners to list of recipients
+                let recipientEmails = [];
+                if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') == true) {
+                    // App owners (at least some of them - maybe all) should get notification email
+                    let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
+
+                    if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') == true) {
+                        // All app owners should get notification email. Disregard any include and exclude lists. 
+                        recipientEmails = appOwner.emails;                        
+                    } else {
+                        // Is app owner on include list, i.e. list of app owners that should get notification emails?
+                        let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user');
+                        let matchUsers = includeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                        if (matchUsers.length > 0) {
+                            // App owner is in list of included users
+                            recipientEmails = appOwner.emails;
+                        } else {
+                            recipientEmails = [];
+                        }
+                    }
+
+                    // Now evaluate the exclude list, if there is one
+                    let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
+                    let matchUsers = excludeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                    if (matchUsers.length > 0) {
+                        // App owner is in list of users to exclude from receiving notification emails
+                        recipientEmails = [];
+                    } else {
+                        recipientEmails = appOwner.emails;
+                    }
+                }
+
                 // Note: Butler.emailNotification.reloadTaskAborted.toAdress is an array, sendEmail() should send individual emails to everyone in that array
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress'),
+                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress')),
+                    globals.config.get('Butler.emailNotification.reloadTaskAborted.priority')
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
+                    globals.config.get('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile'),
                     templateContext,
                 );

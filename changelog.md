@@ -12,6 +12,7 @@
    Those features have been available in Butler for many years, they just get a couple of new endpoints that follow Butler's current naming conventions better.
 3. MQTT messages can now include full information about the reload task that failed or was aborted, rather than just the task name. A couple of new MQTT topics are used for these MQTT messages. [#128](https://github.com/ptarmiganlabs/butler/issues/128).
 4. Notifications for failed and aborted tasks can now be sent as outgoing webhooks. [#129](https://github.com/ptarmiganlabs/butler/issues/129). The idea is to provide a generic way of getting task alerts to 3rd party systems that can't interact with Butler or Qlik Sense in any other way.
+5. Automatically sending email notifications for failed and aborted tasks to app owners ([#105](https://github.com/ptarmiganlabs/butler/issues/105)). This will only work if the app owner has an email address available in the Qlik Sense user directory.
 
 ### Fixes and patches
 
@@ -20,6 +21,7 @@
 2. Updated dependencies. Staying as safe as possible!
 
 3. Lots and lots of documentation additions, fixes and clarifications. Both in the source code and at [butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com).
+4. Send individual alert emails to all recipients instead of a single one with everyone on cc (for both task failures and aborted tasks). [#130](https://github.com/ptarmiganlabs/butler/issues/130).
 
 ### Changed behavior and/or breaking changes
 
