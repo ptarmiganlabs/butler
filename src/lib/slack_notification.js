@@ -328,8 +328,8 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
             }
         })
         .catch(rateLimiterRes => {
-            globals.logger.verbose(`SLACKFAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`);
-            globals.logger.verbose(`SLACKFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.warn(`SLACKFAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`);
+            globals.logger.debug(`SLACKFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

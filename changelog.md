@@ -13,6 +13,12 @@
 3. MQTT messages can now include full information about the reload task that failed or was aborted, rather than just the task name. A couple of new MQTT topics are used for these MQTT messages. [#128](https://github.com/ptarmiganlabs/butler/issues/128).
 4. Notifications for failed and aborted tasks can now be sent as outgoing webhooks. [#129](https://github.com/ptarmiganlabs/butler/issues/129). The idea is to provide a generic way of getting task alerts to 3rd party systems that can't interact with Butler or Qlik Sense in any other way.
 5. Automatically sending email notifications for failed and aborted tasks to app owners ([#105](https://github.com/ptarmiganlabs/butler/issues/105)). This will only work if the app owner has an email address available in the Qlik Sense user directory.
+6. Make user session start/stop events available as MS Teams messages, just like they are in Slack. ([#122](https://github.com/ptarmiganlabs/butler/issues/122)).
+7. Teams task fail/abort messages can now - optionally - use same templating concept that was previously available for emails. Better looking Teams alert messages thus! ([#124](https://github.com/ptarmiganlabs/butler/issues/124)).
+8. Make host name (that the user session relates to) available in Slack session start/stop messages.([#123](https://github.com/ptarmiganlabs/butler/issues/123)).
+9. Slack task fail/abort messages can now - optionally - use same templating concept that was previously available for emails. Better looking Slack alert messages thus! ([#120](https://github.com/ptarmiganlabs/butler/issues/120)).
+10. Added rate limiting option for task fail/aborts sent to Slack and MS Teams. ([#119](https://github.com/ptarmiganlabs/butler/issues/119)).
+11. Add MQTT message containing all available info about failed/aborted tasks. Format is stringified JSON. ([#128](https://github.com/ptarmiganlabs/butler/issues/128)).
 
 ### Fixes and patches
 
@@ -25,11 +31,13 @@
 
 ### Changed behavior and/or breaking changes
 
-1. **BREAKING**: New config file settings `Butler.slackNotification.*` used to configure everything Slack related, including notifications for failed and aborted reload tasks, as well as user start/stop session reporting.
+1. **BREAKING**: New config file settings `Butler.slackNotification.*` used to configure everything Slack related, including notifications for failed and aborted reload tasks, as well as user start/stop session reporting. ([#125](https://github.com/ptarmiganlabs/butler/issues/125)).
 
 2. **BREAKING**: Related to 1 above. As part of improving Slack notifications for task reload failures, the `Butler.slackConfig.taskFailureChannel` config file setting has been split into two and moved to new locations in the config file: `Butler.slackNotification.reladTaskAborted.channel` and `Butler.slackNotification.reladTaskFailure.channel`.
 
 3. **BREAKING**: Similar to 1 above, all MS Teams configuration has been moved from `Butler.teamsConfig.*` into the larger/more generic `Butler.teamsNotification.*` section of the config file.
+
+4. UDP message format for user session start/stop log appender has changed to follow same principles as other log appender UDP messages sent to Butler. ([#126](https://github.com/ptarmiganlabs/butler/issues/126)).
 
 ## 4.3.0
 

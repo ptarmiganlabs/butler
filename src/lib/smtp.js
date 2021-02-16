@@ -333,7 +333,7 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
             }
         })
         .catch(rateLimiterRes => {
-            globals.logger.verbose(`SMTPFAILED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`);
+            globals.logger.warn(`SMTPFAILED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`);
             globals.logger.debug(`SMTPFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
@@ -428,7 +428,7 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
                     recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress')),
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.priority')
+                    globals.config.get('Butler.emailNotification.reloadTaskAborted.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile'),

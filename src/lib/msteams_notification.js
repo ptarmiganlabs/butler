@@ -300,8 +300,8 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
             }
         })
         .catch(rateLimiterRes => {
-            globals.logger.verbose(`TEAMSFAILED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`);
-            globals.logger.verbose(`TEAMSFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.warn(`TEAMSFAILED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`);
+            globals.logger.debug(`TEAMSFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

@@ -92,7 +92,7 @@ Butler:
       channel: sense-task-failure     # Slack channel to which task failure notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense reload failed: "{{taskName}}"'      # Only needed if message type = basic
-      rateLimit: 15                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/slack/template/directory/failed-reload.handlebars
@@ -104,7 +104,7 @@ Butler:
       channel: sense-task-aborted     # Slack channel to which task stopped notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense reload aborted: "{{taskName}}"'       # Only needed if message type = basic
-      rateLimit: 15                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/slack/template/directory/aborted-reload.handlebars
@@ -117,6 +117,22 @@ Butler:
     enable: false
     reloadTaskAborted:
       enable: false
+      appOwnerAlert:
+        enable: true              # Should app owner get notification email (assuming email address is available in Sense user directory)
+        includeOwner:
+          includeAll: true                            # true = Send notification to all app owners except those in exclude list
+                                                      # false = Send notification to all app owners in the include list
+          user:
+            - directory: <Sense user directory>
+              userId: <userId>
+            - directory: <Sense user directory>
+              userId: <userId>
+        excludeOwner:
+          user:
+            - directory: <Sense user directory>
+              userId: <userId>
+            - directory: <Sense user directory>
+              userId: <userId>
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 15                          # # of lines from start of script to include in email
       tailScriptLogLines: 15                          # # of lines from end of script to include in email
@@ -130,6 +146,22 @@ Butler:
         - <Email address 2>
     reloadTaskFailure:
       enable: false
+      appOwnerAlert:
+        enable: true              # Should app owner get notification email (assuming email address is available in Sense user directory)
+        includeOwner:
+          includeAll: true                            # true = Send notification to all app owners except those in exclude list
+                                                      # false = Send notification to all app owners in the include list
+          user:
+            - directory: <Sense user directory>
+              userId: <userId>
+            - directory: <Sense user directory>
+              userId: <userId>
+        excludeOwner:
+          user:
+            - directory: <Sense user directory>
+              userId: <userId>
+            - directory: <Sense user directory>
+              userId: <userId>
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 15                          # # of lines from start of script to include in email
       tailScriptLogLines: 15                          # # of lines from end of script to include in email
@@ -159,7 +191,7 @@ Butler:
   webhookNotification:
     enable: true
     reloadTaskFailure:
-      rateLimit: 15              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
         - description: 'This outgoing webhook is used to...'
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
@@ -171,7 +203,7 @@ Butler:
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: GET                                     # GET/POST/PUT
     reloadTaskAborted:
-      rateLimit: 15              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
         - description: 'This outgoing webhook is used to...'
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
