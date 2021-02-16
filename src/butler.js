@@ -77,8 +77,8 @@ restServer.use(restify.plugins.bodyParser());
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional
     origins: ['*'],
-    allowHeaders: ['API-Token'],
-    exposeHeaders: ['API-Token-Expiry'],
+    // allowHeaders: ['API-Token'],
+    // exposeHeaders: ['API-Token-Expiry'],
 });
 
 restServer.pre(cors.preflight);
@@ -115,7 +115,6 @@ restifySwaggerJsdoc.createSwaggerPage({
     path: '/docs/swagger', // Public url where the swagger page will be available
     apis: ['./rest/*.js'],
 });
-
 // Set up endpoints for REST server
 //restServer.get('/v4/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
 
@@ -123,7 +122,6 @@ restifySwaggerJsdoc.createSwaggerPage({
 //     globals.logger.debug('Registering REST endpoint GET /v4/getdiskspace');
 //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
 // }
-
 if (
     globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
     globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
@@ -182,14 +180,21 @@ if (globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') && glo
     restServer.put({ path: '/v4/reloadtask/:taskId/start' }, rest.senseStartTask.respondPUT_senseStartTask);
 }
 
+if (globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') && globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')) {
+    globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
+    restServer.put({ path: '/v4/app/:appId/reload' }, rest.senseApp.respondPUT_senseAppReload);
+}
+
 if (globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') && globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
     restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
+    restServer.get({ path: '/v4/app/:appId/dump' }, rest.senseAppDump.respondGET_senseAppDump);
 }
 
 if (globals.config.has('Butler.restServerEndpointsEnable.senseListApps') && globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
     globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
     restServer.get({ path: '/v4/senselistapps' }, rest.senseListApps.respondGET_senseListApps);
+    restServer.get({ path: '/v4/apps/list' }, rest.senseListApps.respondGET_senseListApps);
 }
 
 if (globals.config.has('Butler.restServerEndpointsEnable.butlerping') && globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
@@ -312,7 +317,7 @@ if (globals.config.has('Butler.scheduler')) {
         scheduler.loadSchedulesFromDisk();
         // scheduler.launchAllSchedules();
     } else {
-        globals.logger.info('MAIN: Didn\'t load schedules from file');
+        globals.logger.info("MAIN: Didn't load schedules from file");
     }
 }
 
@@ -332,11 +337,13 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
     });
 }
 
+// Code below used during development
+
 // process.on('SIGUSR2', () => {
 //     // Run with
 //     // node -- expose-gc butler.js
 //     //
-//     // Trigger with 
+//     // Trigger with
 //     // kill -SIGUSR2 $(pgrep -lfa node | grep butler.js | awk '{print $1}'
 //     try {
 //         if (global.gc) {

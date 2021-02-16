@@ -41,6 +41,33 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *         description: Internal error.
  *
  */
+/**
+ * @swagger
+ *
+ * /v4/apps/list:
+ *   get:
+ *     description: |
+ *       Get list of all apps in Sense environment
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: App list successfully retrieved.
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: App ID.
+ *               name: 
+ *                 type: string
+ *                 description: App name.
+ *       500:
+ *         description: Internal error.
+ *
+ */
 module.exports.respondGET_senseListApps = function (req, res, next) {
     logRESTCall(req);
 

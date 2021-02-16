@@ -1,5 +1,41 @@
 <?xml version="1.0"?>
 <configuration>
+	<!-- Appender for detecting reload task failures. Only the last of potentially several retries is reported -->
+    <appender name="TaskFailureLogger" type="log4net.Appender.UdpAppender">
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Max retries reached" />
+        </filter>
+        <filter type="log4net.Filter.DenyAllFilter" />
+        <param name="remoteAddress" value="<IP of server where Butler is running>" />
+        <param name="remotePort" value="9998" />
+        <param name="encoding" value="utf-8" />
+        <layout type="log4net.Layout.PatternLayout">
+            <converter>
+                <param name="name" value="hostname" />
+                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+             </converter>
+            <param name="conversionpattern" value="/scheduler-reload-failed/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+        </layout>
+    </appender>
+
+    <!-- Appender for detecting aborted reloads -->
+    <appender name="AbortedReloadTaskLogger" type="log4net.Appender.UdpAppender">
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Execution State Change to Aborting" />
+        </filter>
+        <filter type="log4net.Filter.DenyAllFilter" />
+        <param name="remoteAddress" value="<IP of server where Butler is running>" />
+        <param name="remotePort" value="9998" />
+        <param name="encoding" value="utf-8" />
+        <layout type="log4net.Layout.PatternLayout">
+            <converter>
+                <param name="name" value="hostname" />
+                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+             </converter>
+            <param name="conversionpattern" value="/scheduler-reload-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+        </layout>
+    </appender>
+
     <!-- Mail appender. Not dependent on Butler. Works as a basic solution, but does not support templating, script logs etc that Butler offers -->
     <appender name="MailAppender" type="log4net.Appender.SmtpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
@@ -24,42 +60,6 @@
         <layout type="log4net.Layout.PatternLayout">
             <param name="conversionPattern" value="%newline%date %-5level %newline%property{TaskName}%newline%property{AppName}%newline%message%newline%newline%newline" />
 			<!--Defined conversion pattern for the output. To be able to output custom properties in the log (example, Taskname), append %property{propertyname} to the output pattern-->
-        </layout>
-    </appender>
-
-	<!-- Appender for detecting reload task failures. Only the last of potentially several retries is reported -->
-    <appender name="TaskFailureLogger" type="log4net.Appender.UdpAppender">
-        <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Max retries reached" />
-        </filter>
-        <filter type="log4net.Filter.DenyAllFilter" />
-        <param name="remoteAddress" value="<IP of server where Butler is running>" />
-        <param name="remotePort" value="9998" />
-        <param name="encoding" value="utf-8" />
-        <layout type="log4net.Layout.PatternLayout">
-            <converter>
-                <param name="name" value="hostname" />
-                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
-             </converter>
-            <param name="conversionpattern" value="%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
-        </layout>
-    </appender>
-
-    <!-- Appender for detecting aborted reloads -->
-    <appender name="AbortedReloadTaskLogger" type="log4net.Appender.UdpAppender">
-        <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Execution State Change to Aborting" />
-        </filter>
-        <filter type="log4net.Filter.DenyAllFilter" />
-        <param name="remoteAddress" value="<IP of server where Butler is running>" />
-        <param name="remotePort" value="9998" />
-        <param name="encoding" value="utf-8" />
-        <layout type="log4net.Layout.PatternLayout">
-            <converter>
-                <param name="name" value="hostname" />
-                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
-             </converter>
-            <param name="conversionpattern" value="/scheduler-reload-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
         </layout>
     </appender>
 

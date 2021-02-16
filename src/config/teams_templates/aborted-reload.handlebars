@@ -1,0 +1,67 @@
+{
+    "@type": "MessageCard", 
+    "@context": "https://schema.org/extensions",
+    "themeColor": "0076D7",
+    "summary": "Qlik Sense reload task stopped",
+    "sections": [{
+        "activityTitle": "# Reload task aborted: '{{taskName}}'",
+        "activitySubtitle": "Reload was running on server: {{executingNodeName}}",
+        "facts": [{
+            "name": "App name",
+            "value": "{{appName}}"
+        },{
+            "name": "App ID",
+            "value": "{{appId}}"
+        },{
+            "name": "Task Name",
+            "value": "{{taskName}}"
+        },{
+            "name": "Task ID",
+            "value": "{{taskId}}"
+        }],
+        "markdown": true
+    }, {
+        "facts": [{
+            "name": "User stopping the reload",
+            "value": "{{user}}"
+        },{
+            "name": "Duration",
+            "value": "{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+        },{
+            "name": "Execution started",
+            "value": "{{executionStartTime.startTimeLocal1}}"
+        },{
+            "name": "Execution result",
+            "value": "{{executionStatusText}}"
+        },{
+            "name": "Execution result code",
+            "value": "{{executionStatusNum}}"
+        },{
+            "name": "Log timestamp",
+            "value": "{{logTimeStamp}}"
+        },{
+            "name": "Log message",
+            "value": "{{logMessage}}"
+        }],
+        "markdown": true
+    },{
+        "activityTitle": "History",
+        "text": "{{executionDetailsConcatenated}}",
+        "markdown": true
+    }],
+    "potentialAction": [{
+        "@type": "OpenUri",
+        "name": "Qlik Sense QMC",
+        "targets": [{
+            "os": "default",
+            "uri": "{{qlikSenseQMC}}"
+        }]
+    },{
+        "@type": "OpenUri",
+        "name": "Qlik Sense Hub",
+        "targets": [{
+            "os": "default",
+            "uri": "{{qlikSenseHub}}"
+        }]
+    }]
+}

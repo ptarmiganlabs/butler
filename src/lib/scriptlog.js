@@ -61,11 +61,18 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                     fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
                     executingNodeName: result1.body.operational.lastExecutionResult.executingNodeName,
                     executionDetailsSorted: result1.body.operational.lastExecutionResult.details.sort(compareTaskDetails),
+                    executionDetailsConcatenated: '',
                     executionStatusNum: result1.body.operational.lastExecutionResult.status,
                     executionStatusText: taskStatusLookup[result1.body.operational.lastExecutionResult.status],
                     // scriptLogAvailable = result1.body.operational.lastExecutionResult.scriptLogAvailable,
                     scriptLogSize: result1.body.operational.lastExecutionResult.scriptLogSize,
                 };
+
+                // Get execution details as a single string ny concatenating the individual execution step details
+                for (const execDetail of taskInfo.executionDetailsSorted) {
+                    taskInfo.executionDetailsConcatenated =
+                        taskInfo.executionDetailsConcatenated + execDetail.detailCreatedDate + '\t' + execDetail.message + '\n';
+                }
 
                 // Add duration as JSON
                 let taskDuration = luxon.Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
@@ -73,7 +80,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 taskInfo.executionDuration.seconds = Math.floor(taskInfo.executionDuration.seconds);
 
                 // Add start datetime in various formats
-                if (result1.body.operational.lastExecutionResult.startTime.substring(0,4) == '1753') {
+                if (result1.body.operational.lastExecutionResult.startTime.substring(0, 4) == '1753') {
                     taskInfo.executionStartTime = {
                         startTimeUTC: '-',
                         startTimeLocal1: '-',
@@ -95,7 +102,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 }
 
                 // Add stop datetime in various formats
-                if (result1.body.operational.lastExecutionResult.stopTime.substring(0,4) == '1753') {
+                if (result1.body.operational.lastExecutionResult.stopTime.substring(0, 4) == '1753') {
                     taskInfo.executionStopTime = {
                         stopTimeUTC: '-',
                         stopTimeLocal1: '-',
@@ -118,7 +125,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
 
                 // Add various datetime formats to task history entries
                 taskInfo.executionDetailsSorted = taskInfo.executionDetailsSorted.map(item => {
-                    if (item.detailCreatedDate.substring(0,4) == '1753') {
+                    if (item.detailCreatedDate.substring(0, 4) == '1753') {
                         return {
                             timestampUTC: '-',
                             timestampLocal1: '-',
@@ -190,6 +197,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                             resolve({
                                 executingNodeName: taskInfo.executingNodeName,
                                 executionDetails: taskInfo.executionDetailsSorted,
+                                executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
                                 executionDuration: taskInfo.executionDuration,
                                 executionStartTime: taskInfo.executionStartTime,
                                 executionStopTime: taskInfo.executionStopTime,
@@ -205,10 +213,10 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                     });
                 } else {
                     // No script log is available
-
                     resolve({
                         executingNodeName: taskInfo.executingNodeName,
                         executionDetails: taskInfo.executionDetailsSorted,
+                        executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
                         executionDuration: taskInfo.executionDuration,
                         executionStartTime: taskInfo.executionStartTime,
                         executionStopTime: taskInfo.executionStopTime,

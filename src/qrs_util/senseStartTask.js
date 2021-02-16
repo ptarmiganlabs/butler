@@ -24,7 +24,7 @@ module.exports.senseStartTask = function (taskId) {
         qrsInstance
             .Post(`task/${taskId}/start`)
             .then(result => {
-                globals.logger.verbose(`STARTTASK: Got response: ${result.statusCode}`);
+                globals.logger.debug(`STARTTASK: Got response: ${result.statusCode} for task ID ${taskId}`);
             })
             .catch(err => {
                 globals.logger.error(`STARTTASK: Error while starting Sense task: ${err.message}`);
