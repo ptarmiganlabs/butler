@@ -2,10 +2,16 @@
 <configuration>
     <appender name="NodeUserLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Start session" />
+            <param name="stringToMatch" value="connection Opened for session" />
         </filter>
         <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Stop session" />
+            <param name="stringToMatch" value="connection Closed for session" />
+        </filter>
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Start session for user" />
+        </filter>
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Stop session for user" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<FQDN or IP of server where Butler is running>" />
@@ -14,11 +20,12 @@
             <converter>
                 <param name="name" value="hostname" />
                 <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
-             </converter>
+            </converter>
             <param name="conversionpattern" value="%hostname;%property{Command};%property{UserDirectory};%property{UserId}" />
         </layout>
     </appender>
-  <logger name="AuditActivity.Proxy">
-      <appender-ref ref="NodeUserLogger" />
-  </logger>
+ 
+    <logger name="AuditActivity.Proxy">
+        <appender-ref ref="NodeUserLogger" />
+    </logger>
 </configuration>
