@@ -79,8 +79,8 @@ function isEmailReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAdress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.toAdress') ||
-            globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress').length == 0
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
+            globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients').length == 0
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload failure email config info missing in Butler config file');
@@ -114,8 +114,8 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAdress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.toAdress') ||
-            globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress').length == 0
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
+            globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients').length == 0
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload aborted email config info missing in Butler config file');
@@ -321,7 +321,7 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
-                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskFailure.toAdress')),
+                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients')),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
@@ -424,10 +424,10 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     }
                 }
 
-                // Note: Butler.emailNotification.reloadTaskAborted.toAdress is an array, sendEmail() should send individual emails to everyone in that array
+                // Note: Butler.emailNotification.reloadTaskAborted.recipients is an array, sendEmail() should send individual emails to everyone in that array
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
-                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskAborted.toAdress')),
+                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients')),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'),
