@@ -33,9 +33,7 @@ module.exports.mqttInitHandlers = function () {
     // Handler for MQTT messages matching the previously set up subscription
     globals.mqttClient.on('message', function (topic, message) {
         try {
-            globals.logger.info('MQTT message received');
-            globals.logger.info(topic.toString());
-            globals.logger.info(message.toString());
+            globals.logger.verbose(`MQTT message received. Topic=${topic.toString()},  Message=${message.toString()}`);
 
             // **MQTT message dispatch**
             // Start Sense task
@@ -62,8 +60,7 @@ module.exports.mqttInitHandlers = function () {
                 // directoryName = array2[0];
                 userName = array2[1];
 
-                globals.logger.info('MQTT: Adding active user');
-                // console.info('Adding active user');
+                globals.logger.verbose(`MQTT: Adding active user: ${userName} on server ${serverName}`);
                 globals.currentUsers.set(userName, serverName); // Add user as active
 
                 // Build JSON of all active users
@@ -86,7 +83,7 @@ module.exports.mqttInitHandlers = function () {
 
                 // Send active user count messages to MQTT, one for each proxy node
                 globals.currentUsersPerServer.forEach(function (value, key) {
-                    globals.logger.info('MQTT: server:' + key + ', users:' + JSON.stringify(value));
+                    globals.logger.verbose('MQTT: server:' + key + ', users:' + JSON.stringify(value));
                     // console.info('server:' + key + ', users:' + JSON.stringify(value));
                     //                console.log('=========');
                     //                console.log('server:' + key + ', # of users=' + globals.currentUsersPerServer.size);
@@ -120,7 +117,7 @@ module.exports.mqttInitHandlers = function () {
                 // directoryName = array2[0];
                 userName = array2[1];
 
-                globals.logger.info('MQTT: Removing active user');
+                globals.logger.verbose(`MQTT: Removing active user: ${userName}`);
                 globals.currentUsers.delete(userName); // Remove user from list of active users
 
                 // Build JSON of all active users
