@@ -491,7 +491,7 @@ module.exports.udpInitSessionConnectionServer = function () {
             var msg = message.toString().split(';');
             globals.logger.info(`SESSIONS: ${msg[0]}: ${msg[1]} for user ${msg[2]}/${msg[3]}`);
 
-            // Send notification to MS Teams, if enabled
+            // Send notification to Slack, if enabled
             if (
                 globals.config.has('Butler.slackNotification.enable') &&
                 globals.config.has('Butler.slackNotification.userSessionEvents.enable') &&
@@ -517,7 +517,23 @@ module.exports.udpInitSessionConnectionServer = function () {
                     webhookUrl: globals.config.get('Butler.slackNotification.userSessionEvents.webhookURL'),
                 };
 
-                let res = slackApi.slackSend(slackConfig, globals.logger);
+                // Is the user referenced by this event on the exclude list? If so don't sent a notification
+                // msg[2] = user directory
+                // msg[3] = userId
+                let  sendMsg = true;
+                if (globals.config.has('Butler.slackNotification.userSessionEvents.excludeUser')) {
+                    let excludeUsers = globals.config.get('Butler.slackNotification.userSessionEvents.excludeUser');
+                    if ( excludeUsers.some(item => {
+                        return (item.directory == msg[2] && item.userId == msg[3]);
+                    })) {
+                        // User found in exclude list
+                        sendMsg = false;
+                    }
+                }
+                                
+                if (sendMsg) {
+                    let res = slackApi.slackSend(slackConfig, globals.logger);
+                }
             }
 
             // Send notification to MS Teams, if enabled
@@ -527,32 +543,41 @@ module.exports.udpInitSessionConnectionServer = function () {
                 globals.config.get('Butler.teamsNotification.enable') == true &&
                 globals.config.get('Butler.teamsNotification.userSessionEvents.enable') == true
             ) {
-                await globals.teamsUserSessionObj.send(
-                    JSON.stringify({
-                        '@type': 'MessageCard',
-                        '@context': 'https://schema.org/extensions',
-                        summary: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
-                        themeColor: '0078D7',
-                        title: msg[1] + ' for user ' + msg[2] + '/' + msg[3] + ' on server ' + msg[0],
-                    }),
-                );
+                // Is the user referenced by this event on the exclude list? If so don't sent a notification
+                // msg[2] = user directory
+                // msg[3] = userId
+                let  sendMsg = true;
+                if (globals.config.has('Butler.teamsNotification.userSessionEvents.excludeUser')) {
+                    let excludeUsers = globals.config.get('Butler.teamsNotification.userSessionEvents.excludeUser');
+                    if ( excludeUsers.some(item => {
+                        return (item.directory == msg[2] && item.userId == msg[3]);
+                    })) {
+                        // User found in exclude list
+                        sendMsg = false;
+                    }
+                }
+                                
+                if (sendMsg) {
+                    await globals.teamsUserSessionObj.send(
+                        JSON.stringify({
+                            '@type': 'MessageCard',
+                            '@context': 'https://schema.org/extensions',
+                            summary: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
+                            themeColor: '0078D7',
+                            title: msg[1] + ' for user ' + msg[2] + '/' + msg[3] + ' on server ' + msg[0],
+                        }),
+                    );    
+                }
             }
 
-            // Handle session events
+            // Send MQTT messages
             if (msg[1] == 'Start session') {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStartTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            }
-
-            if (msg[1] == 'Stop session') {
+            } else if (msg[1] == 'Stop session') {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStopTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            }
-
-            // Handle connection events
-            if (msg[1] == 'Open connection') {
+            } else if (msg[1] == 'Open connection') {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionOpenTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            }
-
-            if (msg[1] == 'Close connection') {
+            } else  if (msg[1] == 'Close connection') {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionCloseTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
             }
         } catch (err) {

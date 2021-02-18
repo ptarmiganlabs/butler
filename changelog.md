@@ -19,6 +19,7 @@
 9. Slack task fail/abort messages can now - optionally - use same templating concept that was previously available for emails. Better looking Slack alert messages thus! ([#120](https://github.com/ptarmiganlabs/butler/issues/120)).
 10. Added rate limiting option for task fail/aborts sent to Slack and MS Teams. ([#119](https://github.com/ptarmiganlabs/butler/issues/119)).
 11. Add MQTT message containing all available info about failed/aborted tasks. Format is stringified JSON. ([#128](https://github.com/ptarmiganlabs/butler/issues/128)).
+12. Add exclude list to user activity events sent to Slack and MS Teams. Using this feature it's possible to prevent session start/stop etc notifications for specific users to be sent to Teams and Slack. Useful for example if a system account is used to do API calls - that probably should not be reported as user activity. ([#132](https://github.com/ptarmiganlabs/butler/issues/132)).
 
 ### Fixes and patches
 
