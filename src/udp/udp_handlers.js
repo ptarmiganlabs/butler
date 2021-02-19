@@ -488,8 +488,20 @@ module.exports.udpInitSessionConnectionServer = function () {
     // Main handler for UDP messages relating to session and connection events
     globals.udpServerSessionConnectionSocket.on('message', async function (message, remote) {
         try {
-            var msg = message.toString().split(';');
-            globals.logger.info(`SESSIONS: ${msg[0]}: ${msg[1]} for user ${msg[2]}/${msg[3]}`);
+            // Message parts
+            // 0: Message type. Possible values are /proxy-connection/, /proxy-session/
+            // 1: Host
+            // 2: Command
+            // 3: User directory
+            // 4: user ID
+            // 5: Origin
+            // 6: Context
+            // 7: Message. Can contain single quotes and semicolon - handle with care
+
+            var msgTmp1 = message.toString().split(';'),
+                msg = msgTmp1.slice(0, 7);
+
+            globals.logger.info(`SESSIONS: ${msg[1]}: ${msg[2]} for user ${msg[3]}/${msg[4]}`);
 
             // Send notification to Slack, if enabled
             if (
@@ -505,7 +517,7 @@ module.exports.udpInitSessionConnectionServer = function () {
                                 type: 'section',
                                 text: {
                                     type: 'plain_text',
-                                    text: msg[1] + ',  user: ' + msg[2] + '/' + msg[3] + ' on server ' + msg[0],
+                                    text: msg[2] + ',  user: ' + msg[3] + '/' + msg[4] + ' on server ' + msg[1],
                                 },
                             },
                         ],
@@ -518,13 +530,13 @@ module.exports.udpInitSessionConnectionServer = function () {
                 };
 
                 // Is the user referenced by this event on the exclude list? If so don't sent a notification
-                // msg[2] = user directory
-                // msg[3] = userId
+                // msg[3] = user directory
+                // msg[4] = userId
                 let  sendMsg = true;
                 if (globals.config.has('Butler.slackNotification.userSessionEvents.excludeUser')) {
                     let excludeUsers = globals.config.get('Butler.slackNotification.userSessionEvents.excludeUser');
                     if ( excludeUsers.some(item => {
-                        return (item.directory == msg[2] && item.userId == msg[3]);
+                        return (item.directory == msg[3] && item.userId == msg[4]);
                     })) {
                         // User found in exclude list
                         sendMsg = false;
@@ -544,13 +556,13 @@ module.exports.udpInitSessionConnectionServer = function () {
                 globals.config.get('Butler.teamsNotification.userSessionEvents.enable') == true
             ) {
                 // Is the user referenced by this event on the exclude list? If so don't sent a notification
-                // msg[2] = user directory
-                // msg[3] = userId
+                // msg[3] = user directory
+                // msg[4] = userId
                 let  sendMsg = true;
                 if (globals.config.has('Butler.teamsNotification.userSessionEvents.excludeUser')) {
                     let excludeUsers = globals.config.get('Butler.teamsNotification.userSessionEvents.excludeUser');
                     if ( excludeUsers.some(item => {
-                        return (item.directory == msg[2] && item.userId == msg[3]);
+                        return (item.directory == msg[3] && item.userId == msg[4]);
                     })) {
                         // User found in exclude list
                         sendMsg = false;
@@ -562,23 +574,23 @@ module.exports.udpInitSessionConnectionServer = function () {
                         JSON.stringify({
                             '@type': 'MessageCard',
                             '@context': 'https://schema.org/extensions',
-                            summary: msg[1] + ' for user ' + msg[2] + '/' + msg[3],
+                            summary: msg[2] + ' for user ' + msg[3] + '/' + msg[4],
                             themeColor: '0078D7',
-                            title: msg[1] + ' for user ' + msg[2] + '/' + msg[3] + ' on server ' + msg[0],
+                            title: msg[2] + ' for user ' + msg[3] + '/' + msg[4] + ' on server ' + msg[1],
                         }),
                     );    
                 }
             }
 
             // Send MQTT messages
-            if (msg[1] == 'Start session') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStartTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            } else if (msg[1] == 'Stop session') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStopTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            } else if (msg[1] == 'Open connection') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionOpenTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
-            } else  if (msg[1] == 'Close connection') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionCloseTopic'), msg[0] + ': ' + msg[2] + '/' + msg[3]);
+            if (msg[2] == 'Start session') {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStartTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+            } else if (msg[2] == 'Stop session') {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStopTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+            } else if (msg[2] == 'Open connection') {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionOpenTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+            } else  if (msg[2] == 'Close connection') {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionCloseTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
             }
         } catch (err) {
             globals.logger.error(`SESSIONS: Error processing user session event: ${err}`);
