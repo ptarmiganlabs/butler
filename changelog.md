@@ -38,7 +38,7 @@
 
 3. **BREAKING**: Similar to 1 above, all MS Teams configuration has been moved from `Butler.teamsConfig.*` into the larger/more generic `Butler.teamsNotification.*` section of the config file.
 
-4. UDP message format for user session start/stop log appender has changed to follow same principles as other log appender UDP messages sent to Butler. ([#126](https://github.com/ptarmiganlabs/butler/issues/126)).
+4. UDP message format for user session start/stop log appender has changed to follow same principles as other log appender UDP messages sent to Butler. ([#126](https://github.com/ptarmiganlabs/butler/issues/126), [#134](https://github.com/ptarmiganlabs/butler/issues/134)).
 
 ## 4.3.0
 
