@@ -7,6 +7,8 @@ var dict = require('dict');
 
 // Load global variables and functions
 var globals = require('../globals');
+var qrsUtil = require('../qrs_util');
+
 
 module.exports.mqttInitHandlers = function () {
     // Handler for MQTT connect messages. Called when connection to MQTT broker has been established
@@ -26,8 +28,8 @@ module.exports.mqttInitHandlers = function () {
             )} with client ID ${globals.mqttClient.options.clientId}`,
         );
 
-        // Have Butler listen to all messages in the qliksense/ subtree
-        globals.mqttClient.subscribe('qliksense/#');
+        // Have Butler listen to all messages in the topic subtree specified in the config file
+        globals.mqttClient.subscribe(globals.config.get('Butler.mqttConfig.subscriptionRootTopic'));
     });
 
     // Handler for MQTT messages matching the previously set up subscription
@@ -37,9 +39,9 @@ module.exports.mqttInitHandlers = function () {
 
             // **MQTT message dispatch**
             // Start Sense task
-            if (topic == 'qliksense/start_task') {
-                globals.logger.verbose(`MQTT: Starting task ID ${message.toString()}.`);
-                globals.qrsUtil.senseStartTask.senseStartTask(message.toString());
+            if (topic == globals.config.get('Butler.mqttConfig.taskStartTopic')) {
+                globals.logger.info(`MQTT: Starting task ID ${message.toString()}.`);
+                qrsUtil.senseStartTask.senseStartTask(message.toString());
             }
 
             var array1, array2, serverName, userName;

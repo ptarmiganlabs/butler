@@ -241,6 +241,8 @@ Butler:
     brokerPort: 1883
     taskFailureSendFull: true
     taskAbortedSendFull: true
+    subscriptionRootTopic: qliksense/#                                  # Topic that Butler will subscribe to
+    taskStartTopic: qliksense/start_task                                # Topic for incoming messages used to start Sense tasks. Should be subtopic to subscriptionRootTopic
     taskFailureTopic: qliksense/task_failure
     taskFailureFullTopic: qliksense/task_failure_full
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server

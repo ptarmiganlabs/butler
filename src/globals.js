@@ -59,8 +59,6 @@ const getLoggingLevel = () => {
     }).level;
 };
 
-// Load our own libs
-// var qrsUtil = require('./qrsUtil');
 
 // Helper function to read the contents of the certificate files:
 const readCert = filename => fs.readFileSync(filename);
@@ -330,7 +328,6 @@ function initInfluxDB() {
 
 module.exports = {
     config,
-    // qrsUtil,
     configEngine,
     configQRS,
     teamsTaskFailureObj,
