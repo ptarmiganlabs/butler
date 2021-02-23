@@ -649,7 +649,7 @@ sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
     set vMessage=;
     set vEmoji=;
     set vRequestBody=;
-	drop table RestConnectorMasterTable;
+    drop table RestConnectorMasterTable;
 end sub
 
 
