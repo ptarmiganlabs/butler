@@ -51,43 +51,53 @@ Butler:
 
   # Settings for notifications and messages sent to MS Teams
   teamsNotification:
-    enable: true
+    enable: false
     userSessionEvents:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from MS Teams>
+      excludeUser:
+        - directory: <Sense user directory>
+          userId: <userId>
+        - directory: <Sense user directory>
+          userId: <userId>
     reloadTaskFailure:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from MS Teams>
       messageType: formatted     # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense reload failed: "{{taskName}}"'      # Only needed if message type = basic
-      rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300             # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/teams/template/directory/failed-reload.handlebars
     reloadTaskAborted:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from MS Teams>
       messageType: formatted     # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense reload aborted: "{{taskName}}"'       # Only needed if message type = basic
-      rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300             # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/teams/template/directory/aborted-reload.handlebars
 
   # Settings for notifications and messages sent to Slack
   slackNotification:
-    enable: true
+    enable: false
     restMessage:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from Slack>
     userSessionEvents:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from Slack>
       channel: sense-user-activity    # Slack channel to which user activity data is sent
       fromUser: Qlik Sense
       iconEmoji: ':thumbsup:'
+      excludeUser:
+        - directory: <Sense user directory>
+          userId: <userId>
+        - directory: <Sense user directory>
+          userId: <userId>
     reloadTaskFailure:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from Slack>
       channel: sense-task-failure     # Slack channel to which task failure notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
@@ -99,7 +109,7 @@ Butler:
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
     reloadTaskAborted:
-      enable: true
+      enable: false
       webhookURL: <web hook URL from Slack>
       channel: sense-task-aborted     # Slack channel to which task stopped notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
@@ -134,14 +144,14 @@ Butler:
             - directory: <Sense user directory>
               userId: <userId>
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-      headScriptLogLines: 15                          # # of lines from start of script to include in email
-      tailScriptLogLines: 15                          # # of lines from end of script to include in email
+      headScriptLogLines: 15                          # Number of lines from start of script to include in email
+      tailScriptLogLines: 15                          # Number of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'  # Email subject. Can use template fields
       bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
       htmlTemplateFile: aborted-reload                # Name of email body template file to use
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
-      toAdress:                                       # Array of email addresses to which the notification email will be sent
+      recipients:                                       # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
     reloadTaskFailure:
@@ -163,14 +173,14 @@ Butler:
             - directory: <Sense user directory>
               userId: <userId>
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-      headScriptLogLines: 15                          # # of lines from start of script to include in email
-      tailScriptLogLines: 15                          # # of lines from end of script to include in email
+      headScriptLogLines: 15                          # Number of lines from start of script to include in email
+      tailScriptLogLines: 15                          # Number of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload failed: "{{taskName}}"'   # Email subject. Can use template fields
       bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
       htmlTemplateFile: failed-reload                 # Name of email body template file to use
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
-      toAdress:                                       # Array of email addresses to which the notification email will be sent
+      recipients:                                       # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
     smtp:                                             # Email server settings. See https://nodemailer.com/smtp/ for details on the meaning of these fields.
@@ -189,29 +199,29 @@ Butler:
 
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
-    enable: true
+    enable: false
     reloadTaskFailure:
       rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: POST                                    # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: PUT                                     # GET/POST/PUT.
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: GET                                     # GET/POST/PUT
     reloadTaskAborted:
       rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: PUT                                     # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: POST                                    # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'
+        - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: GET                                     # GET/POST/PUT
 
@@ -231,6 +241,8 @@ Butler:
     brokerPort: 1883
     taskFailureSendFull: true
     taskAbortedSendFull: true
+    subscriptionRootTopic: qliksense/#                                  # Topic that Butler will subscribe to
+    taskStartTopic: qliksense/start_task                                # Topic for incoming messages used to start Sense tasks. Should be subtopic to subscriptionRootTopic
     taskFailureTopic: qliksense/task_failure
     taskFailureFullTopic: qliksense/task_failure_full
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server

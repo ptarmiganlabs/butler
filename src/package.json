@@ -10,7 +10,7 @@
         "dict": "^1.4.0",
         "email-validator": "^2.0.4",
         "enigma.js": "^2.7.2",
-        "express-handlebars": "^5.2.0",
+        "express-handlebars": "^5.2.1",
         "fs-extra": "^9.1.0",
         "handlebars": "^4.7.7",
         "influx": "^5.7.0",
@@ -19,7 +19,7 @@
         "keyv": "^4.0.3",
         "keyv-file": "^0.2.0",
         "later": "^1.2.0",
-        "lodash": "^4.17.20",
+        "lodash": "^4.17.21",
         "luxon": "^1.26.0",
         "mkdirp": "^1.0.4",
         "moment": "^2.29.1",
@@ -42,7 +42,7 @@
         "ws": "^7.4.3"
     },
     "devDependencies": {
-        "eslint": "7.19.0",
+        "eslint": "7.20.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",

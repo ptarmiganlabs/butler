@@ -19,6 +19,8 @@
 9. Slack task fail/abort messages can now - optionally - use same templating concept that was previously available for emails. Better looking Slack alert messages thus! ([#120](https://github.com/ptarmiganlabs/butler/issues/120)).
 10. Added rate limiting option for task fail/aborts sent to Slack and MS Teams. ([#119](https://github.com/ptarmiganlabs/butler/issues/119)).
 11. Add MQTT message containing all available info about failed/aborted tasks. Format is stringified JSON. ([#128](https://github.com/ptarmiganlabs/butler/issues/128)).
+12. Add exclude list to user activity events sent to Slack and MS Teams. Using this feature it's possible to prevent session start/stop etc notifications for specific users to be sent to Teams and Slack. Useful for example if a system account is used to do API calls - that probably should not be reported as user activity. ([#132](https://github.com/ptarmiganlabs/butler/issues/132)).
+13. Improvements around handling of inbound MQTT messages. The root MQTT topic that Butler subscribes to is now configurable ([#137](https://github.com/ptarmiganlabs/butler/issues/137)). The topic through which Sense tasks can be started is now also configurable ([#136](https://github.com/ptarmiganlabs/butler/issues/136)) rather than hard coded.
 
 ### Fixes and patches
 
@@ -37,7 +39,7 @@
 
 3. **BREAKING**: Similar to 1 above, all MS Teams configuration has been moved from `Butler.teamsConfig.*` into the larger/more generic `Butler.teamsNotification.*` section of the config file.
 
-4. UDP message format for user session start/stop log appender has changed to follow same principles as other log appender UDP messages sent to Butler. ([#126](https://github.com/ptarmiganlabs/butler/issues/126)).
+4. UDP message format for user session start/stop log appender has changed to follow same principles as other log appender UDP messages sent to Butler. ([#126](https://github.com/ptarmiganlabs/butler/issues/126), [#134](https://github.com/ptarmiganlabs/butler/issues/134)).
 
 ## 4.3.0
 
