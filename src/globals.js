@@ -6,6 +6,9 @@ var dict = require('dict');
 const path = require('path');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
+const si = require('systeminformation');
+const os = require('os');
+let crypto = require('crypto');
 
 const winston = require('winston');
 require('winston-daily-rotate-file');
@@ -59,7 +62,6 @@ const getLoggingLevel = () => {
     }).level;
 };
 
-
 // Helper function to read the contents of the certificate files:
 const readCert = filename => fs.readFileSync(filename);
 
@@ -96,7 +98,6 @@ const configQRS = {
         capath: caPath,
     },
 };
-
 
 // ------------------------------------
 // MS Teams reload task failed
@@ -144,21 +145,39 @@ var currentUsers = dict();
 var currentUsersPerServer = dict();
 
 // ------------------------------------
-// Create MQTT client object and connect to MQTT broker
+// Create MQTT client object and connect to MQTT broker, if MQTT is enabled
+var mqttClient = null;
+try {
+    if (
+        config.has('Butler.mqttConfig.enable') &&
+        config.has('Butler.mqttConfig.brokerHost') &&
+        config.has('Butler.mqttConfig.brokerPort') &&
+        config.get('Butler.mqttConfig.enable')
+    ) {
+        var mqttOptions = {
+            host: config.get('Butler.mqttConfig.brokerHost'),
+            port: config.get('Butler.mqttConfig.brokerPort'),
+        };
 
-var mqttOptions = {
-    host: config.get('Butler.mqttConfig.brokerHost'),
-    port: config.get('Butler.mqttConfig.brokerPort'),
-};
-
-var mqttClient = mqtt.connect(mqttOptions);
-/*
-Following might be needed for conecting to older Mosquitto versions
-var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
-  protocolId: 'MQIsdp',
-  protocolVersion: 3
-});
-*/
+        mqttClient = mqtt.connect(mqttOptions);
+        /*
+            Following might be needed for conecting to older Mosquitto versions
+            var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
+                protocolId: 'MQIsdp',
+                protocolVersion: 3
+            });
+            */
+        if (!mqttClient.connected) {
+            logger.verbose(
+                `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`,
+            );
+        }
+    } else {
+        logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
+    }
+} catch (err) {
+    logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
+}
 
 // ------------------------------------
 // UDP server connection parameters
@@ -326,6 +345,67 @@ function initInfluxDB() {
     }
 }
 
+
+
+// Anon telemetry reporting
+var hostInfo;
+
+async function initHostInfo() {
+    try {
+        const siCPU = await si.cpu(),
+            siSystem = await si.system(),
+            siMem = await si.mem(),
+            siOS = await si.osInfo(),
+            siDocker = await si.dockerInfo(),
+            siNetwork = await si.networkInterfaces(),
+            siNetworkDefault = await si.networkInterfaceDefault();
+
+        let defaultNetworkInterface = siNetworkDefault;
+
+        let networkInterface = siNetwork.filter(item => {
+            return item.iface === defaultNetworkInterface;
+        });
+    
+        let idSrc = networkInterface[0].mac + networkInterface[0].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
+        let salt = networkInterface[0].mac;
+        let hash = crypto.createHmac('sha256', salt);
+        hash.update(idSrc);
+        let id = hash.digest('hex');
+
+        hostInfo = {
+            id: id,
+            node: {
+                nodeVersion: process.version,
+                versions: process.versions
+            },
+            os: {
+                platform: os.platform(),
+                release: os.release(),
+                version: os.version(),
+                arch: os.arch(),
+                cpuCores: os.cpus().length,
+                type: os.type(),
+                totalmem: os.totalmem()
+            },
+            si: {
+                cpu: siCPU,
+                system: siSystem,
+                memory: {
+                    total: siMem.total,
+                },
+                os: siOS,
+                network: siNetwork,
+                networkDefault: siNetworkDefault,
+                docker: siDocker,
+            },
+        };
+
+        return hostInfo;
+    } catch (err) {
+        logger.error(`CONFIG: Getting host info: ${err}`);
+    }
+}
+
 module.exports = {
     config,
     configEngine,
@@ -353,4 +433,6 @@ module.exports = {
     fileMoveDirectories,
     fileDeleteDirectories,
     endpointsEnabled,
+    initHostInfo,
+    hostInfo,
 };

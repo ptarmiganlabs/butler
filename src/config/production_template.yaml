@@ -6,8 +6,11 @@ Butler:
 
   # Logging configuration
   logLevel: info          # Log level. Possible log levels are silly, debug, verbose, info, warn, error
-  fileLogging: false       # true/false to enable/disable logging to disk file
-  logDirectory: log      # Directory where log files are stored (no trailing / )
+  fileLogging: false      # true/false to enable/disable logging to disk file
+  logDirectory: log       # Directory where log files are stored (no trailing / )
+  anonTelemetry: true     # Can Butler send anonymous telemetry data? 
+                          # More info on whata data is collected: https://butler.ptarmiganlabs.com/docs/about/telemetry/
+                          # Please consider leaving this at true - it really helps future development of Butler!
 
   # Heartbeats can be used to send "I'm alive" messages to any other tool, e.g. an infrastructure monitoring tool
   heartbeat:

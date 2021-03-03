@@ -11,6 +11,7 @@ var udp = require('./udp');
 var heartbeat = require('./lib/heartbeat.js');
 var scheduler = require('./lib/scheduler.js');
 const serviceUptime = require('./lib/service_uptime');
+const telemetry = require('./lib/telemetry');
 
 // Set up connection to Influxdb (if enabled)
 globals.initInfluxDB();
@@ -25,16 +26,50 @@ var path = require('path'),
     keyFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertKey')),
     caFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertCA'));
 
-globals.logger.info('--------------------------------------');
-globals.logger.info('Starting Butler');
-globals.logger.info(`Log level is: ${globals.getLoggingLevel()}`);
-globals.logger.info(`App version is: ${globals.appVersion}`);
-globals.logger.info('--------------------------------------');
+(async () => {
+    try {
+        // Get host info
+        globals.hostInfo = await globals.initHostInfo();
+        globals.logger.debug('CONFIG: Initiated host info data structures');
 
-// Log info about what Qlik Sense certificates are being used
-globals.logger.debug(`Client cert: ${certFile}`);
-globals.logger.debug(`Client cert key: ${keyFile}`);
-globals.logger.debug(`CA cert: ${caFile}`);
+        globals.logger.info('--------------------------------------');
+        globals.logger.info('Starting Butler');
+        globals.logger.info(`Log level      : ${globals.getLoggingLevel()}`);
+        globals.logger.info(`App version    : ${globals.appVersion}`);
+        globals.logger.info(`Instance ID    : ${globals.hostInfo.id}`);
+        globals.logger.info('');
+        globals.logger.info(`Node version   : ${globals.hostInfo.node.nodeVersion}`);
+        globals.logger.info(`Architecture   : ${globals.hostInfo.si.os.arch}`);
+        globals.logger.info(`Platform       : ${globals.hostInfo.si.os.platform}`);
+        globals.logger.info(`Release        : ${globals.hostInfo.si.os.release}`);
+        globals.logger.info(`Distro         : ${globals.hostInfo.si.os.distro}`);
+        globals.logger.info(`Codename       : ${globals.hostInfo.si.os.codename}`);
+        globals.logger.info(`Virtual        : ${globals.hostInfo.si.system.virtual}`);
+        globals.logger.info(`Processors     : ${globals.hostInfo.si.cpu.processors}`);
+        globals.logger.info(`Processors     : ${globals.hostInfo.si.cpu.processors}`);
+        globals.logger.info(`Physical cores : ${globals.hostInfo.si.cpu.physicalCores}`);
+        globals.logger.info(`Cores          : ${globals.hostInfo.si.cpu.cores}`);
+        globals.logger.info(`Docker arch.   : ${globals.hostInfo.si.cpu.hypervizor}`);
+        globals.logger.info(`Total memory   : ${globals.hostInfo.si.memory.total}`);
+        globals.logger.info('--------------------------------------');
+
+        // Log info about what Qlik Sense certificates are being used
+        globals.logger.debug(`Client cert: ${certFile}`);
+        globals.logger.debug(`Client cert key: ${keyFile}`);
+        globals.logger.debug(`CA cert: ${caFile}`);
+
+        // Set up anon telemetry reports, if enabled
+        if (
+            globals.config.has('Butler.anonTelemetry') == false ||
+            (globals.config.has('Butler.anonTelemetry') == true && globals.config.get('Butler.anonTelemetry') == true)
+        ) {
+            telemetry.setupAnonUsageReportTimer();
+            globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
+        }
+    } catch (err) {
+        globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
+    }
+})();
 
 // ---------------------------------------------------
 // Create restServer object for Docker healthcheck

@@ -1,4 +1,5 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <configuration>
     <!-- Appender for detecting reload task failures. Only the last of potentially several retries is reported -->
     <appender name="TaskFailureLogger" type="log4net.Appender.UdpAppender">

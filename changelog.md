@@ -1,5 +1,21 @@
 # Change log
 
+## 5.1.0
+
+### New features
+
+1. First version of **telemetry** added to Butler ([#142](https://github.com/ptarmiganlabs/butler/issues/142)).  
+   More info [here](https://butler.ptarmiganlabs.com/docs/about/telemetry).
+
+### Fixes and patches
+
+1. Fixed minor issue when sending alert emails ([#143](https://github.com/ptarmiganlabs/butler/issues/143)).
+2. Show high level system info when starting Butler ([#140](https://github.com/ptarmiganlabs/butler/issues/140)).
+3. Don't waste memory when MQTT is not used ([#139](https://github.com/ptarmiganlabs/butler/issues/139)).
+4. Refined documentation, fixed typos and updated dependencies. The usual stuff that comes with every release.
+
+### Changed behavior and/or breaking changes
+
 ## 5.0.0
 
 ### New features

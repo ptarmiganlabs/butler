@@ -10,6 +10,154 @@ var slack = require('../lib/slack_notification');
 var webhookOut = require('../lib/webhook_notification');
 var slackApi = require('../lib/slack_api.js');
 var msteams = require('../lib/msteams_notification');
+var signl4 = require('../lib/incident_mgmt/signl4');
+
+// Handler for failed scheduler initiated reloads
+var schedulerAborted = function (msg) {
+    globals.logger.verbose(
+        `TASKFABORTED: Received reload aborted UDP message from scheduler: Host=${msg[1]}, App name=${msg[3]}, User=${msg[4]}, Log level=${msg[8]}`,
+    );
+
+    // First field in message (msg[0]) is message category (this is the modern/recent message format)
+
+    // Post to Signl4 when a task has failed, if enabled
+    if (
+        globals.config.has('Butler.incidentTool.signl4.enable') &&
+        globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.enable') &&
+        globals.config.get('Butler.incidentTool.signl4.enable') == true &&
+        globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.enable') == true
+    ) {
+        signl4.sendReloadTaskAbortedNotification({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+        });
+    }
+
+
+
+    // Post to Slack when a reload task has been aborted (typically from the QMC, or via APIs), if Slack is enabled
+    if (
+        globals.config.has('Butler.slackNotification.enable') &&
+        globals.config.has('Butler.slackNotification.reloadTaskAborted.enable') &&
+        globals.config.get('Butler.slackNotification.enable') == true &&
+        globals.config.get('Butler.slackNotification.reloadTaskAborted.enable') == true
+    ) {
+        slack.sendReloadTaskAbortedNotificationSlack({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+        });
+    }
+
+    // Post to MS Teams when a reload task been aborted (typically from the QMC, or via APIs), if Teams is enabled
+    if (
+        globals.config.has('Butler.teamsNotification.enable') &&
+        globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
+        globals.config.get('Butler.teamsNotification.enable') == true &&
+        globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') == true
+    ) {
+        msteams.sendReloadTaskAbortedNotificationTeams({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+        });
+    }
+
+    // Send notification email when task has been aborted (typically from the QMC, or via APIs), if this notification type is enabled
+    if (
+        globals.config.has('Butler.emailNotification.enable') &&
+        globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') &&
+        globals.config.get('Butler.emailNotification.enable') == true &&
+        globals.config.get('Butler.emailNotification.reloadTaskAborted.enable') == true
+    ) {
+        smtp.sendReloadTaskAbortedNotificationEmail({
+            hostName: msg[1],
+            user: msg[4],
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+        });
+    }
+
+    // Call outgoing webhooks when task has been aborted
+    // Note that there is no enable/disable flag for failed reloads.
+    // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
+    if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') == true) {
+        webhookOut.sendReloadTaskAbortedNotificationWebhook({
+            hostName: msg[1],
+            user: msg[4],
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+        });
+    }
+
+    // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
+    if (
+        globals.config.has('Butler.mqttConfig.enable') &&
+        globals.config.get('Butler.mqttConfig.enable') == true &&
+        globals.config.has('Butler.mqttConfig.taskAbortedTopic')
+    ) {
+        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
+    }
+
+    // Publish stringified MQTT message containing full, stringified JSON when a task has been aborted, if MQTT is enabled
+    if (
+        globals.config.has('Butler.mqttConfig.enable') &&
+        globals.config.get('Butler.mqttConfig.enable') == true &&
+        globals.config.has('Butler.mqttConfig.taskAbortedSendFull') &&
+        globals.config.get('Butler.mqttConfig.taskAbortedSendFull') == true &&
+        globals.config.has('Butler.mqttConfig.taskAbortedFullTopic')
+    ) {
+        globals.mqttClient.publish(
+            globals.config.get('Butler.mqttConfig.taskAbortedFullTopic'),
+            JSON.stringify({
+                hostName: msg[1],
+                user: msg[4].replace(/\\\\/g, '\\'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            }),
+        );
+    }
+};
 
 // Handler for failed scheduler initiated reloads
 var schedulerFailed = function (msg, legacyFlag) {
@@ -19,8 +167,35 @@ var schedulerFailed = function (msg, legacyFlag) {
 
     if (legacyFlag) {
         // First field in message (msg[0]) is host name
+
+        // Post to Signl4 when a task has failed, if enabled
+        if (
+            globals.config.has('Butler.incidentTool.signl4.enable') &&
+            globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.incidentTool.signl4.enable') == true &&
+            globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') == true
+        ) {
+            signl4.sendReloadTaskFailureNotification({
+                hostName: msg[0],
+                user: msg[3].replace(/\\/g, '/'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
+
         // Post to Slack when a task has failed, if Slack is enabled
-        if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
+        if (
+            globals.config.has('Butler.slackNotification.enable') &&
+            globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.slackNotification.enable') == true &&
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') == true
+        ) {
             slack.sendReloadTaskFailureNotificationSlack({
                 hostName: msg[0],
                 user: msg[3].replace(/\\/g, '/'),
@@ -58,7 +233,9 @@ var schedulerFailed = function (msg, legacyFlag) {
 
         // Send notification email when task has failed, if this notification type is enabled
         if (
+            globals.config.has('Butler.emailNotification.enable') &&
             globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.emailNotification.enable') == true &&
             globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
         ) {
             smtp.sendReloadTaskFailureNotificationEmail({
@@ -76,6 +253,8 @@ var schedulerFailed = function (msg, legacyFlag) {
         }
 
         // Call outgoing webhooks when task has failed
+        // Note that there is no enable/disable flag for failed reloads.
+        // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
         if (
             globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') &&
             globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') == true
@@ -129,8 +308,35 @@ var schedulerFailed = function (msg, legacyFlag) {
         }
     } else {
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
+
+        // Post to Signl4 when a task has failed, if enabled
+        if (
+            globals.config.has('Butler.incidentTool.signl4.enable') &&
+            globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.incidentTool.signl4.enable') == true &&
+            globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') == true
+        ) {
+            signl4.sendReloadTaskFailureNotification({
+                hostName: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
+
         // Post to Slack when a task has failed, if Slack is enabled
-        if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
+        if (
+            globals.config.has('Butler.slackNotification.enable') &&
+            globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.slackNotification.enable') == true &&
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') == true
+        ) {
             slack.sendReloadTaskFailureNotificationSlack({
                 hostName: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
@@ -168,7 +374,9 @@ var schedulerFailed = function (msg, legacyFlag) {
 
         // Send notification email when task has failed, if this notification type is enabled
         if (
+            globals.config.has('Butler.emailNotification.enable') &&
             globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.emailNotification.enable') == true &&
             globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') == true
         ) {
             smtp.sendReloadTaskFailureNotificationEmail({
@@ -186,6 +394,8 @@ var schedulerFailed = function (msg, legacyFlag) {
         }
 
         // Call outgoing webhooks when task has failed
+        // Note that there is no enable/disable flag for failed reloads.
+        // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
         if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') == true) {
             webhookOut.sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[1],
@@ -248,7 +458,9 @@ module.exports.udpInitTaskErrorServer = function () {
         globals.logger.info(`TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has started
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+        }
     });
 
     // Handler for UDP error event
@@ -257,7 +469,9 @@ module.exports.udpInitTaskErrorServer = function () {
         globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has reported an error
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
+        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
+        }
     });
 
     // Main handler for UDP messages relating to failed tasks
@@ -342,118 +556,15 @@ module.exports.udpInitTaskErrorServer = function () {
                 schedulerFailed(msg, false);
             } else if (msg[0].toLowerCase() == '/scheduler-reload-aborted/') {
                 // Scheduler log appender detecting aborted scheduler-started reload
-                globals.logger.verbose(
-                    `TASKFAILURE: Received reload aborted UDP message from scheduler: Host=${msg[1]}, App name=${msg[3]}, User=${msg[4]}, Log level=${msg[8]}`,
-                );
-
-                // Post to Slack when a reload task has been aborted (typically from the QMC, or via APIs), if Slack is enabled
-                if (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') == true) {
-                    slack.sendReloadTaskAbortedNotificationSlack({
-                        hostName: msg[1],
-                        user: msg[4].replace(/\\/g, '/'),
-                        taskName: msg[2],
-                        taskId: msg[5],
-                        appName: msg[3],
-                        appId: msg[6],
-                        logTimeStamp: msg[7],
-                        logLevel: msg[8],
-                        executionId: msg[9],
-                        logMessage: msg[10],
-                    });
-                }
-
-                // Post to MS Teams when a reload task been aborted (typically from the QMC, or via APIs), if Teams is enabled
-                if (
-                    globals.config.has('Butler.teamsNotification.enable') &&
-                    globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
-                    globals.config.get('Butler.teamsNotification.enable') == true &&
-                    globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') == true
-                ) {
-                    msteams.sendReloadTaskAbortedNotificationTeams({
-                        hostName: msg[1],
-                        user: msg[4].replace(/\\/g, '/'),
-                        taskName: msg[2],
-                        taskId: msg[5],
-                        appName: msg[3],
-                        appId: msg[6],
-                        logTimeStamp: msg[7],
-                        logLevel: msg[8],
-                        executionId: msg[9],
-                        logMessage: msg[10],
-                    });
-                }
-
-                // Send notification email when task has been aborted (typically from the QMC, or via APIs), if this notification type is enabled
-                if (
-                    globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') &&
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.enable') == true
-                ) {
-                    smtp.sendReloadTaskAbortedNotificationEmail({
-                        hostName: msg[1],
-                        user: msg[4],
-                        taskName: msg[2],
-                        taskId: msg[5],
-                        appName: msg[3],
-                        appId: msg[6],
-                        logTimeStamp: msg[7],
-                        logLevel: msg[8],
-                        executionId: msg[9],
-                        logMessage: msg[10],
-                    });
-                }
-
-                // Call outgoing webhooks when task has been aborted
-                if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') == true) {
-                    webhookOut.sendReloadTaskAbortedNotificationWebhook({
-                        hostName: msg[1],
-                        user: msg[4],
-                        taskName: msg[2],
-                        taskId: msg[5],
-                        appName: msg[3],
-                        appId: msg[6],
-                        logTimeStamp: msg[7],
-                        logLevel: msg[8],
-                        executionId: msg[9],
-                        logMessage: msg[10],
-                    });
-                }
-
-                // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
-                if (
-                    globals.config.has('Butler.mqttConfig.enable') &&
-                    globals.config.get('Butler.mqttConfig.enable') == true &&
-                    globals.config.has('Butler.mqttConfig.taskAbortedTopic')
-                ) {
-                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
-                }
-
-                // Publish stringified MQTT message containing full, stringified JSON when a task has been aborted, if MQTT is enabled
-                if (
-                    globals.config.has('Butler.mqttConfig.enable') &&
-                    globals.config.get('Butler.mqttConfig.enable') == true &&
-                    globals.config.has('Butler.mqttConfig.taskAbortedSendFull') &&
-                    globals.config.get('Butler.mqttConfig.taskAbortedSendFull') == true &&
-                    globals.config.has('Butler.mqttConfig.taskAbortedFullTopic')
-                ) {
-                    globals.mqttClient.publish(
-                        globals.config.get('Butler.mqttConfig.taskAbortedFullTopic'),
-                        JSON.stringify({
-                            hostName: msg[1],
-                            user: msg[4].replace(/\\\\/g, '\\'),
-                            taskName: msg[2],
-                            taskId: msg[5],
-                            appName: msg[3],
-                            appId: msg[6],
-                            logTimeStamp: msg[7],
-                            logLevel: msg[8],
-                            executionId: msg[9],
-                            logMessage: msg[10],
-                        }),
-                    );
-                }
+                schedulerAborted(msg);
             } else {
                 // Scheduler log appender detecting failed scheduler-started reload.
                 // This is default to better support legacy Butler installations. See above.
+
+                // This is the "legacy mode" event.
+                // In the early Butler version there was only a single event sent from log4net to Butler.
+                // It was sent when scheduled tasks failed and did not include any message type in the first field.
+                // Instead the first field contained the host name on which the event originated.
                 schedulerFailed(msg, true);
             }
         } catch (err) {
@@ -473,7 +584,9 @@ module.exports.udpInitSessionConnectionServer = function () {
         globals.logger.info(`SESSIONS: UDP server listening on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has started
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'start');
+        if (globals.mqttClient) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'start');
+        }
     });
 
     // Handler for UDP error event
@@ -482,7 +595,9 @@ module.exports.udpInitSessionConnectionServer = function () {
         globals.logger.error(`SESSIONS: UDP server error on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has reported an error
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'error');
+        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'error');
+        }
     });
 
     // Main handler for UDP messages relating to session and connection events
@@ -532,17 +647,19 @@ module.exports.udpInitSessionConnectionServer = function () {
                 // Is the user referenced by this event on the exclude list? If so don't sent a notification
                 // msg[3] = user directory
                 // msg[4] = userId
-                let  sendMsg = true;
+                let sendMsg = true;
                 if (globals.config.has('Butler.slackNotification.userSessionEvents.excludeUser')) {
                     let excludeUsers = globals.config.get('Butler.slackNotification.userSessionEvents.excludeUser');
-                    if ( excludeUsers.some(item => {
-                        return (item.directory == msg[3] && item.userId == msg[4]);
-                    })) {
+                    if (
+                        excludeUsers.some(item => {
+                            return item.directory == msg[3] && item.userId == msg[4];
+                        })
+                    ) {
                         // User found in exclude list
                         sendMsg = false;
                     }
                 }
-                                
+
                 if (sendMsg) {
                     let res = slackApi.slackSend(slackConfig, globals.logger);
                 }
@@ -558,17 +675,19 @@ module.exports.udpInitSessionConnectionServer = function () {
                 // Is the user referenced by this event on the exclude list? If so don't sent a notification
                 // msg[3] = user directory
                 // msg[4] = userId
-                let  sendMsg = true;
+                let sendMsg = true;
                 if (globals.config.has('Butler.teamsNotification.userSessionEvents.excludeUser')) {
                     let excludeUsers = globals.config.get('Butler.teamsNotification.userSessionEvents.excludeUser');
-                    if ( excludeUsers.some(item => {
-                        return (item.directory == msg[3] && item.userId == msg[4]);
-                    })) {
+                    if (
+                        excludeUsers.some(item => {
+                            return item.directory == msg[3] && item.userId == msg[4];
+                        })
+                    ) {
                         // User found in exclude list
                         sendMsg = false;
                     }
                 }
-                                
+
                 if (sendMsg) {
                     await globals.teamsUserSessionObj.send(
                         JSON.stringify({
@@ -578,19 +697,21 @@ module.exports.udpInitSessionConnectionServer = function () {
                             themeColor: '0078D7',
                             title: msg[2] + ' for user ' + msg[3] + '/' + msg[4] + ' on server ' + msg[1],
                         }),
-                    );    
+                    );
                 }
             }
 
             // Send MQTT messages
-            if (msg[2] == 'Start session') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStartTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
-            } else if (msg[2] == 'Stop session') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStopTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
-            } else if (msg[2] == 'Open connection') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionOpenTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
-            } else  if (msg[2] == 'Close connection') {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionCloseTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+            if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') == true) {
+                if (msg[2] == 'Start session') {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStartTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+                } else if (msg[2] == 'Stop session') {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionStopTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+                } else if (msg[2] == 'Open connection') {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionOpenTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+                } else if (msg[2] == 'Close connection') {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.connectionCloseTopic'), msg[1] + ': ' + msg[3] + '/' + msg[4]);
+                }
             }
         } catch (err) {
             globals.logger.error(`SESSIONS: Error processing user session event: ${err}`);
