@@ -52,7 +52,7 @@ function isSmtpConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: SMTP notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: SMTP notifications are disabled in config file - won\'t send email');
             return false;
         }
 
@@ -68,10 +68,10 @@ function isEmailReloadFailedNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.headScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.priority') ||
@@ -87,7 +87,7 @@ function isEmailReloadFailedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: Reload failure email notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: Reload failure email notifications are disabled in config file - won\'t send email');
             return false;
         }
 
@@ -122,7 +122,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
             return false;
         } else if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
-            globals.logger.error("SMTP: Reload aborted email notifications are disabled in config file - won't send email");
+            globals.logger.error('SMTP: Reload aborted email notifications are disabled in config file - won\'t send email');
             return false;
         }
 
@@ -188,7 +188,7 @@ async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars
 
         let sut = hbs({
             viewEngine: viewEngine,
-            viewPath: viewPath ,
+            viewPath: viewPath,
         });
 
         // Attach the template plugin to the nodemailer transporter
@@ -293,12 +293,12 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
 
                     if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') == true) {
-                        // All app owners should get notification email. Disregard any include and exclude lists. 
-                        recipientEmails = appOwner.emails;                        
+                        // All app owners should get notification email. Disregard any include and exclude lists.
+                        recipientEmails = appOwner.emails;
                     } else {
                         // Is app owner on include list, i.e. list of app owners that should get notification emails?
                         let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user');
-                        let matchUsers = includeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                        let matchUsers = includeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
                         if (matchUsers.length > 0) {
                             // App owner is in list of included users
                             recipientEmails = appOwner.emails;
@@ -309,7 +309,7 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
                     // Now evaluate the exclude list, if there is one
                     let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
-                    let matchUsers = excludeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                    let matchUsers = excludeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
                     if (matchUsers.length > 0) {
                         // App owner is in list of users to exclude from receiving notification emails
                         recipientEmails = [];
@@ -317,7 +317,6 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                         recipientEmails = appOwner.emails;
                     }
                 }
-
 
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
@@ -399,12 +398,12 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
 
                     if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') == true) {
-                        // All app owners should get notification email. Disregard any include and exclude lists. 
-                        recipientEmails = appOwner.emails;                        
+                        // All app owners should get notification email. Disregard any include and exclude lists.
+                        recipientEmails = appOwner.emails;
                     } else {
                         // Is app owner on include list, i.e. list of app owners that should get notification emails?
                         let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user');
-                        let matchUsers = includeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                        let matchUsers = includeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
                         if (matchUsers.length > 0) {
                             // App owner is in list of included users
                             recipientEmails = appOwner.emails;
@@ -415,7 +414,7 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
                     // Now evaluate the exclude list, if there is one
                     let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
-                    let matchUsers = excludeUsers.filter(user => (user.directory == appOwner.directory) && (user.userId == appOwner.userId));
+                    let matchUsers = excludeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
                     if (matchUsers.length > 0) {
                         // App owner is in list of users to exclude from receiving notification emails
                         recipientEmails = [];
