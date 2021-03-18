@@ -1,5 +1,15 @@
 # Change log
 
+## 5.2.0
+
+### New features
+
+1. It's now possible to include zero or more (i.e. optional) key-value pairs when starting QSEoW reload tasks using the [/v4/reloadtask/{taskId}/start](https://butler.ptarmiganlabs.com/docs/examples/openapi-docs/) REST endpoint. There are also helper subs available in the demo app included in the GitHub repository - as well as in the online docs at butler.ptarmiganlabs.com. ([#147](https://github.com/ptarmiganlabs/butler/issues/147), [#148](https://github.com/ptarmiganlabs/butler/issues/148))
+
+### Fixes and patches
+
+### Changed behavior and/or breaking changes
+
 ## 5.1.0
 
 ### New features

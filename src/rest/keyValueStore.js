@@ -12,6 +12,52 @@ const Keyv = require('keyv');
 var keyv = [];
 
 /**
+ *
+ * @param {*} kvData
+ */
+async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
+    // Does namespace already exist?
+    let kv = keyv.find(item => item.namespace == newNamespace);
+
+    let ttl = 0;
+    if (newTtl != undefined) {
+        // TTL parameter available, use it
+        ttl = parseInt(newTtl, 10);
+    }
+
+    if (kv == undefined) {
+        // New namespace. Create keyv object.
+        let maxKeys = 1000;
+        if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
+            maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
+        }
+
+        let newKeyvObj = new Keyv(null, { namespace: newNamespace, maxSize: maxKeys });
+
+        if (ttl > 0) {
+            await newKeyvObj.set(newKey, newValue, ttl);
+        } else {
+            await newKeyvObj.set(newKey, newValue);
+        }
+
+        keyv.push({
+            keyv: newKeyvObj,
+            namespace: newNamespace,
+            ttl: ttl,
+        });
+    } else {
+        // Namespace already exists
+        kv.ttl = ttl;
+
+        if (ttl > 0) {
+            await kv.keyv.set(newKey, newValue, ttl);
+        } else {
+            await kv.keyv.set(newKey, newValue);
+        }
+    }
+}
+
+/**
  * @swagger
  *
  * /v4/keyvaluesnamespaces:
@@ -36,7 +82,7 @@ var keyv = [];
  *         description: Internal error.
  *
  */
-module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
+function respondGET_keyvaluesnamespaces(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -50,7 +96,7 @@ module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
         res.send(new errors.InternalError({}, 'Failed getting all namespaces'));
         next();
     }
-};
+}
 
 /**
  * @swagger
@@ -102,7 +148,7 @@ module.exports.respondGET_keyvaluesnamespaces = function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondGET_keyvalues = async function (req, res, next) {
+async function respondGET_keyvalues(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -145,11 +191,13 @@ module.exports.respondGET_keyvalues = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
+        );
         res.send(new errors.InternalError({}, 'Failed getting key-value data'));
         next();
     }
-};
+}
 
 /**
  * @swagger
@@ -209,7 +257,7 @@ module.exports.respondGET_keyvalues = async function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondGET_keyvalueExists = async function (req, res, next) {
+async function respondGET_keyvalueExists(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -257,11 +305,13 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed getting key '${req.query.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
+        );
         res.send(new errors.InternalError({}, 'Failed getting key-value data'));
         next();
     }
-};
+}
 
 /**
  * @swagger
@@ -333,7 +383,7 @@ module.exports.respondGET_keyvalueExists = async function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondPOST_keyvalues = async function (req, res, next) {
+async function respondPOST_keyvalues(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -341,46 +391,14 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
             // Required parameter is missing
             res.send(new errors.MissingParameterError({}, 'Required parameter is missing'));
         } else {
-            // Does namespace already exist?
-            let kv = keyv.find(item => item.namespace == req.params.namespace);
-
             let ttl = 0;
             if (req.body.ttl != undefined) {
                 // TTL parameter available, use it
                 ttl = parseInt(req.body.ttl, 10);
             }
 
-            if (kv == undefined) {
-                // New namespace. Create keyv object.
-
-                let maxKeys = 1000;
-                if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
-                    maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
-                }
-
-                let newKeyvObj = new Keyv(null, { namespace: req.params.namespace, maxSize: maxKeys });
-
-                if (ttl > 0) {
-                    await newKeyvObj.set(req.body.key, req.body.value, ttl);
-                } else {
-                    await newKeyvObj.set(req.body.key, req.body.value);
-                }
-
-                keyv.push({
-                    keyv: newKeyvObj,
-                    namespace: req.params.namespace,
-                    ttl: ttl,
-                });
-            } else {
-                // Namespace already exists
-                kv.ttl = ttl;
-
-                if (ttl > 0) {
-                    await kv.keyv.set(req.body.key, req.body.value, ttl);
-                } else {
-                    await kv.keyv.set(req.body.key, req.body.value);
-                }
-            }
+            // eslint-disable-next-line no-unused-vars
+            let result = await addKeyValuePair(req.params.namespace, req.body.key, req.body.value, req.body.ttl);
 
             res.send(201, {
                 namespace: req.params.namespace,
@@ -395,7 +413,7 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
         res.send(new errors.InternalError({}, 'Failed adding key-value to namespace'));
         next();
     }
-};
+}
 
 /**
  * @swagger
@@ -426,7 +444,7 @@ module.exports.respondPOST_keyvalues = async function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondDELETE_keyvalues = async function (req, res, next) {
+async function respondDELETE_keyvalues(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -470,11 +488,13 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
 
         next();
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed deleting key '${req.params.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed deleting key '${req.params.key}' in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
+        );
         res.send(new errors.InternalError({}, 'Failed deleting key-value data'));
         next();
     }
-};
+}
 
 /**
  * @swagger
@@ -500,7 +520,7 @@ module.exports.respondDELETE_keyvalues = async function (req, res, next) {
  *         description: Internal error.
  *
  */
-module.exports.respondDELETE_keyvaluesDelete = async function (req, res, next) {
+async function respondDELETE_keyvaluesDelete(req, res, next) {
     logRESTCall(req);
 
     try {
@@ -538,4 +558,14 @@ module.exports.respondDELETE_keyvaluesDelete = async function (req, res, next) {
         res.send(new errors.InternalError({}, 'Failed clearing namespace'));
         next();
     }
+}
+
+module.exports = {
+    addKeyValuePair,
+    respondGET_keyvaluesnamespaces,
+    respondGET_keyvalues,
+    respondGET_keyvalueExists,
+    respondPOST_keyvalues,
+    respondDELETE_keyvalues,
+    respondDELETE_keyvaluesDelete,
 };
