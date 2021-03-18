@@ -44,7 +44,7 @@
         "ws": "^7.4.3"
     },
     "devDependencies": {
-        "eslint": "7.21.0",
+        "eslint": "^7.21.0",
         "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
