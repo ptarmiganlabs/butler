@@ -112,8 +112,8 @@ restServer.use(restify.plugins.bodyParser());
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional
     origins: ['*'],
-    // allowHeaders: ['API-Token'],
-    // exposeHeaders: ['API-Token-Expiry'],
+    // allowHeaders: ['Access-Control-Allow-Origin'],
+    // exposeHeaders: [],
 });
 
 restServer.pre(cors.preflight);
@@ -265,6 +265,9 @@ if (globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') && glob
 
     globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}');
     restServer.del({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondDELETE_keyvaluesDelete);
+
+    globals.logger.debug('Registering REST endpoint GET /v4/keylist/{namespace}');
+    restServer.get({ path: '/v4/keylist/:namespace' }, rest.keyValueStore.respondGET_keylistGet);
 }
 
 if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
