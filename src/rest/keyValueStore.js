@@ -120,7 +120,7 @@ setInterval(async () => {
     } catch (err) {
         globals.logger.error(`Error while syncing keyv with keyvIndex: ${err}`);
     }
-}, 300000);     // Every 5 minutes
+}, 300000); // Every 5 minutes
 
 /**
  *
@@ -716,6 +716,14 @@ async function respondGET_keylistGet(req, res, next) {
             } else {
                 // Namespace exists. Get it.
                 kvRes = keyvIndex.filter(item => item.namespace == req.params.namespace)[0];
+
+                if (kvRes == undefined) {
+                    // The namespace existed but is empty. Return empty datastructure to indicate this.
+                    kvRes = {
+                        namespace: req.params.namespace,
+                        keys: [],
+                    };
+                }
             }
             res.send(kvRes);
         }

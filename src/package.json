@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "5.2.0",
+    "version": "5.3.0",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "dependencies": {
         "any-base": "^1.1.0",
@@ -10,7 +10,7 @@
         "dict": "^1.4.0",
         "email-validator": "^2.0.4",
         "enigma.js": "^2.7.2",
-        "express-handlebars": "^5.2.1",
+        "express-handlebars": "^5.3.0",
         "fs-extra": "^9.1.0",
         "handlebars": "^4.7.7",
         "influx": "^5.8.0",
@@ -37,15 +37,15 @@
         "restify-errors": "^8.0.2",
         "restify-swagger-jsdoc": "^3.2.4",
         "serializeapp": "^3.0.0",
-        "systeminformation": "^5.6.7",
+        "systeminformation": "^5.6.12",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
-        "winston-daily-rotate-file": "^4.5.1",
+        "winston-daily-rotate-file": "^4.5.2",
         "ws": "^7.4.4"
     },
     "devDependencies": {
-        "eslint": "7.22.0",
-        "eslint-config-google": "0.14.0"
+        "eslint": "^7.23.0",
+        "eslint-config-google": "^0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
     "author": "Göran Sander",
