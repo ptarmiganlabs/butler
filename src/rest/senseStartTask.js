@@ -32,6 +32,8 @@ var kvstore = require('../rest/keyValueStore');
  *           Object used to pass additional info related to the reload task being started.
  *           Currently it's possible to pass in a key-value pair that will be stored in Butler's KV store.
  *           If Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.
+ *           Use type=keyvaluestore to send one or more KV pairs to the KV store.
+ *           Setting TTL=0 disables the TTL feature, i.e. the KV pair will not expire.
  *
  *           This parameter uses a generic JSON/object format (type + payload).
  *           It's thus possible to add new integrations in future Butler versions.

@@ -9,51 +9,178 @@ var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 const errors = require('restify-errors');
 const Keyv = require('keyv');
 
+// Main key-value store
 var keyv = [];
+
+// As the keyv library doesn't allow for enumeration over all KV pairs in a namespace, we have to
+// add this feature ourselves.
+// This variable keeps a list of {namespace: 'foo', keys: [{key: 'bar'}]}.
+var keyvIndex = [];
+
+function keyvIndexAddKey(namespace, key) {
+    try {
+        // Add if it doesn't already exist. There should be no duplicates.
+        let nsExistingIndex = keyvIndex.findIndex(ns => ns.namespace == namespace);
+        if (nsExistingIndex == -1) {
+            // Namespace doesn't exist.
+            keyvIndex.push({ namespace: namespace, keys: [{ key: key }] });
+        } else {
+            // Namespace exists
+            // Add key if it doesn't already exist
+            let keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(x => x.key == key);
+            if (keyExistingIndex == -1) {
+                // Key does not already exist. Add it.
+                keyvIndex[nsExistingIndex].keys.push({
+                    key: key,
+                });
+            } else {
+                // Key already exists, all good.
+                globals.logger.debug(`Namespace/key ${namespace}/${key} already exists, not adding it again`);
+            }
+        }
+    } catch (err) {
+        globals.logger.error(`Failed removing key from ns/key list: ${err}`);
+    }
+}
+
+function keyvIndexDeleteKey(namespace, key) {
+    try {
+        // Delete namespace/key pair from shadow list that keep tracks of what ns/keys exist.
+        let nsExistingIndex = keyvIndex.findIndex(ns => ns.namespace == namespace);
+        if (nsExistingIndex == -1) {
+            // Namespace doesn't exist, nothing to do.
+        } else {
+            // Namespace exists
+            // Delete key if it exists
+            let keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(x => x.key == key);
+            if (keyExistingIndex == -1) {
+                // Key does not exist. Nothing to do.
+            } else {
+                // Key exists, delete it.
+                let tmpKeysArray = keyvIndex[nsExistingIndex].keys.filter(x => x.key != key);
+                keyvIndex[nsExistingIndex].keys = tmpKeysArray;
+            }
+        }
+    } catch (err) {
+        globals.logger.error(`Failed removing key from ns/key list: ${err}`);
+    }
+}
+
+function keyvIndexDeleteNamespace(namespace) {
+    try {
+        // Delete namespace/key pair from shadow list that keep tracks of what ns/keys exist.
+        let tmpNamespaceArray = keyvIndex.filter(x => x.namespace != namespace);
+        keyvIndex = tmpNamespaceArray;
+    } catch (err) {
+        globals.logger.error(`Failed removing namespace from ns/key list: ${err}`);
+    }
+}
+
+/**
+ * Set up timer that periodically syncs shadow namespace/key with the master one
+ *
+ * 1. Loop over all namespaces in keyvIndex
+ *    1. Find the current namespace in keyv
+ *    2. If it doesn't exist, removed it from keyvIndex
+ *    3. If it exists, loop over all keys in keyvIndex.namespace
+ *       1. Create empty temp key array
+ *       2. Test if the key in keyvIndex exists in keyv.
+ *       3. If it does exist, add it to the temp key array
+ *       4. If it doesn't exist, don't add the key to temp key array
+ */
+setInterval(async () => {
+    try {
+        let tmpNamespaceArray = [];
+
+        for (const ns of keyvIndex) {
+            // Does namespace exist in master keyv?
+            let nsIndex = keyv.findIndex(item => item.namespace == ns.namespace);
+            if (nsIndex == -1) {
+                // Namespace in keyvIndex was not found in keyv. Don't add it to the new temp array
+            } else {
+                // Namespace in keyvIndex exists in keyv. Check its keys
+                let tmpKeyArray = [];
+                for (const key of ns.keys) {
+                    // Does this key exist in keyv?
+                    let existsInKeyv = await keyv[nsIndex].keyv.get(key.key);
+                    if (existsInKeyv == undefined) {
+                        // Key from keyvIndex does NOT exist in keyv. Don't add it to temp array. Could be a keyv record that has TTL:ed.
+                    } else {
+                        // Key from keyvIndex DOES exist in keyv. Add it to the temp array
+                        tmpKeyArray.push(key);
+                    }
+                }
+                // Add all keys that should be kept to the namespace
+                tmpNamespaceArray.push({ namespace: ns.namespace, keys: tmpKeyArray });
+            }
+        }
+
+        keyvIndex = tmpNamespaceArray;
+        globals.logger.silly('New array: ' + JSON.stringify(keyvIndex, null, 2));
+    } catch (err) {
+        globals.logger.error(`Error while syncing keyv with keyvIndex: ${err}`);
+    }
+}, 300000); // Every 5 minutes
 
 /**
  *
  * @param {*} kvData
  */
 async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
-    // Does namespace already exist?
-    let kv = keyv.find(item => item.namespace == newNamespace);
+    try {
+        // Does namespace already exist?
+        let kv = keyv.find(item => item.namespace == newNamespace);
 
-    let ttl = 0;
-    if (newTtl != undefined) {
-        // TTL parameter available, use it
-        ttl = parseInt(newTtl, 10);
-    }
-
-    if (kv == undefined) {
-        // New namespace. Create keyv object.
-        let maxKeys = 1000;
-        if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
-            maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
+        let ttl = 0;
+        if (newTtl != undefined) {
+            // TTL parameter available, use it
+            ttl = parseInt(newTtl, 10);
         }
 
-        let newKeyvObj = new Keyv(null, { namespace: newNamespace, maxSize: maxKeys });
+        if (kv == undefined) {
+            // New namespace. Create keyv object.
+            let maxKeys = 1000;
+            if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
+                maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
+            }
 
-        if (ttl > 0) {
-            await newKeyvObj.set(newKey, newValue, ttl);
+            let newKeyvObj = new Keyv(null, { namespace: newNamespace, maxSize: maxKeys });
+            let hasTTL;
+
+            if (ttl > 0) {
+                await newKeyvObj.set(newKey, newValue, ttl);
+                hasTTL = true;
+            } else {
+                await newKeyvObj.set(newKey, newValue);
+                hasTTL = false;
+            }
+
+            keyv.push({
+                keyv: newKeyvObj,
+                namespace: newNamespace,
+                ttl: ttl,
+            });
+
+            keyvIndexAddKey(newNamespace, newKey, hasTTL);
         } else {
-            await newKeyvObj.set(newKey, newValue);
+            // Namespace already exists
+            kv.ttl = ttl;
+            let hasTTL;
+
+            if (ttl > 0) {
+                await kv.keyv.set(newKey, newValue, ttl);
+                hasTTL = true;
+            } else {
+                await kv.keyv.set(newKey, newValue);
+                hasTTL = false;
+            }
+
+            keyvIndexAddKey(kv.namespace, newKey, hasTTL);
         }
 
-        keyv.push({
-            keyv: newKeyvObj,
-            namespace: newNamespace,
-            ttl: ttl,
-        });
-    } else {
-        // Namespace already exists
-        kv.ttl = ttl;
-
-        if (ttl > 0) {
-            await kv.keyv.set(newKey, newValue, ttl);
-        } else {
-            await kv.keyv.set(newKey, newValue);
-        }
+        // console.log(`keyvIndex: ${JSON.stringify(keyvIndex, null, 2)}`);
+    } catch (err) {
+        globals.logger.error(`Error while adding new KV pair: ${err}`);
     }
 }
 
@@ -289,6 +416,8 @@ async function respondGET_keyvalueExists(req, res, next) {
                     // Key does not exist
                     kvRes = { keyExists: false };
                     kvRes.keyValue = {};
+
+                    keyvIndexDeleteKey(req.params.namespace, req.query.key);
                 } else {
                     // Key exists
                     kvRes = { keyExists: true };
@@ -298,6 +427,8 @@ async function respondGET_keyvalueExists(req, res, next) {
                         value: value,
                         ttl: kv.ttl,
                     };
+
+                    keyvIndexAddKey(req.params.namespace, req.query.key, kv.ttk > 0 ? true : false);
                 }
                 res.send(200, kvRes);
             }
@@ -473,7 +604,10 @@ async function respondDELETE_keyvalues(req, res, next) {
                     res.send(kvRes);
                 } else {
                     // Key specified
+                    keyvIndexDeleteKey(req.params.namespace, req.params.key);
+
                     let value = await kv.keyv.delete(req.params.key);
+
                     if (value == false) {
                         // Key does not exist
                         kvRes = new errors.ResourceNotFoundError({}, `Key '${req.params.key}' not found in namespace: ${req.params.namespace}`);
@@ -547,6 +681,9 @@ async function respondDELETE_keyvaluesDelete(req, res, next) {
                 // Delete the namespace
                 keyv = keyv.filter(item => item.namespace == req.params.namespace);
 
+                // Delete namespace from shadow list of all existing ns/key combos
+                keyvIndexDeleteNamespace(req.params.namespace);
+
                 globals.logger.verbose(`KEYVALUE: Cleared namespace: ${req.params.namespace}`);
                 res.send(204);
             }
@@ -560,6 +697,71 @@ async function respondDELETE_keyvaluesDelete(req, res, next) {
     }
 }
 
+
+
+/**
+ * @swagger
+ *
+ * /v4/keylist/{namespace}:
+ *   get:
+ *     description: |
+ *       Retrieve an array with keys present in the specified namespace.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: namespace
+ *         description: Name of namespace whose keys should be returned.
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: List of keys retrieved.
+ *       409:
+ *         description: Missing namespace.
+ *       500:
+ *         description: Internal error.
+ *
+ */
+async function respondGET_keylistGet(req, res, next) {
+    logRESTCall(req);
+
+    try {
+        if (req.params.namespace == undefined) {
+            // Required parameter is missing
+            res.send(new errors.MissingParameterError({}, 'No namespace specified'));
+        } else {
+            // Does namespace exist?
+            let kv = keyv.find(item => item.namespace == req.params.namespace);
+            let kvRes;
+
+            if (kv == undefined) {
+                // Namespace does not exist. Error.
+                globals.logger.error(`KEYVALUE: Namespace not found: ${req.params.namespace}`);
+                kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
+            } else {
+                // Namespace exists. Get it.
+                kvRes = keyvIndex.filter(item => item.namespace == req.params.namespace)[0];
+
+                if (kvRes == undefined) {
+                    // The namespace existed but is empty. Return empty datastructure to indicate this.
+                    kvRes = {
+                        namespace: req.params.namespace,
+                        keys: [],
+                    };
+                }
+            }
+            res.send(kvRes);
+        }
+
+        next();
+    } catch (err) {
+        globals.logger.error(`KEYVALUE: Failed getting list of keys in namespace: ${req.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        res.send(new errors.InternalError({}, 'Failed getting list of keys in namespace'));
+        next();
+    }
+}
+
 module.exports = {
     addKeyValuePair,
     respondGET_keyvaluesnamespaces,
@@ -568,4 +770,5 @@ module.exports = {
     respondPOST_keyvalues,
     respondDELETE_keyvalues,
     respondDELETE_keyvaluesDelete,
+    respondGET_keylistGet,
 };

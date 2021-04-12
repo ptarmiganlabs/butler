@@ -203,7 +203,7 @@ var qvdFolder = config.get('Butler.configDirectories.qvdPath');
 // Load approved fromDir and toDir for fileCopy operation
 var fileCopyDirectories = [];
 
-if (config.has('Butler.fileCopyApprovedDirectories')) {
+if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileCopyApprovedDirectories') != null) {
     config.get('Butler.fileCopyApprovedDirectories').forEach(element => {
         logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
 
@@ -221,7 +221,7 @@ if (config.has('Butler.fileCopyApprovedDirectories')) {
 // Load approved fromDir and toDir for fileMove operation
 var fileMoveDirectories = [];
 
-if (config.has('Butler.fileMoveApprovedDirectories')) {
+if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileMoveApprovedDirectories') != null) {
     config.get('Butler.fileMoveApprovedDirectories').forEach(element => {
         logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
 
@@ -239,7 +239,7 @@ if (config.has('Butler.fileMoveApprovedDirectories')) {
 // Load approved dir for fileDelete operation
 var fileDeleteDirectories = [];
 
-if (config.has('Butler.fileDeleteApprovedDirectories')) {
+if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fileDeleteApprovedDirectories') != null) {
     config.get('Butler.fileDeleteApprovedDirectories').forEach(element => {
         logger.verbose(`fileDelete directory from config file: ${element}`);
 
