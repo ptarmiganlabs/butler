@@ -44,8 +44,8 @@
         "ws": "^7.4.4"
     },
     "devDependencies": {
-        "eslint": "^7.23.0",
-        "eslint-config-google": "^0.14.0"
+        "eslint": "7.23.0",
+        "eslint-config-google": "0.14.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
     "author": "Göran Sander",
