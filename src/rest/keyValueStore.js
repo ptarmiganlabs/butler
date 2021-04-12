@@ -116,7 +116,7 @@ setInterval(async () => {
         }
 
         keyvIndex = tmpNamespaceArray;
-        console.log('New array: ' + JSON.stringify(keyvIndex, null, 2));
+        globals.logger.silly('New array: ' + JSON.stringify(keyvIndex, null, 2));
     } catch (err) {
         globals.logger.error(`Error while syncing keyv with keyvIndex: ${err}`);
     }
@@ -178,7 +178,7 @@ async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
             keyvIndexAddKey(kv.namespace, newKey, hasTTL);
         }
 
-        console.log(`keyvIndex: ${JSON.stringify(keyvIndex, null, 2)}`);
+        // console.log(`keyvIndex: ${JSON.stringify(keyvIndex, null, 2)}`);
     } catch (err) {
         globals.logger.error(`Error while adding new KV pair: ${err}`);
     }
@@ -697,6 +697,32 @@ async function respondDELETE_keyvaluesDelete(req, res, next) {
     }
 }
 
+
+
+/**
+ * @swagger
+ *
+ * /v4/keylist/{namespace}:
+ *   get:
+ *     description: |
+ *       Retrieve an array with keys present in the specified namespace.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: namespace
+ *         description: Name of namespace whose keys should be returned.
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: List of keys retrieved.
+ *       409:
+ *         description: Missing namespace.
+ *       500:
+ *         description: Internal error.
+ *
+ */
 async function respondGET_keylistGet(req, res, next) {
     logRESTCall(req);
 
@@ -712,7 +738,7 @@ async function respondGET_keylistGet(req, res, next) {
             if (kv == undefined) {
                 // Namespace does not exist. Error.
                 globals.logger.error(`KEYVALUE: Namespace not found: ${req.params.namespace}`);
-                kvRes = new errors.InternalError({}, `Namespace not found: ${req.params.namespace}`);
+                kvRes = new errors.MissingParameterError({}, `Namespace not found: ${req.params.namespace}`);
             } else {
                 // Namespace exists. Get it.
                 kvRes = keyvIndex.filter(item => item.namespace == req.params.namespace)[0];
