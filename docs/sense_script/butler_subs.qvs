@@ -567,6 +567,41 @@ end sub
 
 
 
+// ------------------------------------------------------------
+// ** Get all keys that exist in a specific namespace **
+//
+// Parameters:
+// vResultTable	         : Name of table to which KV pairs will be added
+// vNamespace            : Namespace from which KV pairs will be retrieved
+// ------------------------------------------------------------
+sub GetAllKeysInNamespace(vResultTable, vNamespace)
+	LIB CONNECT TO 'Butler_GET';
+
+    RestConnectorMasterTable:
+	SQL SELECT 
+            "namespace",
+            "__KEY_root",
+            (SELECT 
+                "key",
+                "__FK_keys"
+            FROM "keys" FK "__FK_keys")
+		FROM JSON (wrap on) "root" PK "__KEY_root"
+    WITH CONNECTION (
+    Url "$(vButlerHost):$(vButlerPort)/v4/keylist/$(vNamespace)",
+    );
+
+    [$(vResultTable)]:
+    NoConcatenate LOAD	
+    	[key]	as "Key"
+    RESIDENT RestConnectorMasterTable
+	WHERE NOT IsNull([__FK_keys]);
+
+	set vResultTable=;
+    set vNamespace=;
+    DROP TABLE RestConnectorMasterTable;
+end sub
+
+
 
 
 // ------------------------------------------------------------
