@@ -1,5 +1,18 @@
 # Change log
 
+## 5.3.0
+
+### New features
+
+1. Added REST API endpoint for getting a list of all keys that exist in a given key-value store namespace.
+   Useful when you need to iterate over all KV pairs in a namespace. ([#150](https://github.com/ptarmiganlabs/butler/issues/150))
+
+### Fixes and patches
+
+1. The parsing of the YAML config file is now a bit more robust and tolerant for sections that have a header but no contents. ([#152](https://github.com/ptarmiganlabs/butler/issues/152))
+
+### Changed behavior and/or breaking changes
+
 ## 5.2.0
 
 ### New features
