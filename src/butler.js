@@ -46,7 +46,6 @@ var path = require('path'),
         globals.logger.info(`Codename       : ${globals.hostInfo.si.os.codename}`);
         globals.logger.info(`Virtual        : ${globals.hostInfo.si.system.virtual}`);
         globals.logger.info(`Processors     : ${globals.hostInfo.si.cpu.processors}`);
-        globals.logger.info(`Processors     : ${globals.hostInfo.si.cpu.processors}`);
         globals.logger.info(`Physical cores : ${globals.hostInfo.si.cpu.physicalCores}`);
         globals.logger.info(`Cores          : ${globals.hostInfo.si.cpu.cores}`);
         globals.logger.info(`Docker arch.   : ${globals.hostInfo.si.cpu.hypervizor}`);
@@ -54,9 +53,9 @@ var path = require('path'),
         globals.logger.info('--------------------------------------');
 
         // Log info about what Qlik Sense certificates are being used
-        globals.logger.debug(`Client cert: ${certFile}`);
-        globals.logger.debug(`Client cert key: ${keyFile}`);
-        globals.logger.debug(`CA cert: ${caFile}`);
+        globals.logger.info(`Client cert: ${certFile}`);
+        globals.logger.info(`Client cert key: ${keyFile}`);
+        globals.logger.info(`CA cert: ${caFile}`);
 
         // Set up anon telemetry reports, if enabled
         if (
@@ -355,6 +354,7 @@ if (globals.config.has('Butler.scheduler')) {
         scheduler.loadSchedulesFromDisk();
         // scheduler.launchAllSchedules();
     } else {
+        // eslint-disable-next-line quotes
         globals.logger.info("MAIN: Didn't load schedules from file");
     }
 }
@@ -379,7 +379,7 @@ if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
 
 // process.on('SIGUSR2', () => {
 //     // Run with
-//     // node -- expose-gc butler.js
+//    // node --expose-gc butler.js
 //     //
 //     // Trigger with
 //     // kill -SIGUSR2 $(pgrep -lfa node | grep butler.js | awk '{print $1}'
