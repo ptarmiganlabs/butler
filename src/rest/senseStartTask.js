@@ -75,7 +75,7 @@ module.exports.respondPUT_senseStartTask = async function (req, res, next) {
             res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
         } else {
             // Check if there is a message body. If there is, process all the items in it.
-            if (req.body) {
+            if (req.body && Object.keys(req.body).length > 0) {
                 for (const item of req.body) {
                     if (item.type == 'keyvaluestore') {
                         if (item.payload.namespace && item.payload.key && item.payload.value) {
