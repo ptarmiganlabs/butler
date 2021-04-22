@@ -1,5 +1,32 @@
 # Change log
 
+## 5.4.0
+
+### New features
+
+### Fixes and patches
+
+* Fixed bug occuring when the start-task API was called with an empty PUT body. [#157](https://github.com/ptarmiganlabs/butler/issues/157)
+
+* [Improved documentation](https://butler.ptarmiganlabs.com/docs/getting-started/setup/data-connections/) around the Sense data connections that Butler needs. [#160](https://github.com/ptarmiganlabs/butler/issues/160), [#156](https://github.com/ptarmiganlabs/butler/issues/156).
+
+* Clarified that [Butler requires InfluxDB 1.x](https://butler.ptarmiganlabs.com/docs/getting-started/install/). InfluxDB 2.x is great, but bring breaking features wrt Butler. [#159](https://github.com/ptarmiganlabs/butler/issues/159).
+
+### Changed behavior and/or breaking changes
+
+## 5.3.0
+
+### New features
+
+1. Added REST API endpoint for getting a list of all keys that exist in a given key-value store namespace.
+   Useful when you need to iterate over all KV pairs in a namespace. ([#150](https://github.com/ptarmiganlabs/butler/issues/150))
+
+### Fixes and patches
+
+1. The parsing of the YAML config file is now a bit more robust and tolerant for sections that have a header but no contents. ([#152](https://github.com/ptarmiganlabs/butler/issues/152))
+
+### Changed behavior and/or breaking changes
+
 ## 5.2.0
 
 ### New features

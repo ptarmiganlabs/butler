@@ -62,7 +62,7 @@ var callRemoteURL = async function () {
             responseType: 'text',
         };
 
-        let response = await axios.request(axiosConfig);
+        await axios.request(axiosConfig);
         globals.logger.debug('TELEMETRY: Sent anonymous telemetry. Thanks for contributing to making Butler better!');
     } catch (err) {
         globals.logger.error('TELEMETRY: Could not send anonymous telemetry.');
