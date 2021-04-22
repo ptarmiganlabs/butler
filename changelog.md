@@ -1,5 +1,19 @@
 # Change log
 
+## 5.4.0
+
+### New features
+
+### Fixes and patches
+
+* Fixed bug occuring when the start-task API was called with an empty PUT body. [#157](https://github.com/ptarmiganlabs/butler/issues/157)
+
+* [Improved documentation](https://butler.ptarmiganlabs.com/docs/getting-started/setup/data-connections/) around the Sense data connections that Butler needs. [#160](https://github.com/ptarmiganlabs/butler/issues/160), [#156](https://github.com/ptarmiganlabs/butler/issues/156).
+
+* Clarified that [Butler requires InfluxDB 1.x](https://butler.ptarmiganlabs.com/docs/getting-started/install/). InfluxDB 2.x is great, but bring breaking features wrt Butler. [#159](https://github.com/ptarmiganlabs/butler/issues/159).
+
+### Changed behavior and/or breaking changes
+
 ## 5.3.0
 
 ### New features
