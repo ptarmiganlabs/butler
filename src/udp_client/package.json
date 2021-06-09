@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "yargs": "^16.1.0"
+    "yargs": "^17.0.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
