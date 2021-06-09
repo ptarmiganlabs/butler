@@ -1,5 +1,15 @@
 # Change log
 
+## 5.4.1
+
+### New features
+
+### Fixes and patches
+
+* Updated dependencies to latest versions.
+
+### Changed behavior and/or breaking changes
+
 ## 5.4.0
 
 ### New features

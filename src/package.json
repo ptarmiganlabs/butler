@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "5.4.0",
+    "version": "5.4.1",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "dependencies": {
         "any-base": "^1.1.0",
