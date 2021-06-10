@@ -8,21 +8,21 @@
   },
   "license": "MIT",
   "dependencies": {
-    "yargs": "^17.0.0"
+    "yargs": "^17.0.1"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
   "repository": {
-      "type": "git",
-      "url": "git+https://github.com/ptarmiganlabs/butler.git"
+    "type": "git",
+    "url": "git+https://github.com/ptarmiganlabs/butler.git"
   },
   "keywords": [
-      "butler",
-      "senseops",
-      "devops",
-      "qliksense"
+    "butler",
+    "senseops",
+    "devops",
+    "qliksense"
   ],
   "bugs": {
-      "url": "https://github.com/ptarmiganlabs/butler/issues"
+    "url": "https://github.com/ptarmiganlabs/butler/issues"
   }
 }
