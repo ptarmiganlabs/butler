@@ -1,28 +1,28 @@
-kind: pipeline
-type: docker
-name: linux-amd64
+# kind: pipeline
+# type: docker
+# name: linux-amd64
 
-platform:
-  arch: amd64
-  os: linux
+# platform:
+#   arch: amd64
+#   os: linux
 
-steps:
-- name: docker  
-  image: plugins/docker
-  settings:
-    username:
-      from_secret: dockerhub_username
-    password:
-      from_secret: dockerhub_password
-    repo: ptarmiganlabs/butler
-    dockerfile: src/Dockerfile.amd64
-    context: src
-    auto_tag: true
-    auto_tag_suffix: linux-amd64
-  when:
-    event:
-    - push
-    - tag
+# steps:
+# - name: docker  
+#   image: plugins/docker
+#   settings:
+#     username:
+#       from_secret: dockerhub_username
+#     password:
+#       from_secret: dockerhub_password
+#     repo: ptarmiganlabs/butler
+#     dockerfile: src/Dockerfile.amd64
+#     context: src
+#     auto_tag: true
+#     auto_tag_suffix: linux-amd64
+#   when:
+#     event:
+#     - push
+#     - tag
 
 ---
 kind: pipeline
@@ -52,8 +52,8 @@ trigger:
   - push
   - tag
 
-depends_on:
-- linux-amd64
+# depends_on:
+# - linux-amd64
 
 
 ---
@@ -85,7 +85,7 @@ trigger:
   - tag
 
 depends_on:
-- linux-amd64
+- linux-arm64
 
 
 ---

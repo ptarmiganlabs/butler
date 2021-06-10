@@ -1,5 +1,15 @@
 # Change log
 
+## 5.4.2
+
+### New features
+
+### Fixes and patches
+
+* Switched to using GitHub actions for building linux/amd64 Docker images.
+
+### Changed behavior and/or breaking changes
+
 ## 5.4.1
 
 ### New features
