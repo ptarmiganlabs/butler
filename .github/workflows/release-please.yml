@@ -1,0 +1,15 @@
+name: release-please
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2.28.1
+        with:
+          release-type: node
+          path: src
+          package-name: butler
+          default-branch: master
