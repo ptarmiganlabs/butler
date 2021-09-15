@@ -7,14 +7,9 @@
 name: Build Docker image CI
 
 on:
-  push:
-    branches: [ master ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
-  # push:
-  #   branches: [ master ]
-  #   # Publish semver tags as releases.
-  #   tags: [ 'v*.*.*' ]    
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -32,12 +27,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
 
       # Login against a Docker registry except on PR
       # https://github.com/marketplace/actions/docker-login
@@ -45,10 +49,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         if: |
-          github.event_name != 'pull_request' 
-        # if: |
-        #   github.event_name != 'pull_request'  ||
-        #   github.repository_owner == 'ptarmiganlabs'
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -58,6 +60,9 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v3
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
         with:
           # images: ${{ env.IMAGE_NAME }}
           images: ${{ github.repository }}
@@ -69,22 +74,36 @@ jobs:
 
       - name: Show Docker tags that will be used
         run: echo '${{ steps.meta.outputs.tags }}'
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
 
       - name: Show Docker labels that will be used
         run: echo '${{ steps.meta.outputs.labels }}'
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
 
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
         with:
           context: ./src
           platforms: |
             linux/amd64
+            linux/arm64
+            linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Image digest
+        if: |
+          github.event_name != 'pull_request' &&
+          github.repository_owner == 'ptarmiganlabs'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
     env:
