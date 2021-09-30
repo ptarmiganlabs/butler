@@ -1,6 +1,14 @@
 .eslintrc.yml
 .dockerignore
+.gitignore
 package-lock.json
 Dockerfile
 docker-compose.yml
 config/*
+.jshintrc
+.prettierignore
+.prettierrc
+.snyk
+
+__tests__
+jest.config.js
