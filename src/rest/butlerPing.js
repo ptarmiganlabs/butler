@@ -29,7 +29,8 @@ const errors = require('restify-errors');
  *       500:
  *         description: Internal error.
  */
-module.exports.respondGET_butlerPing = function (req, res, next) {
+// module.exports.respondGET_butlerPing = function (req, res, next) {
+async function respondGET_butlerPing(fastify, options) {
     logRESTCall(req);
 
     try {
@@ -43,3 +44,5 @@ module.exports.respondGET_butlerPing = function (req, res, next) {
         next();
     }
 };
+
+module.exports = respondGET_butlerPing;
