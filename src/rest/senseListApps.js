@@ -118,7 +118,7 @@ module.exports.respondGET_senseListApps = function (req, res, next) {
                         }
                     })
                     .catch(function (error) {
-                        globals.logger.error(`LISTAPPS: Èrror while getting app list: ${JSON.stringify(error, null, 2)}`);
+                        globals.logger.error(`LISTAPPS: Error while getting app list: ${JSON.stringify(error, null, 2)}`);
 
                         try {
                             session.close();
