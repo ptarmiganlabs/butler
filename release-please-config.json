@@ -32,7 +32,7 @@
   "packages": {
     "src": {
       "package-name": "butler",
-      "release-as"; "5.4.4"
+      "release-as": "5.4.4"
     }
   }
 }
