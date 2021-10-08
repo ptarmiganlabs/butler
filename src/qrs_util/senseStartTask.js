@@ -1,15 +1,11 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
+const QrsInteract = require('qrs-interact');
 
-'use strict';
-
-let qrsInteract = require('qrs-interact');
-var globals = require('../globals.js');
+const globals = require('../globals');
 
 // Function for starting Sense task, given its task ID (as it appears in the QMC task list)
-module.exports.senseStartTask = function (taskId) {
+module.exports.senseStartTask = (taskId) => {
     try {
-        let qrsInstance = new qrsInteract({
+        const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
             headers: {
@@ -23,13 +19,17 @@ module.exports.senseStartTask = function (taskId) {
 
         qrsInstance
             .Post(`task/${taskId}/start`)
-            .then(result => {
-                globals.logger.debug(`STARTTASK: Got response: ${result.statusCode} for task ID ${taskId}`);
+            .then((result) => {
+                globals.logger.debug(
+                    `STARTTASK: Got response: ${result.statusCode} for task ID ${taskId}`
+                );
             })
-            .catch(err => {
+            .catch((err) => {
                 globals.logger.error(`STARTTASK: Error while starting Sense task: ${err.message}`);
             });
     } catch (err) {
-        globals.logger.error(`STARTTASK: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `STARTTASK: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`
+        );
     }
 };

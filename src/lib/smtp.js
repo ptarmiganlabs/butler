@@ -1,24 +1,23 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
-var globals = require('../globals');
-var scriptLog = require('./scriptlog.js');
-var qrs_util = require('../qrs_util');
-
+/* eslint-disable consistent-return */
 const nodemailer = require('nodemailer');
-var hbs = require('nodemailer-express-handlebars');
-var expressHandlebars = require('express-handlebars');
+const hbs = require('nodemailer-express-handlebars');
+const expressHandlebars = require('express-handlebars');
 const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-var emailValidator = require('email-validator');
+const emailValidator = require('email-validator');
 
-var rateLimiterMemoryFailedReloads = undefined,
-    rateLimiterMemoryAbortedReloads = undefined;
+const globals = require('../globals');
+const scriptLog = require('./scriptlog');
+const qrsUtil = require('../qrs_util');
+
+let rateLimiterMemoryFailedReloads;
+let rateLimiterMemoryAbortedReloads;
 
 if (globals.config.has('Butler.emailNotification.reloadTaskFailure.rateLimit')) {
-    rateLimiterMemoryFailedReloads = new RateLimiterMemory({ points: 1, duration: globals.config.get('Butler.emailNotification.reloadTaskFailure.rateLimit') });
+    rateLimiterMemoryFailedReloads = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.emailNotification.reloadTaskFailure.rateLimit'),
+    });
 } else {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({ points: 1, duration: 300 });
 }
@@ -50,9 +49,12 @@ function isSmtpConfigOk() {
             // Not enough info in config file
             globals.logger.error('SMTP: Email config info missing in Butler config file');
             return false;
-        } else if (!globals.config.get('Butler.emailNotification.enable')) {
+        }
+        if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: SMTP notifications are disabled in config file - won\'t send email');
+            globals.logger.error(
+                "SMTP: SMTP notifications are disabled in config file - won't send email"
+            );
             return false;
         }
 
@@ -80,14 +82,19 @@ function isEmailReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAdress') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
-            globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients').length == 0
+            globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients').length === 0
         ) {
             // Not enough info in config file
-            globals.logger.error('SMTP: Reload failure email config info missing in Butler config file');
+            globals.logger.error(
+                'SMTP: Reload failure email config info missing in Butler config file'
+            );
             return false;
-        } else if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
+        }
+        if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: Reload failure email notifications are disabled in config file - won\'t send email');
+            globals.logger.error(
+                "SMTP: Reload failure email notifications are disabled in config file - won't send email"
+            );
             return false;
         }
 
@@ -115,14 +122,19 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAdress') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
-            globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients').length == 0
+            globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients').length === 0
         ) {
             // Not enough info in config file
-            globals.logger.error('SMTP: Reload aborted email config info missing in Butler config file');
+            globals.logger.error(
+                'SMTP: Reload aborted email config info missing in Butler config file'
+            );
             return false;
-        } else if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
+        }
+        if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
-            globals.logger.error('SMTP: Reload aborted email notifications are disabled in config file - won\'t send email');
+            globals.logger.error(
+                "SMTP: Reload aborted email notifications are disabled in config file - won't send email"
+            );
             return false;
         }
 
@@ -134,12 +146,14 @@ function isEmailReloadAbortedNotificationConfigOk() {
 }
 
 function getSmtpOptions() {
-    let smtpOptions = {
+    const smtpOptions = {
         host: globals.config.get('Butler.emailNotification.smtp.host'),
         port: globals.config.get('Butler.emailNotification.smtp.port'),
         secure: globals.config.get('Butler.emailNotification.smtp.secure'),
         tls: {
-            rejectUnauthorized: globals.config.get('Butler.emailNotification.smtp.tls.rejectUnauthorized'),
+            rejectUnauthorized: globals.config.get(
+                'Butler.emailNotification.smtp.tls.rejectUnauthorized'
+            ),
             serverName: globals.config.get('Butler.emailNotification.smtp.tls.serverName'),
             ignoreTLS: globals.config.get('Butler.emailNotification.smtp.tls.ignoreTLS'),
             requireTLS: globals.config.get('Butler.emailNotification.smtp.tls.requireTLS'),
@@ -157,8 +171,8 @@ function getSmtpOptions() {
 }
 
 function getQlikSenseUrls() {
-    let qmcUrl = '',
-        hubUrl = '';
+    let qmcUrl = '';
+    let hubUrl = '';
 
     if (globals.config.has('Butler.qlikSenseUrls.qmc')) {
         qmcUrl = globals.config.get('Butler.qlikSenseUrls.qmc');
@@ -168,27 +182,35 @@ function getQlikSenseUrls() {
         hubUrl = globals.config.get('Butler.qlikSenseUrls.hub');
     }
 
-    return { qmcUrl: qmcUrl, hubUrl: hubUrl };
+    return { qmcUrl, hubUrl };
 }
 
-async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
+async function sendEmail(
+    from,
+    recipientsEmail,
+    emailPriority,
+    subjectHandlebars,
+    viewPath,
+    bodyFileHandlebars,
+    templateContext
+) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
-        if (isSmtpConfigOk() == false) {
+        if (isSmtpConfigOk() === false) {
             return 1;
         }
 
-        let smtpOptions = getSmtpOptions();
+        const smtpOptions = getSmtpOptions();
         const transporter = nodemailer.createTransport(smtpOptions);
 
-        let viewEngine = expressHandlebars.create({
+        const viewEngine = expressHandlebars.create({
             partialsDir: 'partials/',
             defaultLayout: false,
         });
 
-        let sut = hbs({
-            viewEngine: viewEngine,
-            viewPath: viewPath,
+        const sut = hbs({
+            viewEngine,
+            viewPath,
         });
 
         // Attach the template plugin to the nodemailer transporter
@@ -196,31 +218,40 @@ async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars
 
         // Process subject template
         const subjectTemplate = handlebars.compile(subjectHandlebars);
-        let subject = subjectTemplate(templateContext);
+        const subject = subjectTemplate(templateContext);
 
         // Loop over all email recipients
+        // eslint-disable-next-line no-restricted-syntax
         for (const recipientEmail of recipientsEmail) {
             // Verify that email address is valid
-            if (emailValidator.validate(recipientEmail) == true) {
+            if (emailValidator.validate(recipientEmail) === true) {
                 // Recipient email address has valid format
                 // Set up mail object
-                let message = {
+                const message = {
                     priority: emailPriority,
-                    from: from,
+                    from,
                     to: recipientEmail,
-                    subject: subject,
+                    subject,
                     template: bodyFileHandlebars,
                     context: templateContext,
                 };
 
                 // Verify SMTP configuration
-                let smtpStatus = await transporter.verify();
+                // eslint-disable-next-line no-await-in-loop
+                const smtpStatus = await transporter.verify();
                 globals.logger.debug(`SMTP: SMTP status: ${smtpStatus}`);
                 globals.logger.debug(`SMTP: Message=${JSON.stringify(message, null, 2)}`);
 
                 if (smtpStatus) {
-                    let result = await transporter.sendMail(message);
-                    globals.logger.debug(`SMTP: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`);
+                    // eslint-disable-next-line no-await-in-loop
+                    const result = await transporter.sendMail(message);
+                    globals.logger.debug(
+                        `SMTP: Sending reload failure notification result: ${JSON.stringify(
+                            result,
+                            null,
+                            2
+                        )}`
+                    );
                 } else {
                     globals.logger.warn('SMTP: SMTP transporter not ready');
                 }
@@ -236,32 +267,42 @@ async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars
 function sendReloadTaskFailureNotificationEmail(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
-                globals.logger.info(`SMTPFAILED: Rate limiting ok: Sending reload failure notification email for task "${reloadParams.taskName}"`);
-                globals.logger.debug(`SMTPFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.info(
+                    `SMTPFAILED: Rate limiting ok: Sending reload failure notification email for task "${reloadParams.taskName}"`
+                );
+                globals.logger.debug(
+                    `SMTPFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                );
 
-                if (isSmtpConfigOk() == false) {
+                if (isSmtpConfigOk() === false) {
                     return 1;
                 }
 
-                if (isEmailReloadFailedNotificationConfigOk() == false) {
+                if (isEmailReloadFailedNotificationConfigOk() === false) {
                     return 1;
                 }
 
                 // Get script logs, if enabled in the config file
-                let scriptLogData = await scriptLog.getScriptLog(
+                const scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines'),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.headScriptLogLines'
+                    ),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.tailScriptLogLines'
+                    )
                 );
-                globals.logger.debug(`SMTPFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `SMTPFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
-                let senseUrls = getQlikSenseUrls();
+                const senseUrls = getQlikSenseUrls();
 
                 // These are the template fields that can be used in email subject and body
-                let templateContext = {
+                const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
@@ -288,17 +329,31 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 };
                 // If enabled in config file: Add app owners to list of recipients
                 let recipientEmails = [];
-                if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') == true) {
+                if (
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable'
+                    ) === true
+                ) {
                     // App owners (at least some of them - maybe all) should get notification email
-                    let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
+                    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
 
-                    if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') == true) {
+                    if (
+                        globals.config.get(
+                            'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll'
+                        ) === true
+                    ) {
                         // All app owners should get notification email. Disregard any include and exclude lists.
                         recipientEmails = appOwner.emails;
                     } else {
                         // Is app owner on include list, i.e. list of app owners that should get notification emails?
-                        let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user');
-                        let matchUsers = includeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
+                        const includeUsers = globals.config.get(
+                            'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user'
+                        );
+                        const matchUsers = includeUsers.filter(
+                            (user) =>
+                                user.directory === appOwner.directory &&
+                                user.userId === appOwner.userId
+                        );
                         if (matchUsers.length > 0) {
                             // App owner is in list of included users
                             recipientEmails = appOwner.emails;
@@ -308,8 +363,13 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     }
 
                     // Now evaluate the exclude list, if there is one
-                    let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
-                    let matchUsers = excludeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
+                    const excludeUsers = globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user'
+                    );
+                    const matchUsers = excludeUsers.filter(
+                        (user) =>
+                            user.directory === appOwner.directory && user.userId === appOwner.userId
+                    );
                     if (matchUsers.length > 0) {
                         // App owner is in list of users to exclude from receiving notification emails
                         recipientEmails = [];
@@ -320,52 +380,76 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
-                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients')),
+                    recipientEmails.concat(
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients')
+                    ),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
-                    templateContext,
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'
+                    ),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'
+                    ),
+                    templateContext
                 );
             } catch (err) {
                 globals.logger.error(`SMTPFAILED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
-            globals.logger.warn(`SMTPFAILED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`);
-            globals.logger.debug(`SMTPFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+        .catch((err) => {
+            globals.logger.warn(
+                `SMTPFAILED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`
+            );
+            globals.logger.debug(
+                `SMTPFAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+            );
         });
 }
 
 function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
-                globals.logger.info(`SMTPABORTED: Rate limiting ok: Sending reload aborted notification email for task "${reloadParams.taskName}"`);
-                globals.logger.verbose(`SMTPABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.info(
+                    `SMTPABORTED: Rate limiting ok: Sending reload aborted notification email for task "${reloadParams.taskName}"`
+                );
+                globals.logger.verbose(
+                    `SMTPABORTED: Rate limiting details "${JSON.stringify(
+                        rateLimiterRes,
+                        null,
+                        2
+                    )}"`
+                );
 
-                if (isSmtpConfigOk() == false) {
+                if (isSmtpConfigOk() === false) {
                     return 1;
                 }
 
-                if (isEmailReloadAbortedNotificationConfigOk() == false) {
+                if (isEmailReloadAbortedNotificationConfigOk() === false) {
                     return 1;
                 }
 
                 // Get script logs, if enabled in the config file
-                let scriptLogData = await scriptLog.getScriptLog(
+                const scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines'),
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines'),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.headScriptLogLines'
+                    ),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.tailScriptLogLines'
+                    )
                 );
-                globals.logger.debug(`SMTPABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `SMTPABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
-                let senseUrls = getQlikSenseUrls();
+                const senseUrls = getQlikSenseUrls();
 
                 // These are the template fields that can be used in email subject and body
-                let templateContext = {
+                const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
@@ -393,17 +477,31 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
                 // If enabled in config file: Add app owners to list of recipients
                 let recipientEmails = [];
-                if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') == true) {
+                if (
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable'
+                    ) === true
+                ) {
                     // App owners (at least some of them - maybe all) should get notification email
-                    let appOwner = await qrs_util.getAppOwner.getAppOwner(reloadParams.appId);
+                    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
 
-                    if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') == true) {
+                    if (
+                        globals.config.get(
+                            'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll'
+                        ) === true
+                    ) {
                         // All app owners should get notification email. Disregard any include and exclude lists.
                         recipientEmails = appOwner.emails;
                     } else {
                         // Is app owner on include list, i.e. list of app owners that should get notification emails?
-                        let includeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user');
-                        let matchUsers = includeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
+                        const includeUsers = globals.config.get(
+                            'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user'
+                        );
+                        const matchUsers = includeUsers.filter(
+                            (user) =>
+                                user.directory === appOwner.directory &&
+                                user.userId === appOwner.userId
+                        );
                         if (matchUsers.length > 0) {
                             // App owner is in list of included users
                             recipientEmails = appOwner.emails;
@@ -413,8 +511,13 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     }
 
                     // Now evaluate the exclude list, if there is one
-                    let excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
-                    let matchUsers = excludeUsers.filter(user => user.directory == appOwner.directory && user.userId == appOwner.userId);
+                    const excludeUsers = globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user'
+                    );
+                    const matchUsers = excludeUsers.filter(
+                        (user) =>
+                            user.directory === appOwner.directory && user.userId === appOwner.userId
+                    );
                     if (matchUsers.length > 0) {
                         // App owner is in list of users to exclude from receiving notification emails
                         recipientEmails = [];
@@ -426,20 +529,30 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                 // Note: Butler.emailNotification.reloadTaskAborted.recipients is an array, sendEmail() should send individual emails to everyone in that array
                 sendEmail(
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
-                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients')),
+                    recipientEmails.concat(
+                        globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients')
+                    ),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.priority'),
                     globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'),
-                    globals.config.get('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile'),
-                    templateContext,
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'
+                    ),
+                    globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.htmlTemplateFile'
+                    ),
+                    templateContext
                 );
             } catch (err) {
                 globals.logger.error(`SMTPABORTED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
-            globals.logger.verbose(`SMTPABORTED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`);
-            globals.logger.verbose(`SMTPABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+        .catch((err) => {
+            globals.logger.verbose(
+                `SMTPABORTED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}"`
+            );
+            globals.logger.verbose(
+                `SMTPABORTED: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+            );
         });
 }
 

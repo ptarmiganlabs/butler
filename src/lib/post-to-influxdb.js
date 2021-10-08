@@ -1,20 +1,13 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
+const _ = require('lodash');
 
 const globals = require('../globals');
-const  _ = require('lodash');
-
 
 function postButlerMemoryUsageToInfluxdb(memory) {
-    // globals.logger.debug(`MEMORY USAGE: Memory usage ${JSON.stringify(memory, null, 2)})`);
-
     let datapoint = [
         {
             measurement: 'butler_memory_usage',
             tags: {
-                butler_instance: memory.instanceTag
+                butler_instance: memory.instanceTag,
             },
             fields: {
                 heap_used: memory.heapUsed,
@@ -34,16 +27,16 @@ function postButlerMemoryUsageToInfluxdb(memory) {
                 `MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(
                     datapoint,
                     null,
-                    2,
-                )}`,
+                    2
+                )}`
             );
 
             datapoint = null;
             globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
         })
-        .catch(err => {
+        .catch((err) => {
             globals.logger.error(
-                `MEMORY USAGE: Error saving user session data to InfluxDB! ${err.stack}`,
+                `MEMORY USAGE: Error saving user session data to InfluxDB! ${err.stack}`
             );
         });
 }

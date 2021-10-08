@@ -1,40 +1,40 @@
-'use strict';
-
 const Keyv = require('keyv');
 
 // Load global variables and functions
-var globals = require('../globals');
+const globals = require('../globals');
 
 // Main key-value store
-var keyv = [];
+// eslint-disable-next-line prefer-const
+let keyv = [];
 
 // As the keyv library doesn't allow for enumeration over all KV pairs in a namespace, we have to
 // add this feature ourselves.
 // This variable keeps a list of {namespace: 'foo', keys: [{key: 'bar'}]}.
-var keyvIndex = [];
-
-
-
+let keyvIndex = [];
 
 function keyvIndexAddKey(namespace, key) {
     try {
         // Add if it doesn't already exist. There should be no duplicates.
-        let nsExistingIndex = keyvIndex.findIndex(ns => ns.namespace == namespace);
-        if (nsExistingIndex == -1) {
+        const nsExistingIndex = keyvIndex.findIndex((ns) => ns.namespace === namespace);
+        if (nsExistingIndex === -1) {
             // Namespace doesn't exist.
-            keyvIndex.push({ namespace: namespace, keys: [{ key: key }] });
+            keyvIndex.push({ namespace, keys: [{ key }] });
         } else {
             // Namespace exists
             // Add key if it doesn't already exist
-            let keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(x => x.key == key);
-            if (keyExistingIndex == -1) {
+            const keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(
+                (x) => x.key === key
+            );
+            if (keyExistingIndex === -1) {
                 // Key does not already exist. Add it.
                 keyvIndex[nsExistingIndex].keys.push({
-                    key: key,
+                    key,
                 });
             } else {
                 // Key already exists, all good.
-                globals.logger.debug(`Namespace/key ${namespace}/${key} already exists, not adding it again`);
+                globals.logger.debug(
+                    `Namespace/key ${namespace}/${key} already exists, not adding it again`
+                );
             }
         }
     } catch (err) {
@@ -45,18 +45,20 @@ function keyvIndexAddKey(namespace, key) {
 function keyvIndexDeleteKey(namespace, key) {
     try {
         // Delete namespace/key pair from shadow list that keep tracks of what ns/keys exist.
-        let nsExistingIndex = keyvIndex.findIndex(ns => ns.namespace == namespace);
-        if (nsExistingIndex == -1) {
+        const nsExistingIndex = keyvIndex.findIndex((ns) => ns.namespace === namespace);
+        if (nsExistingIndex === -1) {
             // Namespace doesn't exist, nothing to do.
         } else {
             // Namespace exists
             // Delete key if it exists
-            let keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(x => x.key == key);
-            if (keyExistingIndex == -1) {
+            const keyExistingIndex = keyvIndex[nsExistingIndex].keys.findIndex(
+                (x) => x.key === key
+            );
+            if (keyExistingIndex === -1) {
                 // Key does not exist. Nothing to do.
             } else {
                 // Key exists, delete it.
-                let tmpKeysArray = keyvIndex[nsExistingIndex].keys.filter(x => x.key != key);
+                const tmpKeysArray = keyvIndex[nsExistingIndex].keys.filter((x) => x.key !== key);
                 keyvIndex[nsExistingIndex].keys = tmpKeysArray;
             }
         }
@@ -68,7 +70,7 @@ function keyvIndexDeleteKey(namespace, key) {
 function keyvIndexDeleteNamespace(namespace) {
     try {
         // Delete namespace/key pair from shadow list that keep tracks of what ns/keys exist.
-        let tmpNamespaceArray = keyvIndex.filter(x => x.namespace != namespace);
+        const tmpNamespaceArray = keyvIndex.filter((x) => x.namespace !== namespace);
         keyvIndex = tmpNamespaceArray;
     } catch (err) {
         globals.logger.error(`Failed removing namespace from ns/key list: ${err}`);
@@ -89,20 +91,23 @@ function keyvIndexDeleteNamespace(namespace) {
  */
 setInterval(async () => {
     try {
-        let tmpNamespaceArray = [];
+        const tmpNamespaceArray = [];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const ns of keyvIndex) {
             // Does namespace exist in master keyv?
-            let nsIndex = keyv.findIndex(item => item.namespace == ns.namespace);
-            if (nsIndex == -1) {
+            const nsIndex = keyv.findIndex((item) => item.namespace === ns.namespace);
+            if (nsIndex === -1) {
                 // Namespace in keyvIndex was not found in keyv. Don't add it to the new temp array
             } else {
                 // Namespace in keyvIndex exists in keyv. Check its keys
-                let tmpKeyArray = [];
+                const tmpKeyArray = [];
+                // eslint-disable-next-line no-restricted-syntax
                 for (const key of ns.keys) {
                     // Does this key exist in keyv?
-                    let existsInKeyv = await keyv[nsIndex].keyv.get(key.key);
-                    if (existsInKeyv == undefined) {
+                    // eslint-disable-next-line no-await-in-loop
+                    const existsInKeyv = await keyv[nsIndex].keyv.get(key.key);
+                    if (existsInKeyv === undefined) {
                         // Key from keyvIndex does NOT exist in keyv. Don't add it to temp array. Could be a keyv record that has TTL:ed.
                     } else {
                         // Key from keyvIndex DOES exist in keyv. Add it to the temp array
@@ -115,7 +120,7 @@ setInterval(async () => {
         }
 
         keyvIndex = tmpNamespaceArray;
-        globals.logger.silly('New array: ' + JSON.stringify(keyvIndex, null, 2));
+        globals.logger.silly(`New array: ${JSON.stringify(keyvIndex, null, 2)}`);
     } catch (err) {
         globals.logger.error(`Error while syncing keyv with keyvIndex: ${err}`);
     }
@@ -129,22 +134,25 @@ setInterval(async () => {
 async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
     try {
         // Does namespace already exist?
-        let kv = keyv.find(item => item.namespace == newNamespace);
+        const kv = keyv.find((item) => item.namespace === newNamespace);
 
         let ttl = 0;
-        if (newTtl != undefined) {
+        if (newTtl !== undefined) {
             // TTL parameter available, use it
             ttl = parseInt(newTtl, 10);
         }
 
-        if (kv == undefined) {
+        if (kv === undefined) {
             // New namespace. Create keyv object.
             let maxKeys = 1000;
             if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
-                maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
+                maxKeys = parseInt(
+                    globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'),
+                    10
+                );
             }
 
-            let newKeyvObj = new Keyv(null, { namespace: newNamespace, maxSize: maxKeys });
+            const newKeyvObj = new Keyv(null, { namespace: newNamespace, maxSize: maxKeys });
             let hasTTL;
 
             if (ttl > 0) {
@@ -158,7 +166,7 @@ async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
             keyv.push({
                 keyv: newKeyvObj,
                 namespace: newNamespace,
-                ttl: ttl,
+                ttl,
             });
 
             keyvIndexAddKey(newNamespace, newKey, hasTTL);
@@ -184,11 +192,11 @@ async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
     }
 }
 
-
 module.exports = {
     keyv,
+    keyvIndex,
     keyvIndexAddKey,
     keyvIndexDeleteKey,
     keyvIndexDeleteNamespace,
-    addKeyValuePair
+    addKeyValuePair,
 };

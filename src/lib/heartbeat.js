@@ -1,33 +1,28 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
-var later = require('later');
+const later = require('later');
 const axios = require('axios');
 
-var callRemoteURL = function (remoteURL, logger) {
+const callRemoteURL = (remoteURL, logger) => {
     axios
         .get(remoteURL)
-        .then(function (response) {
+        // eslint-disable-next-line no-unused-vars
+        .then((response) => {
             // handle success
             logger.debug(`HEARTBEAT: Sent heartbeat to ${remoteURL}`);
         })
-        .catch(function (error) {
+        .catch((error) => {
             // handle error
             logger.error(`HEARTBEAT: Error sending heartbeat: ${error}`);
-            // })
-            // .then(function () {
-            //   // always executed
         });
 };
 
 function setupHeartbeatTimer(config, logger) {
     try {
-        logger.debug(`HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`);
+        logger.debug(
+            `HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`
+        );
 
-        var sched = later.parse.text(config.get('Butler.heartbeat.frequency'));
-        later.setInterval(function () {
+        const sched = later.parse.text(config.get('Butler.heartbeat.frequency'));
+        later.setInterval(() => {
             callRemoteURL(config.get('Butler.heartbeat.remoteURL'), logger);
         }, sched);
 

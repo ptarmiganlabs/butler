@@ -1,40 +1,17 @@
-'use strict';
-
+/* eslint-disable no-lonely-if */
 const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
-const { keyv, keyvIndexAddKey, keyvIndexDeleteKey, keyvIndexDeleteNamespace, addKeyValuePair } = require('../lib/keyValueStore.js')
-
-
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') && globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
-        globals.logger.debug('Registering REST endpoint GET /v4/keyvaluenamespaces');
-        fastify.get('/v4/keyvaluesnamespaces', handlerGetNamespaceList);
-
-        globals.logger.debug('Registering REST endpoint GET /v4/keyvalues');
-        fastify.get('/v4/keyvalues/:namespace', handlerGetKeyValueInNamespace);
-
-        globals.logger.debug('Registering REST endpoint GET /v4/keyvalues/:namespace/keyexists');
-        fastify.get('/v4/keyvalues/:namespace/keyexists', handlerKeyExists);
-
-        globals.logger.debug('Registering REST endpoint POST /v4/keyvalues');
-        fastify.post('/v4/keyvalues/:namespace', handlerPostKeyValueInNamespace);
-
-        globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}/{key}');
-        fastify.delete('/v4/keyvalues/:namespace/:key', handlerDeleteKeyValueInNamespace);
-
-        globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}');
-        fastify.delete('/v4/keyvalues/:namespace', handlerDeleteNamespace);
-
-        globals.logger.debug('Registering REST endpoint GET /v4/keylist/{namespace}');
-        fastify.get('/v4/keylist/:namespace', handlerGetKeyValueList);
-    }
-}
-
-
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
+let { keyv } = require('../lib/keyValueStore');
+const {
+    keyvIndex,
+    keyvIndexAddKey,
+    keyvIndexDeleteKey,
+    keyvIndexDeleteNamespace,
+    addKeyValuePair,
+} = require('../lib/keyValueStore');
 
 /**
  * @swagger
@@ -65,15 +42,14 @@ async function handlerGetNamespaceList(request, reply) {
     try {
         logRESTCall(request);
 
-        let ns = [];
-        keyv.forEach(item => ns.push(item.namespace));
+        const ns = [];
+        keyv.forEach((item) => ns.push(item.namespace));
 
-        reply
-            .code(200)
-            .send(ns);
-
+        reply.code(200).send(ns);
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting all namespaces, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed getting all namespaces, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed getting all namespaces'));
     }
 }
@@ -133,40 +109,61 @@ async function handlerGetKeyValueInNamespace(request, reply) {
         logRESTCall(request);
 
         // Does namespace exist?
-        let kv = keyv.find(item => item.namespace == request.params.namespace);
+        const kv = keyv.find((item) => item.namespace === request.params.namespace);
         let kvRes;
 
-        if (kv == undefined) {
+        if (kv === undefined) {
             // Namespace does not exist. Error.
             globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
             reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
         } else {
             // Namespace exists. Is there a key specified?
 
-            if (request.query.key == undefined) {
+            if (request.query.key === undefined) {
                 // No key specified.
                 // In future version: Return list of all key-value pairs in this namespace
                 // Now: Return error
-                globals.logger.error(`KEYVALUE: Key parameter missing. Namespace: ${request.params.namespace}.`);
-                reply.send(httpErrors(400, `Key parameter missing. Namespace: ${request.params.namespace}.`));
+                globals.logger.error(
+                    `KEYVALUE: Key parameter missing. Namespace: ${request.params.namespace}.`
+                );
+                reply.send(
+                    httpErrors(
+                        400,
+                        `Key parameter missing. Namespace: ${request.params.namespace}.`
+                    )
+                );
             } else {
                 // Key specified
-                let value = await kv.keyv.get(request.query.key);
-                if (value == undefined) {
+                const value = await kv.keyv.get(request.query.key);
+                if (value === undefined) {
                     // Key does not exist
-                    globals.logger.error(`KEYVALUE: Key ${request.query.key} not found in namespace ${request.params.namespace}.`);
-                    reply.send(httpErrors(400, `Key '${request.query.key}' not found in namespace: ${request.params.namespace}`));
+                    globals.logger.error(
+                        `KEYVALUE: Key ${request.query.key} not found in namespace ${request.params.namespace}.`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `Key '${request.query.key}' not found in namespace: ${request.params.namespace}`
+                        )
+                    );
                 } else {
                     // Key found and value returned
-                    kvRes = { namespace: request.params.namespace, key: request.query.key, value: value, ttl: kv.ttl };
-                    reply
-                        .code(200)
-                        .send(kvRes);
+                    kvRes = {
+                        namespace: request.params.namespace,
+                        key: request.query.key,
+                        value,
+                        ttl: kv.ttl,
+                    };
+                    reply.code(200).send(kvRes);
                 }
             }
         }
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed getting key-value data'));
     }
 }
@@ -234,25 +231,32 @@ async function handlerKeyExists(request, reply) {
         logRESTCall(request);
 
         // Does namespace exist?
-        let kv = keyv.find(item => item.namespace == request.params.namespace);
+        const kv = keyv.find((item) => item.namespace === request.params.namespace);
         let kvRes;
 
-        if (kv == undefined) {
+        if (kv === undefined) {
             // Namespace does not exist. Error.
             globals.logger.error('KEYVALUE: Namespace parameter missing.');
             reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
         } else {
             // Namespace exists. Is there a key specified?
-            if (request.query.key == undefined) {
+            if (request.query.key === undefined) {
                 // No key specified.
                 // In future version: Return list of all key-value pairs in this namespace
                 // Now: Return error
-                globals.logger.error(`KEYVALUE: Key parameter missing. Namespace: ${request.params.namespace}.`);
-                reply.send(httpErrors(400, `Key parameter missing. Namespace: ${request.params.namespace}.`));
+                globals.logger.error(
+                    `KEYVALUE: Key parameter missing. Namespace: ${request.params.namespace}.`
+                );
+                reply.send(
+                    httpErrors(
+                        400,
+                        `Key parameter missing. Namespace: ${request.params.namespace}.`
+                    )
+                );
             } else {
                 // Key specified
-                let value = await kv.keyv.get(request.query.key);
-                if (value == undefined) {
+                const value = await kv.keyv.get(request.query.key);
+                if (value === undefined) {
                     // Key does not exist
                     kvRes = { keyExists: false };
                     kvRes.keyValue = {};
@@ -264,23 +268,21 @@ async function handlerKeyExists(request, reply) {
                     kvRes.keyValue = {
                         namespace: request.params.namespace,
                         key: request.query.key,
-                        value: value,
+                        value,
                         ttl: kv.ttl,
                     };
 
-                    keyvIndexAddKey(request.params.namespace, request.query.key, kv.ttk > 0 ? true : false);
+                    keyvIndexAddKey(request.params.namespace, request.query.key, kv.ttk > 0);
                 }
 
-                reply
-                    .code(200)
-                    .send(kvRes);
+                reply.code(200).send(kvRes);
             }
         }
-
-        next();
     } catch (err) {
         globals.logger.error(
-            `KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
+            `KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed getting key-value data'));
     }
@@ -361,30 +363,41 @@ async function handlerPostKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace == undefined || request.body.key == undefined || request.body.key == '') {
+        if (
+            request.params.namespace === undefined ||
+            request.body.key === undefined ||
+            request.body.key === ''
+        ) {
             // Required parameter is missing
             globals.logger.error('KEYVALUE: Required parameter missing.');
             reply.send(httpErrors(400, 'Required parameter is missing'));
         } else {
             let ttl = 0;
-            if (request.body.ttl != undefined) {
+            if (request.body.ttl !== undefined) {
                 // TTL parameter available, use it
                 ttl = parseInt(request.body.ttl, 10);
             }
 
-            let result = await addKeyValuePair(request.params.namespace, request.body.key, request.body.value, request.body.ttl);
+            await addKeyValuePair(
+                request.params.namespace,
+                request.body.key,
+                request.body.value,
+                request.body.ttl
+            );
 
-            reply
-                .code(200)
-                .send({
-                    namespace: request.params.namespace,
-                    key: request.body.key,
-                    value: request.body.value,
-                    ttl: ttl,
-                });
+            reply.code(200).send({
+                namespace: request.params.namespace,
+                key: request.body.key,
+                value: request.body.value,
+                ttl,
+            });
         }
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed adding key-value to namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed adding key-value to namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed adding key-value to namespace'));
     }
 }
@@ -422,48 +435,63 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace == undefined || request.params.key == undefined || request.params.key == '') {
+        if (
+            request.params.namespace === undefined ||
+            request.params.key === undefined ||
+            request.params.key === ''
+        ) {
             // Required parameter is missing
             globals.logger.error('KEYVALUE: Required parameter missing.');
             reply.send(httpErrors(400, 'Required parameter is missing'));
         } else {
             // Does namespace exist?
-            let kv = keyv.find(item => item.namespace == request.params.namespace);
-            let kvRes;
+            const kv = keyv.find((item) => item.namespace === request.params.namespace);
 
-            if (kv == undefined) {
+            if (kv === undefined) {
                 // Namespace does not exist. Error.
                 globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
                 reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
             } else {
                 // Namespace exists. Is there a key specified?
-                if (request.params.key == undefined) {
+                if (request.params.key === undefined) {
                     // No key specified.
                     // In future version: Return list of all key-value pairs in this namespace
                     // Now: Return error
-                    globals.logger.error(`KEYVALUE: No key specified for namespace: ${request.params.namespace}`);
-                    reply.send(httpErrors(400, `No key specified for namespace: ${request.params.namespace}`));
+                    globals.logger.error(
+                        `KEYVALUE: No key specified for namespace: ${request.params.namespace}`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `No key specified for namespace: ${request.params.namespace}`
+                        )
+                    );
                 } else {
                     // Key specified
                     keyvIndexDeleteKey(request.params.namespace, request.params.key);
 
-                    let value = await kv.keyv.delete(request.params.key);
+                    const value = await kv.keyv.delete(request.params.key);
 
-                    if (value == false) {
+                    if (value === false) {
                         // Key does not exist
-                        reply.send(httpErrors(400, `Key '${request.params.key}' not found in namespace: ${request.params.namespace}`));
+                        reply.send(
+                            httpErrors(
+                                400,
+                                `Key '${request.params.key}' not found in namespace: ${request.params.namespace}`
+                            )
+                        );
                     } else {
                         // Key found and deleted
-                        reply
-                            .code(204)
-                            .send();
+                        reply.code(204).send();
                     }
                 }
             }
         }
     } catch (err) {
         globals.logger.error(
-            `KEYVALUE: Failed deleting key '${request.params.key}' in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
+            `KEYVALUE: Failed deleting key '${request.params.key}' in namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed deleting key-value data'));
     }
@@ -497,16 +525,15 @@ async function handlerDeleteNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace == undefined) {
+        if (request.params.namespace === undefined) {
             // Required parameter is missing
             globals.logger.error('KEYVALUE: No namespace specified.');
             reply.send(httpErrors(400, 'No namespace specified'));
         } else {
             // Does namespace exist?
-            let kv = keyv.find(item => item.namespace == request.params.namespace);
-            let kvRes;
+            const kv = keyv.find((item) => item.namespace === request.params.namespace);
 
-            if (kv == undefined) {
+            if (kv === undefined) {
                 // Namespace does not exist. Error.
                 globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
                 reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
@@ -517,24 +544,24 @@ async function handlerDeleteNamespace(request, reply) {
                 await kv.keyv.clear();
 
                 // Delete the namespace
-                keyv = keyv.filter(item => item.namespace == request.params.namespace);
+                keyv = keyv.filter((item) => item.namespace === request.params.namespace);
 
                 // Delete namespace from shadow list of all existing ns/key combos
                 keyvIndexDeleteNamespace(request.params.namespace);
 
                 globals.logger.verbose(`KEYVALUE: Cleared namespace: ${request.params.namespace}`);
-                reply
-                    .code(204)
-                    .send();
+                reply.code(204).send();
             }
         }
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed clearing namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed clearing namespace'));
     }
 }
-
-
 
 /**
  * @swagger
@@ -564,24 +591,25 @@ async function handlerGetKeyValueList(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace == undefined) {
+        if (request.params.namespace === undefined) {
             // Required parameter is missing
             globals.logger.error('KEYVALUE: No namespace specified.');
             reply.send(httpErrors(400, 'No namespace specified'));
         } else {
             // Does namespace exist?
-            let kv = keyv.find(item => item.namespace == request.params.namespace);
-            let kvRes;
+            const kv = keyv.find((item) => item.namespace === request.params.namespace);
 
-            if (kv == undefined) {
+            if (kv === undefined) {
                 // Namespace does not exist. Error.
                 globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
                 reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
             } else {
                 // Namespace exists. Get it.
-                kvRes = keyvIndex.filter(item => item.namespace == request.params.namespace)[0];
+                let kvRes = keyvIndex.filter(
+                    (item) => item.namespace === request.params.namespace
+                )[0];
 
-                if (kvRes == undefined) {
+                if (kvRes === undefined) {
                     // The namespace existed but is empty. Return empty datastructure to indicate this.
                     kvRes = {
                         namespace: request.params.namespace,
@@ -589,13 +617,44 @@ async function handlerGetKeyValueList(request, reply) {
                     };
                 }
 
-                reply
-                    .code(200)
-                    .send(kvRes);
+                reply.code(200).send(kvRes);
             }
         }
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting list of keys in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `KEYVALUE: Failed getting list of keys in namespace: ${
+                request.params.namespace
+            }, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed getting list of keys in namespace'));
     }
 }
+
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') &&
+        globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')
+    ) {
+        globals.logger.debug('Registering REST endpoint GET /v4/keyvaluenamespaces');
+        fastify.get('/v4/keyvaluesnamespaces', handlerGetNamespaceList);
+
+        globals.logger.debug('Registering REST endpoint GET /v4/keyvalues');
+        fastify.get('/v4/keyvalues/:namespace', handlerGetKeyValueInNamespace);
+
+        globals.logger.debug('Registering REST endpoint GET /v4/keyvalues/:namespace/keyexists');
+        fastify.get('/v4/keyvalues/:namespace/keyexists', handlerKeyExists);
+
+        globals.logger.debug('Registering REST endpoint POST /v4/keyvalues');
+        fastify.post('/v4/keyvalues/:namespace', handlerPostKeyValueInNamespace);
+
+        globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}/{key}');
+        fastify.delete('/v4/keyvalues/:namespace/:key', handlerDeleteKeyValueInNamespace);
+
+        globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}');
+        fastify.delete('/v4/keyvalues/:namespace', handlerDeleteNamespace);
+
+        globals.logger.debug('Registering REST endpoint GET /v4/keylist/{namespace}');
+        fastify.get('/v4/keylist/:namespace', handlerGetKeyValueList);
+    }
+};

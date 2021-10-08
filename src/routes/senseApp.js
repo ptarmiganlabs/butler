@@ -1,18 +1,16 @@
-'use strict';
-
 const httpErrors = require('http-errors');
 const enigma = require('enigma.js');
 const SenseUtilities = require('enigma.js/sense-utilities');
 const WebSocket = require('ws');
 
 // Load global variables and functions
-var globals = require('../globals');
-var qrsUtil = require('../qrs_util');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
-
+const globals = require('../globals');
+const qrsUtil = require('../qrs_util');
+const { logRESTCall } = require('../lib/logRESTCall');
 
 // Set up enigma.js configuration
-const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
+// eslint-disable-next-line import/no-dynamic-require
+const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
 /**
  * @swagger
@@ -73,26 +71,12 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *         description: Internal error.
  *
  */
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') && globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')) {
-        globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
-
-        fastify.put('/v4/app/:appId/reload', handler);
-    }
-}
-
-
-/**
- * 
- * @param {*} request 
- * @param {*} reply 
- */
 async function handler(request, reply) {
     try {
         logRESTCall(request);
 
         // TODO: Add app exists test. Return error if not existing.
-        if (request.params.appId == undefined) {
+        if (request.params.appId === undefined) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter (app ID) missing'));
         } else {
@@ -109,7 +93,7 @@ async function handler(request, reply) {
                     secure: true,
                     appId: request.params.appId,
                 }),
-                createSocket: url =>
+                createSocket: (url) =>
                     new WebSocket(url, {
                         key: globals.configEngine.key,
                         cert: globals.configEngine.cert,
@@ -121,69 +105,81 @@ async function handler(request, reply) {
             };
 
             // Get parameters (if there are any) from request body
-            var reloadMode = null,
-                partialReload = null,
-                startQSEoWTaskOnSuccess = [],
-                startQSEoWTaskOnFailure = [];
+            let reloadMode = null;
+            let partialReload = null;
+            let startQSEoWTaskOnSuccess = [];
+            let startQSEoWTaskOnFailure = [];
 
-            if (request.body.reloadMode != undefined && request.body.reloadMode >= 0 && request.body.reloadMode <= 2) {
+            if (
+                request.body.reloadMode !== undefined &&
+                request.body.reloadMode >= 0 &&
+                request.body.reloadMode <= 2
+            ) {
                 reloadMode = request.body.reloadMode;
             } else {
                 reloadMode = 0;
             }
 
-            if (request.body.partialReload == 'true' || request.body.partialReload == true) {
+            if (request.body.partialReload === 'true' || request.body.partialReload === true) {
                 partialReload = true;
             } else {
                 partialReload = false;
             }
 
-            if (request.body.startQSEoWTaskOnSuccess != undefined && request.body.startQSEoWTaskOnSuccess.length > 0) {
+            if (
+                request.body.startQSEoWTaskOnSuccess !== undefined &&
+                request.body.startQSEoWTaskOnSuccess.length > 0
+            ) {
                 // There are task IDs in request body
                 startQSEoWTaskOnSuccess = request.body.startQSEoWTaskOnSuccess;
             }
 
-            if (request.body.startQSEoWTaskOnFailure != undefined && request.body.startQSEoWTaskOnFailure.length > 0) {
+            if (
+                request.body.startQSEoWTaskOnFailure !== undefined &&
+                request.body.startQSEoWTaskOnFailure.length > 0
+            ) {
                 // There are task IDs in request body
                 startQSEoWTaskOnFailure = request.body.startQSEoWTaskOnFailure;
             }
 
-            var session = enigma.create(configEnigma);
-            var global = await session.open();
+            const session = enigma.create(configEnigma);
+            const global = await session.open();
 
-            var engineVersion = await global.engineVersion();
+            const engineVersion = await global.engineVersion();
             globals.logger.verbose(
-                `APPRELOAD: Starting reload of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
+                `APPRELOAD: Starting reload of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
             );
 
-            var app = await global.openDoc(request.params.appId, '', '', '', false);
+            const app = await global.openDoc(request.params.appId, '', '', '', false);
             reply.send(201, { appId: request.params.appId }); // Return ok result, i.e. async behavior = don't wait for reload to complete.
 
-            if ((await app.doReload(reloadMode, partialReload)) == true) {
+            if ((await app.doReload(reloadMode, partialReload)) === true) {
                 // Reload was successful
                 await app.doSave();
 
                 globals.logger.verbose(
-                    `APPRELOAD: Reload success of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
+                    `APPRELOAD: Reload success of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                 );
                 // Start downstream tasks, if such were specified in the request body
 
+                // eslint-disable-next-line no-restricted-syntax
                 for (const taskId of startQSEoWTaskOnSuccess) {
                     globals.logger.verbose(
-                        `APPRELOAD: Starting task ${taskId} after reloading success of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
+                        `APPRELOAD: Starting task ${taskId} after reloading success of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                     );
 
                     qrsUtil.senseStartTask.senseStartTask(taskId);
                 }
             } else {
                 globals.logger.warn(
-                    `APPRELOAD: Reload failure of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
+                    `APPRELOAD: Reload failure of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                 );
 
                 // Start downstream tasks, if such were specified in the request body
+                // eslint-disable-next-line no-restricted-syntax
                 for (const taskId of startQSEoWTaskOnFailure) {
                     globals.logger.verbose(
-                        `APPRELOAD: Starting task ${taskId} after reloading failure of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
+                        `APPRELOAD: Starting task ${taskId} after reloading failure of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                     );
 
                     qrsUtil.senseStartTask.senseStartTask(taskId);
@@ -191,20 +187,44 @@ async function handler(request, reply) {
             }
 
             try {
-                if ((await session.close()) == true) {
-                    globals.logger.debug(`APPRELOAD: Closed session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`);
+                if ((await session.close()) === true) {
+                    globals.logger.debug(
+                        `APPRELOAD: Closed session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`
+                    );
                 } else {
-                    globals.logger.error(`APPRELOAD: Error closing session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`);
+                    globals.logger.error(
+                        `APPRELOAD: Error closing session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`
+                    );
                 }
             } catch (err) {
-                globals.logger.error(`APPRELOAD: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `APPRELOAD: Error closing connection to Sense engine: ${JSON.stringify(
+                        err,
+                        null,
+                        2
+                    )}`
+                );
                 reply.send(httpErrors(500, 'Error closing connection to Sense server'));
             }
         }
     } catch (err) {
         globals.logger.error(
-            `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error is: ${JSON.stringify(err, null, 2)}, stack: ${err.stack}.`,
+            `APPRELOAD: Failed reloading app ${request.params.appId} on host ${
+                globals.configEngine.host
+            }, error is: ${JSON.stringify(err, null, 2)}, stack: ${err.stack}.`
         );
         reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }
 }
+
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') &&
+        globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')
+    ) {
+        globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
+
+        fastify.put('/v4/app/:appId/reload', handler);
+    }
+};

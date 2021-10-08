@@ -10,6 +10,11 @@
     "dict": "^1.4.0",
     "email-validator": "^2.0.4",
     "enigma.js": "^2.7.3",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "14.2.1",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-prettier": "^4.0.0",
     "express-handlebars": "^5.3.4",
     "fastify": "^3.22.0",
     "fastify-autoload": "^3.3.1",
@@ -48,8 +53,7 @@
     "ws": "^8.2.3"
   },
   "devDependencies": {
-    "eslint": "^7.32.0",
-    "eslint-config-google": "^0.14.0",
+    "prettier": "^2.4.1",
     "snyk": "^1.733.0",
     "tap": "^15.0.10"
   },

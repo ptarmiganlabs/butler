@@ -1,23 +1,24 @@
 // Add dependencies
 const dockerHealthCheckServer = require('fastify')({ logger: false });
 const restServer = require('fastify')({ logger: true });
-const AutoLoad = require('fastify-autoload')
+const AutoLoad = require('fastify-autoload');
+const FastifyHealthcheck = require('fastify-healthcheck');
+const path = require('path');
 
-var restifySwaggerJsdoc = require('restify-swagger-jsdoc');
+const restifySwaggerJsdoc = require('restify-swagger-jsdoc');
 
 // Load code from sub modules
-var globals = require('./globals');
+const globals = require('./globals');
 // var rest = require('./rest');
-var mqtt = require('./mqtt');
-var udp = require('./udp');
-var heartbeat = require('./lib/heartbeat.js');
-var scheduler = require('./lib/scheduler.js');
+const mqtt = require('./mqtt');
+const udp = require('./udp');
+const heartbeat = require('./lib/heartbeat');
+const scheduler = require('./lib/scheduler');
 const serviceUptime = require('./lib/service_uptime');
 const telemetry = require('./lib/telemetry');
 
 // Set up connection to Influxdb (if enabled)
 globals.initInfluxDB();
-
 
 if (
     (globals.config.has('Butler.uptimeMonitor.enabled') &&
@@ -30,10 +31,9 @@ if (
 
 async function mainScript() {
     // Load certificates to use when connecting to healthcheck API
-    var path = require('path'),
-        certFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCert')),
-        keyFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertKey')),
-        caFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertCA'));
+    const certFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCert'));
+    const keyFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertKey'));
+    const caFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertCA'));
 
     // Set up heartbeats, if enabled in the config file
     if (
@@ -77,8 +77,9 @@ async function mainScript() {
 
         // Set up anon telemetry reports, if enabled
         if (
-            globals.config.has('Butler.anonTelemetry') == false ||
-            (globals.config.has('Butler.anonTelemetry') == true && globals.config.get('Butler.anonTelemetry') == true)
+            globals.config.has('Butler.anonTelemetry') === false ||
+            (globals.config.has('Butler.anonTelemetry') === true &&
+                globals.config.get('Butler.anonTelemetry') === true)
         ) {
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
@@ -93,7 +94,6 @@ async function mainScript() {
         dir: path.join(__dirname, 'routes'),
         // options: Object.assign({}, opts)
     });
-
 
     // restServer.pre(function (req, res, next) {
     //     // Is there a X-HTTP-Method-Override header?
@@ -134,36 +134,46 @@ async function mainScript() {
         udp.udp.udpInitTaskErrorServer();
         udp.udp.udpInitSessionConnectionServer();
 
-        globals.logger.debug(`Server for UDP server: ${globals.udp_host}`);
+        globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
 
         // Start UDP server for Session and Connection events
-        globals.udpServerSessionConnectionSocket.bind(globals.udp_port_session_connection, globals.udp_host);
+        globals.udpServerSessionConnectionSocket.bind(
+            globals.udpPortSessionConnection,
+            globals.udpHost
+        );
 
         // Start UDP server for failed task events
-        globals.udpServerTaskFailureSocket.bind(globals.udp_port_take_failure, globals.udp_host);
+        globals.udpServerTaskFailureSocket.bind(globals.udpPortTakeFailure, globals.udpHost);
     }
 
     // ---------------------------------------------------
     // Start REST server on port 8080
     if (globals.config.get('Butler.restServerConfig.enable')) {
-        globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
-        globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
+        globals.logger.debug(
+            `REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`
+        );
+        globals.logger.debug(
+            `REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`
+        );
 
-        restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function (err, address) {
-        // restServer.listen(8437, '192.168.1.168', function (err, address) {
-            if (err) {
-                globals.logger.error(`MAIN: REST server could not listen on ${address}`);
-                restServer.log.error(err)
-                process.exit(1)
-              }
-              restServer.log.info(`server listening on ${address}`)
-              globals.logger.info(`MAIN: REST server listening on ${address}`);
-        });
+        restServer.listen(
+            globals.config.get('Butler.restServerConfig.serverPort'),
+            globals.config.get('Butler.restServerConfig.serverHost'),
+            (err, address) => {
+                if (err) {
+                    globals.logger.error(`MAIN: REST server could not listen on ${address}`);
+                    restServer.log.error(err);
+                    process.exit(1);
+                }
+                restServer.log.info(`server listening on ${address}`);
+                globals.logger.info(`MAIN: REST server listening on ${address}`);
+            }
+        );
     }
 
     // Load already defined schedules
     if (globals.config.has('Butler.scheduler')) {
-        if (globals.config.get('Butler.scheduler.enable') == true) {
+        if (globals.config.get('Butler.scheduler.enable') === true) {
             scheduler.loadSchedulesFromDisk();
             // scheduler.launchAllSchedules();
         } else {
@@ -182,7 +192,7 @@ async function mainScript() {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 
-            dockerHealthCheckServer.register(require('fastify-healthcheck'));
+            dockerHealthCheckServer.register(FastifyHealthcheck);
             await dockerHealthCheckServer.listen(
                 globals.config.get('Butler.dockerHealthCheck.port')
             );

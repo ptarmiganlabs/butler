@@ -1,8 +1,5 @@
-/*eslint strict: ["error", "global"]*/
-
-'use strict';
-
+/* eslint-disable global-require */
 module.exports = {
-    senseStartTask: require('./senseStartTask.js'),
-    getAppOwner: require('./getAppOwner.js'),
+    senseStartTask: require('./senseStartTask'),
+    getAppOwner: require('./getAppOwner'),
 };

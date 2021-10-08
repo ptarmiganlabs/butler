@@ -1,18 +1,26 @@
-'use strict';
+/* eslint-disable camelcase */
+const httpErrors = require('http-errors');
+const anyBase = require('any-base');
 
 // Load global variables and functions
-const httpErrors = require('http-errors');
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
 
-var anyBase = require('any-base'),
-    base62_to_Hex = anyBase('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789abcdef'),
-    hex_to_base62 = anyBase('0123456789abcdef', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+const base62_to_Hex = anyBase(
+    '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    '0123456789abcdef'
+);
+const hex_to_base62 = anyBase(
+    '0123456789abcdef',
+    '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+);
 
-
-module.exports = async function (fastify, options) {
-
-    if (globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') && globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') &&
+        globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')
+    ) {
         globals.logger.debug('Registering REST endpoint GET /v4/base62tobase16');
 
         /**
@@ -50,30 +58,35 @@ module.exports = async function (fastify, options) {
          *         description: Internal error.
          *
          */
-        fastify.get('/v4/base62tobase16', async function (request, reply) {
+        fastify.get('/v4/base62tobase16', async (request, reply) => {
             try {
                 logRESTCall(request);
 
-                if (request.query.base62 == undefined) {
+                if (request.query.base62 === undefined) {
                     // Required parameter is missing
                     reply.send(httpErrors(400, 'Required parameter missing'));
                 } else {
-                    var base16 = base62_to_Hex(request.query.base62);
-
-                    return { base62: request.query.base62, base16: base16 };
+                    const base16 = base62_to_Hex(request.query.base62);
+                    return { base62: request.query.base62, base16 };
                 }
 
-
-                return { response: "Butler reporting for duty", butlerVersion: globals.appVersion };
+                return { response: 'Butler reporting for duty', butlerVersion: globals.appVersion };
             } catch (err) {
-                globals.logger.error(`BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `BASECONVERT: Failed converting from base62 to base16: ${
+                        request.query.base62
+                    }, error is: ${JSON.stringify(err, null, 2)}`
+                );
                 reply.send(httpErrors(500, 'Failed converting from base62 to base16'));
+                return null;
             }
-        })
+        });
     }
 
-
-    if (globals.config.has('Butler.restServerEndpointsEnable.base16ToBase62') && globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.base16ToBase62') &&
+        globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')
+    ) {
         globals.logger.debug('Registering REST endpoint GET /v4/base16tobase62');
 
         /**
@@ -110,22 +123,27 @@ module.exports = async function (fastify, options) {
          *       500:
          *         description: Internal error.
          */
-         fastify.get('/v4/base16tobase62', async function (request, reply) {
+        fastify.get('/v4/base16tobase62', async (request, reply) => {
             try {
                 logRESTCall(request);
 
-                if (request.query.base16 == undefined) {
+                if (request.query.base16 === undefined) {
                     // Required parameter is missing
                     reply.send(httpErrors(400, 'Required parameter missing'));
                 } else {
-                    var base62 = hex_to_base62(request.query.base16);
-
-                    return { base16: request.query.base16, base62: base62 };
+                    const base62 = hex_to_base62(request.query.base16);
+                    return { base16: request.query.base16, base62 };
                 }
+                return null;
             } catch (err) {
-                globals.logger.error(`BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `BASECONVERT: Failed converting from base16 to base62: ${
+                        request.query.base16
+                    }, error is: ${JSON.stringify(err, null, 2)}`
+                );
                 reply.send(httpErrors(500, 'Failed converting from base16 to base62'));
+                return null;
             }
-        })
+        });
     }
-}
+};

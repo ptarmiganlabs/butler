@@ -1,10 +1,8 @@
-'use strict';
-
 const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
 
 /**
  * @swagger
@@ -41,28 +39,14 @@ var logRESTCall = require('../lib/logRESTCall').logRESTCall;
  *         description: Internal error.
  *
  */
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') && globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
-        globals.logger.debug('Registering REST endpoint PUT /v4/mqttpublishmessage');
-
-        fastify.put('/v4/mqttpublishmessage', handler);
-    }
-}
-
-
-
-/**
- * 
- * @param {*} request 
- * @param {*} reply 
- */
+// eslint-disable-next-line consistent-return
 function handler(request, reply) {
     try {
         logRESTCall(request);
 
         if (globals.mqttClient) {
             try {
-                if (request.query.topic == undefined || request.query.message == undefined) {
+                if (request.query.topic === undefined || request.query.message === undefined) {
                     // Required parameter is missing
                     reply.send(httpErrors(400, 'Required parameter missing'));
                 } else {
@@ -75,15 +59,35 @@ function handler(request, reply) {
                 }
             } catch (err) {
                 globals.logger.error(
-                    `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`,
+                    `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
+                        request.body,
+                        null,
+                        2
+                    )}, error is: ${JSON.stringify(err, null, 2)}`
                 );
                 reply.send(httpErrors(500, 'Failed publishing MQTT message'));
             }
         }
     } catch (err) {
         globals.logger.error(
-            `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`,
+            `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
+                request.body,
+                null,
+                2
+            )}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed publishing MQTT message'));
     }
 }
+
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') &&
+        globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/mqttpublishmessage');
+
+        fastify.put('/v4/mqttpublishmessage', handler);
+    }
+};

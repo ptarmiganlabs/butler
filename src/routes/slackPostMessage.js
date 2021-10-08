@@ -1,11 +1,9 @@
-'use strict';
-
 const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
-var slackApi = require('../lib/slack_api.js');
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
+const slackApi = require('../lib/slack_api');
 
 /**
  * @swagger
@@ -60,28 +58,20 @@ var slackApi = require('../lib/slack_api.js');
  *         description: Internal error.
  *
  */
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.slackPostMessage') && globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
-        globals.logger.debug('Registering REST endpoint PUT /v4/slackpostmessage');
 
-        fastify.put('/v4/slackpostmessage', handler);
-    }
-}
-
-/**
- * 
- * @param {*} request 
- * @param {*} reply 
- */
- async function handler(request, reply) {
+async function handler(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.body.channel == undefined || request.body.from_user == undefined || request.body.msg == undefined) {
+        if (
+            request.body.channel === undefined ||
+            request.body.from_user === undefined ||
+            request.body.msg === undefined
+        ) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter(s) missing'));
         } else {
-            let slackConfig = {
+            const slackConfig = {
                 text: {
                     blocks: [
                         {
@@ -100,16 +90,30 @@ module.exports = async function (fastify, options) {
                 webhookUrl: globals.config.get('Butler.slackNotification.restMessage.webhookURL'),
             };
 
-            let result = slackApi.slackSend(slackConfig, globals.logger);
-            
-            reply
-            .code(201)
-            .send(request.body);
-       }
+            slackApi.slackSend(slackConfig, globals.logger);
 
+            reply.code(201).send(request.body);
+        }
     } catch (err) {
-        globals.logger.error(`SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(
+            `SLACK: Failed sending Slack message: ${JSON.stringify(
+                request.body,
+                null,
+                2
+            )}, error is: ${JSON.stringify(err, null, 2)}`
+        );
         reply.send(httpErrors(500, 'Failed sending Slack message'));
     }
 }
 
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.slackPostMessage') &&
+        globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/slackpostmessage');
+
+        fastify.put('/v4/slackpostmessage', handler);
+    }
+};

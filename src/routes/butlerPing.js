@@ -1,8 +1,8 @@
-'use strict';
+const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
 
 /**
  * @swagger
@@ -29,33 +29,26 @@ var logRESTCall = require('../lib/logRESTCall').logRESTCall;
  *       500:
  *         description: Internal error.
  */
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.butlerping') && globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.butlerping') &&
+        globals.config.get('Butler.restServerEndpointsEnable.butlerping')
+    ) {
         globals.logger.debug('Registering REST endpoint GET /v4/butlerping');
 
-        const opts = {
-            schema: {
-                response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            response: { type: 'string' },
-                            butlerVersion: {type: 'string'}
-                        }
-                    }
-                }
-            }
-        }
-
-        fastify.get('/v4/butlerping', async function (request, reply) {
+        fastify.get('/v4/butlerping', async (request, reply) => {
             try {
                 logRESTCall(request);
 
-                return { response: "Butler reporting for duty", butlerVersion: globals.appVersion };
+                return { response: 'Butler reporting for duty', butlerVersion: globals.appVersion };
             } catch (err) {
-                globals.logger.error(`PING: Failing pinging Butler, error is: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `PING: Failing pinging Butler, error is: ${JSON.stringify(err, null, 2)}`
+                );
                 reply.send(httpErrors(500, 'Failing pinging Butler'));
+                return null;
             }
-        })
+        });
     }
 };

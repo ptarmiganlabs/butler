@@ -1,18 +1,14 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
-var globals = require('../globals');
-var scriptLog = require('./scriptlog.js');
-var slackApi = require('./slack_api.js');
+/* eslint-disable consistent-return */
 const fs = require('fs');
-
 const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
-var rateLimiterMemoryFailedReloads = undefined,
-    rateLimiterMemoryAbortedReloads = undefined;
+const globals = require('../globals');
+const scriptLog = require('./scriptlog');
+const slackApi = require('./slack_api');
+
+let rateLimiterMemoryFailedReloads;
+let rateLimiterMemoryAbortedReloads;
 
 if (globals.config.has('Butler.slackNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
@@ -47,30 +43,53 @@ function getSlackReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('SLACKFAILED: Reload failure Slack config info missing in Butler config file');
+            globals.logger.error(
+                'SLACKFAILED: Reload failure Slack config info missing in Butler config file'
+            );
             return false;
-        } else if (!globals.config.get('Butler.slackNotification.reloadTaskFailure.enable')) {
+        }
+
+        if (!globals.config.get('Butler.slackNotification.reloadTaskFailure.enable')) {
             // Slack task falure notifications are disabled
-            globals.logger.error("SLACKFAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message");
+            globals.logger.error(
+                "SLACKFAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message"
+            );
             return false;
-        } else if (
-            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') != 'basic' &&
-            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') != 'formatted'
+        }
+
+        if (
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') !== 'basic' &&
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') !== 'formatted'
         ) {
             // Invalid Slack message type
-            globals.logger.error(`SLACKFAILED: Invalid Slack message type: ${globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType')}`);
+            globals.logger.error(
+                `SLACKFAILED: Invalid Slack message type: ${globals.config.get(
+                    'Butler.slackNotification.reloadTaskFailure.messageType'
+                )}`
+            );
             return false;
-        } else if (globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') == 'basic') {
+        }
+
+        if (
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') === 'basic'
+        ) {
             // Basic formatting. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.basicMsgTemplate')) {
+            if (
+                !globals.config.has('Butler.slackNotification.reloadTaskFailure.basicMsgTemplate')
+            ) {
                 // No message text in config file.
                 globals.logger.error('SLACKFAILED: No message text in config file.');
                 return false;
             }
-        } else if (globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') == 'formatted') {
+        } else if (
+            globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') ===
+            'formatted'
+        ) {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.templateFile')) {
-                globals.logger.error('SLACKFAILED: Message template file not specified in config file.');
+                globals.logger.error(
+                    'SLACKFAILED: Message template file not specified in config file.'
+                );
                 return false;
             }
         }
@@ -117,30 +136,53 @@ function getSlackReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('SLACKABORTED: Reload aborted Slack config info missing in Butler config file');
+            globals.logger.error(
+                'SLACKABORTED: Reload aborted Slack config info missing in Butler config file'
+            );
             return false;
-        } else if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
+        }
+
+        if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
             // Slack task aborted notifications are disabled
-            globals.logger.error("SLACKABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message");
+            globals.logger.error(
+                "SLACKABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message"
+            );
             return false;
-        } else if (
-            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') != 'basic' &&
-            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') != 'formatted'
+        }
+
+        if (
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') !== 'basic' &&
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') !== 'formatted'
         ) {
             // Invalid Slack message type
-            globals.logger.error(`SLACKABORTED: Invalid Slack message type: ${globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType')}`);
+            globals.logger.error(
+                `SLACKABORTED: Invalid Slack message type: ${globals.config.get(
+                    'Butler.slackNotification.reloadTaskAborted.messageType'
+                )}`
+            );
             return false;
-        } else if (globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') == 'basic') {
+        }
+
+        if (
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') === 'basic'
+        ) {
             // Basic formatting. Make sure requried parameters are present
-            if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')) {
+            if (
+                !globals.config.has('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')
+            ) {
                 // No message text in config file.
                 globals.logger.error('SLACKABORTED: No message text in config file.');
                 return false;
             }
-        } else if (globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') == 'formatted') {
+        } else if (
+            globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') ===
+            'formatted'
+        ) {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.templateFile')) {
-                globals.logger.error('SLACKABORTED: Message template file not specified in config file.');
+                globals.logger.error(
+                    'SLACKABORTED: Message template file not specified in config file.'
+                );
                 return false;
             }
         }
@@ -179,8 +221,8 @@ function getSlackReloadAbortedNotificationConfigOk() {
 }
 
 function getQlikSenseUrls() {
-    let qmcUrl = '',
-        hubUrl = '';
+    let qmcUrl = '';
+    let hubUrl = '';
 
     if (globals.config.has('Butler.qlikSenseUrls.qmc')) {
         qmcUrl = globals.config.get('Butler.qlikSenseUrls.qmc');
@@ -191,19 +233,19 @@ function getQlikSenseUrls() {
     }
 
     return {
-        qmcUrl: qmcUrl,
-        hubUrl: hubUrl,
+        qmcUrl,
+        hubUrl,
     };
 }
 
 async function sendSlack(slackConfig, templateContext) {
     try {
-        let compiledTemplate,
-            renderedText = null,
-            slackMsg = null,
-            msg = slackConfig;
+        let compiledTemplate;
+        let renderedText = null;
+        let slackMsg = null;
+        const msg = slackConfig;
 
-        if (slackConfig.messageType == 'basic') {
+        if (slackConfig.messageType === 'basic') {
             compiledTemplate = handlebars.compile(slackConfig.basicMsgTemplate);
             renderedText = compiledTemplate(templateContext);
 
@@ -246,15 +288,17 @@ async function sendSlack(slackConfig, templateContext) {
                     },
                 ],
             };
-        } else if (slackConfig.messageType == 'formatted') {
-            var template = fs.readFileSync(slackConfig.templateFile, 'utf8');
+        } else if (slackConfig.messageType === 'formatted') {
+            const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
             compiledTemplate = handlebars.compile(template);
             slackMsg = compiledTemplate(templateContext);
         }
         msg.text = slackMsg;
 
-        let res = await slackApi.slackSend(msg, globals.logger);
-        globals.logger.debug(`SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`);
+        const res = await slackApi.slackSend(msg, globals.logger);
+        globals.logger.debug(
+            `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
+        );
     } catch (err) {
         globals.logger.error(`SLACKNOTIF: ${err}`);
     }
@@ -263,30 +307,44 @@ async function sendSlack(slackConfig, templateContext) {
 function sendReloadTaskFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
-                globals.logger.info(`SLACKFAILED: Rate limiting ok: Sending reload failure notification Slack for task "${reloadParams.taskName}"`);
-                globals.logger.verbose(`SLACKFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.info(
+                    `SLACKFAILED: Rate limiting ok: Sending reload failure notification Slack for task "${reloadParams.taskName}"`
+                );
+                globals.logger.verbose(
+                    `SLACKFAILED: Rate limiting details "${JSON.stringify(
+                        rateLimiterRes,
+                        null,
+                        2
+                    )}"`
+                );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
-                let slackConfig = getSlackReloadFailedNotificationConfigOk();
-                if (slackConfig == false) {
+                const slackConfig = getSlackReloadFailedNotificationConfigOk();
+                if (slackConfig === false) {
                     return 1;
                 }
 
                 // Get script logs, if enabled in the config file
-                let scriptLogData = await scriptLog.getScriptLog(
+                const scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines'),
-                    globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines'),
+                    globals.config.get(
+                        'Butler.slackNotification.reloadTaskFailure.headScriptLogLines'
+                    ),
+                    globals.config.get(
+                        'Butler.slackNotification.reloadTaskFailure.tailScriptLogLines'
+                    )
                 );
-                globals.logger.debug(`SLACKFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `SLACKFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
-                let senseUrls = getQlikSenseUrls();
+                const senseUrls = getQlikSenseUrls();
 
                 // These are the template fields that can be used in Slack body
-                let templateContext = {
+                const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
@@ -327,39 +385,57 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 globals.logger.error(`SLACKFAILED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
-            globals.logger.warn(`SLACKFAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`);
-            globals.logger.debug(`SLACKFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+        .catch((err) => {
+            globals.logger.warn(
+                `SLACKFAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+            );
+            globals.logger.debug(
+                `SLACKFAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+            );
         });
 }
 
 function sendReloadTaskAbortedNotificationSlack(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
-                globals.logger.info(`SLACKABORTED: Rate limiting ok: Sending reload aborted notification Slack for task "${reloadParams.taskName}"`);
-                globals.logger.verbose(`SLACKABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.info(
+                    `SLACKABORTED: Rate limiting ok: Sending reload aborted notification Slack for task "${reloadParams.taskName}"`
+                );
+                globals.logger.verbose(
+                    `SLACKABORTED: Rate limiting details "${JSON.stringify(
+                        rateLimiterRes,
+                        null,
+                        2
+                    )}"`
+                );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
-                let slackConfig = getSlackReloadAbortedNotificationConfigOk();
-                if (slackConfig == false) {
+                const slackConfig = getSlackReloadAbortedNotificationConfigOk();
+                if (slackConfig === false) {
                     return 1;
                 }
 
                 // Get script logs, if enabled in the config file
-                let scriptLogData = await scriptLog.getScriptLog(
+                const scriptLogData = await scriptLog.getScriptLog(
                     reloadParams.taskId,
-                    globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines'),
-                    globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines'),
+                    globals.config.get(
+                        'Butler.slackNotification.reloadTaskAborted.headScriptLogLines'
+                    ),
+                    globals.config.get(
+                        'Butler.slackNotification.reloadTaskAborted.tailScriptLogLines'
+                    )
                 );
-                globals.logger.debug(`SLACKABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `SLACKABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
-                let senseUrls = getQlikSenseUrls();
+                const senseUrls = getQlikSenseUrls();
 
                 // These are the template fields that can be used in Slack body
-                let templateContext = {
+                const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
@@ -400,9 +476,13 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 globals.logger.error(`SLACKABORTED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
-            globals.logger.verbose(`SLACKABORTED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`);
-            globals.logger.verbose(`SLACKABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+        .catch((err) => {
+            globals.logger.verbose(
+                `SLACKABORTED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+            );
+            globals.logger.verbose(
+                `SLACKABORTED: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+            );
         });
 }
 

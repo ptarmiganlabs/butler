@@ -1,8 +1,8 @@
-'use strict';
+const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
 
 /**
  * @swagger
@@ -32,38 +32,36 @@ var logRESTCall = require('../lib/logRESTCall').logRESTCall;
  *       500:
  *         description: Internal error.
 */
-module.exports = async function (fastify, options) {
-    if (globals.config.has('Butler.restServerEndpointsEnable.activeUsers') && globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.activeUsers') &&
+        globals.config.get('Butler.restServerEndpointsEnable.activeUsers')
+    ) {
         globals.logger.debug('Registering REST endpoint GET /v4/activeusers');
 
-        const opts = {
-            schema: {
-                response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            response: { type: 'array', items: { type: 'string' } }
-                        }
-                    }
-                }
-            }
-        }
-
-        fastify.get('/v4/activeusers', async function (request, reply) {
+        fastify.get('/v4/activeusers', async (request, reply) => {
             try {
                 logRESTCall(request);
 
                 // Build JSON of all active users
-                var activeUsers = [];
-                globals.currentUsers.forEach(function (value, key) {
+                const activeUsers = [];
+                globals.currentUsers.forEach((value, key) => {
                     activeUsers.push(key);
                 });
 
                 return { response: JSON.stringify(activeUsers) };
             } catch (err) {
-                globals.logger.error(`ACTIVEUSERCOUNT: Failed gettting active users, error is: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `ACTIVEUSERCOUNT: Failed gettting active users, error is: ${JSON.stringify(
+                        err,
+                        null,
+                        2
+                    )}`
+                );
                 reply.send(httpErrors(500, 'Failed gettting active users'));
+                return null;
             }
-        })
+        });
     }
 };

@@ -1,8 +1,8 @@
-'use strict';
+const httpErrors = require('http-errors');
 
 // Load global variables and functions
-var globals = require('../globals');
-var logRESTCall = require('../lib/logRESTCall').logRESTCall;
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
 
 /**
  * @swagger
@@ -29,7 +29,8 @@ var logRESTCall = require('../lib/logRESTCall').logRESTCall;
  *         description: Internal error.
  *
  */
-module.exports = async function (fastify, options) {
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
         globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
@@ -48,15 +49,20 @@ module.exports = async function (fastify, options) {
         //         }
         //     }
         // }
-
-        fastify.get('/v4/configfile/endpointsenabled', async function (request, reply) {
+        fastify.get('/v4/configfile/endpointsenabled', async (request, reply) => {
             try {
                 logRESTCall(request);
-
                 return globals.endpointsEnabled;
             } catch (err) {
-                globals.logger.error(`API: Failed retrieving list of enabled API endpoints, error is: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(
+                    `API: Failed retrieving list of enabled API endpoints, error is: ${JSON.stringify(
+                        err,
+                        null,
+                        2
+                    )}`
+                );
                 reply.send(httpErrors(500, 'Failed retrieving list of enabled API endpoints'));
+                return null;
             }
         });
     }
