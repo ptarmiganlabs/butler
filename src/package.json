@@ -4,14 +4,14 @@
   "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
   "dependencies": {
     "any-base": "^1.1.0",
-    "axios": "^0.21.4",
+    "axios": "^0.22.0",
     "config": "^3.3.6",
     "cron-job-manager": "^2.1.4",
     "dict": "^1.4.0",
     "email-validator": "^2.0.4",
     "enigma.js": "^2.7.3",
     "express-handlebars": "^5.3.4",
-    "fastify": "^3.21.6",
+    "fastify": "^3.22.0",
     "fastify-autoload": "^3.3.1",
     "fastify-cli": "^2.13.0",
     "fastify-healthcheck": "^3.1.0",
@@ -38,20 +38,20 @@
     "os": "^0.1.2",
     "promise": "^8.1.0",
     "qrs-interact": "^6.3.1",
-    "rate-limiter-flexible": "^2.3.0",
+    "rate-limiter-flexible": "^2.3.1",
     "restify-swagger-jsdoc": "^3.2.4",
     "serializeapp": "^3.0.0",
     "systeminformation": "^5.9.4",
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "ws": "^8.2.2"
+    "ws": "^8.2.3"
   },
   "devDependencies": {
-    "eslint": "7.32.0",
-    "eslint-config-google": "0.14.0",
-    "snyk": "1.728.0",
-    "tap": "^15.0.9"
+    "eslint": "^7.32.0",
+    "eslint-config-google": "^0.14.0",
+    "snyk": "^1.733.0",
+    "tap": "^15.0.10"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
