@@ -1,12 +1,8 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
 'use strict';
 
 // Load global variables and functions0
 var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
-const errors = require('restify-errors');
 
 /**
  * @swagger
@@ -34,17 +30,32 @@ const errors = require('restify-errors');
  *               description: Number of users with active sessions
  *               example: "subfolder/file1.qvd"
  */
-module.exports.respondGET_activeUserCount = function (req, res, next) {
-    logRESTCall(req);
+module.exports = async function (fastify, options) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.activeUserCount') && globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
+        globals.logger.debug('Registering REST endpoint GET /v4/activeusercount');
 
-    try {
-        req.query.response = globals.currentUsers.size;
+        const opts = {
+            schema: {
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            response: { type: 'number', minimum: 0 }
+                        }
+                    }
+                }
+            }
+        }
 
-        res.send(req.query);
-        next();
-    } catch (err) {
-        globals.logger.error(`ACTIVEUSERCOUNT: Failed gettting active user count, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed gettting active user count'));
-        next();
+        fastify.get('/v4/activeusercount', async function (request, reply) {
+            logRESTCall(request);
+
+            try {
+                return { response: globals.currentUsers.size };
+            } catch (err) {
+                globals.logger.error(`ACTIVEUSERCOUNT: Failed gettting active user count, error is: ${JSON.stringify(err, null, 2)}`);
+                reply.send(httpErrors(500, 'Failed gettting active user count'));
+            }
+        })
     }
 };

@@ -1,17 +1,52 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
 'use strict';
+
+const httpErrors = require('http-errors');
+var fs = require('fs-extra');
+const path = require('path');
+var mkdirp = require('mkdirp');
 
 // Load global variables and functions
 var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 const isDirectoryChildOf = require('../lib/disk_utils').isDirectoryChildOf;
 
-const errors = require('restify-errors');
-var fs = require('fs-extra');
-const path = require('path');
-var mkdirp = require('mkdirp');
+
+
+module.exports = async function (fastify, options) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.fileCopy') && globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
+
+        fastify.put('/v4/filecopy', handlerFileCopy);
+    }
+    
+    if (globals.config.has('Butler.restServerEndpointsEnable.fileMove') && globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/filemove');
+    
+        fastify.put('/v4/filemove', handlerFileMove);
+    }
+
+    if (globals.config.has('Butler.restServerEndpointsEnable.fileDelete') && globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
+        globals.logger.debug('Registering REST endpoint DELETE /v4/filedelete');
+
+        fastify.delete('/v4/filedelete', handlerFileDelete);
+    }
+
+    if (globals.config.has('Butler.restServerEndpointsEnable.createDirQVD') && globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
+        globals.logger.debug('Registering REST endpoint POST /v4/createdirqvd');
+
+        fastify.post('/v4/createdirqvd', handlerCreateDirQvd);
+    }
+
+    if (globals.config.has('Butler.restServerEndpointsEnable.createDir') && globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/createdir');
+
+        fastify.post('/v4/createdir', handlerCreateDir);
+    }
+}
+
+
+
+
 
 /**
  * @swagger
@@ -73,32 +108,32 @@ var mkdirp = require('mkdirp');
  *               type: boolean
  *               description: When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.
  *               example: "false"
+ *       400:
+ *         description: fromFile not found.
+ *       400:
+ *         description: Required parameter missing.
  *       403:
  *         description: No approved fromDir/toDir for file move.
- *       404:
- *         description: fromFile not found.
- *       409:
- *         description: Required parameter missing.
  *       500:
  *         description: Internal error, or file overwrite was not allowed.
  *
  */
-module.exports.respondPUT_fileCopy = async function (req, res, next) {
-    logRESTCall(req);
-
+async function handlerFileCopy(request, reply) {
     try {
+        logRESTCall(request);
+
         let overwrite = false;
         let preserveTimestamp = false;
 
-        if (req.body.fromFile == undefined || req.body.toFile == undefined || req.body.fromFile == '' || req.body.toFile == '') {
+        if (request.body.fromFile == undefined || request.body.toFile == undefined || request.body.fromFile == '' || request.body.toFile == '') {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+            reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            if (req.body.overwrite == 'true') {
+            if (request.body.overwrite == 'true') {
                 overwrite = true;
             }
 
-            if (req.body.preserveTimestamp == 'true') {
+            if (request.body.preserveTimestamp == 'true') {
                 preserveTimestamp = true;
             }
 
@@ -106,8 +141,8 @@ module.exports.respondPUT_fileCopy = async function (req, res, next) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            let fromFile = path.normalize(req.body.fromFile),
-                toFile = path.normalize(req.body.toFile);
+            let fromFile = path.normalize(request.body.fromFile),
+                toFile = path.normalize(request.body.toFile);
 
             let fromDir = path.dirname(fromFile),
                 toDir = path.dirname(toFile);
@@ -128,25 +163,27 @@ module.exports.respondPUT_fileCopy = async function (req, res, next) {
 
                 if (copyIsOk) {
                     await fs.copySync(fromFile, toFile, { overwrite: overwrite, preserveTimestamps: preserveTimestamp });
-                    res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite, preserveTimestamp: preserveTimestamp });
+
+                    reply
+                        .code(200)
+                        .send({ fromFile: fromFile, toFile: toFile, overwrite: overwrite, preserveTimestamp: preserveTimestamp });
                 } else {
-                    globals.logger.error(`FILECOPY: No approved fromDir/toDir for file copy ${req.body.fromFile} to ${req.body.toFile}`);
-                    res.send(new errors.ForbiddenError({}, 'No approved fromDir/toDir for file copy'));
+                    globals.logger.error(`FILECOPY: No approved fromDir/toDir for file copy ${request.body.fromFile} to ${request.body.toFile}`);
+                    reply.send(httpErrors(403, 'No approved fromDir/toDir for file copy'));
                 }
             } else {
                 // fromFile does not exist
-                globals.logger.error(`FILECOPY: From file ${req.body.fromFile} does not exist`);
-                res.send(new errors.ResourceNotFoundError({}, 'fromFile does not exist'));
+                globals.logger.error(`FILECOPY: From file ${request.body.fromFile} does not exist`);
+                reply.send(400, 'fromFile does not exist');
             }
         }
-
-        next();
     } catch (err) {
-        globals.logger.error(`FILECOPY: Failed copying file ${req.body.fromFile} to ${req.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed copying file'));
-        next();
+        globals.logger.error(`FILECOPY: Failed copying file ${request.body.fromFile} to ${request.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed copying file'));
     }
-};
+}
+
+
 
 /**
  * @swagger
@@ -199,27 +236,27 @@ module.exports.respondPUT_fileCopy = async function (req, res, next) {
  *               type: boolean
  *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
  *               example: "false"
+ *       400:
+ *         description: fromFile not found.
+ *       400:
+ *         description: Required parameter missing.
  *       403:
  *         description: No approved fromDir/toDir for file move.
- *       404:
- *         description: fromFile not found.
- *       409:
- *         description: Required parameter missing.
  *       500:
  *         description: Internal error, or file overwrite was not allowed.
  *
  */
-module.exports.respondPUT_fileMove = async function (req, res, next) {
-    logRESTCall(req);
-
+async function handlerFileMove(request, reply) {
     try {
+        logRESTCall(request);
+
         let overwrite = false;
 
-        if (req.body.fromFile == undefined || req.body.toFile == undefined || req.body.fromFile == '' || req.body.toFile == '') {
+        if (request.body.fromFile == undefined || request.body.toFile == undefined || request.body.fromFile == '' || request.body.toFile == '') {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+            reply.send(new errors.MissingParameterError({}, 'Required parameter missing'));
         } else {
-            if (req.body.overwrite == 'true') {
+            if (request.body.overwrite == 'true') {
                 overwrite = true;
             }
 
@@ -227,8 +264,8 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            let fromFile = path.normalize(req.body.fromFile),
-                toFile = path.normalize(req.body.toFile);
+            let fromFile = path.normalize(request.body.fromFile),
+                toFile = path.normalize(request.body.toFile);
 
             let fromDir = path.dirname(fromFile),
                 toDir = path.dirname(toFile);
@@ -249,25 +286,26 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
 
                 if (moveIsOk) {
                     await fs.moveSync(fromFile, toFile, { overwrite: overwrite });
-                    res.send(200, { fromFile: fromFile, toFile: toFile, overwrite: overwrite });
+
+                    reply
+                        .code(200)
+                        .send({ fromFile: fromFile, toFile: toFile, overwrite: overwrite });
                 } else {
-                    globals.logger.error(`FILEMOVE: No approved fromDir/toDir for file move ${req.body.fromFile} to ${req.body.toFile}`);
-                    res.send(new errors.ForbiddenError({}, 'No approved fromDir/toDir for file move'));
+                    globals.logger.error(`FILEMOVE: No approved fromDir/toDir for file move ${request.body.fromFile} to ${request.body.toFile}`);
+                    reply.send(httpErrors(403, 'No approved fromDir/toDir for file move'));
                 }
             } else {
                 // fromFile does not exist
-                globals.logger.error(`FILEMOVE: From file ${req.body.fromFile} does not exist`);
-                res.send(new errors.ResourceNotFoundError({}, 'fromFile does not exist'));
+                globals.logger.error(`FILEMOVE: From file ${request.body.fromFile} does not exist`);
+                reply.send(httpErrors(400, 'fromFile does not exist'));
             }
         }
-
-        next();
     } catch (err) {
-        globals.logger.error(`FILEMOVE: Failed moving file ${req.body.fromFile} to ${req.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed moving file'));
-        next();
+        globals.logger.error(`FILEMOVE: Failed moving file ${request.body.fromFile} to ${request.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed moving file'));
     }
-};
+}
+
 
 /**
  * @swagger
@@ -296,29 +334,29 @@ module.exports.respondPUT_fileMove = async function (req, res, next) {
  *     responses:
  *       204:
  *         description: File deleted.
+ *       400:
+ *         description: File requested for delete not found.
+ *       400:
+ *         description: Required parameter missing.
  *       403:
  *         description: No approved directory matches the delete request.
- *       404:
- *         description: File requested for delete not found.
- *       409:
- *         description: Required parameter missing.
  *       500:
  *         description: Internal error, or file delete was not allowed.
  *
  */
-module.exports.respondPUT_fileDelete = async function (req, res, next) {
-    logRESTCall(req);
-
+async function handlerFileDelete(request, reply) {
     try {
-        if (req.body.deleteFile == undefined || req.body.deleteFile == '') {
+        logRESTCall(request);
+
+        if (request.body.deleteFile == undefined || request.body.deleteFile == '') {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+            reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
             // Make sure that
             // 1. file exists
             // 2. file is in a valid directoryv (or subdirectory thereof),
 
-            let deleteFile = path.normalize(req.body.deleteFile),
+            let deleteFile = path.normalize(request.body.deleteFile),
                 deleteDir = path.dirname(deleteFile);
 
             let deleteIsOk = false; // Only allow delete if this flag is true
@@ -336,25 +374,26 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
                 if (await fs.pathExists(deleteFile)) {
                     // Finally, make sure that file realy exists
                     await fs.removeSync(deleteFile);
-                    res.send(204);
+
+                    reply
+                        .code(204)
+                        .send();
                 } else {
                     // deleteFile does not exist
-                    globals.logger.error(`FILEDELETE: Delete failed, file ${req.body.deleteFile} does not exist`);
-                    res.send(new errors.ResourceNotFoundError({}, 'Delete failed, file does not exist'));
+                    globals.logger.error(`FILEDELETE: Delete failed, file ${request.body.deleteFile} does not exist`);
+                    reply.send(httpErrors(400, 'Delete failed, file does not exist'));
                 }
             } else {
-                globals.logger.error(`FILEDELETE: File delete request ${req.body.deleteFile} is not in any approved directories.`);
-                res.send(new errors.ForbiddenError({}, 'File delete request is not in any approved directories'));
+                globals.logger.error(`FILEDELETE: File delete request ${request.body.deleteFile} is not in any approved directories.`);
+                reply.send(new errors.ForbiddenError({}, 'File delete request is not in any approved directories'));
             }
         }
-
-        next();
     } catch (err) {
-        globals.logger.error(`FILEDELETE: Failed deleting file ${req.body.deleteFile}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed deleting file'));
-        next();
+        globals.logger.error(`FILEDELETE: Failed deleting file ${request.body.deleteFile}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed deleting file'));
     }
-};
+}
+
 
 /**
  * @swagger
@@ -388,39 +427,40 @@ module.exports.respondPUT_fileDelete = async function (req, res, next) {
  *               description: Path to created directory.
  *               example: "subfolder/2020-10"
  *
- *       409:
+ *       400:
  *         description: Missing parameter.
  *       500:
  *         description: Internal error (file system permissions etc).
  *
  */
-module.exports.respondPOST_createDirQVD = function (req, res, next) {
-    logRESTCall(req);
-
-    // TODO: Add check to make sure the created dir is really a subpath of the QVD folder
-
+async function handlerCreateDirQvd(request, reply) {
     try {
-        if (req.body.directory == undefined) {
+        logRESTCall(request);
+
+        // TODO: Add check to make sure the created dir is really a subpath of the QVD folder
+        if (request.body.directory == undefined) {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'No path/directory specified'));
+            reply.send(new errors.MissingParameterError({}, 'No path/directory specified'));
         } else {
-            mkdirp(globals.qvdFolder + '/' + req.body.directory)
+            mkdirp(globals.qvdFolder + '/' + request.body.directory)
                 .then(dir => globals.logger.verbose(`Created dir ${dir}`))
 
                 .catch(function (error) {
                     globals.logger.error(`CREATEDIRQVD: ${JSON.stringify(error, null, 2)}`);
-                    return next(new errors.InternalServerError('Failed to create directory.'));
+                    reply.send(httpErrors(500, 'Failed to create directory'));
                 });
 
-            res.send(201, req.body);
+            reply
+                .code(201)
+                .send(request.body);
         }
-        next();
+
     } catch (err) {
-        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed creating directory'));
-        next();
+        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed creating directory'));
     }
-};
+}
+
 
 /**
  * @swagger
@@ -459,35 +499,34 @@ module.exports.respondPOST_createDirQVD = function (req, res, next) {
  *               type: string
  *               description: Path to created directory.
  *               example: "/Users/joe/data/qvds/2020"
- *       409:
+ *       400:
  *         description: Missing parameter.
  *       500:
  *         description: Internal error (file system permissions etc).
  *
  */
-module.exports.respondPOST_createDir = function (req, res, next) {
-    logRESTCall(req);
-
+async function handlerCreateDir(request, reply) {
     try {
-        if (req.body.directory == undefined) {
+        logRESTCall(request);
+
+        if (request.body.directory == undefined) {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'No path/directory specified'));
+            reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            mkdirp(req.body.directory)
+            mkdirp(request.body.directory)
                 .then(dir => globals.logger.verbose(`Created dir ${dir}`))
 
                 .catch(function (error) {
                     globals.logger.error(`CREATEDIR: ${JSON.stringify(error, null, 2)}`);
-                    return next(new errors.InternalServerError('Failed to create directory.'));
+                    reply.send(httpErrors(500, 'Failed to create directory'));
                 });
 
-            res.send(201, req.body);
+            reply
+                .code(201)
+                .send(request.body);
         }
-
-        next();
     } catch (err) {
-        globals.logger.error(`CREATEDIR: Failed creating directory: ${req.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed creating directory'));
-        next();
+        globals.logger.error(`CREATEDIR: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed creating directory'));
     }
-};
+}

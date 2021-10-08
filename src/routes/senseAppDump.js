@@ -1,6 +1,3 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
 'use strict';
 
 // Load global variables and functions
@@ -8,10 +5,9 @@ var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
 var serializeApp = require('serializeapp');
-
+const httpErrors = require('http-errors');
 const enigma = require('enigma.js');
 const WebSocket = require('ws');
-const errors = require('restify-errors');
 
 // Set up enigma.js configuration
 const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
@@ -35,10 +31,10 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *     responses:
  *       200:
  *         description: App dump successful. App metadata returned as JSON.
- *       408:
- *         description: App not found in Qlik Sense.
- *       409:
+ *       400:
  *         description: Required parameter missing.
+ *       422:
+ *         description: App not found in Qlik Sense.
  *       500:
  *         description: Internal error.
  *
@@ -62,23 +58,37 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *     responses:
  *       200:
  *         description: App dump successful. App metadata returned as JSON.
- *       408:
- *         description: App not found in Qlik Sense.
- *       409:
+ *       400:
  *         description: Required parameter missing.
+ *       422:
+ *         description: App not found in Qlik Sense.
  *       500:
  *         description: Internal error.
  *
  */
-module.exports.respondGET_senseAppDump = function (req, res, next) {
-    logRESTCall(req);
+module.exports = async function (fastify, options) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') && globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
+        globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
 
+        fastify.get('/v4/senseappdump/:appId', handler);
+        fastify.get('/v4/app/:appId/dump', handler);
+    }
+}
+
+/**
+ * 
+ * @param {*} request 
+ * @param {*} reply 
+ */
+function handler(request, reply) {
     try {
-        if (req.params.appId == undefined) {
+        logRESTCall(request);
+
+        if (request.params.appId == undefined) {
             // Required parameter is missing
-            res.send(new errors.MissingParameterError({}, 'Required parameter missing'));
+            reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            globals.logger.info(`APPDUMP: Dumping app: ${req.params.appIi}`);
+            globals.logger.info(`APPDUMP: Dumping app: ${request.params.appId}`);
 
             // create a new session
             // TODO Maybe should use https://github.com/qlik-oss/enigma.js/blob/master/docs/api.md#senseutilitiesbuildurlconfig ?
@@ -104,21 +114,23 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
                     // Please refer to the Engine API documentation for available methods.
 
                     global
-                        .openDoc(req.params.appId, '', '', '', true)
+                        .openDoc(request.params.appId, '', '', '', true)
                         .then(function (app) {
                             return serializeApp(app);
                         })
                         .then(function (data) {
                             var d = data;
 
-                            res.send(200, d);
+                            reply
+                                .code(200)
+                                .send(d);
 
                             // Close connection to Sense server
                             try {
                                 session.close();
                             } catch (err) {
                                 globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                                res.send(new errors.InternalError({}, 'Failed closing connection to Sense server'));
+                                reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                             }
 
                         })
@@ -129,13 +141,13 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
                                 session.close();
                             } catch (err) {
                                 globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                                res.send(new errors.InternalError({}, 'Failed closing connection to Sense server'));
+                                reply.send(httpErrors(500, 'Error closing connection to Sense server'));
                             }
 
-                            return next(new errors.RequestTimeoutError('Failed to open document in Sense engine.'));
+                            reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
+                            return;
                         });
 
-                    return next();
                 })
                 .catch(function (error) {
                     globals.logger.error(`APPDUMP: Error while opening session to Sense engine during app dump: ${JSON.stringify(error, null, 2)}`);
@@ -144,14 +156,16 @@ module.exports.respondGET_senseAppDump = function (req, res, next) {
                         session.close();
                     } catch (err) {
                         globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                        reply.send(httpErrors(500, 'Error closing connection to Sense server'));
                     }
 
-                    return next(new errors.RequestTimeoutError('Failed to open session to Sense engine.'));
+                    reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
+                    return;
                 });
         }
     } catch (err) {
-        globals.logger.error(`APPDUMP: Failed dumping app: ${req.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed dumping app'));
-        next();
+        globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed dumping app'));
     }
-};
+}
+

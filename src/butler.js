@@ -1,15 +1,13 @@
 // Add dependencies
 const dockerHealthCheckServer = require('fastify')({ logger: false });
-const restServer = require('fastify')({ logger: false });
-const {respondGET_butlerPing} =require ('./rest/butlerPing');
+const restServer = require('fastify')({ logger: true });
+const AutoLoad = require('fastify-autoload')
 
-// var restify = require('restify');
-var corsMiddleware = require('restify-cors-middleware');
 var restifySwaggerJsdoc = require('restify-swagger-jsdoc');
 
 // Load code from sub modules
 var globals = require('./globals');
-var rest = require('./rest');
+// var rest = require('./rest');
 var mqtt = require('./mqtt');
 var udp = require('./udp');
 var heartbeat = require('./lib/heartbeat.js');
@@ -89,59 +87,13 @@ async function mainScript() {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
 
-    // // ---------------------------------------------------
-    // // Create restServer object for Docker healthcheck
-    // const restServerDockerHealthCheck = Fastify({
-    //     logger: true
-    // });
-
-    // // var restServerDockerHealthCheck = restify.createServer({
-    // //     name: 'Docker healthcheck for Butler',
-    // //     version: globals.appVersion,
-    // // });
-
-    // // Enable parsing of http parameters
-    // restServerDockerHealthCheck.use(restify.plugins.queryParser());
-
-    // // Set up endpoint for Docker healthcheck REST server
-    // restServerDockerHealthCheck.get(
-    //     {
-    //         path: '/',
-    //         flags: 'i',
-    //     },
-    //     (req, res, next) => {
-    //         globals.logger.verbose('Docker healthcheck API endpoint called.');
-
-    //         res.send(0);
-    //         next();
-    //     },
-    // );
-
     // ---------------------------------------------------
-    // Set up restServer object
-    restServer.register(respondGET_butlerPing);
+    // Loads all plugins defined in routes
+    restServer.register(AutoLoad, {
+        dir: path.join(__dirname, 'routes'),
+        // options: Object.assign({}, opts)
+    });
 
-    // var restServer = restify.createServer({
-    //     name: 'Butler for Qlik Sense',
-    //     version: globals.appVersion,
-    // });
-
-    // // Enable parsing of http parameters
-    // restServer.use(restify.plugins.queryParser());
-
-    // // Enable parsing of request body
-    // restServer.use(restify.plugins.bodyParser());
-
-    // // Set up CORS handling
-    // const cors = corsMiddleware({
-    //     preflightMaxAge: 5, //Optional
-    //     origins: ['*'],
-    //     // allowHeaders: ['Access-Control-Allow-Origin'],
-    //     // exposeHeaders: [],
-    // });
-
-    // restServer.pre(cors.preflight);
-    // restServer.use(cors.actual);
 
     // restServer.pre(function (req, res, next) {
     //     // Is there a X-HTTP-Method-Override header?
@@ -159,11 +111,6 @@ async function mainScript() {
 
     // // Cleans up sloppy URLs on the request object
     // // TODO Verify that sloppy URLs are really cleaned up
-    // restServer.pre(restify.plugins.pre.sanitizePath());
-
-    // // Dedupe slashes in URL before routing
-    // // TODO Verify that deduping really works.
-    // restServer.pre(restify.plugins.pre.dedupeSlashes());
 
     restifySwaggerJsdoc.createSwaggerPage({
         title: 'Butler API documentation', // Page title
@@ -174,173 +121,6 @@ async function mainScript() {
         path: '/docs/swagger', // Public url where the swagger page will be available
         apis: ['./rest/*.js'],
     });
-    // Set up endpoints for REST server
-    //restServer.get('/v4/senseQRSPing', rest.senseQRSPing.respondSenseQRSPing);
-
-    // if (globals.config.get('Butler.restServerEndpointsEnable.getDiskSpace')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/getdiskspace');
-    //     restServer.get({ path: '/v4/getdiskspace' }, rest.getDiskSpace.respondGET_getDiskSpace);
-    // }
-
-    // if (
-    //     globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
-    //     globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
-    // ) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/configfile/endpointsenabled');
-    //     restServer.get({ path: '/v4/configfile/endpointsenabled' }, rest.api.respondGET_configFileListEnbledEndpoints);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.fileDelete') && globals.config.get('Butler.restServerEndpointsEnable.fileDelete')) {
-    //     globals.logger.debug('Registering REST endpoint DELETE /v4/filedelete');
-    //     restServer.del({ path: '/v4/filedelete' }, rest.disk_utils.respondPUT_fileDelete);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.fileMove') && globals.config.get('Butler.restServerEndpointsEnable.fileMove')) {
-    //     globals.logger.debug('Registering REST endpoint PUT /v4/filemove');
-    //     restServer.put({ path: '/v4/filemove' }, rest.disk_utils.respondPUT_fileMove);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.fileCopy') && globals.config.get('Butler.restServerEndpointsEnable.fileCopy')) {
-    //     globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
-    //     restServer.put({ path: '/v4/filecopy' }, rest.disk_utils.respondPUT_fileCopy);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.activeUserCount') && globals.config.get('Butler.restServerEndpointsEnable.activeUserCount')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/activeusercount');
-    //     restServer.get({ path: '/v4/activeusercount' }, rest.activeUserCount.respondGET_activeUserCount);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.activeUsers') && globals.config.get('Butler.restServerEndpointsEnable.activeUsers')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/activeusers');
-    //     restServer.get({ path: '/v4/activeusers' }, rest.activeUsers.respondGET_activeUsers);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.slackPostMessage') && globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')) {
-    //     globals.logger.debug('Registering REST endpoint PUT /v4/slackpostmessage');
-    //     restServer.put({ path: '/v4/slackpostmessage' }, rest.slackPostMessage.respondPUT_slackPostMessage);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.createDir') && globals.config.get('Butler.restServerEndpointsEnable.createDir')) {
-    //     globals.logger.debug('Registering REST endpoint POST /v4/createdir');
-    //     restServer.post({ path: '/v4/createdir' }, rest.disk_utils.respondPOST_createDir);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.createDirQVD') && globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')) {
-    //     globals.logger.debug('Registering REST endpoint POST /v4/createdirqvd');
-    //     restServer.post({ path: '/v4/createdirqvd' }, rest.disk_utils.respondPOST_createDirQVD);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') && globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')) {
-    //     globals.logger.debug('Registering REST endpoint PUT /v4/mqttpublishmessage');
-    //     restServer.put({ path: '/v4/mqttpublishmessage' }, rest.mqttPublishMessage.respondPUT_mqttPublishMessage);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') && globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')) {
-    //     globals.logger.debug('Registering REST endpoint PUT /v4/sensestarttask');
-    //     restServer.put({ path: '/v4/reloadtask/:taskId/start' }, rest.senseStartTask.respondPUT_senseStartTask);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') && globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
-    //     restServer.put({ path: '/v4/app/:appId/reload' }, rest.senseApp.respondPUT_senseAppReload);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') && globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
-    //     restServer.get({ path: '/v4/senseappdump/:appId' }, rest.senseAppDump.respondGET_senseAppDump);
-    //     restServer.get({ path: '/v4/app/:appId/dump' }, rest.senseAppDump.respondGET_senseAppDump);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.senseListApps') && globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
-    //     restServer.get({ path: '/v4/senselistapps' }, rest.senseListApps.respondGET_senseListApps);
-    //     restServer.get({ path: '/v4/apps/list' }, rest.senseListApps.respondGET_senseListApps);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.butlerping') && globals.config.get('Butler.restServerEndpointsEnable.butlerping')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/butlerping');
-    //     restServer.get({ path: '/v4/butlerping' }, rest.butlerPing.respondGET_butlerPing);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') && globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/base62tobase16');
-    //     restServer.get({ path: '/v4/base62tobase16' }, rest.base62ToBase16.respondGET_base62ToBase16);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.base16ToBase62') && globals.config.get('Butler.restServerEndpointsEnable.base16ToBase62')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/base16tobase62');
-    //     restServer.get({ path: '/v4/base16tobase62' }, rest.base16ToBase62.respondGET_base16ToBase62);
-    // }
-
-    // if (globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') && globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
-    //     globals.logger.debug('Registering REST endpoint GET /v4/keyvaluenamespaces');
-    //     restServer.get({ path: '/v4/keyvaluesnamespaces' }, rest.keyValueStore.respondGET_keyvaluesnamespaces);
-
-    //     globals.logger.debug('Registering REST endpoint GET /v4/keyvalues/:namespace/keyexists');
-    //     restServer.get({ path: '/v4/keyvalues/:namespace/keyexists' }, rest.keyValueStore.respondGET_keyvalueExists);
-
-    //     globals.logger.debug('Registering REST endpoint GET /v4/keyvalues');
-    //     restServer.get({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondGET_keyvalues);
-
-    //     globals.logger.debug('Registering REST endpoint POST /v4/keyvalues');
-    //     restServer.post({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondPOST_keyvalues);
-
-    //     globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}/{key}');
-    //     restServer.del({ path: '/v4/keyvalues/:namespace/:key' }, rest.keyValueStore.respondDELETE_keyvalues);
-
-    //     globals.logger.debug('Registering REST endpoint DELETE /v4/keyvalues/{namespace}');
-    //     restServer.del({ path: '/v4/keyvalues/:namespace' }, rest.keyValueStore.respondDELETE_keyvaluesDelete);
-
-    //     globals.logger.debug('Registering REST endpoint GET /v4/keylist/{namespace}');
-    //     restServer.get({ path: '/v4/keylist/:namespace' }, rest.keyValueStore.respondGET_keylistGet);
-    // }
-
-    // if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
-    //     if (
-    //         globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') &&
-    //         globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')
-    //     ) {
-    //         globals.logger.debug('Registering REST endpoint POST /v4/schedules');
-
-    //         restServer.post({ path: '/v4/schedules' }, rest.scheduler.respondPOST_schedules);
-    //     }
-
-    //     if (
-    //         globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&
-    //         globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')
-    //     ) {
-    //         globals.logger.debug('Registering REST endpoint GET /v4/schedules');
-
-    //         restServer.get({ path: '/v4/schedules' }, rest.scheduler.respondGET_schedules);
-    //     }
-
-    //     if (
-    //         globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') &&
-    //         globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')
-    //     ) {
-    //         globals.logger.debug('Registering REST endpoint DELETE /v4/schedules');
-
-    //         restServer.del({ path: '/v4/schedules/:scheduleId' }, rest.scheduler.respondDELETE_schedules);
-    //     }
-
-    //     if (
-    //         globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') &&
-    //         globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
-    //     ) {
-    //         globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
-
-    //         restServer.put({ path: '/v4/schedules/:scheduleId/start' }, rest.scheduler.respondPUT_schedulesStart);
-    //     }
-
-    //     if (
-    //         globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') &&
-    //         globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
-    //     ) {
-    //         globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
-
-    //         restServer.put({ path: '/v4/schedules/:scheduleId/stop' }, rest.scheduler.respondPUT_schedulesStop);
-    //     }
-    // }
 
     // ---------------------------------------------------
     // Set up MQTT
@@ -369,13 +149,16 @@ async function mainScript() {
         globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
         globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
-        restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function () {
-            globals.logger.info(`MAIN: REST server listening on ${restServer.url}`);
+        restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function (err, address) {
+        // restServer.listen(8437, '192.168.1.168', function (err, address) {
+            if (err) {
+                globals.logger.error(`MAIN: REST server could not listen on ${address}`);
+                restServer.log.error(err)
+                process.exit(1)
+              }
+              restServer.log.info(`server listening on ${address}`)
+              globals.logger.info(`MAIN: REST server listening on ${address}`);
         });
-
-        // restServer.listen(globals.config.get('Butler.restServerConfig.serverPort'), globals.config.get('Butler.restServerConfig.serverHost'), function () {
-        //     globals.logger.info(`MAIN: REST server listening on ${restServer.url}`);
-        // });
     }
 
     // Load already defined schedules
@@ -389,15 +172,6 @@ async function mainScript() {
         }
     }
 
-    // // Start Docker healthcheck REST server on port set in config file
-    // if (globals.config.get('Butler.dockerHealthCheck.enable') == true) {
-    //     globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
-
-    //     restServerDockerHealthCheck.listen(globals.config.get('Butler.dockerHealthCheck.port'), function () {
-    //         globals.logger.info('MAIN: Docker healthcheck server now listening');
-    //     });
-    // }
-
     // Start Docker healthcheck REST server on port set in config file
     if (
         (globals.config.has('Butler.dockerHealthCheck.enabled') &&
@@ -407,9 +181,6 @@ async function mainScript() {
     ) {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
-
-            // Use http://localhost:12398/health as Docker healthcheck URL
-            // eslint-disable-next-line global-require
 
             dockerHealthCheckServer.register(require('fastify-healthcheck'));
             await dockerHealthCheckServer.listen(

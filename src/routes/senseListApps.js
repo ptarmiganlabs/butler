@@ -1,15 +1,13 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
 'use strict';
+
+const httpErrors = require('http-errors');
+const enigma = require('enigma.js');
+const WebSocket = require('ws');
 
 // Load global variables and functions
 var globals = require('../globals');
 var logRESTCall = require('../lib/logRESTCall').logRESTCall;
 
-const enigma = require('enigma.js');
-const WebSocket = require('ws');
-const errors = require('restify-errors');
 
 // Set up enigma.js configuration
 const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVersion);
@@ -68,10 +66,25 @@ const qixSchema = require('enigma.js/schemas/' + globals.configEngine.engineVers
  *         description: Internal error.
  *
  */
-module.exports.respondGET_senseListApps = function (req, res, next) {
-    logRESTCall(req);
+module.exports = async function (fastify, options) {
+    if (globals.config.has('Butler.restServerEndpointsEnable.senseListApps') && globals.config.get('Butler.restServerEndpointsEnable.senseListApps')) {
+        globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
+        globals.logger.debug('Registering REST endpoint GET /v4/apps/list');
 
+        fastify.get('/v4/senselistapps', handler);
+        fastify.get('/v4/apps/list', handler);
+    }
+};
+
+/**
+ * 
+ * @param {*} request 
+ * @param {*} reply 
+ */
+function handler(request, reply) {
     try {
+        logRESTCall(request);
+
         // create a new session
         const configEnigma = {
             schema: qixSchema,
@@ -107,14 +120,16 @@ module.exports.respondGET_senseListApps = function (req, res, next) {
                             ]);
                         });
 
-                        res.send(200, jsonArray);
+                        reply
+                            .code(200)
+                            .send(jsonArray);
 
                         // Close connection to Sense server
                         try {
                             session.close();
                         } catch (err) {
                             globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                            res.send(new errors.InternalError({}, 'Failed closing connection to Sense server'));
+                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                         }
                     })
                     .catch(function (error) {
@@ -124,11 +139,10 @@ module.exports.respondGET_senseListApps = function (req, res, next) {
                             session.close();
                         } catch (err) {
                             globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                            res.send(new errors.InternalError({}, 'Failed closing connection to Sense server'));
+                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                         }
                     });
-
-                next();
+                return;
             })
             .catch(function (error) {
                 globals.logger.error(`LISTAPPS: Error while opening session to Sense engine during app listing: ${JSON.stringify(error, null, 2)}`);
@@ -139,11 +153,11 @@ module.exports.respondGET_senseListApps = function (req, res, next) {
                     globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
                 }
 
-                return next(new errors.RequestTimeoutError('Failed to open session to Sense engine'));
+                reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
+                return;
             });
     } catch (err) {
-        globals.logger.error(`LISTAPPS: getting list of Sense apps: ${req.body.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
-        res.send(new errors.InternalError({}, 'Failed getting list of Sense apps'));
-        next();
+        globals.logger.error(`LISTAPPS: getting list of Sense apps: ${request.body.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
+        reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }
-};
+}
