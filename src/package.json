@@ -4,7 +4,7 @@
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "dependencies": {
         "any-base": "^1.1.0",
-        "axios": "^0.21.4",
+        "axios": "^0.23.0",
         "config": "^3.3.6",
         "cron-job-manager": "^2.1.4",
         "dict": "^1.4.0",
