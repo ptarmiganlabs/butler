@@ -14,6 +14,13 @@ const apiGetButlerPing = {
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },

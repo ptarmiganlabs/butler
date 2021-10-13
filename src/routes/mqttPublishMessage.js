@@ -20,8 +20,10 @@ function handlerPutMqttMessage(request, reply) {
                     if (globals.mqttClient) {
                         globals.mqttClient.publish(request.body.topic, request.body.message);
                     }
-
-                    return request.body;
+                    reply
+                        .type('application/json; charset=utf-8')
+                        .code(201)
+                        .send(JSON.stringify(request.body));
                 }
             } catch (err) {
                 globals.logger.error(
