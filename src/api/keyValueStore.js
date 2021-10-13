@@ -336,8 +336,12 @@ const apiGetKeysInNamespace = {
                             },
                         },
                         example: [
-                            { key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1' },
-                            { key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2' },
+                            {
+                                key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
+                            },
+                            {
+                                key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2',
+                            },
                         ],
                     },
                 },
