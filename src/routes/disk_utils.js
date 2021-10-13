@@ -7,77 +7,14 @@ const mkdirp = require('mkdirp');
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
 const { isDirectoryChildOf } = require('../lib/disk_utils');
+const {
+    apiFileCopy,
+    apiFileMove,
+    apiFileDelete,
+    apiCreateDir,
+    apiCreateDirQvd,
+} = require('../api/disk_utils');
 
-/**
- * @swagger
- *
- * /v4/filecopy:
- *   put:
- *     description: |
- *       Copy a file between well defined, approved locations.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: body
- *         description: |
- *           Copying of files is only posttible between pre-approved directories.
- *           Defining approved source and destination directories is done in Butler's config file.
- *           If the source directory contains subdirectories, these will be copied too.
- *         in: body
- *         schema:
- *           type: object
- *           required:
- *             - fromFile
- *             - toFile
- *           properties:
- *             fromFile:
- *               type: string
- *               description: Name of source file
- *               example: "subfolder/file1.qvd"
- *             toFile:
- *               type: string
- *               description: Name of destination file. Can be different from source file name, if needed
- *               example: "archive/file1_20200925.qvd"
- *             overwrite:
- *               type: boolean
- *               description: Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.
- *               example: "false"
- *             preserveTimestamp:
- *               type: boolean
- *               description: When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.
- *               example: "false"
- *     responses:
- *       200:
- *         description: File copied.
- *         schema:
- *           type: object
- *           properties:
- *             fromFile:
- *               type: string
- *               description: Name of source file
- *               example: "subfolder/file1.qvd"
- *             toFile:
- *               type: string
- *               description: Name of destination file. Can be different from source file name, if needed
- *               example: "archive/file1_20200925.qvd"
- *             overwrite:
- *               type: boolean
- *               description: Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.
- *               example: "false"
- *             preserveTimestamp:
- *               type: boolean
- *               description: When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.
- *               example: "false"
- *       400:
- *         description: fromFile not found.
- *       400:
- *         description: Required parameter missing.
- *       403:
- *         description: No approved fromDir/toDir for file move.
- *       500:
- *         description: Internal error, or file overwrite was not allowed.
- *
- */
 async function handlerFileCopy(request, reply) {
     try {
         logRESTCall(request);
@@ -135,7 +72,7 @@ async function handlerFileCopy(request, reply) {
                         preserveTimestamps: preserveTimestamp,
                     });
 
-                    reply.code(200).send({
+                    reply.code(201).send({
                         fromFile,
                         toFile,
                         overwrite,
@@ -163,67 +100,6 @@ async function handlerFileCopy(request, reply) {
     }
 }
 
-/**
- * @swagger
- *
- * /v4/filemove:
- *   put:
- *     description: |
- *       Move a file between well defined, approved locations.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: body
- *         description: |
- *           Moving of files is only posttible between pre-approved directories.
- *           Defining approved source and destination directories is done in Butler's config file.
- *         in: body
- *         schema:
- *           type: object
- *           required:
- *             - fromFile
- *             - toFile
- *           properties:
- *             fromFile:
- *               type: string
- *               description: Name of source file
- *               example: "subfolder/file1.qvd"
- *             toFile:
- *               type: string
- *               description: Name of destination file. Can be different from source file name, if needed
- *               example: "archive/file1_20200925.qvd"
- *             overwrite:
- *               type: boolean
- *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
- *               example: "false"
- *     responses:
- *       200:
- *         description: File moved.
- *         schema:
- *           type: object
- *           properties:
- *             fromFile:
- *               type: string
- *               description: Name of source file
- *               example: "subfolder/file1.qvd"
- *             toFile:
- *               type: string
- *               description: Name of destination file. Can be different from source file name, if needed
- *               example: "archive/file1_20200925.qvd"
- *             overwrite:
- *               type: boolean
- *               description: Controls whether destination file should be overwritten if it already exists. Defaults to false.
- *               example: "false"
- *       400:
- *         description: fromFile not found.
- *       400:
- *         description: Required parameter missing.
- *       403:
- *         description: No approved fromDir/toDir for file move.
- *       500:
- *         description: Internal error, or file overwrite was not allowed.
- *
- */
 async function handlerFileMove(request, reply) {
     try {
         logRESTCall(request);
@@ -273,7 +149,7 @@ async function handlerFileMove(request, reply) {
                 if (moveIsOk) {
                     await fs.moveSync(fromFile, toFile, { overwrite });
 
-                    reply.code(200).send({ fromFile, toFile, overwrite });
+                    reply.code(201).send({ fromFile, toFile, overwrite });
                 } else {
                     globals.logger.error(
                         `FILEMOVE: No approved fromDir/toDir for file move ${request.body.fromFile} to ${request.body.toFile}`
@@ -296,43 +172,6 @@ async function handlerFileMove(request, reply) {
     }
 }
 
-/**
- * @swagger
- *
- * /v4/filedelete:
- *   delete:
- *     description: |
- *       Delete file(s) in well defined, approved locations.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: body
- *         description: |
- *           It is only possible to delete files in pre-approved directories, or subdirectories thereof.
- *           Defining approved directories is done in Butler's config file.
- *         in: body
- *         schema:
- *           type: object
- *           required:
- *             - deleteFile
- *           properties:
- *             deleteFile:
- *               type: string
- *               description: Name of file to be deleted. Use forward/backward slashes in paths as needed, depending on whether Butler runs on Windows/non-Windows platform.
- *               example: "/data/qvdstore/sales/file1.qvd"
- *     responses:
- *       204:
- *         description: File deleted.
- *       400:
- *         description: File requested for delete not found.
- *       400:
- *         description: Required parameter missing.
- *       403:
- *         description: No approved directory matches the delete request.
- *       500:
- *         description: Internal error, or file delete was not allowed.
- *
- */
 async function handlerFileDelete(request, reply) {
     try {
         logRESTCall(request);
@@ -389,44 +228,6 @@ async function handlerFileDelete(request, reply) {
     }
 }
 
-/**
- * @swagger
- *
- * /v4/createdirqvd:
- *   post:
- *     description: |
- *       Creates a directory in QVD directory (which is defined in Butler's config file).
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: directory
- *         description: Path to directory that should be created. The created directory will always be relative to the QVD folder defined in the Butler config file..
- *         in: body
- *         schema:
- *           type: object
- *           properties:
- *             directory:
- *               type: string
- *               required: true
- *               description: Path to created directory.
- *               example: "subfolder/2020-10"
- *     responses:
- *       201:
- *         description: Directory created.
- *         schema:
- *           type: object
- *           properties:
- *             directory:
- *               type: string
- *               description: Path to created directory.
- *               example: "subfolder/2020-10"
- *
- *       400:
- *         description: Missing parameter.
- *       500:
- *         description: Internal error (file system permissions etc).
- *
- */
 async function handlerCreateDirQvd(request, reply) {
     try {
         logRESTCall(request);
@@ -456,49 +257,6 @@ async function handlerCreateDirQvd(request, reply) {
     }
 }
 
-/**
- * @swagger
- *
- * /v4/createdir:
- *   post:
- *     description: |
- *       Creates a directory in file system.
- *       If the directory already exists nothing will happen.
- *       If permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.
- *
- *       __WARNING: This method can create folders anywhere (where the account running Butler has permissions) in the filesystem.__
- *       Use with caution.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: body
- *         description:
- *         in: body
- *         schema:
- *           type: object
- *           required:
- *             - directory
- *           properties:
- *             directory:
- *               type: string
- *               description: Path to directory that should be created. Can be a relative or absolute path.
- *               example: "/Users/joe/data/qvds/2020"
- *     responses:
- *       201:
- *         description: Directory created.
- *         schema:
- *           type: object
- *           properties:
- *             directory:
- *               type: string
- *               description: Path to created directory.
- *               example: "/Users/joe/data/qvds/2020"
- *       400:
- *         description: Missing parameter.
- *       500:
- *         description: Internal error (file system permissions etc).
- *
- */
 async function handlerCreateDir(request, reply) {
     try {
         logRESTCall(request);
@@ -534,8 +292,7 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.fileCopy')
     ) {
         globals.logger.debug('Registering REST endpoint PUT /v4/filecopy');
-
-        fastify.put('/v4/filecopy', handlerFileCopy);
+        fastify.put('/v4/filecopy', apiFileCopy, handlerFileCopy);
     }
 
     if (
@@ -543,8 +300,7 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.fileMove')
     ) {
         globals.logger.debug('Registering REST endpoint PUT /v4/filemove');
-
-        fastify.put('/v4/filemove', handlerFileMove);
+        fastify.put('/v4/filemove', apiFileMove, handlerFileMove);
     }
 
     if (
@@ -552,8 +308,7 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.fileDelete')
     ) {
         globals.logger.debug('Registering REST endpoint DELETE /v4/filedelete');
-
-        fastify.delete('/v4/filedelete', handlerFileDelete);
+        fastify.delete('/v4/filedelete', apiFileDelete, handlerFileDelete);
     }
 
     if (
@@ -561,8 +316,7 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.createDirQVD')
     ) {
         globals.logger.debug('Registering REST endpoint POST /v4/createdirqvd');
-
-        fastify.post('/v4/createdirqvd', handlerCreateDirQvd);
+        fastify.post('/v4/createdirqvd', apiCreateDirQvd, handlerCreateDirQvd);
     }
 
     if (
@@ -570,7 +324,6 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.createDir')
     ) {
         globals.logger.debug('Registering REST endpoint PUT /v4/createdir');
-
-        fastify.post('/v4/createdir', handlerCreateDir);
+        fastify.post('/v4/createdir', apiCreateDir, handlerCreateDir);
     }
 };
