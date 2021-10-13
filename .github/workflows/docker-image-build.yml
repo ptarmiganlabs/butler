@@ -8,10 +8,10 @@ name: Build Docker image CI
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   tags:
-    #     description: 'Test scenario tags'
-    #     required: false
+    inputs:
+      tags:
+        description: 'Test scenario tags'
+        required: false
   release:
     types:
       - published

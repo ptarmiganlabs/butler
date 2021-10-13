@@ -30,7 +30,7 @@
   ],
   "packages": {
     "src": {
-      "package-name": "butler",
+      "package-name": "butler"
     }
   }
 }
