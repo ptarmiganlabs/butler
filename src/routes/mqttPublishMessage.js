@@ -1,0 +1,58 @@
+const httpErrors = require('http-errors');
+
+// Load global variables and functions
+const globals = require('../globals');
+const { logRESTCall } = require('../lib/logRESTCall');
+const { apiPutMqttMessage } = require('../api/mqttPublishMessage');
+
+// eslint-disable-next-line consistent-return
+function handlerPutMqttMessage(request, reply) {
+    try {
+        logRESTCall(request);
+
+        if (globals.mqttClient) {
+            try {
+                if (request.body.topic === undefined || request.body.message === undefined) {
+                    // Required parameter is missing
+                    reply.send(httpErrors(400, 'Required parameter missing'));
+                } else {
+                    // Use data in request to publish MQTT message
+                    if (globals.mqttClient) {
+                        globals.mqttClient.publish(request.body.topic, request.body.message);
+                    }
+
+                    return request.body;
+                }
+            } catch (err) {
+                globals.logger.error(
+                    `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
+                        request.body,
+                        null,
+                        2
+                    )}, error is: ${JSON.stringify(err, null, 2)}`
+                );
+                reply.send(httpErrors(500, 'Failed publishing MQTT message'));
+            }
+        }
+    } catch (err) {
+        globals.logger.error(
+            `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
+                request.body,
+                null,
+                2
+            )}, error is: ${JSON.stringify(err, null, 2)}`
+        );
+        reply.send(httpErrors(500, 'Failed publishing MQTT message'));
+    }
+}
+
+// eslint-disable-next-line no-unused-vars
+module.exports = async (fastify, options) => {
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') &&
+        globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/mqttpublishmessage');
+        fastify.put('/v4/mqttpublishmessage', apiPutMqttMessage, handlerPutMqttMessage);
+    }
+};

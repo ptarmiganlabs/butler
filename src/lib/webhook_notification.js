@@ -1,15 +1,10 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
-var globals = require('../globals');
+const { RateLimiterMemory } = require('rate-limiter-flexible');
 const axios = require('axios');
 
-const { RateLimiterMemory } = require('rate-limiter-flexible');
+const globals = require('../globals');
 
-var rateLimiterMemoryFailedReloads = undefined,
-    rateLimiterMemoryAbortedReloads = undefined;
+let rateLimiterMemoryFailedReloads;
+let rateLimiterMemoryAbortedReloads;
 
 if (globals.config.has('Butler.webhookNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
@@ -43,7 +38,9 @@ function getOutgoingWebhookReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.webhookNotification.reloadTaskFailure.webhooks')
         ) {
             // Not enough info in config file
-            globals.logger.error('WEBHOOKOUTFAILED: Reload failure outgoing webhook config info missing in Butler config file');
+            globals.logger.error(
+                'WEBHOOKOUTFAILED: Reload failure outgoing webhook config info missing in Butler config file'
+            );
             return false;
         }
 
@@ -68,7 +65,9 @@ function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.webhookNotification.reloadTaskAborted.webhooks')
         ) {
             // Not enough info in config file
-            globals.logger.error('WEBHOOKOUTABORTED: Reload aborted outgoing webhook config info missing in Butler config file');
+            globals.logger.error(
+                'WEBHOOKOUTABORTED: Reload aborted outgoing webhook config info missing in Butler config file'
+            );
             return false;
         }
 
@@ -89,13 +88,14 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const webhook of webhookConfig.webhooks) {
             globals.logger.debug(`WEBHOOKOUT: Processing webhook ${JSON.stringify(webhook)}`);
 
             // Only process the webhook if all required info is available
-            let lowercaseMethod = null,
-                url = null,
-                axiosRequest = null;
+            let lowercaseMethod = null;
+            let url = null;
+            let axiosRequest = null;
 
             try {
                 // 1. Make sure the webhook URL is a valid URL.
@@ -104,17 +104,27 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
 
                 // 2. Make sure the HTTP method is one of the supported ones
                 lowercaseMethod = webhook.httpMethod.toLowerCase();
-                if (lowercaseMethod != 'get' && lowercaseMethod != 'post' && lowercaseMethod != 'put') {
+                if (
+                    lowercaseMethod !== 'get' &&
+                    lowercaseMethod !== 'post' &&
+                    lowercaseMethod !== 'put'
+                ) {
                     throw `Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`;
                 }
             } catch (err) {
-                globals.logger.error(`WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`);
+                globals.logger.error(
+                    `WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(
+                        webhook,
+                        null,
+                        2
+                    )}`
+                );
                 throw err;
             }
 
             globals.logger.silly(`WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
 
-            if (lowercaseMethod == 'get') {
+            if (lowercaseMethod === 'get') {
                 // Build parameter string for GET call
                 const params = new URLSearchParams();
                 params.append('event', webhookConfig.event);
@@ -131,16 +141,14 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
 
                 url.search = params.toString();
 
-                // let url = new URL(params.toString(), webhook.webhookURL);
-                let urlString = url.toString();
-                globals.logger.silly(`WEBHOOKOUT: Final GET webhook URL: ${url}`);
+                globals.logger.silly(`WEBHOOKOUT: Final GET webhook URL: ${url.toString()}`);
 
                 axiosRequest = {
                     url: url.toString(),
                     method: 'get',
                     timeout: 10000,
                 };
-            } else if (lowercaseMethod == 'put') {
+            } else if (lowercaseMethod === 'put') {
                 // Build body for PUT call
                 axiosRequest = {
                     url: url.toString(),
@@ -161,7 +169,7 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     },
                     headers: { 'Content-Type': 'application/json' },
                 };
-            } else if (lowercaseMethod == 'post') {
+            } else if (lowercaseMethod === 'post') {
                 // Build body for POST call
                 axiosRequest = {
                     url: url.toString(),
@@ -184,7 +192,8 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                 };
             }
 
-            let response = await axios.request(axiosRequest);
+            // eslint-disable-next-line no-await-in-loop
+            const response = await axios.request(axiosRequest);
             globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
         }
     } catch (err) {
@@ -195,16 +204,22 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
 function sendReloadTaskFailureNotificationWebhook(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOKOUTFAILED: Rate limiting ok: Sending reload failure notification outgoing webhook for task "${reloadParams.taskName}"`,
+                    `WEBHOOKOUTFAILED: Rate limiting ok: Sending reload failure notification outgoing webhook for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(
+                    `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(
+                        rateLimiterRes,
+                        null,
+                        2
+                    )}"`
+                );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
-                let webhookConfig = getOutgoingWebhookReloadFailedNotificationConfigOk();
-                if (webhookConfig == false) {
+                const webhookConfig = getOutgoingWebhookReloadFailedNotificationConfigOk();
+                if (webhookConfig === false) {
                     return 1;
                 }
 
@@ -213,27 +228,39 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
                 globals.logger.error(`WEBHOOKOUTFAILED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
+        .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `WEBHOOKOUTFAILED: Rate limiting failed. Not sending reload failure notification via outgoing webhook for task "${reloadParams.taskName}"`,
+                `WEBHOOKOUTFAILED: Rate limiting failed. Not sending reload failure notification via outgoing webhook for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(`WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(
+                `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(
+                    rateLimiterRes,
+                    null,
+                    2
+                )}"`
+            );
         });
 }
 
 function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
-        .then(async rateLimiterRes => {
+        .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOKOUTABORTED: Rate limiting ok: Sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`,
+                    `WEBHOOKOUTABORTED: Rate limiting ok: Sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(
+                    `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(
+                        rateLimiterRes,
+                        null,
+                        2
+                    )}"`
+                );
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
-                let webhookConfig = getOutgoingWebhookReloadAbortedNotificationConfigOk();
-                if (webhookConfig == false) {
+                const webhookConfig = getOutgoingWebhookReloadAbortedNotificationConfigOk();
+                if (webhookConfig === false) {
                     return 1;
                 }
 
@@ -242,11 +269,17 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
                 globals.logger.error(`WEBHOOKOUTABORTED: ${err}`);
             }
         })
-        .catch(rateLimiterRes => {
+        .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `WEBHOOKOUTABORTED: Rate limiting failed. Not sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`,
+                `WEBHOOKOUTABORTED: Rate limiting failed. Not sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(`WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(
+                `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(
+                    rateLimiterRes,
+                    null,
+                    2
+                )}"`
+            );
         });
 }
 

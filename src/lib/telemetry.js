@@ -1,19 +1,15 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
+/* eslint-disable prettier/prettier */
 const axios = require('axios');
-var globals = require('../globals');
+
+const globals = require('../globals');
 
 // const telemetryBaseUrl = 'http://localhost:7071/';
 const telemetryBaseUrl = 'https://ptarmiganlabs-telemetry.azurewebsites.net/';
 const telemetryUrl = '/api/butlerTelemetry';
 
-var callRemoteURL = async function () {
+const callRemoteURL = async () => {
     try {
-
-        let body = {
+        const body = {
             service: 'butler',
             serviceVersion: globals.appVersion,
             system: {
@@ -25,7 +21,7 @@ var callRemoteURL = async function () {
                 codename: globals.hostInfo.si.os.codename,
                 virtual: globals.hostInfo.si.system.virtual,
                 hypervisor: globals.hostInfo.si.os.hypervizor,
-                nodeVersion: globals.hostInfo.node.nodeVersion
+                nodeVersion: globals.hostInfo.node.nodeVersion,
             },
             enabledFeatures: {
                 api: globals.config.has('Butler.restServerEndpointsEnable') ? globals.config.get('Butler.restServerEndpointsEnable') : {},
@@ -49,11 +45,11 @@ var callRemoteURL = async function () {
                     scheduler: globals.config.has('Butler.scheduler.enable') ? globals.config.get('Butler.scheduler.enable') : false,
                     mqtt: globals.config.has('Butler.mqttConfig.enable') ? globals.config.get('Butler.mqttConfig.enable') : false,
                     userActivityLogging: globals.config.has('Butler.userActivityLogging.enable') ? globals.config.get('Butler.userActivityLogging.enable') : false,
-                }
-            }
+                },
+            },
         };
 
-        let axiosConfig = {
+        const axiosConfig = {
             url: telemetryUrl,
             method: 'post',
             baseURL: telemetryBaseUrl,
@@ -71,14 +67,14 @@ var callRemoteURL = async function () {
         globals.logger.error('     This information makes it possible to focus development efforts where they will make most impact and be most valuable.');
         globals.logger.error(`     Error: ${err.response.status} (${err.response.statusText}).`);
         globals.logger.error('❤️  Thank you for your supporting Butler by allowing telemetry! ❤️');
-    }  
+    }
 };
 
 function setupAnonUsageReportTimer(logger, hostInfo) {
     try {
-        setInterval(function () {
+        setInterval(() => {
             callRemoteURL(logger, hostInfo);
-        }, 1000*60*60*12);          // Report anon telemetry every 12 hours
+        }, 1000 * 60 * 60 * 12); // Report anon telemetry every 12 hours
 
         // Do an initial report to the remote URL
         callRemoteURL(logger, hostInfo);
