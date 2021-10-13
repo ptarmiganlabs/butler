@@ -268,7 +268,8 @@ Butler:
   restServerConfig:
     enable: false                                     # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>
-    serverPort: 8080
+    serverPort: 8080                                  # Port where Butler's REST is available. Any free port on the server where Butler is running can bse used.
+    backgroundServerPort: 8081                        # Port used internally by Butle's REST API. Any free port on the server where Butler is running can bse used.
 
   # List of directories between which file copying via the REST API can be done.
   # Butler will try to clean up messy paths like this one, which resolves to /Users/goran/butler-test-dir1

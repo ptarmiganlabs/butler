@@ -4,13 +4,14 @@ const httpErrors = require('http-errors');
 // Load global variables and functions
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
-let { keyv } = require('../lib/keyValueStore');
+// const kvStore = require('../lib/keyValueStore');
 const {
-    keyvIndex,
-    keyvIndexAddKey,
-    keyvIndexDeleteKey,
-    keyvIndexDeleteNamespace,
+    getNamespaceList,
+    getNamespace,
+    deleteNamespace,
     addKeyValuePair,
+    deleteKeyValuePair,
+    getValue,
 } = require('../lib/keyValueStore');
 const {
     apiGetAllNamespaces,
@@ -26,8 +27,9 @@ async function handlerGetNamespaceList(request, reply) {
     try {
         logRESTCall(request);
 
-        const ns = [];
-        keyv.forEach((item) => ns.push(item.namespace));
+        // const ns = [];
+        // kvStore.keyv.forEach((item) => ns.push(item.namespace));
+        const ns = getNamespaceList();
 
         reply.code(200).send(ns);
     } catch (err) {
@@ -43,7 +45,7 @@ async function handlerGetKeyValueInNamespace(request, reply) {
         logRESTCall(request);
 
         // Does namespace exist?
-        const kv = keyv.find((item) => item.namespace === request.params.namespace);
+        const kv = getNamespace(request.params.namespace);
         let kvRes;
 
         if (kv === undefined) {
@@ -68,7 +70,7 @@ async function handlerGetKeyValueInNamespace(request, reply) {
                 );
             } else {
                 // Key specified
-                const value = await kv.keyv.get(request.query.key);
+                const value = await getValue(request.params.namespace, request.query.key);
                 if (value === undefined) {
                     // Key does not exist
                     globals.logger.error(
@@ -86,7 +88,6 @@ async function handlerGetKeyValueInNamespace(request, reply) {
                         namespace: request.params.namespace,
                         key: request.query.key,
                         value,
-                        ttl: kv.ttl,
                     };
                     reply.code(200).send(kvRes);
                 }
@@ -107,7 +108,7 @@ async function handlerKeyExists(request, reply) {
         logRESTCall(request);
 
         // Does namespace exist?
-        const kv = keyv.find((item) => item.namespace === request.params.namespace);
+        const kv = getNamespace(request.params.namespace);
         let kvRes;
 
         if (kv === undefined) {
@@ -131,13 +132,13 @@ async function handlerKeyExists(request, reply) {
                 );
             } else {
                 // Key specified
-                const value = await kv.keyv.get(request.query.key);
+                const value = await getValue(request.params.namespace, request.query.key);
                 if (value === undefined) {
                     // Key does not exist
                     kvRes = { keyExists: false };
                     kvRes.keyValue = {};
 
-                    keyvIndexDeleteKey(request.params.namespace, request.query.key);
+                    // keyvIndexDeleteKey(request.params.namespace, request.query.key);
                 } else {
                     // Key exists
                     kvRes = { keyExists: true };
@@ -145,10 +146,9 @@ async function handlerKeyExists(request, reply) {
                         namespace: request.params.namespace,
                         key: request.query.key,
                         value,
-                        ttl: kv.ttl,
                     };
 
-                    keyvIndexAddKey(request.params.namespace, request.query.key, kv.ttk > 0);
+                    // keyvIndexAddKey(request.params.namespace, request.query.key, kv.ttk > 0);
                 }
 
                 reply.code(200).send(kvRes);
@@ -156,7 +156,7 @@ async function handlerKeyExists(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${
+            `KEYVALUE: Failed checking if key '${request.query.key}' exists in namespace: ${
                 request.params.namespace
             }, error is: ${JSON.stringify(err, null, 2)}`
         );
@@ -221,7 +221,7 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
             reply.send(httpErrors(400, 'Required parameter is missing'));
         } else {
             // Does namespace exist?
-            const kv = keyv.find((item) => item.namespace === request.params.namespace);
+            const kv = getNamespace(request.params.namespace);
 
             if (kv === undefined) {
                 // Namespace does not exist. Error.
@@ -244,9 +244,11 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
                     );
                 } else {
                     // Key specified
-                    keyvIndexDeleteKey(request.params.namespace, request.params.key);
-
-                    const value = await kv.keyv.delete(request.params.key);
+                    // keyvIndexDeleteKey(request.params.namespace, request.params.key);
+                    const value = await deleteKeyValuePair(
+                        request.params.namespace,
+                        request.params.key
+                    );
 
                     if (value === false) {
                         // Key does not exist
@@ -283,7 +285,8 @@ async function handlerDeleteNamespace(request, reply) {
             reply.send(httpErrors(400, 'No namespace specified'));
         } else {
             // Does namespace exist?
-            const kv = keyv.find((item) => item.namespace === request.params.namespace);
+            // const kv = kvStore.keyv.find((item) => item.namespace === request.params.namespace);
+            const kv = getNamespace(request.params.namespace);
 
             if (kv === undefined) {
                 // Namespace does not exist. Error.
@@ -292,14 +295,17 @@ async function handlerDeleteNamespace(request, reply) {
             } else {
                 // Namespace exists
 
-                // Remove all KV pairs from namespace
-                await kv.keyv.clear();
+                await deleteNamespace(request.params.namespace);
+                // // Remove all KV pairs from namespace
+                // await kv.keyv.clear();
 
-                // Delete the namespace
-                keyv = keyv.filter((item) => item.namespace === request.params.namespace);
+                // // Delete the namespace
+                // kvStore.keyv = kvStore.keyv.filter(
+                //     (item) => item.namespace !== request.params.namespace
+                // );
 
                 // Delete namespace from shadow list of all existing ns/key combos
-                keyvIndexDeleteNamespace(request.params.namespace);
+                // keyvIndexDeleteNamespace(request.params.namespace);
 
                 globals.logger.verbose(`KEYVALUE: Cleared namespace: ${request.params.namespace}`);
                 reply.code(204).send();
@@ -315,7 +321,7 @@ async function handlerDeleteNamespace(request, reply) {
     }
 }
 
-async function handlerGetKeyValueList(request, reply) {
+async function handlerGetKeyList(request, reply) {
     try {
         logRESTCall(request);
 
@@ -325,27 +331,36 @@ async function handlerGetKeyValueList(request, reply) {
             reply.send(httpErrors(400, 'No namespace specified'));
         } else {
             // Does namespace exist?
-            const kv = keyv.find((item) => item.namespace === request.params.namespace);
+            const kv = getNamespace(request.params.namespace);
 
             if (kv === undefined) {
                 // Namespace does not exist. Error.
                 globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
                 reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
             } else {
-                // Namespace exists. Get it.
-                let kvRes = keyvIndex.filter(
-                    (item) => item.namespace === request.params.namespace
-                )[0];
+                // Namespace exists. Get list of all keys in it
 
-                if (kvRes === undefined) {
-                    // The namespace existed but is empty. Return empty datastructure to indicate this.
-                    kvRes = {
-                        namespace: request.params.namespace,
-                        keys: [],
-                    };
+                const keyList = [];
+                // eslint-disable-next-line no-restricted-syntax
+                for await (const item of kv.keyv.iterator()) {
+                    keyList.push({ key: item[0] });
                 }
 
-                reply.code(200).send(JSON.stringify(kvRes));
+                // let kvRes = kvStore.keyvIndex.filter(
+                //     (item) => item.namespace === request.params.namespace
+                // )[0];
+
+                // if (kvRes === undefined) {
+                //     // The namespace existed but is empty. Return empty datastructure to indicate this.
+                //     kvRes = {
+                //         namespace: request.params.namespace,
+                //         keys: [],
+                //     };
+                // }
+
+                reply
+                    .code(200)
+                    .send(JSON.stringify({ namespace: request.params.namespace, keys: keyList }));
             }
         }
     } catch (err) {
@@ -380,7 +395,6 @@ module.exports = async (fastify, options) => {
         fastify.delete(
             '/v4/keyvalues/:namespace/:key',
             apiDeleteKVPair,
-
             handlerDeleteKeyValueInNamespace
         );
 
@@ -388,11 +402,6 @@ module.exports = async (fastify, options) => {
         fastify.delete('/v4/keyvalues/:namespace', apiDeleteNamespace, handlerDeleteNamespace);
 
         globals.logger.debug('Registering REST endpoint GET /v4/keylist/{namespace}');
-        fastify.get(
-            '/v4/keylist/:namespace',
-            apiGetKeysInNamespace,
-
-            handlerGetKeyValueList
-        );
+        fastify.get('/v4/keylist/:namespace', apiGetKeysInNamespace, handlerGetKeyList);
     }
 };
