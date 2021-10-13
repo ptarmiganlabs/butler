@@ -19,13 +19,11 @@ jobs:
     steps:
       - name: Send job status to MQTT when done
         uses: potaesm/github-actions-mqtt-request@1.0.0
-        if: always()
-        env:
-          JOB_STATUS: success
         with:
-          url: mqtt://mqtt.beebotte.com
+          url: wss://mqtt.beebotte.com
           topic: control/github_actions_action_runner
-          payload: 'abc'
-          wsOptions: '{ "port": 1883 }'
+          payload: '{ "message": "Hello World!" }'
+          wsOptions: '{ "port": 443 }'
           username: token_K7weq32cOyyk0eKP
+          password:
           connectTimeout: 30000
