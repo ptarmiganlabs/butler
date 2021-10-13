@@ -1,16 +1,12 @@
-
 name: Debug MQTT
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
       - name: Send job status to MQTT when done
         uses: potaesm/github-actions-mqtt-request@1.0.0
@@ -18,5 +14,5 @@ jobs:
           url: mqtt://mqtt.beebotte.com
           topic: control/github_actions_action_runner
           payload: '{ "message": "Hello World!" }'
-          wsOptions: '{username: 'token:token_K7weq32cOyyk0eKP', password: ''}'
+          wsOptions: '{username: "token:token_K7weq32cOyyk0eKP", password: ""}'
           connectTimeout: 30000
