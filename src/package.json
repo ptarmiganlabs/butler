@@ -53,9 +53,9 @@
     "ws": "^8.2.3"
   },
   "devDependencies": {
-    "prettier": "^2.4.1",
-    "snyk": "^1.733.0",
-    "tap": "^15.0.10"
+    "prettier": "2.4.1",
+    "snyk": "1.733.0",
+    "tap": "15.0.10"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
