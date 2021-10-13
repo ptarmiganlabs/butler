@@ -1,0 +1,30 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+# Inspiration
+# https://github.com/actions/starter-workflows/blob/main/ci/docker-publish.yml
+
+name: Debug MQTT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Send job status to MQTT when done
+        uses: potaesm/github-actions-mqtt-request@1.0.0
+        if: always()
+        env:
+          JOB_STATUS: success
+        with:
+          url: mqtt://mqtt.beebotte.com
+          topic: control/github_actions_action_runner
+          payload: '{ "type":"docker-build", "repo": "repo-123", "job": "job-123", "workflow": "workflow-123","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
+          username: token:token_FeP7xa3zsx4qSFNN
+          connectTimeout: 30000
