@@ -1,8 +1,4 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
+/* eslint-disable global-require */
 module.exports = {
-    mqtt: require('./mqtt_handlers.js'),
+    mqtt: require('./mqtt_handlers'),
 };

@@ -1,14 +1,9 @@
-/*eslint strict: ["error", "global"]*/
-/*eslint no-invalid-this: "error"*/
-
-'use strict';
-
-var globals = require('../globals');
-var qrsInteract = require('qrs-interact');
+const QrsInteract = require('qrs-interact');
 const axios = require('axios');
-var https = require('https');
-// const { DateTime } = require('luxon');
+const https = require('https');
 const luxon = require('luxon');
+
+const globals = require('../globals');
 
 const taskStatusLookup = {
     0: 'NeverStarted',
@@ -37,7 +32,7 @@ function compareTaskDetails(a, b) {
 }
 
 function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
         try {
             // Set up Sense repository service configuration
             const configQRS = {
@@ -53,34 +48,48 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
             };
 
-            let qrsInstance = new qrsInteract(configQRS);
+            const qrsInstance = new QrsInteract(configQRS);
 
             // Step 1
-            qrsInstance.Get(`reloadtask/${reloadTaskId}`).then(result1 => {
-                let taskInfo = {
+            qrsInstance.Get(`reloadtask/${reloadTaskId}`).then((result1) => {
+                const taskInfo = {
                     fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
-                    executingNodeName: result1.body.operational.lastExecutionResult.executingNodeName,
-                    executionDetailsSorted: result1.body.operational.lastExecutionResult.details.sort(compareTaskDetails),
+                    executingNodeName:
+                        result1.body.operational.lastExecutionResult.executingNodeName,
+                    executionDetailsSorted:
+                        result1.body.operational.lastExecutionResult.details.sort(
+                            compareTaskDetails
+                        ),
                     executionDetailsConcatenated: '',
                     executionStatusNum: result1.body.operational.lastExecutionResult.status,
-                    executionStatusText: taskStatusLookup[result1.body.operational.lastExecutionResult.status],
+                    executionStatusText:
+                        taskStatusLookup[result1.body.operational.lastExecutionResult.status],
                     // scriptLogAvailable = result1.body.operational.lastExecutionResult.scriptLogAvailable,
                     scriptLogSize: result1.body.operational.lastExecutionResult.scriptLogSize,
                 };
 
                 // Get execution details as a single string ny concatenating the individual execution step details
+                // eslint-disable-next-line no-restricted-syntax
                 for (const execDetail of taskInfo.executionDetailsSorted) {
-                    taskInfo.executionDetailsConcatenated =
-                        taskInfo.executionDetailsConcatenated + execDetail.detailCreatedDate + '\t' + execDetail.message + '\n';
+                    taskInfo.executionDetailsConcatenated = `${
+                        taskInfo.executionDetailsConcatenated + execDetail.detailCreatedDate
+                    }\t${execDetail.message}\n`;
                 }
 
                 // Add duration as JSON
-                let taskDuration = luxon.Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
-                taskInfo.executionDuration = taskDuration.shiftTo('hours', 'minutes', 'seconds').toObject();
+                const taskDuration = luxon.Duration.fromMillis(
+                    result1.body.operational.lastExecutionResult.duration
+                );
+                taskInfo.executionDuration = taskDuration
+                    .shiftTo('hours', 'minutes', 'seconds')
+                    .toObject();
                 taskInfo.executionDuration.seconds = Math.floor(taskInfo.executionDuration.seconds);
 
                 // Add start datetime in various formats
-                if (result1.body.operational.lastExecutionResult.startTime.substring(0, 4) == '1753') {
+                if (
+                    result1.body.operational.lastExecutionResult.startTime.substring(0, 4) ===
+                    '1753'
+                ) {
                     taskInfo.executionStartTime = {
                         startTimeUTC: '-',
                         startTimeLocal1: '-',
@@ -90,19 +99,23 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                         startTimeLocal5: '-',
                     };
                 } else {
-                    let luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
+                    const luxonDT = luxon.DateTime.fromISO(
+                        result1.body.operational.lastExecutionResult.startTime
+                    );
                     taskInfo.executionStartTime = {
                         startTimeUTC: result1.body.operational.lastExecutionResult.startTime,
                         startTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
                         startTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
                         startTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
                         startTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                        startTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        startTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS)
                     };
                 }
 
                 // Add stop datetime in various formats
-                if (result1.body.operational.lastExecutionResult.stopTime.substring(0, 4) == '1753') {
+                if (
+                    result1.body.operational.lastExecutionResult.stopTime.substring(0, 4) === '1753'
+                ) {
                     taskInfo.executionStopTime = {
                         stopTimeUTC: '-',
                         stopTimeLocal1: '-',
@@ -112,20 +125,22 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                         stopTimeLocal5: '-',
                     };
                 } else {
-                    let luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
+                    const luxonDT = luxon.DateTime.fromISO(
+                        result1.body.operational.lastExecutionResult.stopTime
+                    );
                     taskInfo.executionStopTime = {
                         stopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
                         stopTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
                         stopTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
                         stopTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
                         stopTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                        stopTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        stopTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS)
                     };
                 }
 
                 // Add various datetime formats to task history entries
-                taskInfo.executionDetailsSorted = taskInfo.executionDetailsSorted.map(item => {
-                    if (item.detailCreatedDate.substring(0, 4) == '1753') {
+                taskInfo.executionDetailsSorted = taskInfo.executionDetailsSorted.map((item) => {
+                    if (item.detailCreatedDate.substring(0, 4) === '1753') {
                         return {
                             timestampUTC: '-',
                             timestampLocal1: '-',
@@ -136,81 +151,95 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                             message: item.message,
                             detailsType: item.detailsType,
                         };
-                    } else {
-                        let luxonDT = luxon.DateTime.fromISO(item.detailCreatedDate);
-                        return {
-                            timestampUTC: item.detailCreatedDate,
-                            timestampLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                            timestampLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                            timestampLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                            timestampLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                            timestampLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                            message: item.message,
-                            detailsType: item.detailsType,
-                        };
                     }
+
+                    const luxonDT = luxon.DateTime.fromISO(item.detailCreatedDate);
+                    return {
+                        timestampUTC: item.detailCreatedDate,
+                        timestampLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
+                        timestampLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
+                        timestampLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
+                        timestampLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        timestampLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                        message: item.message,
+                        detailsType: item.detailsType,
+                    };
                 });
 
                 // Step 2
                 // Only get script log if there is a valid fileReferenceId
-                if (taskInfo.fileReferenceId != '00000000-0000-0000-0000-000000000000') {
-                    qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`).then(result2 => {
-                        // Step 3
-                        // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
-                        let httpsAgent = new https.Agent({
-                            rejectUnauthorized: false,
-                            cert: globals.configQRS.cert,
-                            key: globals.configQRS.key,
-                        });
+                if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
+                    qrsInstance
+                        .Get(
+                            `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`
+                        )
+                        .then((result2) => {
+                            // Step 3
+                            // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
+                            const httpsAgent = new https.Agent({
+                                rejectUnauthorized: false,
+                                cert: globals.configQRS.cert,
+                                key: globals.configQRS.key,
+                            });
 
-                        let axiosConfig = {
-                            url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
-                            method: 'get',
-                            baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
-                            headers: {
-                                'x-qlik-xrfkey': 'abcdefghijklmnop',
-                                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-                            },
-                            responseType: 'text',
-                            httpsAgent: httpsAgent,
-                            //   passphrase: "YYY"
-                        };
-                        axios.request(axiosConfig).then(result3 => {
-                            let scriptLogFull = result3.data.split('\r\n');
+                            const axiosConfig = {
+                                url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
+                                method: 'get',
+                                baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
+                                headers: {
+                                    'x-qlik-xrfkey': 'abcdefghijklmnop',
+                                    'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+                                },
+                                responseType: 'text',
+                                httpsAgent,
+                                //   passphrase: "YYY"
+                            };
 
-                            let scriptLogHead = '',
-                                scriptLogTail = '';
+                            axios.request(axiosConfig).then((result3) => {
+                                const scriptLogFull = result3.data.split('\r\n');
 
-                            if (headLineCount > 0) {
-                                scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
-                            }
+                                let scriptLogHead = '';
+                                let scriptLogTail = '';
 
-                            if (tailLineCount > 0) {
-                                scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
-                            }
+                                if (headLineCount > 0) {
+                                    scriptLogHead = scriptLogFull
+                                        .slice(0, headLineCount)
+                                        .join('\r\n');
+                                }
 
-                            globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
-                            globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
+                                if (tailLineCount > 0) {
+                                    scriptLogTail = scriptLogFull
+                                        .slice(Math.max(scriptLogFull.length - tailLineCount, 0))
+                                        .join('\r\n');
+                                }
 
-                            globals.logger.verbose('SCRIPTLOG: Done getting script log');
+                                globals.logger.debug(
+                                    `SCRIPTLOG: Script log head:\n${scriptLogHead}`
+                                );
+                                globals.logger.debug(
+                                    `SCRIPTLOG: Script log tails:\n${scriptLogTail}`
+                                );
 
-                            resolve({
-                                executingNodeName: taskInfo.executingNodeName,
-                                executionDetails: taskInfo.executionDetailsSorted,
-                                executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
-                                executionDuration: taskInfo.executionDuration,
-                                executionStartTime: taskInfo.executionStartTime,
-                                executionStopTime: taskInfo.executionStopTime,
-                                executionStatusNum: taskInfo.executionStatusNum,
-                                executionStatusText: taskInfo.executionStatusText,
-                                scriptLogSize: taskInfo.scriptLogSize,
-                                scriptLogHead: scriptLogHead,
-                                scriptLogHeadCount: headLineCount,
-                                scriptLogTail: scriptLogTail,
-                                scriptLogTailCount: tailLineCount,
+                                globals.logger.verbose('SCRIPTLOG: Done getting script log');
+
+                                resolve({
+                                    executingNodeName: taskInfo.executingNodeName,
+                                    executionDetails: taskInfo.executionDetailsSorted,
+                                    executionDetailsConcatenated:
+                                        taskInfo.executionDetailsConcatenated,
+                                    executionDuration: taskInfo.executionDuration,
+                                    executionStartTime: taskInfo.executionStartTime,
+                                    executionStopTime: taskInfo.executionStopTime,
+                                    executionStatusNum: taskInfo.executionStatusNum,
+                                    executionStatusText: taskInfo.executionStatusText,
+                                    scriptLogSize: taskInfo.scriptLogSize,
+                                    scriptLogHead,
+                                    scriptLogHeadCount: headLineCount,
+                                    scriptLogTail,
+                                    scriptLogTailCount: tailLineCount,
+                                });
                             });
                         });
-                    });
                 } else {
                     // No script log is available
                     resolve({
