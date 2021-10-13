@@ -177,7 +177,9 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                             // Step 3
                             // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
                             const httpsAgent = new https.Agent({
-                                rejectUnauthorized: false,
+                                rejectUnauthorized: globals.config.get(
+                                    'Butler.configQRS.rejectUnauthorized'
+                                ),
                                 cert: globals.configQRS.cert,
                                 key: globals.configQRS.key,
                             });

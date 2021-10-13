@@ -33,7 +33,9 @@ function handlerGetSenseAppDump(request, reply) {
                         headers: {
                             'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
                         },
-                        rejectUnauthorized: false,
+                        rejectUnauthorized: globals.config.get(
+                            'Butler.configEngine.rejectUnauthorized'
+                        ),
                     }),
             };
 
@@ -48,9 +50,10 @@ function handlerGetSenseAppDump(request, reply) {
                         .openDoc(request.params.appId, '', '', '', true)
                         .then((app) => serializeApp(app))
                         .then((data) => {
-                            const d = data;
-
-                            reply.code(200).send(d);
+                            reply
+                                .type('application/json; charset=utf-8')
+                                .code(200)
+                                .send(JSON.stringify(data));
 
                             // Close connection to Sense server
                             try {

@@ -60,10 +60,24 @@ const apiPutSlackPostMessage = {
             400: {
                 description: 'Required parameter missing.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },

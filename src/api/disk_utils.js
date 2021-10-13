@@ -64,14 +64,35 @@ const apiFileCopy = {
             400: {
                 description: '"Required parameter missing" or "fromFile not found".',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             403: {
                 description: 'No approved fromDir/toDir for file copy.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -131,14 +152,35 @@ const apiFileMove = {
             400: {
                 description: '"Required parameter missing" or "fromFile not found".',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             403: {
                 description: 'No approved fromDir/toDir for file copy.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -169,14 +211,35 @@ const apiFileDelete = {
                 description:
                     '"Required parameter missing" or "File requested for delete not found".',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             403: {
                 description: 'No approved directory matches the delete request.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -213,10 +276,24 @@ const apiCreateDir = {
             400: {
                 description: 'Required parameter missing.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error (file system permissions etc).',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -252,10 +329,24 @@ const apiCreateDirQvd = {
             400: {
                 description: 'Required parameter missing.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },

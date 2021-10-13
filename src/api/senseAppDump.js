@@ -36,14 +36,35 @@ const apiGetSenseAppDump = {
             400: {
                 description: 'Required parameter missing.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             422: {
                 description: 'App not found in  Qlik Sense.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -87,14 +108,35 @@ const apiGetAppDump = {
             400: {
                 description: 'Required parameter missing.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             422: {
                 description: 'App not found in  Qlik Sense.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },

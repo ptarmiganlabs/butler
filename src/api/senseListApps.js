@@ -25,6 +25,13 @@ const apiGetSenseListApps = {
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
@@ -57,6 +64,13 @@ const apiGetAppsList = {
             500: {
                 description: 'Internal error.',
                 type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
             },
         },
     },
