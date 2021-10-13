@@ -26,5 +26,6 @@ jobs:
           url: mqtt://mqtt.beebotte.com
           topic: control/github_actions_action_runner
           payload: 'abc'
+          wsOptions: '{ "port": 1883 }'
           username: token_K7weq32cOyyk0eKP
           connectTimeout: 30000
