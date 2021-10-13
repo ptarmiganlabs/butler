@@ -1,5 +1,4 @@
 {
-  "bootstrap-sha": "217155539722350e336946ee1e21f46caca920b9",
   "release-type": "node",
   "draft": true,
   "changelog-sections": [
@@ -32,7 +31,6 @@
   "packages": {
     "src": {
       "package-name": "butler",
-      "release-as": "6.0.0"
     }
   }
 }
