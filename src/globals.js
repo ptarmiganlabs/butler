@@ -85,6 +85,7 @@ const configQRS = {
     useSSL: config.get('Butler.configQRS.useSSL'),
     headerKey: config.get('Butler.configQRS.headerKey'),
     headerValue: config.get('Butler.configQRS.headerValue'),
+    rejectUnauthorized: config.get('Butler.configQRS.rejectUnauthorized'),
     cert: readCert(certPath),
     key: readCert(keyPath),
     ca: readCert(caPath),

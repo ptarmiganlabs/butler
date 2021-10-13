@@ -42,7 +42,9 @@ async function handlerPutAppReload(request, reply) {
                         headers: {
                             'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
                         },
-                        rejectUnauthorized: false,
+                        rejectUnauthorized: globals.config.get(
+                            'Butler.configEngine.rejectUnauthorized'
+                        ),
                     }),
             };
 
