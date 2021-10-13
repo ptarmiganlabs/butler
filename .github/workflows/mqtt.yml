@@ -25,6 +25,6 @@ jobs:
         with:
           url: mqtt://mqtt.beebotte.com
           topic: control/github_actions_action_runner
-          payload: '{ "type":"docker-build", "repo": "repo-123", "job": "job-123", "workflow": "workflow-123","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
+          payload: 'abc'
           username: token_K7weq32cOyyk0eKP
           connectTimeout: 30000
