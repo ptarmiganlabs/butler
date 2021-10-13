@@ -4,62 +4,9 @@ const httpErrors = require('http-errors');
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
 const slackApi = require('../lib/slack_api');
+const { apiPutSlackPostMessage } = require('../api/slackPostMessage');
 
-/**
- * @swagger
- *
- * /v4/slackpostmessage:
- *   put:
- *     description: |
- *       Send message to Slack
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: message
- *         description: Message to Slack channel (ex \#reload-notification)
- *         in: body
- *         schema:
- *           type: object
- *           required:
- *             - channel
- *             - from_user
- *             - msg
- *           properties:
- *             channel:
- *               type: string
- *               example: "#reload-notification"
- *             from_user:
- *               type: string
- *               example: "Butler the Bot"
- *             msg:
- *               type: string
- *               example: "This is a message from Qlik Sense"
- *             emoji:
- *               type: string
- *               example: "thumbsup"
- *     responses:
- *       201:
- *         description: Message successfully sent to Slack.
- *         schema:
- *           type: object
- *           properties:
- *             channel:
- *               type: string
- *             from_user:
- *               type: string
- *             msg:
- *               type: string
- *             emoji:
- *               type: string
- *
- *       400:
- *         description: Required parameter missing.
- *       500:
- *         description: Internal error.
- *
- */
-
-async function handler(request, reply) {
+async function handlerPutSlackPostMessage(request, reply) {
     try {
         logRESTCall(request);
 
@@ -113,7 +60,6 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')
     ) {
         globals.logger.debug('Registering REST endpoint PUT /v4/slackpostmessage');
-
-        fastify.put('/v4/slackpostmessage', handler);
+        fastify.put('/v4/slackpostmessage', apiPutSlackPostMessage, handlerPutSlackPostMessage);
     }
 };

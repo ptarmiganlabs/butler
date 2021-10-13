@@ -7,71 +7,13 @@ const WebSocket = require('ws');
 const globals = require('../globals');
 const qrsUtil = require('../qrs_util');
 const { logRESTCall } = require('../lib/logRESTCall');
+const { apiPutAppReload } = require('../api/senseApp');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require
 const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
-/**
- * @swagger
- *
- * /v4/app/{appId}/reload:
- *   put:
- *     description: |
- *       Do a stand-alone reload of a Qlik Sense app, without using a task.
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: appId
- *         description: ID of Qlik Sense app
- *         in: path
- *         required: true
- *         type: string
- *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
- *       - name: body
- *         description: |
- *           Parameters used when reloading app.
- *         in: body
- *         schema:
- *           type: object
- *           properties:
- *             reloadMode:
- *               type: integer
- *               description: Reload mode that will be used. 0, 1 or 2. If not specified 0 will be used
- *             partialReload:
- *               type: boolean
- *               description: Should a full (=false) or partial (=true) reload be done? If not specified a full reload will be done.
- *               example: "true"
- *             startQSEoWTaskOnSuccess:
- *               type: array
- *               description: Array of task IDs that should be started when the app has successfully reloaded.
- *               items:
- *                 type: string
- *               minItems: 0
- *               example: ["09b3c78f-04dd-45e3-a4bf-1b074d6572fa", "eaf1da4f-fd44-4cea-b2de-7b67a6496ee3"]
- *             startQSEoWTaskOnFailure:
- *               type: array
- *               description: Array of task IDs that should be started if the app fails reloading.
- *               items:
- *                 type: string
- *               minItems: 0
- *               example: ["09b3c78f-04dd-45e3-a4bf-1b074d6572fa", "eaf1da4f-fd44-4cea-b2de-7b67a6496ee3"]
- *     responses:
- *       201:
- *         description: App successfully reloaded.
- *         schema:
- *           type: object
- *           properties:
- *             appId:
- *               type: string
- *               description: ID of reloaded app.
- *       400:
- *         description: Required parameter missing.
- *       500:
- *         description: Internal error.
- *
- */
-async function handler(request, reply) {
+async function handlerPutAppReload(request, reply) {
     try {
         logRESTCall(request);
 
@@ -224,7 +166,6 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')
     ) {
         globals.logger.debug('Registering REST endpoint GET /v4/app/:appId/reload');
-
-        fastify.put('/v4/app/:appId/reload', handler);
+        fastify.put('/v4/app/:appId/reload', apiPutAppReload, handlerPutAppReload);
     }
 };

@@ -2,14 +2,12 @@
 const dockerHealthCheckServer = require('fastify')({ logger: false });
 const restServer = require('fastify')({ logger: true });
 const AutoLoad = require('fastify-autoload');
+const FastifySwagger = require('fastify-swagger');
 const FastifyHealthcheck = require('fastify-healthcheck');
 const path = require('path');
 
-const restifySwaggerJsdoc = require('restify-swagger-jsdoc');
-
 // Load code from sub modules
 const globals = require('./globals');
-// var rest = require('./rest');
 const mqtt = require('./mqtt');
 const udp = require('./udp');
 const heartbeat = require('./lib/heartbeat');
@@ -88,6 +86,33 @@ async function mainScript() {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
 
+    restServer.register(FastifySwagger, {
+        routePrefix: '/documentation',
+        swagger: {
+            mode: 'dynamic',
+            info: {
+                title: 'Butler API documentation',
+                description:
+                    'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.\nButler offers both a REST API and things like failed reload notifications etc.\n\nThis page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
+                version: globals.appVersion,
+            },
+            externalDocs: {
+                url: 'https://github.com/ptarmiganlabs',
+                description: 'Butler family of tools on GitHub',
+            },
+            produces: ['application/json'],
+        },
+        host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+            'Butler.restServerConfig.serverPort'
+        )}`,
+        uiConfig: {
+            docExpansion: 'full',
+            deepLinking: true,
+        },
+        hideUntagged: false,
+        exposeRoute: true,
+    });
+
     // ---------------------------------------------------
     // Loads all plugins defined in routes
     restServer.register(AutoLoad, {
@@ -108,19 +133,6 @@ async function mainScript() {
     //     req.headers.accept = 'application/json';
     //     return next();
     // });
-
-    // // Cleans up sloppy URLs on the request object
-    // // TODO Verify that sloppy URLs are really cleaned up
-
-    restifySwaggerJsdoc.createSwaggerPage({
-        title: 'Butler API documentation', // Page title
-        description:
-            'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.<br>Butler offers both a REST API and things like failed reload notifications etc.<p>This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
-        version: globals.appVersion, // Server version
-        server: restServer, // Restify server instance created with restify.createServer()
-        path: '/docs/swagger', // Public url where the swagger page will be available
-        apis: ['./rest/*.js'],
-    });
 
     // ---------------------------------------------------
     // Set up MQTT
@@ -167,6 +179,11 @@ async function mainScript() {
                 }
                 restServer.log.info(`server listening on ${address}`);
                 globals.logger.info(`MAIN: REST server listening on ${address}`);
+
+                restServer.ready((err2) => {
+                    if (err2) throw err;
+                    restServer.swagger();
+                });
             }
         );
     }

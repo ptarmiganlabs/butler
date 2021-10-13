@@ -5,66 +5,13 @@ const WebSocket = require('ws');
 // Load global variables and functions
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
+const { apiGetSenseListApps, apiGetAppsList } = require('../api/senseListApps');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require
 const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
-/**
- * @swagger
- *
- * /v4/senselistapps:
- *   get:
- *     description: |
- *       Get list of all apps in Sense environment
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: App list successfully retrieved.
- *         schema:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 description: App ID.
- *               name:
- *                 type: string
- *                 description: App name.
- *       500:
- *         description: Internal error.
- *
- */
-/**
- * @swagger
- *
- * /v4/apps/list:
- *   get:
- *     description: |
- *       Get list of all apps in Sense environment
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: App list successfully retrieved.
- *         schema:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 description: App ID.
- *               name:
- *                 type: string
- *                 description: App name.
- *       500:
- *         description: Internal error.
- *
- */
-function handler(request, reply) {
+function handlerGetSenseListApps(request, reply) {
     try {
         logRESTCall(request);
 
@@ -188,7 +135,7 @@ module.exports = async (fastify, options) => {
         globals.logger.debug('Registering REST endpoint GET /v4/senselistapps');
         globals.logger.debug('Registering REST endpoint GET /v4/apps/list');
 
-        fastify.get('/v4/senselistapps', handler);
-        fastify.get('/v4/apps/list', handler);
+        fastify.get('/v4/senselistapps', apiGetSenseListApps, handlerGetSenseListApps);
+        fastify.get('/v4/apps/list', apiGetAppsList, handlerGetSenseListApps);
     }
 };

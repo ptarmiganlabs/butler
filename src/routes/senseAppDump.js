@@ -1,71 +1,17 @@
-// Load global variables and functions
-
 const serializeApp = require('serializeapp');
 const httpErrors = require('http-errors');
 const enigma = require('enigma.js');
 const WebSocket = require('ws');
+
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
+const { apiGetSenseAppDump, apiGetAppDump } = require('../api/senseAppDump');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require
 const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
-/**
- * @swagger
- *
- * /v4/senseappdump/{appId}:
- *   get:
- *     description: |
- *       Dump a specific Sense app to JSON
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: appId
- *         description: ID of Qlik Sense app
- *         in: path
- *         required: true
- *         type: string
- *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
- *     responses:
- *       200:
- *         description: App dump successful. App metadata returned as JSON.
- *       400:
- *         description: Required parameter missing.
- *       422:
- *         description: App not found in Qlik Sense.
- *       500:
- *         description: Internal error.
- *
- */
-/**
- * @swagger
- *
- * /v4/app/{appId}/dump:
- *   get:
- *     description: |
- *       Dump a specific Sense app to JSON
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: appId
- *         description: ID of Qlik Sense app
- *         in: path
- *         required: true
- *         type: string
- *         example: "210832b5-6174-4572-bd19-3e61eda675ef"
- *     responses:
- *       200:
- *         description: App dump successful. App metadata returned as JSON.
- *       400:
- *         description: Required parameter missing.
- *       422:
- *         description: App not found in Qlik Sense.
- *       500:
- *         description: Internal error.
- *
- */
-function handler(request, reply) {
+function handlerGetSenseAppDump(request, reply) {
     try {
         logRESTCall(request);
 
@@ -193,8 +139,7 @@ module.exports = async (fastify, options) => {
         globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')
     ) {
         globals.logger.debug('Registering REST endpoint GET /v4/senseappdump');
-
-        fastify.get('/v4/senseappdump/:appId', handler);
-        fastify.get('/v4/app/:appId/dump', handler);
+        fastify.get('/v4/senseappdump/:appId', apiGetSenseAppDump, handlerGetSenseAppDump);
+        fastify.get('/v4/app/:appId/dump', apiGetAppDump, handlerGetSenseAppDump);
     }
 };
