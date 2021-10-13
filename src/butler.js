@@ -1,9 +1,12 @@
 // Add dependencies
 const dockerHealthCheckServer = require('fastify')({ logger: false });
 const restServer = require('fastify')({ logger: true });
+const proxyRestServer = require('fastify')({ logger: true });
 const AutoLoad = require('fastify-autoload');
 const FastifySwagger = require('fastify-swagger');
 const FastifyHealthcheck = require('fastify-healthcheck');
+const FastifyReplyFrom = require('fastify-reply-from');
+
 const path = require('path');
 
 // Load code from sub modules
@@ -114,25 +117,42 @@ async function mainScript() {
     });
 
     // ---------------------------------------------------
+    // Configure X-HTTP-Method-Override handling
+    proxyRestServer.register(FastifyReplyFrom, {
+        // base: 'http://localhost:3101',
+        base: `http://localhost:${globals.config.get(
+            'Butler.restServerConfig.backgroundServerPort'
+        )}`,
+    });
+
+    proxyRestServer.get('/*', (request, reply) => {
+        const { url } = request.raw;
+        reply.from(url);
+    });
+
+    proxyRestServer.put('/*', (request, reply) => {
+        const { url } = request.raw;
+        reply.from(url);
+    });
+
+    proxyRestServer.delete('/*', (request, reply) => {
+        const { url } = request.raw;
+        reply.from(url);
+    });
+
+    proxyRestServer.post('/*', (request, reply) => {
+        const { url } = request.raw;
+        const { 'x-http-method-override': method = 'POST' } = request.headers;
+        // eslint-disable-next-line no-param-reassign
+        reply.request.raw.method = method;
+        reply.from(url);
+    });
+
     // Loads all plugins defined in routes
     restServer.register(AutoLoad, {
         dir: path.join(__dirname, 'routes'),
         // options: Object.assign({}, opts)
     });
-
-    // restServer.pre(function (req, res, next) {
-    //     // Is there a X-HTTP-Method-Override header?
-    //     // If so, change the http method to the one specified
-
-    //     for (const [key, value] of Object.entries(req.headers)) {
-    //         if (key.toLowerCase() == 'x-http-method-override') {
-    //             req.method = value;
-    //         }
-    //     }
-
-    //     req.headers.accept = 'application/json';
-    //     return next();
-    // });
 
     // ---------------------------------------------------
     // Set up MQTT
@@ -169,20 +189,38 @@ async function mainScript() {
         );
 
         restServer.listen(
+            globals.config.get('Butler.restServerConfig.backgroundServerPort'),
+            'localhost',
+            (err, address) => {
+                if (err) {
+                    globals.logger.error(
+                        `MAIN: Background REST server could not listen on ${address}`
+                    );
+                    restServer.log.error(err);
+                    process.exit(1);
+                }
+                globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
+
+                restServer.ready((err2) => {
+                    if (err2) throw err;
+                    restServer.swagger();
+                });
+            }
+        );
+
+        proxyRestServer.listen(
             globals.config.get('Butler.restServerConfig.serverPort'),
             globals.config.get('Butler.restServerConfig.serverHost'),
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: REST server could not listen on ${address}`);
-                    restServer.log.error(err);
+                    proxyRestServer.log.error(err);
                     process.exit(1);
                 }
-                restServer.log.info(`server listening on ${address}`);
                 globals.logger.info(`MAIN: REST server listening on ${address}`);
 
-                restServer.ready((err2) => {
+                proxyRestServer.ready((err2) => {
                     if (err2) throw err;
-                    restServer.swagger();
                 });
             }
         );
