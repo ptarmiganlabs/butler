@@ -14,6 +14,5 @@ jobs:
           url: mqtt://mqtt.beebotte.com
           topic: control/github_actions_action_runner
           payload: '{ "message": "Hello World!" }'
-          username: token_K7weq32cOyyk0eKP
-          password: 
+          username: token:token_K7weq32cOyyk0eKP
           connectTimeout: 30000
