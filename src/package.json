@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "prettier": "2.4.1",
-    "snyk": "1.735.0",
+    "snyk": "1.736.0",
     "tap": "15.0.10"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
