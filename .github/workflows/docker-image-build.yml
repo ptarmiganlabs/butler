@@ -23,11 +23,6 @@ jobs:
       contents: read
       packages: write
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
       - name: Show input values
         run: |
@@ -146,14 +141,14 @@ jobs:
           github.repository_owner == 'ptarmiganlabs'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      # - name: Send job status to MQTT when done
-      #   uses: potaesm/github-actions-mqtt-request@1.0.0
-      #   if: always()
-      #   env:
-      #     JOB_STATUS: ${{ job.status }}
-      #   with:
-      #     url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
-      #     topic: control/github_actions_action_runner
-      #     payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
-      #     username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
-      #     connectTimeout: 30000
+      - name: Send job status to MQTT when done
+        uses: potaesm/github-actions-mqtt-request@1.0.0
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        with:
+          url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
+          topic: control/github_actions_action_runner
+          payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
+          username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
+          connectTimeout: 30000
