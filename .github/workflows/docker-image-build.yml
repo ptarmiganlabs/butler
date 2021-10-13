@@ -7,13 +7,17 @@
 name: Build Docker image CI
 
 on:
+  workflow_dispatch:
+    # inputs:
+    #   tags:
+    #     description: 'Test scenario tags'
+    #     required: false
   release:
     types:
       - published
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,6 +29,10 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+      - name: Show input values
+        run: |
+          echo "Inputs: ${{ github.event.inputs }}"
+
       - name: Checkout repository
         uses: actions/checkout@v2
         if: |
@@ -55,6 +63,37 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
+      - name: Create clean tag for Docker
+        run: |
+          export TAGTMP1=${{ github.ref }}
+          echo "TAG=$(echo "${TAGTMP1##*-}")" >> $GITHUB_ENV
+
+      - name: Dump GitHub context
+        if: always()
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        if: always()
+        env:
+          JOB_CONTEXT: ${{ toJSON(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        if: always()
+        env:
+          STEPS_CONTEXT: ${{ toJSON(steps) }}
+        run: echo "$STEPS_CONTEXT"
+      - name: Dump runner context
+        if: always()
+        env:
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump strategy context
+        if: always()
+        env:
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+
       # Extract metadata (tags, labels) for Docker
       # https://github.com/marketplace/actions/docker-metadata-action
       - name: Extract Docker metadata
@@ -69,20 +108,21 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}},value=${{ env.TAG }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }}
+            type=semver,pattern={{major}},value=${{ env.TAG }}
 
       - name: Show Docker tags that will be used
-        run: echo '${{ steps.meta.outputs.tags }}'
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
+        run: echo '${{ steps.meta.outputs.tags }}'
 
       - name: Show Docker labels that will be used
-        run: echo '${{ steps.meta.outputs.labels }}'
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
+        run: echo '${{ steps.meta.outputs.labels }}'
 
       - name: Build and push
         id: docker_build
@@ -105,6 +145,18 @@ jobs:
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      # - name: Send job status to MQTT when done
+      #   uses: potaesm/github-actions-mqtt-request@1.0.0
+      #   if: always()
+      #   env:
+      #     JOB_STATUS: ${{ job.status }}
+      #   with:
+      #     url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
+      #     topic: control/github_actions_action_runner
+      #     payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
+      #     username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
+      #     connectTimeout: 30000
 
     env:
       CI: true
