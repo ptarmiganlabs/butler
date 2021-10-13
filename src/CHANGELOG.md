@@ -1,5 +1,12 @@
 # Changelog
 
+### [6.0.1](https://www.github.com/ptarmiganlabs/butler/compare/butler-v6.0.0...butler-v6.0.1) (2021-10-13)
+
+
+### Documentation
+
+* Added src readme ([0b7465a](https://www.github.com/ptarmiganlabs/butler/commit/0b7465a68a7d761696ebf6a3958fdcf0ebd50140))
+
 ## 6.0.0 (2021-10-13)
 
 
