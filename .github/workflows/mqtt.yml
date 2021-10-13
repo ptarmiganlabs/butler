@@ -23,7 +23,7 @@ jobs:
         env:
           JOB_STATUS: success
         with:
-          url: mqtt.beebotte.com
+          url: mqtt.beebotte.com:1883
           topic: control/github_actions_action_runner
           payload: '{ "type":"docker-build", "repo": "repo-123", "job": "job-123", "workflow": "workflow-123","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
           username: token:token_FeP7xa3zsx4qSFNN
