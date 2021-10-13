@@ -21,7 +21,7 @@
     {
       "type": "refactor",
       "section": "Refactoring",
-      "hidden": true
+      "hidden": false
     },
     {
       "type": "docs",
@@ -32,7 +32,7 @@
   "packages": {
     "src": {
       "package-name": "butler",
-      "release-as": "5.4.4"
+      "release-as": "6.0.0"
     }
   }
 }
