@@ -137,7 +137,10 @@ async function mainScript() {
 
     proxyRestServer.get('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.put('/*', (request, reply) => {
