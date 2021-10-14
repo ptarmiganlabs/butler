@@ -141,6 +141,17 @@ jobs:
           github.repository_owner == 'ptarmiganlabs'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
+      # Send MQTT message similar to this:
+      # { "topic":"control/github_actions_action_runner",
+      #   "payload":"{ 
+      #     \"type\":\"docker-build\", 
+      #     \"repo\": \"ptarmiganlabs/butler\", 
+      #     \"job\": \"build\", \
+      #     "workflow\": \"Build Docker image CI\",
+      #     \"status\": \"completed\",
+      #     \"conclusion\":\"success\" 
+      #   }"
+      # }
       - name: Send job status to MQTT when done
         uses: potaesm/github-actions-mqtt-request@1.0.0
         if: always()
