@@ -2,7 +2,7 @@ const apiPutStartTask = {
     schema: {
         summary: 'Start a Qlik Sense task.',
         description:
-            "An optional object can be passed in the message body. It is used to pass additional info related to the reload task being started.\nCurrently it's possible to pass in a key-value pair that will be stored in Butler's KV store.\nIf Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.\nUse type=keyvaluestore to send one or more KV pairs to the KV store.\nSetting TTL=0 disables the TTL feature, i.e. the KV pair will not expire.\n\nThis parameter uses a generic JSON/object format (type + payload).\nIt's thus possible to add new integrations in future Butler versions.",
+            "An optional array of zero or more objects can be passed in the message body. It is used to pass additional info related to the reload task being started.\nCurrently it's possible to pass in a key-value pair that will be stored in Butler's KV store.\nIf Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.\nUse type=keyvaluestore to send one or more KV pairs to the KV store.\nSetting TTL=0 disables the TTL feature, i.e. the KV pair will not expire.\n\nThis parameter uses a generic JSON/object format (type + payload).\nIt's thus possible to add new integrations in future Butler versions.",
         params: {
             type: 'object',
             properties: {

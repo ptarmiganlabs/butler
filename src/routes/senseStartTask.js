@@ -77,5 +77,6 @@ module.exports = async (fastify, options) => {
     ) {
         globals.logger.debug('Registering REST endpoint PUT /v4/sensestarttask');
         fastify.put('/v4/reloadtask/:taskId/start', apiPutStartTask, handlerPutStartTask);
+        fastify.post('/v4/reloadtask/:taskId/start', apiPutStartTask, handlerPutStartTask);
     }
 };
