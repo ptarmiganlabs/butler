@@ -13,6 +13,17 @@ const apiPutStartTask = {
                 },
             },
         },
+        querystring: {
+            type: 'object',
+            properties: {
+                allTaskIdsMustExist: {
+                    type: 'boolean',
+                    description:
+                        'If set to `true`, all specified taskIds must exist. If one or more taskIds does not exist in the Sense server, *no* tasks will be started.\n\nIf set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.\n\nIn either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.\n\nNote: Tasks started by specifying tags and/or custom properties are not affected by this.',
+                    example: true,
+                },
+            },
+        },
         body: {
             type: 'array',
             description: 'Optional object with extra info.',
@@ -22,7 +33,7 @@ const apiPutStartTask = {
                     type: {
                         type: 'string',
                         example: 'keyvaluestore',
-                        enum: ['keyvaluestore'],
+                        enum: ['keyvaluestore', 'starttaskid', 'starttasktag', 'starttaskcustomproperty'],
                     },
                     payload: {
                         type: 'object',
@@ -41,9 +52,17 @@ const apiPutStartTask = {
                 description: 'Task successfully started.',
                 type: 'object',
                 properties: {
-                    taskId: {
-                        type: 'string',
-                        example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                    tasksStarted: {
+                        taskId: {
+                            type: 'string',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
+                    },
+                    tasksInvalid: {
+                        taskId: {
+                            type: 'string',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
                     },
                 },
             },
