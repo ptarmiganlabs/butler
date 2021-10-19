@@ -11,7 +11,7 @@
     "dict": "^1.4.0",
     "email-validator": "^2.0.4",
     "enigma.js": "^2.7.3",
-    "eslint": "^7.32.0",
+    "eslint": "^8.0.0",
     "eslint-config-airbnb-base": "14.2.1",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "^2.25.2",
