@@ -24,7 +24,7 @@
     "fastify-plugin": "^3.0.0",
     "fastify-reply-from": "^6.4.0",
     "fastify-sensible": "^3.1.0",
-    "fastify-swagger": "^4.12.4",
+    "fastify-swagger": "^4.12.5",
     "fs-extra": "^10.0.0",
     "handlebars": "^4.7.7",
     "http-errors": "^1.8.0",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "prettier": "2.4.1",
-    "snyk": "1.737.0",
+    "snyk": "1.738.0",
     "tap": "15.0.10"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
