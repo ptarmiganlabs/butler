@@ -47,6 +47,16 @@ async function mainScript() {
     }
 
     try {
+        // Set Fastify log level based on log level in Butler config file
+        const currLogLevel = globals.getLoggingLevel();
+        if (currLogLevel === 'debug' || currLogLevel === 'silly') {
+            restServer.log.level = 'info';
+            proxyRestServer.log.level = 'info';
+        } else {
+            restServer.log.level = 'silent';
+            proxyRestServer.log.level = 'silent';
+        }
+
         // Get host info
         globals.hostInfo = await globals.initHostInfo();
         globals.logger.debug('CONFIG: Initiated host info data structures');
@@ -127,7 +137,10 @@ async function mainScript() {
 
     proxyRestServer.get('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.put('/*', (request, reply) => {

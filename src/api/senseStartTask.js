@@ -2,7 +2,7 @@ const apiPutStartTask = {
     schema: {
         summary: 'Start a Qlik Sense task.',
         description:
-            "An optional object can be passed in the message body. It is used to pass additional info related to the reload task being started.\nCurrently it's possible to pass in a key-value pair that will be stored in Butler's KV store.\nIf Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.\nUse type=keyvaluestore to send one or more KV pairs to the KV store.\nSetting TTL=0 disables the TTL feature, i.e. the KV pair will not expire.\n\nThis parameter uses a generic JSON/object format (type + payload).\nIt's thus possible to add new integrations in future Butler versions.",
+            "An optional array of zero or more objects can be passed in the message body. It is used to pass additional info related to the reload task being started.\nCurrently it's possible to pass in a key-value pair that will be stored in Butler's KV store.\nIf Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.\nUse type=keyvaluestore to send one or more KV pairs to the KV store.\nSetting TTL=0 disables the TTL feature, i.e. the KV pair will not expire.\n\nThis parameter uses a generic JSON/object format (type + payload).\nIt's thus possible to add new integrations in future Butler versions.",
         params: {
             type: 'object',
             properties: {
@@ -10,6 +10,17 @@ const apiPutStartTask = {
                     type: 'string',
                     description: 'ID of Qlik Sense task.',
                     example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                },
+            },
+        },
+        querystring: {
+            type: 'object',
+            properties: {
+                allTaskIdsMustExist: {
+                    type: 'boolean',
+                    description:
+                        'If set to `true`, all specified taskIds must exist. If one or more taskIds does not exist in the Sense server, *no* tasks will be started.\n\nIf set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.\n\nIn either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.\n\nNote: Tasks started by specifying tags and/or custom properties are not affected by this.',
+                    example: true,
                 },
             },
         },
@@ -22,7 +33,7 @@ const apiPutStartTask = {
                     type: {
                         type: 'string',
                         example: 'keyvaluestore',
-                        enum: ['keyvaluestore'],
+                        enum: ['keyvaluestore', 'starttaskid', 'starttasktag', 'starttaskcustomproperty'],
                     },
                     payload: {
                         type: 'object',
@@ -41,9 +52,17 @@ const apiPutStartTask = {
                 description: 'Task successfully started.',
                 type: 'object',
                 properties: {
-                    taskId: {
-                        type: 'string',
-                        example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                    tasksStarted: {
+                        taskId: {
+                            type: 'string',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
+                    },
+                    tasksInvalid: {
+                        taskId: {
+                            type: 'string',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
                     },
                 },
             },
