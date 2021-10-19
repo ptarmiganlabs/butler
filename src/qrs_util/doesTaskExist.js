@@ -23,12 +23,21 @@ module.exports.doesTaskExist = (taskId) =>
                 const result = await qrsInstance.Get(`task?filter=id eq ${taskId}`);
                 globals.logger.debug(`TASKEXISTS: Got response: ${result.statusCode} for task ID ${taskId}`);
 
-                if (result.statusCode === 200) {
+                if (result.statusCode === 200 && result.body.length > 0) {
                     // Task exists
-                    resolve(true);
+                    resolve({
+                        exists: true,
+                        task: {
+                            taskId: result.body[0].id,
+                            taskName: result.body[0].name,
+                        },
+                    });
                 } else {
                     // Task doesn't exist or other error (e.g. couldn't contact QRS)
-                    resolve(false);
+                    resolve({
+                        exists: false,
+                        task: {},
+                    });
                 }
             } catch (err) {
                 globals.logger.error(`TASKEXISTS: Error while getting task: ${JSON.stringify(err, null, 2)}`);
