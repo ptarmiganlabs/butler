@@ -1,5 +1,5 @@
 # Build Docker image for Amd64
-FROM node:16-bullseye-slim
+FROM node:17-bullseye-slim
 
 # Add metadata about the image
 LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
