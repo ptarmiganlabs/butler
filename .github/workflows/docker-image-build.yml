@@ -24,6 +24,18 @@ jobs:
       packages: write
 
     steps:
+      - name: Send job status to MQTT (starting job)
+        uses: potaesm/github-actions-mqtt-request@1.0.0
+        if: always()
+        env:
+          JOB_CONCLUSION: ${{ job.status }}
+          NODE_VERSION: ${{ matrix.node }}
+        with:
+          url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
+          topic: control/github_actions_action_runner
+          payload: '{ "type":"ci-test", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}", "nodeVersion": "${{ env.NODE_VERSION }}","status": "in_progress","conclusion":"${{ env.JOB_CONCLUSION }}" }'
+          connectTimeout: 30000
+
       - name: Show input values
         run: |
           echo "Inputs: ${{ github.event.inputs }}"
