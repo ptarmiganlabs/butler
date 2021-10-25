@@ -5,7 +5,7 @@
   "dependencies": {
     "@keyvhq/core": "^1.6.0",
     "any-base": "^1.1.0",
-    "axios": "^0.23.0",
+    "axios": "^0.24.0",
     "config": "^3.3.6",
     "cron-job-manager": "^2.1.4",
     "dict": "^1.4.0",
