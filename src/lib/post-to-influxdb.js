@@ -24,20 +24,14 @@ function postButlerMemoryUsageToInfluxdb(memory) {
 
         .then(() => {
             globals.logger.silly(
-                `MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(
-                    datapoint,
-                    null,
-                    2
-                )}`
+                `MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(datapoint, null, 2)}`
             );
 
             datapoint = null;
             globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(
-                `MEMORY USAGE: Error saving user session data to InfluxDB! ${err.stack}`
-            );
+            globals.logger.error(`MEMORY USAGE: Error saving user session data to InfluxDB! ${err.stack}`);
         });
 }
 

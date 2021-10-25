@@ -42,9 +42,7 @@ async function handlerPutAppReload(request, reply) {
                         headers: {
                             'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
                         },
-                        rejectUnauthorized: globals.config.get(
-                            'Butler.configEngine.rejectUnauthorized'
-                        ),
+                        rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                     }),
             };
 
@@ -54,11 +52,7 @@ async function handlerPutAppReload(request, reply) {
             let startQSEoWTaskOnSuccess = [];
             let startQSEoWTaskOnFailure = [];
 
-            if (
-                request.body.reloadMode !== undefined &&
-                request.body.reloadMode >= 0 &&
-                request.body.reloadMode <= 2
-            ) {
+            if (request.body.reloadMode !== undefined && request.body.reloadMode >= 0 && request.body.reloadMode <= 2) {
                 reloadMode = request.body.reloadMode;
             } else {
                 reloadMode = 0;
@@ -70,18 +64,12 @@ async function handlerPutAppReload(request, reply) {
                 partialReload = false;
             }
 
-            if (
-                request.body.startQSEoWTaskOnSuccess !== undefined &&
-                request.body.startQSEoWTaskOnSuccess.length > 0
-            ) {
+            if (request.body.startQSEoWTaskOnSuccess !== undefined && request.body.startQSEoWTaskOnSuccess.length > 0) {
                 // There are task IDs in request body
                 startQSEoWTaskOnSuccess = request.body.startQSEoWTaskOnSuccess;
             }
 
-            if (
-                request.body.startQSEoWTaskOnFailure !== undefined &&
-                request.body.startQSEoWTaskOnFailure.length > 0
-            ) {
+            if (request.body.startQSEoWTaskOnFailure !== undefined && request.body.startQSEoWTaskOnFailure.length > 0) {
                 // There are task IDs in request body
                 startQSEoWTaskOnFailure = request.body.startQSEoWTaskOnFailure;
             }
@@ -142,11 +130,7 @@ async function handlerPutAppReload(request, reply) {
                 }
             } catch (err) {
                 globals.logger.error(
-                    `APPRELOAD: Error closing connection to Sense engine: ${JSON.stringify(
-                        err,
-                        null,
-                        2
-                    )}`
+                    `APPRELOAD: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
                 );
                 reply.send(httpErrors(500, 'Error closing connection to Sense server'));
             }

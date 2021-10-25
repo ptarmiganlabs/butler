@@ -14,9 +14,7 @@ async function handlerGetButlerPing(request, reply) {
             butlerVersion: globals.appVersion,
         };
     } catch (err) {
-        globals.logger.error(
-            `PING: Failing pinging Butler, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`PING: Failing pinging Butler, error is: ${JSON.stringify(err, null, 2)}`);
         reply.send(httpErrors(500, 'Failing pinging Butler'));
         return null;
     }

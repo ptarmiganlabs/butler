@@ -104,20 +104,12 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
 
                 // 2. Make sure the HTTP method is one of the supported ones
                 lowercaseMethod = webhook.httpMethod.toLowerCase();
-                if (
-                    lowercaseMethod !== 'get' &&
-                    lowercaseMethod !== 'post' &&
-                    lowercaseMethod !== 'put'
-                ) {
+                if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
                     throw `Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`;
                 }
             } catch (err) {
                 globals.logger.error(
-                    `WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(
-                        webhook,
-                        null,
-                        2
-                    )}`
+                    `WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
                 );
                 throw err;
             }
@@ -210,11 +202,7 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
                     `WEBHOOKOUTFAILED: Rate limiting ok: Sending reload failure notification outgoing webhook for task "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(
-                    `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(
-                        rateLimiterRes,
-                        null,
-                        2
-                    )}"`
+                    `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                 );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
@@ -233,11 +221,7 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
                 `WEBHOOKOUTFAILED: Rate limiting failed. Not sending reload failure notification via outgoing webhook for task "${reloadParams.taskName}"`
             );
             globals.logger.verbose(
-                `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(
-                    rateLimiterRes,
-                    null,
-                    2
-                )}"`
+                `WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
             );
         });
 }
@@ -251,11 +235,7 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
                     `WEBHOOKOUTABORTED: Rate limiting ok: Sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(
-                    `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(
-                        rateLimiterRes,
-                        null,
-                        2
-                    )}"`
+                    `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                 );
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -274,11 +254,7 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
                 `WEBHOOKOUTABORTED: Rate limiting failed. Not sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
             );
             globals.logger.verbose(
-                `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(
-                    rateLimiterRes,
-                    null,
-                    2
-                )}"`
+                `WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
             );
         });
 }

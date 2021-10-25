@@ -12,11 +12,7 @@ async function handlerGetActiveUserCount(request, reply) {
         return { response: globals.currentUsers.size };
     } catch (err) {
         globals.logger.error(
-            `ACTIVEUSERCOUNT: Failed gettting active user count, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `ACTIVEUSERCOUNT: Failed gettting active user count, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed gettting active user count'));
         return null;

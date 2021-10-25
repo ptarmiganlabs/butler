@@ -7,13 +7,7 @@ const mkdirp = require('mkdirp');
 const globals = require('../globals');
 const { logRESTCall } = require('../lib/logRESTCall');
 const { isDirectoryChildOf } = require('../lib/disk_utils');
-const {
-    apiFileCopy,
-    apiFileMove,
-    apiFileDelete,
-    apiCreateDir,
-    apiCreateDirQvd,
-} = require('../api/disk_utils');
+const { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } = require('../api/disk_utils');
 
 async function handlerFileCopy(request, reply) {
     try {
@@ -54,10 +48,7 @@ async function handlerFileCopy(request, reply) {
             // Ensure fromFile exists
             if (await fs.pathExists(fromFile)) {
                 globals.fileCopyDirectories.forEach((element) => {
-                    if (
-                        isDirectoryChildOf(fromDir, element.fromDir) &&
-                        isDirectoryChildOf(toDir, element.toDir)
-                    ) {
+                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
                         // The fromFile passed as parameter matches an approved fromDir specified in the config file
                         // AND
                         // toFile passed as parameter matches the associated approved toDir specified in the config file
@@ -134,10 +125,7 @@ async function handlerFileMove(request, reply) {
             // Ensure fromFile exists
             if (await fs.pathExists(fromFile)) {
                 globals.fileMoveDirectories.forEach((element) => {
-                    if (
-                        isDirectoryChildOf(fromDir, element.fromDir) &&
-                        isDirectoryChildOf(toDir, element.toDir)
-                    ) {
+                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
                         // The fromFile passed as parameter matches an approved fromDir specified in the config file
                         // AND
                         // toFile passed as parameter matches the associated approved toDir specified in the config file
@@ -206,9 +194,7 @@ async function handlerFileDelete(request, reply) {
                     reply.code(204).send();
                 } else {
                     // deleteFile does not exist
-                    globals.logger.error(
-                        `FILEDELETE: Delete failed, file ${request.body.deleteFile} does not exist`
-                    );
+                    globals.logger.error(`FILEDELETE: Delete failed, file ${request.body.deleteFile} does not exist`);
                     reply.send(httpErrors(400, 'Delete failed, file does not exist'));
                 }
             } else {
@@ -220,9 +206,7 @@ async function handlerFileDelete(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `FILEDELETE: Failed deleting file ${
-                request.body.deleteFile
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `FILEDELETE: Failed deleting file ${request.body.deleteFile}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed deleting file'));
     }
@@ -249,9 +233,11 @@ async function handlerCreateDirQvd(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `CREATEDIRQVD: Failed creating directory: ${
-                request.body.directory
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `CREATEDIRQVD: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(
+                err,
+                null,
+                2
+            )}`
         );
         reply.send(httpErrors(500, 'Failed creating directory'));
     }
@@ -277,9 +263,7 @@ async function handlerCreateDir(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `CREATEDIR: Failed creating directory: ${
-                request.body.directory
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `CREATEDIR: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed creating directory'));
     }
