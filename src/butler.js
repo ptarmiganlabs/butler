@@ -138,12 +138,18 @@ async function mainScript() {
 
     proxyRestServer.put('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.delete('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.post('/*', (request, reply) => {
@@ -151,7 +157,10 @@ async function mainScript() {
         const { 'x-http-method-override': method = 'POST' } = request.headers;
         // eslint-disable-next-line no-param-reassign
         reply.request.raw.method = method;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     // Loads all plugins defined in routes
