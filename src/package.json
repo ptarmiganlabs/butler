@@ -1,6 +1,6 @@
 {
   "name": "butler",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
   "dependencies": {
     "@keyvhq/core": "^1.6.0",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "prettier": "2.4.1",
-    "snyk": "1.738.0",
+    "snyk": "1.742.0",
     "tap": "15.0.10"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",

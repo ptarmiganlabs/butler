@@ -34,6 +34,7 @@ jobs:
           url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
           topic: control/github_actions_action_runner
           payload: '{ "type":"ci-test", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}", "nodeVersion": "${{ env.NODE_VERSION }}","status": "in_progress","conclusion":"${{ env.JOB_CONCLUSION }}" }'
+          username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
           connectTimeout: 30000
 
       - name: Show input values
