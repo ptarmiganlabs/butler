@@ -267,7 +267,7 @@ Butler:
 
   restServerConfig:
     enable: false                                     # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.
-    serverHost: <FQDN or IP (or localhost) of server where Butler is running>
+    serverHost: <FQDN or IP (or localhost) of server where Butler is running>   # Use 0.0.0.0 to listen on all network interfaces (e.g. when running in Docker!).
     serverPort: 8080                                  # Port where Butler's REST is available. Any free port on the server where Butler is running can bse used.
     backgroundServerPort: 8081                        # Port used internally by Butle's REST API. Any free port on the server where Butler is running can bse used.
 
