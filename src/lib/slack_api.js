@@ -27,14 +27,10 @@ async function slackSend(slackConfig, logger) {
         }
 
         const res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
-        logger.debug(
-            `SLACKSEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`
-        );
+        logger.debug(`SLACKSEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
         return res;
     } catch (err) {
-        logger.error(
-            `SLACKSEND: ${err.response.statusText} (${err.response.status}): ${err.response.data}`
-        );
+        logger.error(`SLACKSEND: ${err.response.statusText} (${err.response.status}): ${err.response.data}`);
     }
 }
 

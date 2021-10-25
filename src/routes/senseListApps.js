@@ -26,9 +26,7 @@ function handlerGetSenseListApps(request, reply) {
                     headers: {
                         'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
                     },
-                    rejectUnauthorized: globals.config.get(
-                        'Butler.configEngine.rejectUnauthorized'
-                    ),
+                    rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                 }),
         };
 
@@ -59,39 +57,23 @@ function handlerGetSenseListApps(request, reply) {
                             session.close();
                         } catch (err) {
                             globals.logger.error(
-                                `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(
-                                    err,
-                                    null,
-                                    2
-                                )}`
+                                `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
                             );
-                            reply.send(
-                                httpErrors(500, 'Failed closing connection to Sense server')
-                            );
+                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                         }
                     })
                     .catch((error) => {
                         globals.logger.error(
-                            `LISTAPPS: Error while getting app list: ${JSON.stringify(
-                                error,
-                                null,
-                                2
-                            )}`
+                            `LISTAPPS: Error while getting app list: ${JSON.stringify(error, null, 2)}`
                         );
 
                         try {
                             session.close();
                         } catch (err) {
                             globals.logger.error(
-                                `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(
-                                    err,
-                                    null,
-                                    2
-                                )}`
+                                `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
                             );
-                            reply.send(
-                                httpErrors(500, 'Failed closing connection to Sense server')
-                            );
+                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                         }
                     });
             })
@@ -108,11 +90,7 @@ function handlerGetSenseListApps(request, reply) {
                     session.close();
                 } catch (err) {
                     globals.logger.error(
-                        `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(
-                            err,
-                            null,
-                            2
-                        )}`
+                        `LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
                     );
                 }
 
@@ -120,9 +98,7 @@ function handlerGetSenseListApps(request, reply) {
             });
     } catch (err) {
         globals.logger.error(
-            `LISTAPPS: getting list of Sense apps: ${
-                request.body.taskId
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `LISTAPPS: getting list of Sense apps: ${request.body.taskId}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }

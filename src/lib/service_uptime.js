@@ -54,9 +54,7 @@ function serviceUptimeStart() {
         );
 
         // Store to Influxdb
-        const butlerMemoryInfluxTag = globals.config.has(
-            'Butler.uptimeMonitor.storeInInfluxdb.instanceTag'
-        )
+        const butlerMemoryInfluxTag = globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
             ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
             : '';
 

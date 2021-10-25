@@ -43,11 +43,11 @@ async function handlerPutSlackPostMessage(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `SLACK: Failed sending Slack message: ${JSON.stringify(
-                request.body,
+            `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
+                err,
                 null,
                 2
-            )}, error is: ${JSON.stringify(err, null, 2)}`
+            )}`
         );
         reply.send(httpErrors(500, 'Failed sending Slack message'));
     }

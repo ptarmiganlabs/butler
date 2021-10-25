@@ -24,8 +24,7 @@ globals.initInfluxDB();
 if (
     (globals.config.has('Butler.uptimeMonitor.enabled') &&
         globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
-    (globals.config.has('Butler.uptimeMonitor.enable') &&
-        globals.config.get('Butler.uptimeMonitor.enable') === true)
+    (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
 ) {
     serviceUptime.serviceUptimeStart();
 }
@@ -38,10 +37,8 @@ async function mainScript() {
 
     // Set up heartbeats, if enabled in the config file
     if (
-        (globals.config.has('Butler.heartbeat.enabled') &&
-            globals.config.get('Butler.heartbeat.enabled') === true) ||
-        (globals.config.has('Butler.heartbeat.enable') &&
-            globals.config.get('Butler.heartbeat.enable') === true)
+        (globals.config.has('Butler.heartbeat.enabled') && globals.config.get('Butler.heartbeat.enabled') === true) ||
+        (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true)
     ) {
         heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
     }
@@ -89,8 +86,7 @@ async function mainScript() {
         // Set up anon telemetry reports, if enabled
         if (
             globals.config.has('Butler.anonTelemetry') === false ||
-            (globals.config.has('Butler.anonTelemetry') === true &&
-                globals.config.get('Butler.anonTelemetry') === true)
+            (globals.config.has('Butler.anonTelemetry') === true && globals.config.get('Butler.anonTelemetry') === true)
         ) {
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
@@ -129,10 +125,7 @@ async function mainScript() {
     // ---------------------------------------------------
     // Configure X-HTTP-Method-Override handling
     proxyRestServer.register(FastifyReplyFrom, {
-        // base: 'http://localhost:3101',
-        base: `http://localhost:${globals.config.get(
-            'Butler.restServerConfig.backgroundServerPort'
-        )}`,
+        base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
     });
 
     proxyRestServer.get('/*', (request, reply) => {
@@ -145,12 +138,18 @@ async function mainScript() {
 
     proxyRestServer.put('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.delete('/*', (request, reply) => {
         const { url } = request.raw;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     proxyRestServer.post('/*', (request, reply) => {
@@ -158,7 +157,10 @@ async function mainScript() {
         const { 'x-http-method-override': method = 'POST' } = request.headers;
         // eslint-disable-next-line no-param-reassign
         reply.request.raw.method = method;
-        reply.from(url);
+        reply.from(url, {
+            rewriteRequestHeaders: (originalReq, headers) =>
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+        });
     });
 
     // Loads all plugins defined in routes
@@ -182,10 +184,7 @@ async function mainScript() {
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
 
         // Start UDP server for Session and Connection events
-        globals.udpServerSessionConnectionSocket.bind(
-            globals.udpPortSessionConnection,
-            globals.udpHost
-        );
+        globals.udpServerSessionConnectionSocket.bind(globals.udpPortSessionConnection, globals.udpHost);
 
         // Start UDP server for failed task events
         globals.udpServerTaskFailureSocket.bind(globals.udpPortTakeFailure, globals.udpHost);
@@ -194,21 +193,15 @@ async function mainScript() {
     // ---------------------------------------------------
     // Start REST server on port 8080
     if (globals.config.get('Butler.restServerConfig.enable')) {
-        globals.logger.debug(
-            `REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`
-        );
-        globals.logger.debug(
-            `REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`
-        );
+        globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
+        globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
         restServer.listen(
             globals.config.get('Butler.restServerConfig.backgroundServerPort'),
             'localhost',
             (err, address) => {
                 if (err) {
-                    globals.logger.error(
-                        `MAIN: Background REST server could not listen on ${address}`
-                    );
+                    globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
                     restServer.log.error(err);
                     process.exit(1);
                 }
@@ -261,9 +254,7 @@ async function mainScript() {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 
             dockerHealthCheckServer.register(FastifyHealthcheck);
-            await dockerHealthCheckServer.listen(
-                globals.config.get('Butler.dockerHealthCheck.port')
-            );
+            await dockerHealthCheckServer.listen(globals.config.get('Butler.dockerHealthCheck.port'));
 
             globals.logger.info(
                 `MAIN: Started Docker healthcheck server on port ${globals.config.get(

@@ -40,7 +40,7 @@ module.exports.doesTaskExist = (taskId) =>
                     });
                 }
             } catch (err) {
-                globals.logger.error(`TASKEXISTS: Error while getting task: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(`TASKEXISTS: Error while getting task: ${err.message}`);
                 resolve(false);
             }
         } catch (err) {

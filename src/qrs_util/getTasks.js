@@ -55,7 +55,7 @@ module.exports.getTasks = (filter) =>
                             tasks.push({ taskId: task.id, taskName: task.name });
                         }
                     } else {
-                        // No task matches the tag
+                        // No task matches the custom property
                     }
                     resolve(tasks);
                 }

@@ -21,15 +21,11 @@ async function handlerGETSchedules(request, reply) {
         if (request.query.id !== undefined) {
             // Return specific schedule, if it exists
             if (scheduler.existsSchedule(request.query.id)) {
-                const sched = scheduler
-                    .getAllSchedules()
-                    .find((item) => item.id === request.query.id);
+                const sched = scheduler.getAllSchedules().find((item) => item.id === request.query.id);
 
                 reply.code(200).send(sched);
             } else {
-                reply.send(
-                    httpErrors(400, `REST SCHEDULER: Schedule ID ${request.query.id} not found.`)
-                );
+                reply.send(httpErrors(400, `REST SCHEDULER: Schedule ID ${request.query.id} not found.`));
             }
         } else {
             // Return all schedules
@@ -37,9 +33,11 @@ async function handlerGETSchedules(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed retrieving schedule with ID ${
-                request.query.id
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed retrieving schedule with ID ${request.query.id}, error is: ${JSON.stringify(
+                err,
+                null,
+                2
+            )}`
         );
         reply.send(httpErrors(500, 'Failed retrieving schedule'));
     }
@@ -73,26 +71,21 @@ async function handlerDELETESchedules(request, reply) {
     try {
         logRESTCall(request);
 
-        globals.logger.debug(
-            `REST SCHEDULER: Deleting schdule with ID: ${request.params.scheduleId}`
-        );
+        globals.logger.debug(`REST SCHEDULER: Deleting schdule with ID: ${request.params.scheduleId}`);
         if (scheduler.deleteSchedule(request.params.scheduleId) === true) {
             // Delete succeeded
             reply.code(204).send();
         } else {
             // Delete failed. Return error
-            reply.send(
-                httpErrors(
-                    400,
-                    `REST SCHEDULER: Delete for schedule ID ${request.params.scheduleId} failed.`
-                )
-            );
+            reply.send(httpErrors(400, `REST SCHEDULER: Delete for schedule ID ${request.params.scheduleId} failed.`));
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed deleting schedule ${
-                request.params.scheduleId
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed deleting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(
+                err,
+                null,
+                2
+            )}`
         );
         reply.send(httpErrors(500, 'Failed deleting schedule'));
     }
@@ -104,26 +97,17 @@ async function handlerPUTSchedulesStart(request, reply) {
 
         // Is there a schedule ID passed along?
         if (request.params.scheduleId !== undefined) {
-            globals.logger.debug(
-                `REST SCHEDULER: Starting schedule ID: ${request.params.scheduleId}`
-            );
+            globals.logger.debug(`REST SCHEDULER: Starting schedule ID: ${request.params.scheduleId}`);
 
             if (scheduler.startSchedule(request.params.scheduleId) === true) {
                 // Start succeeded
-                globals.logger.info(
-                    `REST SCHEDULER: Started schedule ID: ${request.params.scheduleId}`
-                );
+                globals.logger.info(`REST SCHEDULER: Started schedule ID: ${request.params.scheduleId}`);
                 reply.code(200).send([scheduler.getSchedule(request.params.scheduleId)]);
             } else {
                 // Start failed. Return error
-                globals.logger.info(
-                    `REST SCHEDULER: Failed starting schedule ID: ${request.params.scheduleId}`
-                );
+                globals.logger.info(`REST SCHEDULER: Failed starting schedule ID: ${request.params.scheduleId}`);
                 reply.send(
-                    httpErrors(
-                        400,
-                        `REST SCHEDULER: Failed starting schedule ID ${request.params.scheduleId}.`
-                    )
+                    httpErrors(400, `REST SCHEDULER: Failed starting schedule ID ${request.params.scheduleId}.`)
                 );
             }
         } else {
@@ -135,9 +119,11 @@ async function handlerPUTSchedulesStart(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed starting schedule ${
-                request.params.scheduleId
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed starting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(
+                err,
+                null,
+                2
+            )}`
         );
         reply.send(httpErrors(500, 'Failed starting schedule'));
     }
@@ -149,26 +135,17 @@ async function handlerPUTSchedulesStop(request, reply) {
 
         // Is there a schedule ID passed along?
         if (request.params.scheduleId !== undefined) {
-            globals.logger.debug(
-                `REST SCHEDULER: Stoping schedule ID: ${request.params.scheduleId}`
-            );
+            globals.logger.debug(`REST SCHEDULER: Stoping schedule ID: ${request.params.scheduleId}`);
 
             if (scheduler.stopSchedule(request.params.scheduleId) === true) {
                 // Stop succeeded
-                globals.logger.info(
-                    `REST SCHEDULER: Stopped schedule ID: ${request.params.scheduleId}`
-                );
+                globals.logger.info(`REST SCHEDULER: Stopped schedule ID: ${request.params.scheduleId}`);
                 reply.code(200).send([scheduler.getSchedule(request.params.scheduleId)]);
             } else {
                 // Stop failed. Return error
-                globals.logger.error(
-                    `REST SCHEDULER: Failed stopping schedule ID: ${request.params.scheduleId}`
-                );
+                globals.logger.error(`REST SCHEDULER: Failed stopping schedule ID: ${request.params.scheduleId}`);
                 reply.send(
-                    httpErrors(
-                        400,
-                        `REST SCHEDULER: Failed stopping schedule ID ${request.params.scheduleId}.`
-                    )
+                    httpErrors(400, `REST SCHEDULER: Failed stopping schedule ID ${request.params.scheduleId}.`)
                 );
             }
         } else {
@@ -180,9 +157,11 @@ async function handlerPUTSchedulesStop(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed stopping schedule ${
-                request.params.scheduleId
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed stopping schedule ${request.params.scheduleId}, error is: ${JSON.stringify(
+                err,
+                null,
+                2
+            )}`
         );
         reply.send(httpErrors(500, 'Failed stopping schedule'));
     }
@@ -190,10 +169,7 @@ async function handlerPUTSchedulesStop(request, reply) {
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (fastify, options) => {
-    if (
-        globals.config.has('Butler.scheduler.enable') &&
-        globals.config.get('Butler.scheduler.enable')
-    ) {
+    if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
         if (
             globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')
@@ -223,11 +199,7 @@ module.exports = async (fastify, options) => {
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
         ) {
             globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
-            fastify.put(
-                '/v4/schedules/:scheduleId/start',
-                apiPUTSchedulesStart,
-                handlerPUTSchedulesStart
-            );
+            fastify.put('/v4/schedules/:scheduleId/start', apiPUTSchedulesStart, handlerPUTSchedulesStart);
         }
 
         if (
@@ -235,11 +207,7 @@ module.exports = async (fastify, options) => {
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
         ) {
             globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
-            fastify.put(
-                '/v4/schedules/:scheduleId/stop',
-                apiPUTSchedulesStop,
-                handlerPUTSchedulesStop
-            );
+            fastify.put('/v4/schedules/:scheduleId/stop', apiPUTSchedulesStop, handlerPUTSchedulesStop);
         }
     }
 };

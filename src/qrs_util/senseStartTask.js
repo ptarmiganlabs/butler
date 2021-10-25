@@ -20,16 +20,12 @@ module.exports.senseStartTask = (taskId) => {
         qrsInstance
             .Post(`task/${taskId}/start`)
             .then((result) => {
-                globals.logger.debug(
-                    `STARTTASK: Got response: ${result.statusCode} for task ID ${taskId}`
-                );
+                globals.logger.debug(`STARTTASK: Got response: ${result.statusCode} for task ID ${taskId}`);
             })
             .catch((err) => {
                 globals.logger.error(`STARTTASK: Error while starting Sense task: ${err.message}`);
             });
     } catch (err) {
-        globals.logger.error(
-            `STARTTASK: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`STARTTASK: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`);
     }
 };

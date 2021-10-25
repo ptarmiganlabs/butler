@@ -75,10 +75,7 @@ async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
             // New namespace. Create keyv object.
             let maxKeys = 1000;
             if (globals.config.has('Butler.keyValueStore.maxKeysPerNamespace')) {
-                maxKeys = parseInt(
-                    globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'),
-                    10
-                );
+                maxKeys = parseInt(globals.config.get('Butler.keyValueStore.maxKeysPerNamespace'), 10);
             }
 
             const newKeyvObj = new Keyv({ namespace: newNamespace, maxSize: maxKeys });

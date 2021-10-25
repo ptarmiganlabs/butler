@@ -7,7 +7,6 @@ services:
     restart: always
     ports:
       - "8080:8080"       # REST API available on port 8180 to services outside the container
-      - "9997:9997/udp"   # UDP port for session connection events
       - "9998:9998/udp"   # UDP port for task failure events
     volumes:
       # Make config file accessible outside of container

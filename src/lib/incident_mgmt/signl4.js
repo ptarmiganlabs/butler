@@ -39,9 +39,7 @@ function getReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.incidentTool.signl4.url')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'SIGNL4: Reload failure SIGNL4 config info missing in Butler config file'
-            );
+            globals.logger.error('SIGNL4: Reload failure SIGNL4 config info missing in Butler config file');
             return false;
         }
 
@@ -54,9 +52,7 @@ function getReloadFailedNotificationConfigOk() {
             severity: globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.severity')
                 ? globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.severity')
                 : 99,
-            serviceName: globals.config.has(
-                'Butler.incidentTool.signl4.reloadTaskFailure.serviceName'
-            )
+            serviceName: globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.serviceName')
                 ? globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.serviceName')
                 : 'Default service name',
             // autoCloseOnLaterReloadSuccess: globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.autoCloseOnLaterReloadSuccess')
@@ -78,9 +74,7 @@ function getReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.incidentTool.signl4.url')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'SIGNL4: Reload aborted SIGNL4 config info missing in Butler config file'
-            );
+            globals.logger.error('SIGNL4: Reload aborted SIGNL4 config info missing in Butler config file');
             return false;
         }
 
@@ -93,9 +87,7 @@ function getReloadAbortedNotificationConfigOk() {
             severity: globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.severity')
                 ? globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.severity')
                 : 99,
-            serviceName: globals.config.has(
-                'Butler.incidentTool.signl4.reloadTaskAborted.serviceName'
-            )
+            serviceName: globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.serviceName')
                 ? globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.serviceName')
                 : 'Default service name',
             // autoCloseOnLaterReloadSuccess: globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.autoCloseOnLaterReloadSuccess')
@@ -142,11 +134,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
                     `SIGNL4FAILED: Rate limiting ok: Sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(
-                    `SIGNL4FAILED: Rate limiting details "${JSON.stringify(
-                        rateLimiterRes,
-                        null,
-                        2
-                    )}"`
+                    `SIGNL4FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                 );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
@@ -166,9 +154,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
             globals.logger.verbose(
                 `SIGNL4FAILED: Rate limiting failed. Not sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(
-                `SIGNL4FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.verbose(`SIGNL4FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -181,11 +167,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
                     `SIGNL4ABORTED: Rate limiting ok: Sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(
-                    `SIGNL4ABORTED: Rate limiting details "${JSON.stringify(
-                        rateLimiterRes,
-                        null,
-                        2
-                    )}"`
+                    `SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                 );
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -205,9 +187,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
             globals.logger.verbose(
                 `SIGNL4ABORTED: Rate limiting failed. Not sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(
-                `SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.verbose(`SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

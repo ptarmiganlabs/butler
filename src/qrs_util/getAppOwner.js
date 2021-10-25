@@ -22,32 +22,24 @@ module.exports.getAppOwner = (appId) =>
             let appOwner = null;
             try {
                 const result = await qrsInstance.Get(`app/${appId}`);
-                globals.logger.debug(
-                    `APPOWNER: Got response: ${result.statusCode} for app ID ${appId}`
-                );
+                globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app ID ${appId}`);
 
                 appOwner = result.body.owner;
             } catch (err) {
-                globals.logger.error(
-                    `APPOWNER: Error while getting app owner: ${JSON.stringify(err, null, 2)}`
-                );
+                globals.logger.error(`APPOWNER: Error while getting app owner: ${JSON.stringify(err, null, 2)}`);
                 throw 'Error while getting app owner';
             }
 
             // Step 2: Get additional info about the user identified in step 1
             try {
                 const result = await qrsInstance.Get(`user/${appOwner.id}`);
-                globals.logger.debug(
-                    `APPOWNER: Got response: ${result.statusCode} for app owner ${appOwner.id}`
-                );
+                globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app owner ${appOwner.id}`);
 
                 // Find email attribute
                 const emailAttributes = result.body.attributes.filter(
                     (attribute) => attribute.attributeType.toLowerCase() === 'email'
                 );
-                const resultAttributes = emailAttributes.map(
-                    (attribute) => attribute.attributeValue
-                );
+                const resultAttributes = emailAttributes.map((attribute) => attribute.attributeValue);
 
                 if (resultAttributes.length > 0) {
                     resolve({
@@ -60,16 +52,10 @@ module.exports.getAppOwner = (appId) =>
                 }
             } catch (err) {
                 globals.logger.error(
-                    `APPOWNER: Error while getting app owner details: ${JSON.stringify(
-                        err,
-                        null,
-                        2
-                    )}`
+                    `APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`
                 );
             }
         } catch (err) {
-            globals.logger.error(
-                `APPOWNER: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`
-            );
+            globals.logger.error(`APPOWNER: Error while getting app owner details 2: ${JSON.stringify(err, null, 2)}`);
         }
     });

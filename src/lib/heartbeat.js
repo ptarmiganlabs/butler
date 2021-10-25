@@ -17,9 +17,7 @@ const callRemoteURL = (remoteURL, logger) => {
 
 function setupHeartbeatTimer(config, logger) {
     try {
-        logger.debug(
-            `HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`
-        );
+        logger.debug(`HEARTBEAT: Setting up heartbeat to remote: ${config.get('Butler.heartbeat.remoteURL')}`);
 
         const sched = later.parse.text(config.get('Butler.heartbeat.frequency'));
         later.setInterval(() => {

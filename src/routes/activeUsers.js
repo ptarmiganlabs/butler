@@ -18,11 +18,7 @@ async function handlerGetActiveUsers(request, reply) {
         return { response: JSON.stringify(activeUsers) };
     } catch (err) {
         globals.logger.error(
-            `ACTIVEUSERCOUNT: Failed gettting active users, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `ACTIVEUSERCOUNT: Failed gettting active users, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed gettting active users'));
         return null;
