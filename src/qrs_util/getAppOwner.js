@@ -52,10 +52,10 @@ module.exports.getAppOwner = (appId) =>
                 }
             } catch (err) {
                 globals.logger.error(
-                    `APPOWNER: Error while getting app owner details: ${JSON.stringify(err, null, 2)}`
+                    `APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`
                 );
             }
         } catch (err) {
-            globals.logger.error(`APPOWNER: Error while starting Sense task: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`APPOWNER: Error while getting app owner details 2: ${JSON.stringify(err, null, 2)}`);
         }
     });
