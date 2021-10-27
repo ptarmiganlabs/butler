@@ -83,7 +83,7 @@ async function handlerPutAppReload(request, reply) {
             );
 
             const app = await global.openDoc(request.params.appId, '', '', '', false);
-            reply.send(201, { appId: request.params.appId }); // Return ok result, i.e. async behavior = don't wait for reload to complete.
+            reply.code(201).send({ appId: request.params.appId }); // Return ok result, i.e. async behavior = don't wait for reload to complete.
 
             if ((await app.doReload(reloadMode, partialReload)) === true) {
                 // Reload was successful
