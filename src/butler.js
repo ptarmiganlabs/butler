@@ -115,8 +115,8 @@ async function mainScript() {
             'Butler.restServerConfig.serverPort'
         )}`,
         uiConfig: {
-            docExpansion: 'full',
             deepLinking: true,
+            operationsSorter: 'alpha', // can also be 'alpha' or a function
         },
         hideUntagged: false,
         exposeRoute: true,
