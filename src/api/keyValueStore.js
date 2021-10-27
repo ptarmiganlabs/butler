@@ -132,8 +132,7 @@ const apiGetKVExists = {
         },
         response: {
             200: {
-                description:
-                    'Key exist/no-exist returned, together with the data if the does exist.',
+                description: 'Key exist/no-exist returned, together with the data if the does exist.',
                 type: 'object',
                 properties: {
                     keyExists: {
@@ -303,6 +302,7 @@ const apiDeleteKVPair = {
                     example: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
                 },
             },
+            required: ['namespace', 'key'],
         },
         response: {
             204: {
