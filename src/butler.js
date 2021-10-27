@@ -179,15 +179,11 @@ async function mainScript() {
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {
         udp.udp.udpInitTaskErrorServer();
-        udp.udp.udpInitSessionConnectionServer();
-
-        globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
-
-        // Start UDP server for Session and Connection events
-        globals.udpServerSessionConnectionSocket.bind(globals.udpPortSessionConnection, globals.udpHost);
 
         // Start UDP server for failed task events
         globals.udpServerTaskFailureSocket.bind(globals.udpPortTakeFailure, globals.udpHost);
+
+        globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
     }
 
     // ---------------------------------------------------

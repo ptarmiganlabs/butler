@@ -8,7 +8,6 @@
     "axios": "^0.24.0",
     "config": "^3.3.6",
     "cron-job-manager": "^2.1.4",
-    "dict": "^1.4.0",
     "email-validator": "^2.0.4",
     "enigma.js": "^2.7.3",
     "eslint": "^7.32.0",
