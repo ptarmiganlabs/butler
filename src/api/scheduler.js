@@ -607,6 +607,34 @@ const apiPUTSchedulesStopAll = {
     },
 };
 
+const apiGETSchedulerStatus = {
+    schema: {
+        summary: 'Get scheduler status.',
+        description:
+            'Get basic status from the core scheduler.\n\nNo schedule metadata beyond ID, cron setting and job state will be returned, but as this comes from the core scheduler it is the authorative truth about what jobs are running (and which ones are not).',
+        produces: ['text/plain'],
+        response: {
+            200: {
+                description: 'Status for all jobs that exist in the core scheduler.',
+                type: 'string',
+                example:
+                    "{\n'3702cec1-b6c8-463e-bda3-58d6a94dd9ac': * */2 * * * status: Running \n'2d5dcebc-2440-4bd7-9aa1-fb69708715c8': */45 * * * * * status: Running \n'a93ca0f3-7980-439b-9eda-723a167352e3': */10 * * * * * status: Running \n'ad250f49-ffd8-45dc-9b2b-f76028e969a4': */5 * * * * * status: Running \n}",
+            },
+            500: {
+                description: 'Internal error.',
+                type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
+            },
+        },
+    },
+};
+
 module.exports = {
     apiGETSchedules,
     apiPOSTSchedules,
@@ -615,4 +643,5 @@ module.exports = {
     apiPUTSchedulesStartAll,
     apiPUTSchedulesStop,
     apiPUTSchedulesStopAll,
+    apiGETSchedulerStatus,
 };

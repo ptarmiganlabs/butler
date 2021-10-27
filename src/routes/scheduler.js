@@ -13,6 +13,7 @@ const {
     apiPUTSchedulesStartAll,
     apiPUTSchedulesStop,
     apiPUTSchedulesStopAll,
+    apiGETSchedulerStatus,
 } = require('../api/scheduler');
 
 async function handlerGETSchedules(request, reply) {
@@ -169,20 +170,20 @@ async function handlerPUTSchedulesStop(request, reply) {
     }
 }
 
-// async function handlerGETSchedulesStatus(request, reply) {
-//     try {
-//         logRESTCall(request);
+async function handlerGETSchedulesStatus(request, reply) {
+    try {
+        logRESTCall(request);
 
-//         // let status = `${scheduler.cronManager}`;
-//         let status = scheduler.cronManager.listCrons();
-//         reply.code(200).send(status);
-//     } catch (err) {
-//         globals.logger.error(
-//             `REST SCHEDULER: Failed retrieving scheduler status, error is: ${JSON.stringify(err, null, 2)}`
-//         );
-//         reply.send(httpErrors(500, 'Failed retrieving scheduler status'));
-//     }
-// }
+        // let status = `${scheduler.cronManager}`;
+        let status = scheduler.cronManager.listCrons();
+        reply.code(200).send(status);
+    } catch (err) {
+        globals.logger.error(
+            `REST SCHEDULER: Failed retrieving scheduler status, error is: ${JSON.stringify(err, null, 2)}`
+        );
+        reply.send(httpErrors(500, 'Failed retrieving scheduler status'));
+    }
+}
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (fastify, options) => {
@@ -233,6 +234,6 @@ module.exports = async (fastify, options) => {
             fastify.put('/v4/schedules/stopall', apiPUTSchedulesStopAll, handlerPUTSchedulesStop);
         }
 
-        // fastify.get('/v4/schedules/status', handlerGETSchedulesStatus);
+        fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
     }
 };
