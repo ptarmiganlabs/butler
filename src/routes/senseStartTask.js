@@ -136,7 +136,7 @@ async function handlerPutStartTask(request, reply) {
                 for (const item of tasksToStartTaskId) {
                     globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
                     qrsUtil.senseStartTask.senseStartTask(item.taskId);
-                    res.tasksId.started.push({ taskId: item.taskId });
+                    res.tasksId.started.push({ taskId: item.taskId, taskName: item.taskName });
                 }
             } else {
                 // One or more invalid task IDs => Don't start any task
@@ -173,7 +173,7 @@ async function handlerPutStartTask(request, reply) {
             res.tasksCPs = tasksToStartCPs;
         }
 
-        reply.code(200).send(res);
+        reply.code(200).send(JSON.stringify(res, null, 2));
     } catch (err) {
         globals.logger.error(
             `STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`
