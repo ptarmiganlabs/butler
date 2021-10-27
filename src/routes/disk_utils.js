@@ -25,11 +25,11 @@ async function handlerFileCopy(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            if (request.body.overwrite === 'true') {
+            if (request.body.overwrite === 'true' || request.body.overwrite === true) {
                 overwrite = true;
             }
 
-            if (request.body.preserveTimestamp === 'true') {
+            if (request.body.preserveTimestamp === 'true' || request.body.preserveTimestamp === true) {
                 preserveTimestamp = true;
             }
 
@@ -106,7 +106,7 @@ async function handlerFileMove(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            if (request.body.overwrite === 'true') {
+            if (request.body.overwrite === 'true' || request.body.overwrite === true) {
                 overwrite = true;
             }
 
