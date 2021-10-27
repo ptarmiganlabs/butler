@@ -17,8 +17,7 @@ const apiPutAppReload = {
             properties: {
                 reloadMode: {
                     type: 'integer',
-                    description:
-                        'Reload mode that will be used. 0, 1 or 2. If not specified 0 will be used',
+                    description: 'Reload mode that will be used. 0, 1 or 2. If not specified 0 will be used',
                 },
                 partialReload: {
                     type: 'boolean',
@@ -28,29 +27,21 @@ const apiPutAppReload = {
                 },
                 startQSEoWTaskOnSuccess: {
                     type: 'array',
-                    description:
-                        'Array of task IDs that should be started when the app has successfully reloaded.',
+                    description: 'Array of task IDs that should be started when the app has successfully reloaded.',
                     items: {
                         type: 'string',
                         minItems: 0,
                     },
-                    example: [
-                        '09b3c78f-04dd-45e3-a4bf-1b074d6572fa',
-                        'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3',
-                    ],
+                    example: ['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3'],
                 },
                 startQSEoWTaskOnFailure: {
                     type: 'array',
-                    description:
-                        'Array of task IDs that should be started if the app fails reloading.',
+                    description: 'Array of task IDs that should be started if the app fails reloading.',
                     items: {
                         type: 'string',
                         minItems: 0,
                     },
-                    example: [
-                        '09b3c78f-04dd-45e3-a4bf-1b074d6572fa',
-                        'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3',
-                    ],
+                    example: ['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3'],
                 },
             },
         },

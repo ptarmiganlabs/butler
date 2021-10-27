@@ -43,14 +43,12 @@ const apiGETSchedules = {
                         },
                         timezone: {
                             type: 'string',
-                            description:
-                                'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
                             example: 'Europe/Stockholm',
                         },
                         qlikSenseTaskId: {
                             type: 'string',
-                            description:
-                                'ID of Qlik Sense task that should be started when schedule triggers.',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                             example: '210832b5-6174-4572-bd19-3e61eda675ef',
                         },
                         startupState: {
@@ -128,8 +126,7 @@ const apiPOSTSchedules = {
                 },
                 qlikSenseTaskId: {
                     type: 'string',
-                    description:
-                        'ID of Qlik Sense task that should be started when schedule triggers.',
+                    description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                     example: '210832b5-6174-4572-bd19-3e61eda675ef',
                 },
                 startupState: {
@@ -180,14 +177,12 @@ const apiPOSTSchedules = {
                         },
                         timezone: {
                             type: 'string',
-                            description:
-                                'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
                             example: 'Europe/Stockholm',
                         },
                         qlikSenseTaskId: {
                             type: 'string',
-                            description:
-                                'ID of Qlik Sense task that should be started when schedule triggers.',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                             example: '210832b5-6174-4572-bd19-3e61eda675ef',
                         },
                         startupState: {
@@ -317,8 +312,7 @@ const apiPUTSchedulesStart = {
                     },
                     qlikSenseTaskId: {
                         type: 'string',
-                        description:
-                            'ID of Qlik Sense task that should be started when schedule triggers.',
+                        description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                         example: '210832b5-6174-4572-bd19-3e61eda675ef',
                     },
                     startupState: {
@@ -413,8 +407,7 @@ const apiPUTSchedulesStop = {
                     },
                     qlikSenseTaskId: {
                         type: 'string',
-                        description:
-                            'ID of Qlik Sense task that should be started when schedule triggers.',
+                        description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                         example: '210832b5-6174-4572-bd19-3e61eda675ef',
                     },
                     startupState: {
