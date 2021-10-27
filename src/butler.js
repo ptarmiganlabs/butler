@@ -202,6 +202,7 @@ async function mainScript() {
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
+                    globals.logger.error(`MAIN: ${err}`);
                     restServer.log.error(err);
                     process.exit(1);
                 }
