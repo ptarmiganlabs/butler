@@ -118,7 +118,7 @@ const apiPutStartTask = {
                             taskName: 'Reload task of App3',
                         },
                     ],
-                    tasksCPs: [
+                    tasksCP: [
                         {
                             taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
                             taskName: 'Reload task of App1',
