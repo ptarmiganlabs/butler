@@ -23,6 +23,10 @@ const apiPutMqttMessage = {
             201: {
                 description: 'MQTT message successfully published.',
                 type: 'object',
+                properties: {
+                    topic: { type: 'string', example: 'qliksense/new_data_notification/sales' },
+                    message: { type: 'string', example: 'dt=20201028' },
+                },
             },
             400: {
                 description: 'Required parameter missing.',
