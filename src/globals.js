@@ -1,8 +1,5 @@
-const mqtt = require('mqtt');
 const config = require('config');
-const dgram = require('dgram');
 const fs = require('fs-extra');
-const dict = require('dict');
 const path = require('path');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
@@ -128,76 +125,52 @@ if (
     teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
 }
 
-// MS Teams user session events
-if (
-    config.has('Butler.teamsNotification.enable') &&
-    config.has('Butler.teamsNotification.userSessionEvents.enable') &&
-    config.get('Butler.teamsNotification.enable') === true &&
-    config.get('Butler.teamsNotification.userSessionEvents.enable') === true
-) {
-    const webhookUrl = config.get('Butler.teamsNotification.userSessionEvents.webhookURL');
-
-    // Create MS Teams object
-    teamsUserSessionObj = new IncomingWebhook(webhookUrl);
-}
-
-// ------------------------------------
-// Data structures used to keep track of currently active users/sessions
-const currentUsers = dict();
-const currentUsersPerServer = dict();
-
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker, if MQTT is enabled
 let mqttClient = null;
-try {
-    if (
-        config.has('Butler.mqttConfig.enable') &&
-        config.has('Butler.mqttConfig.brokerHost') &&
-        config.has('Butler.mqttConfig.brokerPort') &&
-        config.get('Butler.mqttConfig.enable')
-    ) {
-        const mqttOptions = {
-            host: config.get('Butler.mqttConfig.brokerHost'),
-            port: config.get('Butler.mqttConfig.brokerPort'),
-        };
+// try {
+//     if (
+//         config.has('Butler.mqttConfig.enable') &&
+//         config.has('Butler.mqttConfig.brokerHost') &&
+//         config.has('Butler.mqttConfig.brokerPort') &&
+//         config.get('Butler.mqttConfig.enable')
+//     ) {
+//         const mqttOptions = {
+//             host: config.get('Butler.mqttConfig.brokerHost'),
+//             port: config.get('Butler.mqttConfig.brokerPort'),
+//         };
 
-        mqttClient = mqtt.connect(mqttOptions);
-        /*
-            Following might be needed for conecting to older Mosquitto versions
-            var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
-                protocolId: 'MQIsdp',
-                protocolVersion: 3
-            });
-            */
-        if (!mqttClient.connected) {
-            logger.verbose(
-                `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
-            );
-        }
-    } else {
-        logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
-    }
-} catch (err) {
-    logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
-}
+//         mqttClient = mqtt.connect(mqttOptions);
+//         /*
+//             Following might be needed for conecting to older Mosquitto versions
+//             var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
+//                 protocolId: 'MQIsdp',
+//                 protocolVersion: 3
+//             });
+//             */
+//         if (!mqttClient.connected) {
+//             logger.verbose(
+//                 `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
+//             );
+//         }
+//     } else {
+//         logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
+//     }
+// } catch (err) {
+//     logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
+// }
 
 // ------------------------------------
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
-// Prepare to listen on port X for incoming UDP connections regarding session starting/stoping, or connection opening/closing
-const udpServerSessionConnectionSocket = dgram.createSocket({
-    type: 'udp4',
-    reuseAddr: true,
-});
-const udpPortSessionConnection = config.get('Butler.udpServerConfig.portSessionConnectionEvents');
-
+var udpServerTaskFailureSocket = null;
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-const udpServerTaskFailureSocket = dgram.createSocket({
-    type: 'udp4',
-    reuseAddr: true,
-});
-const udpPortTakeFailure = config.get('Butler.udpServerConfig.portTaskFailure');
+// const udpServerTaskFailureSocket = dgram.createSocket({
+//     type: 'udp4',
+//     reuseAddr: true,
+// });
+const udpPortTaskFailure = config.get('Butler.udpServerConfig.portTaskFailure');
 
 // Folder under which QVD folders are to be created
 const qvdFolder = config.get('Butler.configDirectories.qvdPath');
@@ -205,23 +178,16 @@ const qvdFolder = config.get('Butler.configDirectories.qvdPath');
 // Load approved fromDir and toDir for fileCopy operation
 const fileCopyDirectories = [];
 
-if (
-    config.has('Butler.fileCopyApprovedDirectories') &&
-    config.get('Butler.fileCopyApprovedDirectories') != null
-) {
+if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileCopyApprovedDirectories') != null) {
     config.get('Butler.fileCopyApprovedDirectories').forEach((element) => {
-        logger.verbose(
-            `fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`
-        );
+        logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
 
         const newDirCombo = {
             fromDir: path.normalize(element.fromDirectory),
             toDir: path.normalize(element.toDirectory),
         };
 
-        logger.info(
-            `Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`
-        );
+        logger.info(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
 
         fileCopyDirectories.push(newDirCombo);
     });
@@ -230,23 +196,16 @@ if (
 // Load approved fromDir and toDir for fileMove operation
 const fileMoveDirectories = [];
 
-if (
-    config.has('Butler.fileMoveApprovedDirectories') &&
-    config.get('Butler.fileMoveApprovedDirectories') != null
-) {
+if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileMoveApprovedDirectories') != null) {
     config.get('Butler.fileMoveApprovedDirectories').forEach((element) => {
-        logger.verbose(
-            `fileMove directories from config file: ${JSON.stringify(element, null, 2)}`
-        );
+        logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
 
         const newDirCombo = {
             fromDir: path.normalize(element.fromDirectory),
             toDir: path.normalize(element.toDirectory),
         };
 
-        logger.info(
-            `Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`
-        );
+        logger.info(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
 
         fileMoveDirectories.push(newDirCombo);
     });
@@ -255,10 +214,7 @@ if (
 // Load approved dir for fileDelete operation
 const fileDeleteDirectories = [];
 
-if (
-    config.has('Butler.fileDeleteApprovedDirectories') &&
-    config.get('Butler.fileDeleteApprovedDirectories') != null
-) {
+if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fileDeleteApprovedDirectories') != null) {
     config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
         logger.verbose(`fileDelete directory from config file: ${element}`);
 
@@ -295,18 +251,10 @@ if (config.has('Butler.restServerEndpointsEnable')) {
 logger.info(`Enabled API endpoints: ${JSON.stringify(endpointsEnabled, null, 2)}`);
 
 // Set up InfluxDB
-logger.info(
-    `CONFIG: Influxdb enabled: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.enable')}`
-);
-logger.info(
-    `CONFIG: Influxdb host IP: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostIP')}`
-);
-logger.info(
-    `CONFIG: Influxdb host port: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort')}`
-);
-logger.info(
-    `CONFIG: Influxdb db name: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName')}`
-);
+logger.info(`CONFIG: Influxdb enabled: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.enable')}`);
+logger.info(`CONFIG: Influxdb host IP: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostIP')}`);
+logger.info(`CONFIG: Influxdb host port: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort')}`);
+logger.info(`CONFIG: Influxdb db name: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName')}`);
 
 // Set up Influxdb client
 const influx = new Influx.InfluxDB({
@@ -355,9 +303,7 @@ function initInfluxDB() {
                         .then(() => {
                             logger.info(`CONFIG: Created new InfluxDB database: ${dbName}`);
 
-                            const newPolicy = config.get(
-                                'Butler.uptimeMonitor.storeInInfluxdb.retentionPolicy'
-                            );
+                            const newPolicy = config.get('Butler.uptimeMonitor.storeInInfluxdb.retentionPolicy');
 
                             // Create new default retention policy
                             influx
@@ -368,9 +314,7 @@ function initInfluxDB() {
                                     isDefault: true,
                                 })
                                 .then(() => {
-                                    logger.info(
-                                        `CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`
-                                    );
+                                    logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
                                 })
                                 .catch((err) => {
                                     logger.error(
@@ -379,9 +323,7 @@ function initInfluxDB() {
                                 });
                         })
                         .catch((err) => {
-                            logger.error(
-                                `CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.stack}`
-                            );
+                            logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.stack}`);
                         });
                 } else {
                     logger.info(`CONFIG: Found InfluxDB database: ${dbName}`);
@@ -411,10 +353,7 @@ async function initHostInfo() {
         const networkInterface = siNetwork.filter((item) => item.iface === defaultNetworkInterface);
 
         const idSrc =
-            networkInterface[0].mac +
-            networkInterface[0].ip4 +
-            config.get('Butler.configQRS.host') +
-            siSystem.uuid;
+            networkInterface[0].mac + networkInterface[0].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
         const salt = networkInterface[0].mac;
         const hash = crypto.createHmac('sha256', salt);
         hash.update(idSrc);
@@ -462,13 +401,9 @@ module.exports = {
     teamsTaskFailureObj,
     teamsTaskAbortedObj,
     teamsUserSessionObj,
-    currentUsers,
-    currentUsersPerServer,
-    udpServerSessionConnectionSocket,
     udpServerTaskFailureSocket,
     udpHost,
-    udpPortSessionConnection,
-    udpPortTakeFailure,
+    udpPortTaskFailure,
     mqttClient,
     qvdFolder,
     logger,
@@ -485,4 +420,3 @@ module.exports = {
     initHostInfo,
     hostInfo,
 };
-

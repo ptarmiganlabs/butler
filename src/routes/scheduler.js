@@ -57,7 +57,7 @@ async function handlerPOSTSchedules(request, reply) {
 
         scheduler.addSchedule(newSchedule);
 
-        reply.code(200).send(newSchedule);
+        reply.code(201).send(JSON.stringify(newSchedule));
     } catch (err) {
         globals.logger.error(
             `REST SCHEDULER: Failed adding new schedule ${JSON.stringify(

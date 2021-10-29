@@ -125,7 +125,7 @@ async function handlerPutStartTask(request, reply) {
             }
         }
 
-        const res = { tasksId: { started: [], invalid: [] }, tasksTag: [], tasksCPs: [] };
+        const res = { tasksId: { started: [], invalid: [] }, tasksTag: [], tasksCP: [] };
 
         // Look at the query parameter allTaskIdsMustExist to determine if tasks should be started even though some taskIds are missing/invalid
         if (request.query.allTaskIdsMustExist === true) {
@@ -170,7 +170,7 @@ async function handlerPutStartTask(request, reply) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
                 qrsUtil.senseStartTask.senseStartTask(item.taskId);
             }
-            res.tasksCPs = tasksToStartCPs;
+            res.tasksCP = tasksToStartCPs;
         }
 
         reply.code(200).send(JSON.stringify(res, null, 2));

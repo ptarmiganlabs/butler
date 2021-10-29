@@ -31,7 +31,7 @@ function postButlerMemoryUsageToInfluxdb(memory) {
             globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(`MEMORY USAGE: Error saving user session data to InfluxDB! ${err.stack}`);
+            globals.logger.error(`MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.stack}`);
         });
 }
 

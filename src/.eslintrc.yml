@@ -12,3 +12,10 @@ rules:
   prettier/prettier: error
 plugins:
   - prettier
+globals: 
+  beforeAll: readonly
+  afterAll: readonly
+  describe: readonly
+  expect: readonly
+  test: readonly
+  it: readonly

@@ -20,8 +20,6 @@ async function slackSend(slackConfig, logger) {
             Object.assign(body, slackConfig.text);
         } else if (slackConfig.messageType === 'formatted') {
             Object.assign(body, JSON.parse(slackConfig.text));
-        } else if (slackConfig.messageType === 'useractivity') {
-            Object.assign(body, slackConfig.text);
         } else if (slackConfig.messageType === 'restmsg') {
             Object.assign(body, slackConfig.text);
         }

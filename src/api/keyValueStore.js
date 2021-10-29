@@ -71,12 +71,6 @@ const apiGetKVPair = {
                         description: 'Value stored in the key-value pair.',
                         example: '2020-09-29 17:14:56',
                     },
-                    ttl: {
-                        type: 'number',
-                        description:
-                            'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
-                        example: 60000,
-                    },
                 },
             },
             400: {
@@ -158,18 +152,12 @@ const apiGetKVExists = {
                                 description: 'Value stored in the key-value pair.',
                                 example: '2020-09-29 17:14:56',
                             },
-                            ttl: {
-                                type: 'number',
-                                description:
-                                    'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
-                                example: 60000,
-                            },
                         },
                     },
                 },
             },
             400: {
-                description: '"Namespace or key not found" or "Required parameter missing".',
+                description: '"Namespace not found" or "Required parameter missing".',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },
@@ -259,7 +247,7 @@ const apiPostKVPair = {
                 },
             },
             400: {
-                description: '"Namespace or key not found" or "Required parameter missing".',
+                description: '"Namespace not found" or "Required parameter missing".',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },
