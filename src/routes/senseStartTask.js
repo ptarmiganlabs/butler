@@ -125,7 +125,7 @@ async function handlerPutStartTask(request, reply) {
             }
         }
 
-        const res = { tasksId: { started: [], invalid: [] }, tasksTag: [], tasksCPs: [] };
+        const res = { tasksId: { started: [], invalid: [] }, tasksTag: [], tasksCP: [] };
 
         // Look at the query parameter allTaskIdsMustExist to determine if tasks should be started even though some taskIds are missing/invalid
         if (request.query.allTaskIdsMustExist === true) {
@@ -136,7 +136,7 @@ async function handlerPutStartTask(request, reply) {
                 for (const item of tasksToStartTaskId) {
                     globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
                     qrsUtil.senseStartTask.senseStartTask(item.taskId);
-                    res.tasksId.started.push({ taskId: item.taskId });
+                    res.tasksId.started.push({ taskId: item.taskId, taskName: item.taskName });
                 }
             } else {
                 // One or more invalid task IDs => Don't start any task
@@ -170,10 +170,10 @@ async function handlerPutStartTask(request, reply) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
                 qrsUtil.senseStartTask.senseStartTask(item.taskId);
             }
-            res.tasksCPs = tasksToStartCPs;
+            res.tasksCP = tasksToStartCPs;
         }
 
-        reply.code(200).send(res);
+        reply.code(200).send(JSON.stringify(res, null, 2));
     } catch (err) {
         globals.logger.error(
             `STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`

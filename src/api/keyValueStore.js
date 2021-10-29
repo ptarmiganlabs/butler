@@ -71,12 +71,6 @@ const apiGetKVPair = {
                         description: 'Value stored in the key-value pair.',
                         example: '2020-09-29 17:14:56',
                     },
-                    ttl: {
-                        type: 'number',
-                        description:
-                            'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
-                        example: 60000,
-                    },
                 },
             },
             400: {
@@ -132,8 +126,7 @@ const apiGetKVExists = {
         },
         response: {
             200: {
-                description:
-                    'Key exist/no-exist returned, together with the data if the does exist.',
+                description: 'Key exist/no-exist returned, together with the data if the does exist.',
                 type: 'object',
                 properties: {
                     keyExists: {
@@ -159,18 +152,12 @@ const apiGetKVExists = {
                                 description: 'Value stored in the key-value pair.',
                                 example: '2020-09-29 17:14:56',
                             },
-                            ttl: {
-                                type: 'number',
-                                description:
-                                    'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
-                                example: 60000,
-                            },
                         },
                     },
                 },
             },
             400: {
-                description: '"Namespace or key not found" or "Required parameter missing".',
+                description: '"Namespace not found" or "Required parameter missing".',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },
@@ -260,7 +247,7 @@ const apiPostKVPair = {
                 },
             },
             400: {
-                description: '"Namespace or key not found" or "Required parameter missing".',
+                description: '"Namespace not found" or "Required parameter missing".',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },
@@ -303,6 +290,7 @@ const apiDeleteKVPair = {
                     example: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
                 },
             },
+            required: ['namespace', 'key'],
         },
         response: {
             204: {

@@ -87,28 +87,46 @@ function loadSchedulesFromDisk() {
 
 // Start all currently defined schedules
 function startAllSchedules() {
-    globals.logger.debug('SCHEDULER: Starting all schedules');
+    return new Promise((resolve, reject) => {
+        globals.logger.debug('SCHEDULER: Starting all schedules');
 
-    try {
-        globals.configSchedule.forEach((element) => {
-            cronManager.start(element.id.toString());
-        });
-    } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed starting all schedules: ${err}`);
-    }
+        try {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const element of globals.configSchedule) {
+                cronManager.start(element.id.toString());
+                element.lastKnownState = 'started'; // Set schedule status
+            }
+
+            // Persist schedule to disk
+            saveSchedulesToDisk();
+            resolve();
+        } catch (err) {
+            globals.logger.error(`SCHEDULER: Failed starting all schedules: ${err}`);
+            reject();
+        }
+    });
 }
 
 // Stop all currently defined schedules
 function stopAllSchedules() {
-    globals.logger.debug('SCHEDULER: Stopping all schedules');
+    return new Promise((resolve, reject) => {
+        globals.logger.debug('SCHEDULER: Stopping all schedules');
 
-    try {
-        globals.configSchedule.forEach((element) => {
-            cronManager.stop(element.id.toString());
-        });
-    } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed stopping all schedules: ${err}`);
-    }
+        try {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const element of globals.configSchedule) {
+                cronManager.stop(element.id.toString());
+                element.lastKnownState = 'stopped'; // Set schedule status
+            }
+
+            // Persist schedule to disk
+            saveSchedulesToDisk();
+            resolve();
+        } catch (err) {
+            globals.logger.error(`SCHEDULER: Failed stopping all schedules: ${err}`);
+            reject();
+        }
+    });
 }
 
 // Get array with all schedules
@@ -214,4 +232,5 @@ module.exports = {
     getSchedule,
     deleteSchedule,
     existsSchedule,
+    cronManager,
 };

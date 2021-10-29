@@ -10,7 +10,10 @@ const {
     apiPOSTSchedules,
     apiDELETESchedules,
     apiPUTSchedulesStart,
+    apiPUTSchedulesStartAll,
     apiPUTSchedulesStop,
+    apiPUTSchedulesStopAll,
+    apiGETSchedulerStatus,
 } = require('../api/scheduler');
 
 async function handlerGETSchedules(request, reply) {
@@ -23,7 +26,7 @@ async function handlerGETSchedules(request, reply) {
             if (scheduler.existsSchedule(request.query.id)) {
                 const sched = scheduler.getAllSchedules().find((item) => item.id === request.query.id);
 
-                reply.code(200).send(sched);
+                reply.code(200).send(JSON.stringify(sched));
             } else {
                 reply.send(httpErrors(400, `REST SCHEDULER: Schedule ID ${request.query.id} not found.`));
             }
@@ -54,7 +57,7 @@ async function handlerPOSTSchedules(request, reply) {
 
         scheduler.addSchedule(newSchedule);
 
-        reply.code(200).send(newSchedule);
+        reply.code(201).send(JSON.stringify(newSchedule));
     } catch (err) {
         globals.logger.error(
             `REST SCHEDULER: Failed adding new schedule ${JSON.stringify(
@@ -96,13 +99,13 @@ async function handlerPUTSchedulesStart(request, reply) {
         logRESTCall(request);
 
         // Is there a schedule ID passed along?
-        if (request.params.scheduleId !== undefined) {
+        if (request.params.scheduleId !== undefined && request.params.scheduleId !== '') {
             globals.logger.debug(`REST SCHEDULER: Starting schedule ID: ${request.params.scheduleId}`);
 
             if (scheduler.startSchedule(request.params.scheduleId) === true) {
                 // Start succeeded
                 globals.logger.info(`REST SCHEDULER: Started schedule ID: ${request.params.scheduleId}`);
-                reply.code(200).send([scheduler.getSchedule(request.params.scheduleId)]);
+                reply.code(200).send(JSON.stringify([scheduler.getSchedule(request.params.scheduleId)]));
             } else {
                 // Start failed. Return error
                 globals.logger.info(`REST SCHEDULER: Failed starting schedule ID: ${request.params.scheduleId}`);
@@ -112,10 +115,10 @@ async function handlerPUTSchedulesStart(request, reply) {
             }
         } else {
             // Start all schedules
-            globals.configSchedule.forEach((item) => scheduler.startSchedule(item.id));
+            await scheduler.startAllSchedules();
 
             globals.logger.info('REST SCHEDULER: Started all schedules.');
-            reply.code(200).send(scheduler.getAllSchedules());
+            reply.code(200).send(JSON.stringify(scheduler.getAllSchedules()));
         }
     } catch (err) {
         globals.logger.error(
@@ -134,13 +137,13 @@ async function handlerPUTSchedulesStop(request, reply) {
         logRESTCall(request);
 
         // Is there a schedule ID passed along?
-        if (request.params.scheduleId !== undefined) {
-            globals.logger.debug(`REST SCHEDULER: Stoping schedule ID: ${request.params.scheduleId}`);
+        if (request.params.scheduleId !== undefined && request.params.scheduleId !== '') {
+            globals.logger.debug(`REST SCHEDULER: Stopping schedule ID: ${request.params.scheduleId}`);
 
             if (scheduler.stopSchedule(request.params.scheduleId) === true) {
                 // Stop succeeded
                 globals.logger.info(`REST SCHEDULER: Stopped schedule ID: ${request.params.scheduleId}`);
-                reply.code(200).send([scheduler.getSchedule(request.params.scheduleId)]);
+                reply.code(200).send(JSON.stringify([scheduler.getSchedule(request.params.scheduleId)]));
             } else {
                 // Stop failed. Return error
                 globals.logger.error(`REST SCHEDULER: Failed stopping schedule ID: ${request.params.scheduleId}`);
@@ -150,10 +153,10 @@ async function handlerPUTSchedulesStop(request, reply) {
             }
         } else {
             // Stop all schedules
-            globals.configSchedule.forEach((item) => scheduler.stopSchedule(item.id));
+            await scheduler.stopAllSchedules();
 
             globals.logger.info('REST SCHEDULER: Stopped all schedules.');
-            reply.code(200).send(scheduler.getAllSchedules());
+            reply.code(200).send(JSON.stringify(scheduler.getAllSchedules()));
         }
     } catch (err) {
         globals.logger.error(
@@ -164,6 +167,21 @@ async function handlerPUTSchedulesStop(request, reply) {
             )}`
         );
         reply.send(httpErrors(500, 'Failed stopping schedule'));
+    }
+}
+
+async function handlerGETSchedulesStatus(request, reply) {
+    try {
+        logRESTCall(request);
+
+        // let status = `${scheduler.cronManager}`;
+        let status = scheduler.cronManager.listCrons();
+        reply.code(200).send(status);
+    } catch (err) {
+        globals.logger.error(
+            `REST SCHEDULER: Failed retrieving scheduler status, error is: ${JSON.stringify(err, null, 2)}`
+        );
+        reply.send(httpErrors(500, 'Failed retrieving scheduler status'));
     }
 }
 
@@ -190,7 +208,7 @@ module.exports = async (fastify, options) => {
             globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') &&
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')
         ) {
-            globals.logger.debug('Registering REST endpoint DELETE /v4/schedules');
+            globals.logger.debug('Registering REST endpoint DELETE /v4/schedules/:scheduleId');
             fastify.delete('/v4/schedules/:scheduleId', apiDELETESchedules, handlerDELETESchedules);
         }
 
@@ -198,16 +216,24 @@ module.exports = async (fastify, options) => {
             globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') &&
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
         ) {
-            globals.logger.debug('Registering REST endpoint POST /v4/schedulestart');
+            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/start');
             fastify.put('/v4/schedules/:scheduleId/start', apiPUTSchedulesStart, handlerPUTSchedulesStart);
+
+            // Start all schedules
+            fastify.put('/v4/schedules/startall', apiPUTSchedulesStartAll, handlerPUTSchedulesStart);
         }
 
         if (
             globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') &&
             globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
         ) {
-            globals.logger.debug('Registering REST endpoint POST /v4/schedulestop');
+            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/stop');
             fastify.put('/v4/schedules/:scheduleId/stop', apiPUTSchedulesStop, handlerPUTSchedulesStop);
+
+            // Stop all schedules
+            fastify.put('/v4/schedules/stopall', apiPUTSchedulesStopAll, handlerPUTSchedulesStop);
         }
+
+        fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
     }
 };

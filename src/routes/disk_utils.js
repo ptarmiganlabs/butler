@@ -25,11 +25,11 @@ async function handlerFileCopy(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            if (request.body.overwrite === 'true') {
+            if (request.body.overwrite === 'true' || request.body.overwrite === true) {
                 overwrite = true;
             }
 
-            if (request.body.preserveTimestamp === 'true') {
+            if (request.body.preserveTimestamp === 'true' || request.body.preserveTimestamp === true) {
                 preserveTimestamp = true;
             }
 
@@ -106,7 +106,7 @@ async function handlerFileMove(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            if (request.body.overwrite === 'true') {
+            if (request.body.overwrite === 'true' || request.body.overwrite === true) {
                 overwrite = true;
             }
 
@@ -151,11 +151,7 @@ async function handlerFileMove(request, reply) {
             }
         }
     } catch (err) {
-        globals.logger.error(
-            `FILEMOVE: Failed moving file ${request.body.fromFile} to ${
-                request.body.toFile
-            }, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`FILEMOVE: Failed moving file ${request.body.fromFile} to ${request.body.toFile}: ${err}`);
         reply.send(httpErrors(500, 'Failed moving file'));
     }
 }
@@ -205,9 +201,7 @@ async function handlerFileDelete(request, reply) {
             }
         }
     } catch (err) {
-        globals.logger.error(
-            `FILEDELETE: Failed deleting file ${request.body.deleteFile}, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`FILEDELETE: Failed deleting file ${request.body.deleteFile}: ${err}`);
         reply.send(httpErrors(500, 'Failed deleting file'));
     }
 }
@@ -232,13 +226,7 @@ async function handlerCreateDirQvd(request, reply) {
             reply.code(201).send(request.body);
         }
     } catch (err) {
-        globals.logger.error(
-            `CREATEDIRQVD: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
-        );
+        globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${request.body.directory}: ${err}`);
         reply.send(httpErrors(500, 'Failed creating directory'));
     }
 }
@@ -262,9 +250,7 @@ async function handlerCreateDir(request, reply) {
             reply.code(201).send(request.body);
         }
     } catch (err) {
-        globals.logger.error(
-            `CREATEDIR: Failed creating directory: ${request.body.directory}, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`CREATEDIR: Failed creating directory: ${request.body.directory}: ${err}`);
         reply.send(httpErrors(500, 'Failed creating directory'));
     }
 }

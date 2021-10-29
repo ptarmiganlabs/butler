@@ -43,14 +43,12 @@ const apiGETSchedules = {
                         },
                         timezone: {
                             type: 'string',
-                            description:
-                                'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
                             example: 'Europe/Stockholm',
                         },
                         qlikSenseTaskId: {
                             type: 'string',
-                            description:
-                                'ID of Qlik Sense task that should be started when schedule triggers.',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                             example: '210832b5-6174-4572-bd19-3e61eda675ef',
                         },
                         startupState: {
@@ -128,8 +126,7 @@ const apiPOSTSchedules = {
                 },
                 qlikSenseTaskId: {
                     type: 'string',
-                    description:
-                        'ID of Qlik Sense task that should be started when schedule triggers.',
+                    description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                     example: '210832b5-6174-4572-bd19-3e61eda675ef',
                 },
                 startupState: {
@@ -180,14 +177,12 @@ const apiPOSTSchedules = {
                         },
                         timezone: {
                             type: 'string',
-                            description:
-                                'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
                             example: 'Europe/Stockholm',
                         },
                         qlikSenseTaskId: {
                             type: 'string',
-                            description:
-                                'ID of Qlik Sense task that should be started when schedule triggers.',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                             example: '210832b5-6174-4572-bd19-3e61eda675ef',
                         },
                         startupState: {
@@ -204,6 +199,12 @@ const apiPOSTSchedules = {
                             },
                             description: 'Can be used to categorise schedules.',
                             example: '["tag 1", "tag 2"]',
+                        },
+                        lastKnownState: {
+                            type: 'string',
+                            enum: ['start', 'started', 'stop', 'stopped'],
+                            description: 'Last known state of the schedule',
+                            example: 'started',
                         },
                     },
                 },
@@ -317,8 +318,7 @@ const apiPUTSchedulesStart = {
                     },
                     qlikSenseTaskId: {
                         type: 'string',
-                        description:
-                            'ID of Qlik Sense task that should be started when schedule triggers.',
+                        description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                         example: '210832b5-6174-4572-bd19-3e61eda675ef',
                     },
                     startupState: {
@@ -413,8 +413,7 @@ const apiPUTSchedulesStop = {
                     },
                     qlikSenseTaskId: {
                         type: 'string',
-                        description:
-                            'ID of Qlik Sense task that should be started when schedule triggers.',
+                        description: 'ID of Qlik Sense task that should be started when schedule triggers.',
                         example: '210832b5-6174-4572-bd19-3e61eda675ef',
                     },
                     startupState: {
@@ -460,10 +459,195 @@ const apiPUTSchedulesStop = {
     },
 };
 
+const apiPUTSchedulesStartAll = {
+    schema: {
+        summary: 'Start all schedules.',
+        description:
+            "Start all schedules, i.e. tell the scheduler to run each schedule and start associated tasks according to each schedule's settings.",
+        response: {
+            200: {
+                description:
+                    'Schedules successfully started.\n\nAn array with all inforomation about the started schedules is returned.',
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'Schedule ID',
+                            example: 'e4b1c455-aa15-4a51-a9cf-c5e4cfc91339',
+                        },
+                        created: {
+                            type: 'string',
+                            description: 'Timestamp when schedule was created',
+                            example: '2020-09-29T14:29:12.283Z',
+                        },
+                        name: {
+                            type: 'string',
+                            description: 'Schedule name.',
+                            example: 'Reload sales metrics',
+                        },
+                        cronSchedule: {
+                            type: 'string',
+                            description:
+                                '5 or 6 position cron schedule.\n\nIf 6 positions used, the leftmost position represent seconds.\nIf 5 positions used, leftmost position is minutes.\n\nThe example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.',
+                            example: '0,30 6 * * 1-5',
+                        },
+                        timezone: {
+                            type: 'string',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            example: 'Europe/Stockholm',
+                        },
+                        qlikSenseTaskId: {
+                            type: 'string',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
+                        startupState: {
+                            type: 'string',
+                            enum: ['start', 'started', 'stop', 'stopped'],
+                            description:
+                                'If set to "start" or "started", the schedule will be started upon creation. Otherwise it will remain in stopped state.',
+                            example: 'started',
+                        },
+                        tags: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                            description: 'Can be used to categorise schedules.',
+                            example: '["tag 1", "tag 2"]',
+                        },
+                    },
+                },
+            },
+            500: {
+                description: 'Internal error.',
+                type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
+            },
+        },
+    },
+};
+
+const apiPUTSchedulesStopAll = {
+    schema: {
+        summary: 'Stop all schedules.',
+        description:
+            'Stop all schedules, i.e. tell the scheduler to no longer execute any schedule according to its cron settings.',
+        response: {
+            200: {
+                description:
+                    'Schedules successfully stopped.\n\nAn array with all inforomation about the stopped schedules is returned.',
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'Schedule ID',
+                            example: 'e4b1c455-aa15-4a51-a9cf-c5e4cfc91339',
+                        },
+                        created: {
+                            type: 'string',
+                            description: 'Timestamp when schedule was created',
+                            example: '2020-09-29T14:29:12.283Z',
+                        },
+                        name: {
+                            type: 'string',
+                            description: 'Schedule name.',
+                            example: 'Reload sales metrics',
+                        },
+                        cronSchedule: {
+                            type: 'string',
+                            description:
+                                '5 or 6 position cron schedule.\n\nIf 6 positions used, the leftmost position represent seconds.\nIf 5 positions used, leftmost position is minutes.\n\nThe example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.',
+                            example: '0,30 6 * * 1-5',
+                        },
+                        timezone: {
+                            type: 'string',
+                            description: 'Time zone the schedule should use. Ex "Europe/Stockholm".',
+                            example: 'Europe/Stockholm',
+                        },
+                        qlikSenseTaskId: {
+                            type: 'string',
+                            description: 'ID of Qlik Sense task that should be started when schedule triggers.',
+                            example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        },
+                        startupState: {
+                            type: 'string',
+                            enum: ['start', 'started', 'stop', 'stopped'],
+                            description:
+                                'If set to "start" or "started", the schedule will be started upon creation. Otherwise it will remain in stopped state.',
+                            example: 'started',
+                        },
+                        tags: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                            },
+                            description: 'Can be used to categorise schedules.',
+                            example: '["tag 1", "tag 2"]',
+                        },
+                    },
+                },
+            },
+            500: {
+                description: 'Internal error.',
+                type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
+            },
+        },
+    },
+};
+
+const apiGETSchedulerStatus = {
+    schema: {
+        summary: 'Get scheduler status.',
+        description:
+            'Get basic status from the core scheduler.\n\nNo schedule metadata beyond ID, cron setting and job state will be returned, but as this comes from the core scheduler it is the authorative truth about what jobs are running (and which ones are not).',
+        produces: ['text/plain'],
+        response: {
+            200: {
+                description: 'Status for all jobs that exist in the core scheduler.',
+                type: 'string',
+                example:
+                    "{\n'3702cec1-b6c8-463e-bda3-58d6a94dd9ac': * */2 * * * status: Running \n'2d5dcebc-2440-4bd7-9aa1-fb69708715c8': */45 * * * * * status: Running \n'a93ca0f3-7980-439b-9eda-723a167352e3': */10 * * * * * status: Running \n'ad250f49-ffd8-45dc-9b2b-f76028e969a4': */5 * * * * * status: Running \n}",
+            },
+            500: {
+                description: 'Internal error.',
+                type: 'object',
+                properties: {
+                    statusCode: { type: 'number' },
+                    code: { type: 'string' },
+                    error: { type: 'string' },
+                    message: { type: 'string' },
+                    time: { type: 'string' },
+                },
+            },
+        },
+    },
+};
+
 module.exports = {
     apiGETSchedules,
     apiPOSTSchedules,
     apiDELETESchedules,
     apiPUTSchedulesStart,
+    apiPUTSchedulesStartAll,
     apiPUTSchedulesStop,
+    apiPUTSchedulesStopAll,
+    apiGETSchedulerStatus,
 };

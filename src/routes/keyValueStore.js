@@ -165,7 +165,7 @@ async function handlerPostKeyValueInNamespace(request, reply) {
 
             await addKeyValuePair(request.params.namespace, request.body.key, request.body.value, request.body.ttl);
 
-            reply.code(200).send({
+            reply.code(201).send({
                 namespace: request.params.namespace,
                 key: request.body.key,
                 value: request.body.value,

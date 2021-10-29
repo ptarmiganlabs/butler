@@ -1,13 +1,13 @@
 const apiPutMqttMessage = {
     schema: {
-        summary: 'Retrieve a list of all keys present in the specified namespace.',
+        summary: 'Publish a message to a MQTT topic.',
         description: '',
         body: {
             type: 'object',
             properties: {
                 topic: {
                     type: 'string',
-                    description: 'Name of namespace whose keys should be returned.',
+                    description: 'Topic to which message should be published.',
                     example: 'qliksense/new_data_notification/sales',
                 },
                 message: {
@@ -23,6 +23,10 @@ const apiPutMqttMessage = {
             201: {
                 description: 'MQTT message successfully published.',
                 type: 'object',
+                properties: {
+                    topic: { type: 'string', example: 'qliksense/new_data_notification/sales' },
+                    message: { type: 'string', example: 'dt=20201028' },
+                },
             },
             400: {
                 description: 'Required parameter missing.',

@@ -1,17 +1,13 @@
-/* eslint-disable no-unused-vars */
-/* eslint strict: ["error", "global"] */
-
 // Load global variables and functions
 const globals = require('../globals');
 const smtp = require('../lib/smtp');
 const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');
-const slackApi = require('../lib/slack_api');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
 
 // Handler for failed scheduler initiated reloads
-const schedulerAborted = function (msg) {
+const schedulerAborted = (msg) => {
     globals.logger.verbose(
         `TASKFABORTED: Received reload aborted UDP message from scheduler: Host=${msg[1]}, App name=${msg[3]}, User=${msg[4]}, Log level=${msg[8]}`
     );
@@ -159,7 +155,7 @@ const schedulerAborted = function (msg) {
 };
 
 // Handler for failed scheduler initiated reloads
-const schedulerFailed = function (msg, legacyFlag) {
+const schedulerFailed = (msg, legacyFlag) => {
     globals.logger.verbose(
         `TASKFAILURE: Received reload failed UDP message from scheduler: Host=${msg[0]}, App name=${msg[2]}, Task name=${msg[1]}, Log level=${msg[7]}`
     );
@@ -452,8 +448,9 @@ const schedulerFailed = function (msg, legacyFlag) {
 // --------------------------------------------------------
 // Set up UDP server handlers for acting on Sense failed task events
 // --------------------------------------------------------
-module.exports.udpInitTaskErrorServer = function () {
+module.exports.udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
+    // eslint-disable-next-line no-unused-vars
     globals.udpServerTaskFailureSocket.on('listening', (message, remote) => {
         const address = globals.udpServerTaskFailureSocket.address();
 
@@ -466,6 +463,7 @@ module.exports.udpInitTaskErrorServer = function () {
     });
 
     // Handler for UDP error event
+    // eslint-disable-next-line no-unused-vars
     globals.udpServerTaskFailureSocket.on('error', (message, remote) => {
         const address = globals.udpServerTaskFailureSocket.address();
         globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
@@ -477,6 +475,7 @@ module.exports.udpInitTaskErrorServer = function () {
     });
 
     // Main handler for UDP messages relating to failed tasks
+    // eslint-disable-next-line no-unused-vars
     globals.udpServerTaskFailureSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===
@@ -571,159 +570,6 @@ module.exports.udpInitTaskErrorServer = function () {
             }
         } catch (err) {
             globals.logger.error(`TASKFAILURE: Failed processing log event: ${err}`);
-        }
-    });
-};
-
-// --------------------------------------------------------
-// Set up UDP server for acting on Sense session and connection events
-// --------------------------------------------------------
-module.exports.udpInitSessionConnectionServer = function () {
-    // Handler for UDP server startup event
-    globals.udpServerSessionConnectionSocket.on('listening', (message, remote) => {
-        const address = globals.udpServerSessionConnectionSocket.address();
-
-        globals.logger.info(`SESSIONS: UDP server listening on ${address.address}:${address.port}`);
-
-        // Publish MQTT message that UDP server has started
-        if (globals.mqttClient) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'start');
-        }
-    });
-
-    // Handler for UDP error event
-    globals.udpServerSessionConnectionSocket.on('error', (message, remote) => {
-        const address = globals.udpServerSessionConnectionSocket.address();
-        globals.logger.error(`SESSIONS: UDP server error on ${address.address}:${address.port}`);
-
-        // Publish MQTT message that UDP server has reported an error
-        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.sessionServerStatusTopic'), 'error');
-        }
-    });
-
-    // Main handler for UDP messages relating to session and connection events
-    globals.udpServerSessionConnectionSocket.on('message', async (message, remote) => {
-        try {
-            // Message parts
-            // 0: Message type. Possible values are /proxy-connection/, /proxy-session/
-            // 1: Host
-            // 2: Command
-            // 3: User directory
-            // 4: user ID
-            // 5: Origin
-            // 6: Context
-            // 7: Message. Can contain single quotes and semicolon - handle with care
-
-            const msgTmp1 = message.toString().split(';');
-            const msg = msgTmp1.slice(0, 7);
-
-            globals.logger.info(`SESSIONS: ${msg[1]}: ${msg[2]} for user ${msg[3]}/${msg[4]}`);
-
-            // Send notification to Slack, if enabled
-            if (
-                globals.config.has('Butler.slackNotification.enable') &&
-                globals.config.has('Butler.slackNotification.userSessionEvents.enable') &&
-                globals.config.get('Butler.slackNotification.enable') === true &&
-                globals.config.get('Butler.slackNotification.userSessionEvents.enable') === true
-            ) {
-                const slackConfig = {
-                    text: {
-                        blocks: [
-                            {
-                                type: 'section',
-                                text: {
-                                    type: 'plain_text',
-                                    text: `${msg[2]},  user: ${msg[3]}/${msg[4]} on server ${msg[1]}`,
-                                },
-                            },
-                        ],
-                    },
-                    fromUser: globals.config.get('Butler.slackNotification.userSessionEvents.fromUser'),
-                    channel: globals.config.get('Butler.slackNotification.userSessionEvents.channel'),
-                    iconEmoji: globals.config.get('Butler.slackNotification.userSessionEvents.iconEmoji'),
-                    messageType: 'useractivity',
-                    webhookUrl: globals.config.get('Butler.slackNotification.userSessionEvents.webhookURL'),
-                };
-
-                // Is the user referenced by this event on the exclude list? If so don't sent a notification
-                // msg[3] = user directory
-                // msg[4] = userId
-                let sendMsg = true;
-                if (globals.config.has('Butler.slackNotification.userSessionEvents.excludeUser')) {
-                    const excludeUsers = globals.config.get('Butler.slackNotification.userSessionEvents.excludeUser');
-                    if (excludeUsers.some((item) => item.directory === msg[3] && item.userId === msg[4])) {
-                        // User found in exclude list
-                        sendMsg = false;
-                    }
-                }
-
-                if (sendMsg) {
-                    const res = slackApi.slackSend(slackConfig, globals.logger);
-                }
-            }
-
-            // Send notification to MS Teams, if enabled
-            if (
-                globals.config.has('Butler.teamsNotification.enable') &&
-                globals.config.has('Butler.teamsNotification.userSessionEvents.enable') &&
-                globals.config.get('Butler.teamsNotification.enable') === true &&
-                globals.config.get('Butler.teamsNotification.userSessionEvents.enable') === true
-            ) {
-                // Is the user referenced by this event on the exclude list? If so don't sent a notification
-                // msg[3] = user directory
-                // msg[4] = userId
-                let sendMsg = true;
-                if (globals.config.has('Butler.teamsNotification.userSessionEvents.excludeUser')) {
-                    const excludeUsers = globals.config.get('Butler.teamsNotification.userSessionEvents.excludeUser');
-                    if (excludeUsers.some((item) => item.directory === msg[3] && item.userId === msg[4])) {
-                        // User found in exclude list
-                        sendMsg = false;
-                    }
-                }
-
-                if (sendMsg) {
-                    await globals.teamsUserSessionObj.send(
-                        JSON.stringify({
-                            '@type': 'MessageCard',
-                            '@context': 'https://schema.org/extensions',
-                            summary: `${msg[2]} for user ${msg[3]}/${msg[4]}`,
-                            themeColor: '0078D7',
-                            title: `${msg[2]} for user ${msg[3]}/${msg[4]} on server ${msg[1]}`,
-                        })
-                    );
-                }
-            }
-
-            // Send MQTT messages
-            if (
-                globals.config.has('Butler.mqttConfig.enable') &&
-                globals.config.get('Butler.mqttConfig.enable') === true
-            ) {
-                if (msg[2] === 'Start session') {
-                    globals.mqttClient.publish(
-                        globals.config.get('Butler.mqttConfig.sessionStartTopic'),
-                        `${msg[1]}: ${msg[3]}/${msg[4]}`
-                    );
-                } else if (msg[2] === 'Stop session') {
-                    globals.mqttClient.publish(
-                        globals.config.get('Butler.mqttConfig.sessionStopTopic'),
-                        `${msg[1]}: ${msg[3]}/${msg[4]}`
-                    );
-                } else if (msg[2] === 'Open connection') {
-                    globals.mqttClient.publish(
-                        globals.config.get('Butler.mqttConfig.connectionOpenTopic'),
-                        `${msg[1]}: ${msg[3]}/${msg[4]}`
-                    );
-                } else if (msg[2] === 'Close connection') {
-                    globals.mqttClient.publish(
-                        globals.config.get('Butler.mqttConfig.connectionCloseTopic'),
-                        `${msg[1]}: ${msg[3]}/${msg[4]}`
-                    );
-                }
-            }
-        } catch (err) {
-            globals.logger.error(`SESSIONS: Error processing user session event: ${err}`);
         }
     });
 };

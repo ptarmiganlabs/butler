@@ -55,14 +55,6 @@ Butler:
   # Settings for notifications and messages sent to MS Teams
   teamsNotification:
     enable: false
-    userSessionEvents:
-      enable: false
-      webhookURL: <web hook URL from MS Teams>
-      excludeUser:
-        - directory: <Sense user directory>
-          userId: <userId>
-        - directory: <Sense user directory>
-          userId: <userId>
     reloadTaskFailure:
       enable: false
       webhookURL: <web hook URL from MS Teams>
@@ -88,17 +80,6 @@ Butler:
     restMessage:
       enable: false
       webhookURL: <web hook URL from Slack>
-    userSessionEvents:
-      enable: false
-      webhookURL: <web hook URL from Slack>
-      channel: sense-user-activity    # Slack channel to which user activity data is sent
-      fromUser: Qlik Sense
-      iconEmoji: ':thumbsup:'
-      excludeUser:
-        - directory: <Sense user directory>
-          userId: <userId>
-        - directory: <Sense user directory>
-          userId: <userId>
     reloadTaskFailure:
       enable: false
       webhookURL: <web hook URL from Slack>
@@ -200,6 +181,42 @@ Butler:
         user: <Username, email address etc>
         password: <your-secret-password>
 
+  # Incident management tools integration
+  # Used to trigger incidents in these tools when task reloads fail or are aborted.
+  incidentTool:
+    signl4:
+      enable: false
+      url: https://connect.signl4.com/webhook/abcde12345
+      reloadTaskFailure:
+        enable: false
+        rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+        serviceName: Qlik Sense
+        severity: 1
+        # autoCloseOnLaterReloadSuccess: true
+        includeApp:
+          includeAll: false
+          appId:
+            - qwertyu
+            - asdfghj
+          appNameRegEx:
+        excludeApp:
+          appId:
+            - zxcvbn
+          appNameRegEx:
+      reloadTaskAborted:
+        enable: false
+        rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+        serviceName: Qlik Sense
+        severity: 10
+        # autoCloseOnLaterReloadSuccess: true
+        includeApp:
+          includeAll: true
+          appId:
+          appNameRegEx:
+        excludeApp:
+          appId:
+          appNameRegEx:
+
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
     enable: false
@@ -251,18 +268,10 @@ Butler:
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
     taskAbortedTopic: qliksense/task_aborted
     taskAbortedFullTopic: qliksense/task_aborted_full
-    sessionStartTopic: qliksense/session/start
-    sessionStopTopic: qliksense/session/stop
-    connectionOpenTopic: qliksense/connection/open
-    connectionCloseTopic: qliksense/connection/close
-    sessionServerStatusTopic: qliksense/butler/session_server
-    activeUserCountTopic: qliksense/users/active/count
-    activeUsersTopic: qliksense/users/active/usernames
 
   udpServerConfig:
-    enable: false                                     # Should the UDP server responsible for receving task failure and session events be started?
+    enable: false                                     # Should the UDP server responsible for receving task failure/aborted events be started?
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>
-    portSessionConnectionEvents: 9997
     portTaskFailure: 9998
 
   restServerConfig:
@@ -300,8 +309,6 @@ Butler:
   
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
-    activeUserCount: false
-    activeUsers: false
     apiListEnbledEndpoints: false
     base62ToBase16: false
     base16ToBase62: false
@@ -329,8 +336,6 @@ Butler:
     
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:
-    rejectUnauthorized: false           # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
-                                        # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
     clientCert: <path/to/cert/client.pem>
     clientCertKey: <path/to/cert/client_key.pem>
     clientCertCA: <path/to/cert/root.pem>
@@ -347,21 +352,19 @@ Butler:
     useSSL: true
     headers:
       X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
-    rejectUnauthorized: false
+    rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
   configQRS:
     authentication: certificates
     host: <FQDN or IP of Sense server where QRS is running>
     useSSL: true
     port: 4242
-    headerKey: X-Qlik-User
-    headerValue: UserDirectory=Internal; UserId=sa_repository
+    headerKey: X-Qlik-User                                      # Header used to identify what user connection to QRS is made as
+    headerValue: UserDirectory=Internal; UserId=sa_repository   # What user connection to QRS is made as
+    rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
   configDirectories:
     # enableirectoryCreation: false
     qvdPath: <Path to folder under which QVDs are stored>
-
-  gitHub:
-    host: api.github.com
-    pathPrefix: ''
-  
