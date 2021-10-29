@@ -200,6 +200,12 @@ const apiPOSTSchedules = {
                             description: 'Can be used to categorise schedules.',
                             example: '["tag 1", "tag 2"]',
                         },
+                        lastKnownState: {
+                            type: 'string',
+                            enum: ['start', 'started', 'stop', 'stopped'],
+                            description: 'Last known state of the schedule',
+                            example: 'started',
+                        },
                     },
                 },
             },
