@@ -1,6 +1,4 @@
-const mqtt = require('mqtt');
 const config = require('config');
-const dgram = require('dgram');
 const fs = require('fs-extra');
 const path = require('path');
 const Influx = require('influx');
@@ -130,47 +128,48 @@ if (
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker, if MQTT is enabled
 let mqttClient = null;
-try {
-    if (
-        config.has('Butler.mqttConfig.enable') &&
-        config.has('Butler.mqttConfig.brokerHost') &&
-        config.has('Butler.mqttConfig.brokerPort') &&
-        config.get('Butler.mqttConfig.enable')
-    ) {
-        const mqttOptions = {
-            host: config.get('Butler.mqttConfig.brokerHost'),
-            port: config.get('Butler.mqttConfig.brokerPort'),
-        };
+// try {
+//     if (
+//         config.has('Butler.mqttConfig.enable') &&
+//         config.has('Butler.mqttConfig.brokerHost') &&
+//         config.has('Butler.mqttConfig.brokerPort') &&
+//         config.get('Butler.mqttConfig.enable')
+//     ) {
+//         const mqttOptions = {
+//             host: config.get('Butler.mqttConfig.brokerHost'),
+//             port: config.get('Butler.mqttConfig.brokerPort'),
+//         };
 
-        mqttClient = mqtt.connect(mqttOptions);
-        /*
-            Following might be needed for conecting to older Mosquitto versions
-            var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
-                protocolId: 'MQIsdp',
-                protocolVersion: 3
-            });
-            */
-        if (!mqttClient.connected) {
-            logger.verbose(
-                `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
-            );
-        }
-    } else {
-        logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
-    }
-} catch (err) {
-    logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
-}
+//         mqttClient = mqtt.connect(mqttOptions);
+//         /*
+//             Following might be needed for conecting to older Mosquitto versions
+//             var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
+//                 protocolId: 'MQIsdp',
+//                 protocolVersion: 3
+//             });
+//             */
+//         if (!mqttClient.connected) {
+//             logger.verbose(
+//                 `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
+//             );
+//         }
+//     } else {
+//         logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
+//     }
+// } catch (err) {
+//     logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
+// }
 
 // ------------------------------------
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
+var udpServerTaskFailureSocket = null;
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-const udpServerTaskFailureSocket = dgram.createSocket({
-    type: 'udp4',
-    reuseAddr: true,
-});
+// const udpServerTaskFailureSocket = dgram.createSocket({
+//     type: 'udp4',
+//     reuseAddr: true,
+// });
 const udpPortTakeFailure = config.get('Butler.udpServerConfig.portTaskFailure');
 
 // Folder under which QVD folders are to be created
