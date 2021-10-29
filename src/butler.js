@@ -135,7 +135,7 @@ const start = async () => {
         udp.udp.udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
-        globals.udpServerTaskFailureSocket.bind(globals.udpPortTakeFailure, globals.udpHost);
+        globals.udpServerTaskFailureSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
     }
 };

@@ -170,7 +170,7 @@ var udpServerTaskFailureSocket = null;
 //     type: 'udp4',
 //     reuseAddr: true,
 // });
-const udpPortTakeFailure = config.get('Butler.udpServerConfig.portTaskFailure');
+const udpPortTaskFailure = config.get('Butler.udpServerConfig.portTaskFailure');
 
 // Folder under which QVD folders are to be created
 const qvdFolder = config.get('Butler.configDirectories.qvdPath');
@@ -403,7 +403,7 @@ module.exports = {
     teamsUserSessionObj,
     udpServerTaskFailureSocket,
     udpHost,
-    udpPortTakeFailure,
+    udpPortTaskFailure,
     mqttClient,
     qvdFolder,
     logger,
