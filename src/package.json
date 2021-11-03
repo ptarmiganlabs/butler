@@ -22,7 +22,7 @@
     "fastify-healthcheck": "^3.1.0",
     "fastify-plugin": "^3.0.0",
     "fastify-reply-from": "^6.4.1",
-    "fastify-sensible": "^3.1.0",
+    "fastify-sensible": "^3.1.2",
     "fastify-swagger": "^4.12.6",
     "fs-extra": "^10.0.0",
     "handlebars": "^4.7.7",
@@ -43,7 +43,7 @@
     "os": "^0.1.2",
     "promise": "^8.1.0",
     "qrs-interact": "^6.3.1",
-    "rate-limiter-flexible": "^2.3.2",
+    "rate-limiter-flexible": "^2.3.3",
     "serializeapp": "^3.0.0",
     "systeminformation": "^5.9.9",
     "uuid": "^8.3.2",
@@ -54,7 +54,7 @@
   "devDependencies": {
     "jest": "27.3.1",
     "prettier": "2.4.1",
-    "snyk": "1.747.0"
+    "snyk": "1.751.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
