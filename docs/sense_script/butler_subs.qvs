@@ -144,11 +144,85 @@ end sub
 // ** Start QSEoW task **
 //
 // Use Butler to start the task identified by the ID in parameter vTaskId.
+// All parameters are optional, but at least one of the task related (=first 4) paramaters should be specified.
 //
 // Paramaters:
-// vTaskId               : ID of task to be started. Can be found in QMC task view.
+// vTaskId               : Optional. ID of task to be started. Can be found in QMC task view
+//						   Use any invlaid task ID (for example '-', w/o quotes) if not using this parameter
+// vTaskIdTable			 : Optional. Name of table containing task IDs that should be started
+// vTagTable			 : Optional. Name of table containing tags identifying tasks that should be started
+// vCustomPropertyTable  : Optional. Name of table containing custom properties identifying tasks that should be started
+// vKeyValueStoreTable   : Optional. Name of table containing key-value pairs that should be inserted into Butler's KV store 
 // ------------------------------------------------------------
-sub StartTask(vTaskId)
+sub StartTask(vTaskId, vTaskIdTable, vTagTable, vCustomPropertyTable, vKeyValueStoreTable)
+
+	// Build request body
+    let vRequestBody = '';
+
+	// Handle task IDs, if any
+    if (vTaskIdTable <> Null) then
+    	for Each vItem in FieldValueList('$(vTaskIdTable).TaskId')
+		    let vRequestBody = vRequestBody & '{""type"":""starttaskid"", ""payload"":{""taskId"":""$(vItem)""}},';
+    	next vItem
+    end if
+
+	// Handle tags, if any
+    if (vTagTable <> Null) then
+    	for Each vItem in FieldValueList('$(vTagTable).Tag')
+//         	trace Tag: $(vItem);
+        	
+		    let vRequestBody = vRequestBody & '{""type"":""starttasktag"", ""payload"":{""tag"":""$(vItem)""}},';
+    	next vItem
+    end if
+
+	// Handle custom properties, if any
+    if (vCustomPropertyTable <> Null) then
+    	for i = 0 to NoOfRows('$(vCustomPropertyTable)') - 1
+//         	trace i=$(i);
+        	let vName = Peek('$(vCustomPropertyTable).Name', i, '$(vCustomPropertyTable)');
+        	let vValue = Peek('$(vCustomPropertyTable).Value', i, '$(vCustomPropertyTable)');
+
+//             trace Name: $(vName);
+//             trace Value: $(vValue);
+
+		    let vRequestBody = vRequestBody & '{""type"":""starttaskcustomproperty"", ""payload"":{""customPropertyName"":""$(vName)"", ""customPropertyValue"":""$(vValue)""}},';
+        next i
+
+		set vName=;
+        set vValue=;
+    end if
+
+	// Handle key values, if any
+    if (vKeyValueStoreTable <> Null) then
+    	for i = 0 to NoOfRows('$(vKeyValueStoreTable)') - 1
+//         	trace i=$(i);
+        	let vNamespace = Peek('$(vKeyValueStoreTable).Namespace', i, '$(vKeyValueStoreTable)');
+        	let vKey = Peek('$(vKeyValueStoreTable).Key', i, '$(vKeyValueStoreTable)');
+        	let vValue = Peek('$(vKeyValueStoreTable).Value', i, '$(vKeyValueStoreTable)');
+        	let vTTL = Peek('$(vKeyValueStoreTable).TTL', i, '$(vKeyValueStoreTable)');
+
+//             trace Namespace: $(vNamespace);
+//             trace Key: $(vKey);
+//             trace Value: $(vValue);
+//             trace TTL: $(vTTL);
+
+		    let vRequestBody = vRequestBody & '{""type"":""keyvaluestore"", ""payload"":{""namespace"":""$(vNamespace)"", ""key"":""$(vKey)"", ""value"":""$(vValue)"", ""ttl"":""$(vTTL)""}},';
+        next i
+
+		set vNamespace=;
+        set vKey=;
+        set vValue=;
+        set vTTL=;
+    end if
+
+	// Remove last comma if there is one
+    if (Len('$(vRequestBody)')>0 and Index('$(vRequestBody)', ',', -1) = Len('$(vRequestBody)')) then
+ 	    let vRequestBody = Left('$(vRequestBody)', Len('$(vRequestBody)')-1);
+    end if
+
+	// Make it an array
+    let vRequestBody = '[' & vRequestBody & ']';
+    
 	LIB CONNECT TO 'Butler_POST';
 
     RestConnectorMasterTable:
@@ -157,13 +231,58 @@ sub StartTask(vTaskId)
     FROM JSON (wrap on) "root"
     WITH CONNECTION (
     Url "$(vButlerHost):$(vButlerPort)/v4/reloadtask/$(vTaskId)/start",
+    BODY "$(vRequestBody)",
     HTTPHEADER "X-HTTP-Method-Override" "PUT"
     );
 
     set vTaskId=;
+    set vTaskIdTable=;
+    set vTagTable=;
+    set vCustomTable=;
+    set vKeyValueStoreTable;
     DROP TABLE RestConnectorMasterTable;    
 end sub
-	
+
+
+
+// ------------------------------------------------------------
+// ** Start QSEoW task, with key-value parameter **
+//
+// Use Butler to start the task identified by the ID in parameter vTaskId.
+// The key-value pair will be stored in Butler's built-in KV store (assuming it's 
+// enabled in Butler's config file).
+//
+// Paramaters:
+// vTaskId               : ID of task to be started. Can be found in QMC task view.
+// vNamespace            : Namespace in which key-value pair will be stored
+// vKey                  : Key in KV pair
+// vValue                : Value in KV pair
+// vTTL                  : Time to live for KV pair. Set to 0 to disable TTL.
+// ------------------------------------------------------------
+sub StartTask_KeyValue(vTaskId, vNamespace, vKey, vValue, vTTL)
+	LIB CONNECT TO 'Butler_POST';
+
+    // Build request body
+    let vRequestBody = '[{""type"":""keyvaluestore"", ""payload"":{""namespace"":""$(vNamespace)"", ""key"":""$(vKey)"", ""value"":""$(vValue)"", ""ttl"":""$(vTTL)""}}]';
+
+    RestConnectorMasterTable:
+    SQL SELECT 
+    	"taskId"
+    FROM JSON (wrap on) "root"
+    WITH CONNECTION (
+    Url "$(vButlerHost):$(vButlerPort)/v4/reloadtask/$(vTaskId)/start",
+    BODY "$(vRequestBody)",
+    HTTPHEADER "X-HTTP-Method-Override" "PUT"
+    );
+
+    set vTaskId=;
+    set vNamespace=;
+    set vKey=;
+    set vValue=;
+    set vTTL=;
+    set vRequestBody=;
+    DROP TABLE RestConnectorMasterTable;    
+end sub
 
 
 
@@ -567,6 +686,7 @@ end sub
 
 
 
+
 // ------------------------------------------------------------
 // ** Get all keys that exist in a specific namespace **
 //
@@ -600,6 +720,7 @@ sub GetAllKeysInNamespace(vResultTable, vNamespace)
     set vNamespace=;
     DROP TABLE RestConnectorMasterTable;
 end sub
+
 
 
 
@@ -684,7 +805,8 @@ sub PostToSlack(vToSlackChannel, vFromUser, vMessage, vEmoji)
     set vMessage=;
     set vEmoji=;
     set vRequestBody=;
-    drop table RestConnectorMasterTable;
+	drop table RestConnectorMasterTable;
 end sub
+
 
 
