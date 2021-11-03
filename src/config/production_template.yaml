@@ -185,37 +185,19 @@ Butler:
   # Used to trigger incidents in these tools when task reloads fail or are aborted.
   incidentTool:
     signl4:
-      enable: false
+      enable: false               # Enable/disable Signl4 integration as a whole
       url: https://connect.signl4.com/webhook/abcde12345
       reloadTaskFailure:
-        enable: false
-        rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-        serviceName: Qlik Sense
-        severity: 1
-        # autoCloseOnLaterReloadSuccess: true
-        includeApp:
-          includeAll: false
-          appId:
-            - qwertyu
-            - asdfghj
-          appNameRegEx:
-        excludeApp:
-          appId:
-            - zxcvbn
-          appNameRegEx:
+        enable: false             # Enable/disable reload failed handling in Signl4
+        rateLimit: 15             # Min seconds between emails for a given taskID. Defaults to 5 minutes
+        serviceName: Qlik Sense   # Signl4 "service name" to use
+        severity: 1               # Signl4 severity level for failed reloads
       reloadTaskAborted:
-        enable: false
-        rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
-        serviceName: Qlik Sense
-        severity: 10
-        # autoCloseOnLaterReloadSuccess: true
-        includeApp:
-          includeAll: true
-          appId:
-          appNameRegEx:
-        excludeApp:
-          appId:
-          appNameRegEx:
+        enable: false             # Enable/disable reload aborted handling in Signl4
+        rateLimit: 15             # Min seconds between emails for a given taskID. Defaults to 5 minutes
+        serviceName: Qlik Sense   # Signl4 "service name" to use
+        severity: 10              # Signl4 severity level for aborted reloads
+
 
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
@@ -278,7 +260,7 @@ Butler:
     enable: false                                     # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.
     serverHost: <FQDN or IP (or localhost) of server where Butler is running>   # Use 0.0.0.0 to listen on all network interfaces (e.g. when running in Docker!).
     serverPort: 8080                                  # Port where Butler's REST is available. Any free port on the server where Butler is running can bse used.
-    backgroundServerPort: 8081                        # Port used internally by Butle's REST API. Any free port on the server where Butler is running can bse used.
+    backgroundServerPort: 8081                        # Port used internally by Butler's REST API. Any free port on the server where Butler is running can bse used.
 
   # List of directories between which file copying via the REST API can be done.
   # Butler will try to clean up messy paths like this one, which resolves to /Users/goran/butler-test-dir1
