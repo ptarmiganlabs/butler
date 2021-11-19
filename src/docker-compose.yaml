@@ -2,7 +2,7 @@
 version: '3.3'
 services:
   butler:
-    image: ptarmiganlabs/butler:7.0.0
+    image: ptarmiganlabs/butler:7.0.1
     container_name: butler
     restart: always
     ports:
