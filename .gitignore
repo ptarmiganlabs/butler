@@ -1,6 +1,7 @@
 src/node_modules/*
 src/config/production.json
 src/config/production.yaml
+src/config/production-test1.yaml
 **/schedule.yaml
 src/config/schedule.json
 src/config/default.json
