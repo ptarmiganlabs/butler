@@ -115,7 +115,7 @@ Butler:
         enable: true              # Should app owner get notification email (assuming email address is available in Sense user directory)
         includeOwner:
           includeAll: true                            # true = Send notification to all app owners except those in exclude list
-                                                      # false = Send notification to all app owners in the include list
+                                                      # false = Send notification to app owners in the include list
           user:
             - directory: <Sense user directory>
               userId: <userId>
@@ -144,7 +144,7 @@ Butler:
         enable: true              # Should app owner get notification email (assuming email address is available in Sense user directory)
         includeOwner:
           includeAll: true                            # true = Send notification to all app owners except those in exclude list
-                                                      # false = Send notification to all app owners in the include list
+                                                      # false = Send notification to app owners in the include list
           user:
             - directory: <Sense user directory>
               userId: <userId>
