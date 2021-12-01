@@ -65,7 +65,11 @@ const callRemoteURL = async () => {
         globals.logger.error('     While not mandatory the telemetry data greatly helps the Butler developers.');
         globals.logger.error('     It provides insights into which features are used most and what hardware/OSs are most used out there.');
         globals.logger.error('     This information makes it possible to focus development efforts where they will make most impact and be most valuable.');
-        globals.logger.error(`     Error: ${err.response.status} (${err.response.statusText}).`);
+        if (err.response) {
+            globals.logger.error(`     Error: ${err.response.status} (${err.response.statusText}).`);
+        } else {
+            globals.logger.error(`     Error: ${err}`);
+        }
         globals.logger.error('❤️  Thank you for your supporting Butler by allowing telemetry! ❤️');
     }
 };
