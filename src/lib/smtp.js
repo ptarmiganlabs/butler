@@ -307,52 +307,47 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
-                // If enabled in config file: Add (some) app owners to list of recipients
+                // If enabled in config file: Add app owners to list of recipients
                 let recipientEmails = [];
                 if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') === true) {
                     // App owners (at least some of them - maybe all) should get notification email
                     const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
 
-                    // If the current app's owner doesn't have an email address there is nothing to do
-                    if (appOwner.emails.length > 0) {
-                        if (
-                            globals.config.get(
-                                'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll'
-                            ) === true
-                        ) {
-                            // All app owners should get notification email. Disregard any include and exclude lists.
-                            recipientEmails = appOwner.emails;
-                        } else {
-                            // Is app owner on include list, i.e. list of app owners that should get notification emails?
-                            const includeUsers = globals.config.get(
-                                'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user'
-                            );
-                            const matchUsers = includeUsers.filter(
-                                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
-                            );
-                            if (matchUsers.length > 0) {
-                                // App owner is in list of included users
-                                recipientEmails = appOwner.emails;
-                            } else {
-                                recipientEmails = [];
-                            }
-                        }
-
-                        // Now evaluate the exclude list, if there is one
-                        const excludeUsers = globals.config.get(
-                            'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user'
+                    if (
+                        globals.config.get(
+                            'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll'
+                        ) === true
+                    ) {
+                        // All app owners should get notification email. Disregard any include and exclude lists.
+                        recipientEmails = appOwner.emails;
+                    } else {
+                        // Is app owner on include list, i.e. list of app owners that should get notification emails?
+                        const includeUsers = globals.config.get(
+                            'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user'
                         );
-                        const matchUsers = excludeUsers.filter(
+                        const matchUsers = includeUsers.filter(
                             (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
                         );
                         if (matchUsers.length > 0) {
-                            // App owner is in list of users to exclude from receiving notification emails
-                            recipientEmails = [];
-                        } else {
+                            // App owner is in list of included users
                             recipientEmails = appOwner.emails;
+                        } else {
+                            recipientEmails = [];
                         }
+                    }
+
+                    // Now evaluate the exclude list, if there is one
+                    const excludeUsers = globals.config.get(
+                        'Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user'
+                    );
+                    const matchUsers = excludeUsers.filter(
+                        (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
+                    );
+                    if (matchUsers.length > 0) {
+                        // App owner is in list of users to exclude from receiving notification emails
+                        recipientEmails = [];
                     } else {
-                        globals.logger.verbose(`SMTPFAILED: No email address for owner of app ${reloadParams.appId}`);
+                        recipientEmails = appOwner.emails;
                     }
                 }
 
@@ -441,44 +436,41 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     // App owners (at least some of them - maybe all) should get notification email
                     const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
 
-                    // If the current app's owner doesn't have an email address there is nothing to do
-                    if (appOwner.emails.length > 0) {
-                        if (
-                            globals.config.get(
-                                'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll'
-                            ) === true
-                        ) {
-                            // All app owners should get notification email. Disregard any include and exclude lists.
-                            recipientEmails = appOwner.emails;
-                        } else {
-                            // Is app owner on include list, i.e. list of app owners that should get notification emails?
-                            const includeUsers = globals.config.get(
-                                'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user'
-                            );
-                            const matchUsers = includeUsers.filter(
-                                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
-                            );
-                            if (matchUsers.length > 0) {
-                                // App owner is in list of included users
-                                recipientEmails = appOwner.emails;
-                            } else {
-                                recipientEmails = [];
-                            }
-                        }
-
-                        // Now evaluate the exclude list, if there is one
-                        const excludeUsers = globals.config.get(
-                            'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user'
+                    if (
+                        globals.config.get(
+                            'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll'
+                        ) === true
+                    ) {
+                        // All app owners should get notification email. Disregard any include and exclude lists.
+                        recipientEmails = appOwner.emails;
+                    } else {
+                        // Is app owner on include list, i.e. list of app owners that should get notification emails?
+                        const includeUsers = globals.config.get(
+                            'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user'
                         );
-                        const matchUsers = excludeUsers.filter(
+                        const matchUsers = includeUsers.filter(
                             (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
                         );
                         if (matchUsers.length > 0) {
-                            // App owner is in list of users to exclude from receiving notification emails
-                            recipientEmails = [];
-                        } else {
+                            // App owner is in list of included users
                             recipientEmails = appOwner.emails;
+                        } else {
+                            recipientEmails = [];
                         }
+                    }
+
+                    // Now evaluate the exclude list, if there is one
+                    const excludeUsers = globals.config.get(
+                        'Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user'
+                    );
+                    const matchUsers = excludeUsers.filter(
+                        (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
+                    );
+                    if (matchUsers.length > 0) {
+                        // App owner is in list of users to exclude from receiving notification emails
+                        recipientEmails = [];
+                    } else {
+                        recipientEmails = appOwner.emails;
                     }
                 }
 
