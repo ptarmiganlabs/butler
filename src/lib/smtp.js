@@ -79,8 +79,7 @@ function isEmailReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAdress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
-            globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients').length === 0
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients')
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload failure email config info missing in Butler config file');
@@ -117,8 +116,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAdress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
-            globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients').length === 0
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients')
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload aborted email config info missing in Butler config file');
@@ -352,19 +350,29 @@ function sendReloadTaskFailureNotificationEmail(reloadParams) {
                             recipientEmails = appOwner.emails;
                         }
                     } else {
-                        globals.logger.verbose(`SMTPFAILED: No email address for owner of app ${reloadParams.appId}`);
+                        globals.logger.warn(
+                            `SMTPFAILED: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                        );
                     }
                 }
 
-                sendEmail(
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
-                    recipientEmails.concat(globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients')),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
-                    globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
-                    templateContext
+                // Only send email if there is at least one recipient
+                const sendTo = recipientEmails.concat(
+                    globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients')
                 );
+                if (!(sendTo.length === 1 && sendTo[0] === null)) {
+                    sendEmail(
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
+                        sendTo,
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
+                        globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
+                        templateContext
+                    );
+                } else {
+                    globals.logger.warn(`SMTPFAILED: No recipients to send alert email to.`);
+                }
             } catch (err) {
                 globals.logger.error(`SMTPFAILED: ${err}`);
             }
@@ -480,7 +488,9 @@ function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                             recipientEmails = appOwner.emails;
                         }
                     } else {
-                        globals.logger.verbose(`SMTPFAILED: No email address for owner of app ${reloadParams.appId}`);
+                        globals.logger.warn(
+                            `SMTPFAILED: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                        );
                     }
                 }
 
