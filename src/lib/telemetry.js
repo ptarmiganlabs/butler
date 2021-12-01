@@ -54,7 +54,7 @@ const callRemoteURL = async () => {
             method: 'post',
             baseURL: telemetryBaseUrl,
             data: body,
-            timeout: 5000,
+            timeout: 15000,
             responseType: 'text',
         };
 
