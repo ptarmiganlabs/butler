@@ -1,5 +1,22 @@
 # Changelog
 
+### [7.0.3](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.2...butler-v7.0.3) (2021-12-01)
+
+
+### Bug Fixes
+
+* **alerts:** Graceful handling of empty include/exclude lists in config file ([b3a5224](https://www.github.com/ptarmiganlabs/butler/commit/b3a5224a28ce6da6e3dd493401a83612ce58ae93))
+* **alerts:** Handle app owners w/o email addresses ([5375ce6](https://www.github.com/ptarmiganlabs/butler/commit/5375ce666db7a873950c0957423a12de331dbaea))
+* **docker:** Change docker-compose to use latest version of Docker image ([5997981](https://www.github.com/ptarmiganlabs/butler/commit/5997981a5ff5cd3d89d38164b5e3e2de7fc81617))
+* **telemetry:** Better error handling when telemetry sending fails. ([9edf76c](https://www.github.com/ptarmiganlabs/butler/commit/9edf76c7cc7b83f1ba59f3fd97d8c25638032735))
+* **telemetry:** Better error handling when telemetry sending fails. ([bd18ef1](https://www.github.com/ptarmiganlabs/butler/commit/bd18ef12bd0223cd05a66c8467100aec4b7a818e))
+* **telemetry:** Increase telemetry sending timeout ([b325838](https://www.github.com/ptarmiganlabs/butler/commit/b3258385454df566faa438b7a4b591e30c00c484))
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([53cfb3a](https://www.github.com/ptarmiganlabs/butler/commit/53cfb3a0bc0e8306b212fac810eee02cc0a97f72))
+
 ### [7.0.2](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.1...butler-v7.0.2) (2021-12-01)
 
 
