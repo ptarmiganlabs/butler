@@ -1,6 +1,33 @@
+# -----------------------------
+# Exclude files from releases
+# git files
+.gitattributes export-ignore
+.gitignore export-ignore
+# misc development config files
+.vscode export-ignore
+src/coverage export-ignore
+src/test/* export-ignore
+src/.dockerignore export-ignore
+src/.eslintrc.yml export-ignore
+src/.jshintrc export-ignore
+src/.prettierignore export-ignore
+src/.prettierrc.yaml export-ignore
+src/.snyk export-ignore
+src/Dockerfile export-ignore
+src/jest.config.js export-ignore 
+.codeclimate.yml export-ignore
+.jshintrc export-ignore
+.release-please-manifest.json export-ignore
+release-please-config.json export-ignore
+renovate.json export-ignore
+# general text files
+changelog.md export-ignore
+
+# -----------------------------
 # Enforce Unix newlines
 * text eol=lf
 
+# -----------------------------
 # binaries
 *.ai binary
 *.psd binary
