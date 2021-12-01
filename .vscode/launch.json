@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/src/butler.js",
             "env": {
                 "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
-                "NODE_ENV": "production"
+                "NODE_ENV": "production-test1"
             },
             "outFiles": ["${workspaceFolder}/**/*.js"]
         }

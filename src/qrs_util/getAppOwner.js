@@ -41,15 +41,15 @@ module.exports.getAppOwner = (appId) =>
                 );
                 const resultAttributes = emailAttributes.map((attribute) => attribute.attributeValue);
 
-                if (resultAttributes.length > 0) {
-                    resolve({
-                        id: appOwner.id,
-                        directory: appOwner.userDirectory,
-                        userId: appOwner.userId,
-                        userName: appOwner.name,
-                        emails: resultAttributes,
-                    });
-                }
+                // if (resultAttributes.length > 0) {
+                resolve({
+                    id: appOwner.id,
+                    directory: appOwner.userDirectory,
+                    userId: appOwner.userId,
+                    userName: appOwner.name,
+                    emails: resultAttributes,
+                });
+                // }
             } catch (err) {
                 globals.logger.error(
                     `APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`
