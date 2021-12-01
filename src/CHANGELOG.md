@@ -1,5 +1,13 @@
 # Changelog
 
+### [7.0.2](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.1...butler-v7.0.2) (2021-12-01)
+
+
+### Miscellaneous
+
+* **deps:** update ptarmiganlabs/butler docker tag to v7.0.1 ([9019c01](https://www.github.com/ptarmiganlabs/butler/commit/9019c010679591bee7d761653240019273c86cce))
+* **deps:** Updated all dependencies ([e5bd6ad](https://www.github.com/ptarmiganlabs/butler/commit/e5bd6adb4f73c764514d8c24db03b3eb57465759))
+
 ### [7.0.1](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.0...butler-v7.0.1) (2021-11-18)
 
 
