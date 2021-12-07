@@ -1,5 +1,12 @@
 # Changelog
 
+### [7.0.4](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.3...butler-v7.0.4) (2021-12-07)
+
+
+### Miscellaneous
+
+* **deps:** update dependency snyk to v1.785.0 ([f9e590e](https://www.github.com/ptarmiganlabs/butler/commit/f9e590e51bc3e6d828114ad2d9a2aa1deabcf9e5))
+
 ### [7.0.3](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.2...butler-v7.0.3) (2021-12-01)
 
 
