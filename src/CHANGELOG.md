@@ -1,5 +1,20 @@
 # Changelog
 
+### [7.0.6](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.5...butler-v7.0.6) (2021-12-10)
+
+
+### Bug Fixes
+
+* Add better logging around QRS calls ([173dfb5](https://www.github.com/ptarmiganlabs/butler/commit/173dfb55406eb8291f86bb88941d96ff9f12306b))
+
+
+### Miscellaneous
+
+* **deps:** pin dependencies ([f3d6ddd](https://www.github.com/ptarmiganlabs/butler/commit/f3d6ddd8adfccf7841c0caa33bea82a37f7a7651))
+* **deps:** update dependency jest to v27.4.4 ([8d87932](https://www.github.com/ptarmiganlabs/butler/commit/8d87932ea45af81afb968fd4da3ade0d1b07a525))
+* **deps:** update dependency snyk to v1.788.0 ([013bd61](https://www.github.com/ptarmiganlabs/butler/commit/013bd61a55262d2c2a0a10f6c3bac7ae41b3ca17))
+* **deps:** Updated dependencies ([dac09bc](https://www.github.com/ptarmiganlabs/butler/commit/dac09bce72a1aa38e134ed3f1ba4561b77e390da))
+
 ### [7.0.5](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.4...butler-v7.0.5) (2021-12-08)
 
 
