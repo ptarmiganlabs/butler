@@ -24,6 +24,7 @@ module.exports.getTasks = (filter) =>
             try {
                 // Handle tag filter
                 if (filter.tag) {
+                    globals.logger.debug(`GETTASKS 1: task/full?filter=tags.name eq '${filter.tag}'`);
                     const result = await qrsInstance.Get(`task/full?filter=tags.name eq '${filter.tag}'`);
                     globals.logger.debug(`GETTASKS: Got response: ${result.statusCode} for tag filter ${filter.tag}`);
 
@@ -41,6 +42,9 @@ module.exports.getTasks = (filter) =>
 
                 // Handle custom properties filter
                 if (filter.customProperty) {
+                    globals.logger.debug(
+                        `GETTASKS 2: task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`
+                    );
                     const result = await qrsInstance.Get(
                         `task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`
                     );
