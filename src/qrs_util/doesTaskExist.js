@@ -20,6 +20,8 @@ module.exports.doesTaskExist = (taskId) =>
 
             // Get info about the task
             try {
+                globals.logger.debug(`TASKEXISTS 1: task?filter=id eq ${taskId}`);
+
                 const result = await qrsInstance.Get(`task?filter=id eq ${taskId}`);
                 globals.logger.debug(`TASKEXISTS: Got response: ${result.statusCode} for task ID ${taskId}`);
 

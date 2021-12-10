@@ -51,6 +51,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             const qrsInstance = new QrsInteract(configQRS);
 
             // Step 1
+            globals.logger.debug(`GETSCRIPTLOG 1: reloadTaskId: ${reloadTaskId}`);
             qrsInstance.Get(`reloadtask/${reloadTaskId}`).then((result1) => {
                 const taskInfo = {
                     fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
@@ -151,7 +152,11 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
 
                 // Step 2
                 // Only get script log if there is a valid fileReferenceId
+                globals.logger.debug(`GETSCRIPTLOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
                 if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
+                    globals.logger.debug(
+                        `GETSCRIPTLOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`
+                    );
                     qrsInstance
                         .Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`)
                         .then((result2) => {

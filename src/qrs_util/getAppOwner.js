@@ -21,6 +21,7 @@ module.exports.getAppOwner = (appId) =>
             // Step 1: Get app owner's userdirectory and userid
             let appOwner = null;
             try {
+                globals.logger.debug(`APPOWNER 1: app/${appId}`);
                 const result = await qrsInstance.Get(`app/${appId}`);
                 globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app ID ${appId}`);
 
@@ -32,6 +33,7 @@ module.exports.getAppOwner = (appId) =>
 
             // Step 2: Get additional info about the user identified in step 1
             try {
+                globals.logger.debug(`APPOWNER 2: user/${appOwner.id}`);
                 const result = await qrsInstance.Get(`user/${appOwner.id}`);
                 globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app owner ${appOwner.id}`);
 
