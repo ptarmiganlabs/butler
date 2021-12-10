@@ -1,6 +1,6 @@
 {
   "name": "butler",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
   "dependencies": {
     "@keyvhq/core": "^1.6.3",
@@ -52,9 +52,9 @@
     "ws": "^8.3.0"
   },
   "devDependencies": {
-    "jest": "27.4.3",
+    "jest": "27.4.4",
     "prettier": "2.5.1",
-    "snyk": "1.786.0"
+    "snyk": "1.788.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",

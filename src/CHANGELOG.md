@@ -1,5 +1,12 @@
 # Changelog
 
+### [7.0.5](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.4...butler-v7.0.5) (2021-12-08)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([d8c8d41](https://www.github.com/ptarmiganlabs/butler/commit/d8c8d41c407cdae519d23e302d2259837d65f533))
+
 ### [7.0.4](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.3...butler-v7.0.4) (2021-12-07)
 
 
