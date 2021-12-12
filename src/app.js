@@ -92,6 +92,24 @@ async function build(opts = {}) {
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
         }
+
+        // Show link to Swagger API docs page, if the API is enabled
+        if (
+            globals.config.has('Butler.restServerConfig.enable') &&
+            globals.config.get('Butler.restServerConfig.enable') === true
+        ) {
+            globals.logger.info(
+                `REST API documentation available at http://${globals.config.get(
+                    'Butler.restServerConfig.serverHost'
+                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
+            );
+            globals.logger.info(
+                '--> Note re API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
+            );
+            globals.logger.info(
+                "--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page."
+            );
+        }
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
