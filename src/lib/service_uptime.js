@@ -1,4 +1,4 @@
-const later = require('later');
+const later = require('@breejs/later');
 const moment = require('moment');
 require('moment-precise-range-plugin');
 

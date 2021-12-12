@@ -3,6 +3,7 @@
   "version": "7.0.6",
   "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
   "dependencies": {
+    "@breejs/later": "^4.1.0",
     "@keyvhq/core": "^1.6.3",
     "any-base": "^1.1.0",
     "axios": "^0.24.0",
@@ -30,7 +31,6 @@
     "influx": "^5.9.2",
     "js-yaml": "^4.1.0",
     "jshint": "^2.13.1",
-    "later": "^1.2.0",
     "lodash": "^4.17.21",
     "luxon": "^2.2.0",
     "mkdirp": "^1.0.4",
