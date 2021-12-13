@@ -6,6 +6,7 @@ const qrsUtil = require('../qrs_util');
 const { logRESTCall } = require('../lib/logRESTCall');
 const { addKeyValuePair } = require('../lib/keyValueStore');
 const { apiPutStartTask } = require('../api/senseStartTask');
+const { verifyTaskId } = require('../lib/config_util');
 
 // Get array of allowed task IDs
 function getTaskIdAllowed() {
@@ -122,6 +123,7 @@ async function handlerPutStartTask(request, reply) {
             // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
             if (
                 request.params.taskId !== '-' &&
+                verifyTaskId(request.params.taskId) &&
                 (taskFilterEnabled === false || (taskFilterEnabled === true && isTaskIdAllowed(request.params.taskId)))
             ) {
                 // Task ID is allowed
@@ -180,10 +182,11 @@ async function handlerPutStartTask(request, reply) {
                     } else if (item.type === 'starttaskid') {
                         // ID of a task that should be started
 
-                        // TODO Check if a) task filtering is enabled, and if so b) if task ID is in allow list
+                        // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
                         if (
-                            taskFilterEnabled === false ||
-                            (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId))
+                            verifyTaskId(item.payload.taskId) &&
+                            (taskFilterEnabled === false ||
+                                (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId)))
                         ) {
                             // Task ID is allowed
                             // Verify task exists
@@ -211,7 +214,7 @@ async function handlerPutStartTask(request, reply) {
                     } else if (item.type === 'starttasktag') {
                         // All tasks with this tag should be started
 
-                        // TODO Check if a) task filtering is enabled, and if so b) if task tag is in allow list
+                        // Check if a) task filtering is enabled, and if so b) if task tag is in allow list
                         if (
                             taskFilterEnabled === false ||
                             (taskFilterEnabled === true && isTaskTagAllowed(item.payload.tag))
@@ -234,7 +237,7 @@ async function handlerPutStartTask(request, reply) {
                     } else if (item.type === 'starttaskcustomproperty') {
                         // All tasks with this starttaskcustomproperty should be started
 
-                        // TODO Check if a) task filtering is enabled, and if so b) if task custom property is in allow list
+                        // Check if a) task filtering is enabled, and if so b) if task custom property is in allow list
                         if (
                             taskFilterEnabled === false ||
                             (taskFilterEnabled === true &&

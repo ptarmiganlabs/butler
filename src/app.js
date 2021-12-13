@@ -13,6 +13,7 @@ const mqtt = require('./mqtt');
 const scheduler = require('./lib/scheduler');
 const serviceUptime = require('./lib/service_uptime');
 const telemetry = require('./lib/telemetry');
+const configUtil = require('./lib/config_util');
 
 async function build(opts = {}) {
     const restServer = Fastify({ logger: true });
@@ -92,6 +93,9 @@ async function build(opts = {}) {
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
         }
+
+        // Verify that select parts of config file are valid
+        configUtil.configVerifyAllTaskId();
 
         // Show link to Swagger API docs page, if the API is enabled
         if (
