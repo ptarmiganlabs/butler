@@ -149,41 +149,55 @@ async function build(opts = {}) {
     // Configure X-HTTP-Method-Override handling
     proxyRestServer.register(FastifyReplyFrom, {
         base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        http: true,
     });
 
     proxyRestServer.get('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.put('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.delete('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.post('/*', (request, reply) => {
-        const { url } = request.raw;
-        const { 'x-http-method-override': method = 'POST' } = request.headers;
-        // eslint-disable-next-line no-param-reassign
-        reply.request.raw.method = method;
-        reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
-        });
+        try {
+            const { url } = request.raw;
+            const { 'x-http-method-override': method = 'POST' } = request.headers;
+
+            // eslint-disable-next-line no-param-reassign
+            reply.request.raw.method = method;
+            reply.from(url, {
+                rewriteRequestHeaders: (originalReq, headers) => {
+                    Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                    return headers;
+                },
+            });
+        } catch (err) {
+            globals.logger.error(`Error in POST handler: ${err}`);
+        }
     });
 
     // ---------------------------------------------------
