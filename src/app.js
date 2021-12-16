@@ -13,6 +13,7 @@ const mqtt = require('./mqtt');
 const scheduler = require('./lib/scheduler');
 const serviceUptime = require('./lib/service_uptime');
 const telemetry = require('./lib/telemetry');
+const configUtil = require('./lib/config_util');
 
 async function build(opts = {}) {
     const restServer = Fastify({ logger: true });
@@ -92,6 +93,27 @@ async function build(opts = {}) {
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
         }
+
+        // Verify that select parts of config file are valid
+        configUtil.configVerifyAllTaskId();
+
+        // Show link to Swagger API docs page, if the API is enabled
+        if (
+            globals.config.has('Butler.restServerConfig.enable') &&
+            globals.config.get('Butler.restServerConfig.enable') === true
+        ) {
+            globals.logger.info(
+                `REST API documentation available at http://${globals.config.get(
+                    'Butler.restServerConfig.serverHost'
+                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
+            );
+            globals.logger.info(
+                '--> Note re API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
+            );
+            globals.logger.info(
+                "--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page."
+            );
+        }
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
@@ -127,41 +149,55 @@ async function build(opts = {}) {
     // Configure X-HTTP-Method-Override handling
     proxyRestServer.register(FastifyReplyFrom, {
         base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        http: true,
     });
 
     proxyRestServer.get('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.put('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.delete('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
+            rewriteRequestHeaders: (originalReq, headers) => {
+                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                return headers;
+            },
         });
     });
 
     proxyRestServer.post('/*', (request, reply) => {
-        const { url } = request.raw;
-        const { 'x-http-method-override': method = 'POST' } = request.headers;
-        // eslint-disable-next-line no-param-reassign
-        reply.request.raw.method = method;
-        reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) =>
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress }),
-        });
+        try {
+            const { url } = request.raw;
+            const { 'x-http-method-override': method = 'POST' } = request.headers;
+
+            // eslint-disable-next-line no-param-reassign
+            reply.request.raw.method = method;
+            reply.from(url, {
+                rewriteRequestHeaders: (originalReq, headers) => {
+                    Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                    return headers;
+                },
+            });
+        } catch (err) {
+            globals.logger.error(`Error in POST handler: ${err}`);
+        }
     });
 
     // ---------------------------------------------------
