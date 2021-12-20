@@ -120,34 +120,42 @@ async function handlerPutStartTask(request, reply) {
             // One task should be started, it's ID is specied by the taskId URL parameter
 
             // Handle taskId passed in URL
-            // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
-            if (
-                request.params.taskId !== '-' &&
-                verifyTaskId(request.params.taskId) &&
-                (taskFilterEnabled === false || (taskFilterEnabled === true && isTaskIdAllowed(request.params.taskId)))
-            ) {
-                // Task ID is allowed
-                // Verify task exists
-                taskExists = await qrsUtil.doesTaskExist.doesTaskExist(request.params.taskId);
-                if (taskExists.exists) {
-                    tasksToStartTaskId.push(taskExists.task);
-                    globals.logger.silly(
-                        `STARTTASK: Added task to taskId start array, now ${tasksToStartTaskId.length} entries in that array`
-                    );
+            // Is task ID a valid guid?
+            if (request.params.taskId === '-') {
+                // "Magic guid" is used to tel Butler that all parameters are sent in message body.
+                // Just disregard this task ID.
+            } else if (verifyTaskId(request.params.taskId)) {
+                // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
+                if (
+                    request.params.taskId !== '-' &&
+                    (taskFilterEnabled === false ||
+                        (taskFilterEnabled === true && isTaskIdAllowed(request.params.taskId)))
+                ) {
+                    // Task ID is allowed
+                    // Verify task exists
+                    taskExists = await qrsUtil.doesTaskExist.doesTaskExist(request.params.taskId);
+                    if (taskExists.exists) {
+                        tasksToStartTaskId.push(taskExists.task);
+                        globals.logger.silly(
+                            `STARTTASK: Added task to taskId start array, now ${tasksToStartTaskId.length} entries in that array`
+                        );
+                    } else {
+                        tasksInvalid.push({ taskId: request.params.taskId });
+                        globals.logger.silly(
+                            `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
+                        );
+                    }
                 } else {
-                    tasksInvalid.push({ taskId: request.params.taskId });
-                    globals.logger.silly(
-                        `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
-                    );
+                    // Task filtering is enabled and task ID is not on allowed list
+                    // Don't warn if the task Id is '-', as that is used in the URL parameter when task IDs are passed in the body instead
+                    // eslint-disable-next-line no-lonely-if
+                    if (request.params.taskId !== '-') {
+                        globals.logger.warn(`STARTTASK: Task ID in URL path is not allowed: ${request.params.taskId}`);
+                        tasksIdDenied.push({ taskId: request.params.taskId });
+                    }
                 }
             } else {
-                // Task filtering is enabled and task ID is not on allowed list
-                // Don't warn if the task Id is '-', as that is used in the URL parameter when task IDs are passed in the body instead
-                // eslint-disable-next-line no-lonely-if
-                if (request.params.taskId !== '-') {
-                    globals.logger.warn(`STARTTASK: Task ID in URL path is not allowed: ${request.params.taskId}`);
-                    tasksIdDenied.push({ taskId: request.params.taskId });
-                }
+                tasksInvalid.push({ taskId: request.params.taskId });
             }
 
             // Handle data passed in body, if any
@@ -182,34 +190,38 @@ async function handlerPutStartTask(request, reply) {
                     } else if (item.type === 'starttaskid') {
                         // ID of a task that should be started
 
-                        // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
-                        if (
-                            verifyTaskId(item.payload.taskId) &&
-                            (taskFilterEnabled === false ||
-                                (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId)))
-                        ) {
-                            // Task ID is allowed
-                            // Verify task exists
-                            // payload: { taskId: 'abc' }
-                            // eslint-disable-next-line no-await-in-loop
-                            taskExists = await qrsUtil.doesTaskExist.doesTaskExist(item.payload.taskId);
-                            if (taskExists.exists) {
-                                tasksToStartTaskId.push(taskExists.task);
-                                globals.logger.silly(
-                                    `STARTTASK: Added task to start array, now ${tasksToStartTaskId.length} entries in that array`
-                                );
+                        // Is task ID a valid guid?
+                        if (verifyTaskId(item.payload.taskId)) {
+                            // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
+                            if (
+                                taskFilterEnabled === false ||
+                                (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId))
+                            ) {
+                                // Task ID is allowed
+                                // Verify task exists
+                                // payload: { taskId: 'abc' }
+                                // eslint-disable-next-line no-await-in-loop
+                                taskExists = await qrsUtil.doesTaskExist.doesTaskExist(item.payload.taskId);
+                                if (taskExists.exists) {
+                                    tasksToStartTaskId.push(taskExists.task);
+                                    globals.logger.silly(
+                                        `STARTTASK: Added task to start array, now ${tasksToStartTaskId.length} entries in that array`
+                                    );
+                                } else {
+                                    tasksInvalid.push({ taskId: item.payload.taskId });
+                                    globals.logger.silly(
+                                        `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
+                                    );
+                                }
                             } else {
-                                tasksInvalid.push({ taskId: item.payload.taskId });
-                                globals.logger.silly(
-                                    `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
+                                // Task filtering is enabled and task ID is not on allowed list
+                                globals.logger.warn(
+                                    `STARTTASK: Task ID in msg body is not allowed: ${item.payload.taskId}`
                                 );
+                                tasksIdDenied.push({ taskId: item.payload.taskId });
                             }
                         } else {
-                            // Task filtering is enabled and task ID is not on allowed list
-                            globals.logger.warn(
-                                `STARTTASK: Task ID in msg body is not allowed: ${item.payload.taskId}`
-                            );
-                            tasksIdDenied.push({ taskId: item.payload.taskId });
+                            tasksInvalid.push({ taskId: item.payload.taskId });
                         }
                     } else if (item.type === 'starttasktag') {
                         // All tasks with this tag should be started
@@ -296,6 +308,10 @@ async function handlerPutStartTask(request, reply) {
             } else {
                 // One or more invalid task IDs => Don't start any task
                 res.tasksId.invalid = tasksInvalid;
+                // eslint-disable-next-line no-restricted-syntax
+                for (const item of tasksToStartTaskId) {
+                    res.tasksId.denied.push({taskId: item.taskId})
+                }
             }
         } else {
             // Start all tasks that exists
@@ -303,8 +319,8 @@ async function handlerPutStartTask(request, reply) {
             for (const item of tasksToStartTaskId) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
                 qrsUtil.senseStartTask.senseStartTask(item.taskId);
+                res.tasksId.started.push({ taskId: item.taskId, taskName: item.taskName });
             }
-            res.tasksId.started = tasksToStartTaskId;
             res.tasksId.invalid = tasksInvalid;
         }
 
