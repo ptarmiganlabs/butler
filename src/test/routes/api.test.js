@@ -7,7 +7,7 @@ const config = require('config');
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
-    timeout: 5000,
+    timeout: 15000,
 });
 
 let result;
