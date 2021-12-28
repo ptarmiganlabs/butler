@@ -7,7 +7,7 @@ const config = require('config');
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
-    timeout: 5000,
+    timeout: 15000,
 });
 
 let result;
@@ -31,10 +31,11 @@ afterAll(async () => {
 });
 
 /**
+ * F1
  * List currently available namespaces
- * First create a couple of KV pairs in different namespaces, then verify that list of namespaces contains one of the ones created.
+ * First create a couple of KV pairs in different namespaces, then verify that list of namespaces contains the created namespaeces.
  */
-describe('GET /v4/keyvaluesnamespaces', () => {
+describe('F1: GET /v4/keyvaluesnamespaces', () => {
     test('It should respond with 200 to the GET method', async () => {
         // Create new namespace and KV pair
         try {
@@ -60,15 +61,20 @@ describe('GET /v4/keyvaluesnamespaces', () => {
         expect(Array.isArray(result.data)).toBe(true);
     });
 
-    test('Match even if received list of namespaces contains additional elements', () => {
+    test('Match first namespace even if received list of namespaces contains additional elements', () => {
         expect(result.data).toEqual(expect.arrayContaining([expectedNamespace1]));
+    });
+
+    test('Match second namespace even if received list of namespaces contains additional elements', () => {
+        expect(result.data).toEqual(expect.arrayContaining([expectedNamespace2]));
     });
 });
 
 /**
+ * F2
  * Create new KV pair, verify it can be read out again.
  */
-describe('GET /v4/keyvalues/:namespace', () => {
+describe('F2: POST /v4/keyvalues/:namespace', () => {
     test('It should respond with 201 when creating a KV pair', async () => {
         // Create new namespace and KV pair
         try {
@@ -80,7 +86,19 @@ describe('GET /v4/keyvalues/:namespace', () => {
             // eslint-disable-next-line no-console
             console.log(`err: ${err}`);
         }
+
         expect(result.status).toBe(201);
+
+        expect(result.data.namespace).toBeTruthy();
+        expect(result.data.key).toBeTruthy();
+        expect(result.data.value).toBeTruthy();
+        // expect(result.data.ttl).toBeTruthy();
+
+        // Detailed checks
+        expect(result.data.namespace).toEqual(expectedNamespace1);
+        expect(result.data.key).toEqual(expectedKey1);
+        expect(result.data.value).toEqual(expectedValue);
+        expect(result.data.ttl).toEqual(0);
     });
 
     test('It should respond with 200 when reading KV pair', async () => {
@@ -104,6 +122,9 @@ describe('GET /v4/keyvalues/:namespace', () => {
         expect(result.data.namespace).toBeTruthy();
         expect(result.data.key).toBeTruthy();
         expect(result.data.value).toBeTruthy();
+        expect(result.data.ttl).toBeFalsy();
+
+        // Detailed checks
         expect(result.data.namespace).toEqual(expectedNamespace1);
         expect(result.data.key).toEqual(expectedKey1);
         expect(result.data.value).toEqual(expectedValue);
@@ -111,9 +132,10 @@ describe('GET /v4/keyvalues/:namespace', () => {
 });
 
 /**
+ * F3
  * Check if a key exists in a particular namespace
  */
-describe('GET /v4/keyvalues/:namespace/keyexists', () => {
+describe('F3: GET /v4/keyvalues/:namespace/keyexists', () => {
     test('Create key, then verify it exists', async () => {
         // Create new namespace and KV pair
         try {
@@ -173,17 +195,21 @@ describe('GET /v4/keyvalues/:namespace/keyexists', () => {
 
     test('Response should contain correct fields', () => {
         expect(result.data.keyExists).toBeFalsy();
+        expect(typeof result.data.keyValue).toBe('object');
+
         expect(result.data.keyValue.namespace).toBeFalsy();
         expect(result.data.keyValue.key).toBeFalsy();
         expect(result.data.keyValue.value).toBeFalsy();
+
         expect(result.data.keyExists).toEqual(false);
     });
 });
 
 /**
+ * F4
  * Verify delete of KV pairs
  */
-describe('DELETE /v4/keyvalues/:namespace/:key', () => {
+describe('F4: DELETE /v4/keyvalues/:namespace/:key', () => {
     test('Create and delete KV pair', async () => {
         // Create new namespace and KV pair
         try {
@@ -230,9 +256,10 @@ describe('DELETE /v4/keyvalues/:namespace/:key', () => {
 });
 
 /**
+ * F5
  * Verify delete of namespace
  */
-describe('DELETE /v4/keyvalues/:namespace', () => {
+describe('F5: DELETE /v4/keyvalues/:namespace', () => {
     test('Create and delete KV pairs', async () => {
         try {
             result = await instance.post(`/v4/keyvalues/${expectedNamespace1}`, {

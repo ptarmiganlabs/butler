@@ -7,7 +7,7 @@ const config = require('config');
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
-    timeout: 5000,
+    timeout: 15000,
 });
 
 let result;
@@ -17,6 +17,7 @@ let scheduleCron1;
 let scheduleTimezone1;
 let scheduleTaskId1;
 let scheduleStartupState1;
+let scheduleStartupState2;
 let scheduleTag1;
 let scheduleTag2;
 let idExisting;
@@ -27,6 +28,7 @@ beforeAll(async () => {
     scheduleTimezone1 = 'Europe/Stockholm';
     scheduleTaskId1 = '210832b5-6174-4572-bd19-3e61eda675ef';
     scheduleStartupState1 = 'started';
+    scheduleStartupState2 = 'stopped';
     scheduleTag1 = 'tag 1';
     scheduleTag2 = 'tag 2';
 });
@@ -36,9 +38,10 @@ afterAll(async () => {
 });
 
 /**
+ * H1
  * Create new schedule
  */
-describe('POST /v4/schedules', () => {
+describe('H1: POST /v4/schedules', () => {
     test('It should respond with 201 when new schedule is successfully created', async () => {
         result = await instance.post('/v4/schedules', {
             name: scheduleName1,
@@ -85,9 +88,11 @@ describe('POST /v4/schedules', () => {
 });
 
 /**
+ * H2
  * Get info about a specific schedule
  */
-describe('GET /v4/schedules', () => {
+describe('H2: GET /v4/schedules', () => {
+    // First create a new schedule
     test('Create new schedule', async () => {
         result = await instance.post('/v4/schedules', {
             name: scheduleName1,
@@ -105,7 +110,7 @@ describe('GET /v4/schedules', () => {
         expect(idExisting).toBeTruthy();
     });
 
-    test('It should respond with 200 when getting new schedule', async () => {
+    test('It should respond with 200 when getting schedule', async () => {
         result = await instance.get('/v4/schedules', {
             params: {
                 id: idExisting,
@@ -144,9 +149,10 @@ describe('GET /v4/schedules', () => {
 });
 
 /**
+ * H3
  * Get info about all schedules
  */
-describe('GET /v4/schedules', () => {
+describe('H3: GET /v4/schedules', () => {
     test('It should respond with 200 when getting all schedules', async () => {
         result = await instance.get('/v4/schedules');
 
@@ -159,16 +165,17 @@ describe('GET /v4/schedules', () => {
 });
 
 /**
+ * H4
  * Start a specific schedule
  */
-describe('PUT /v4/schedules/:scheduleId/start', () => {
+describe('H4: PUT /v4/schedules/:scheduleId/start', () => {
     test('Create new schedule', async () => {
         result = await instance.post('/v4/schedules', {
             name: scheduleName1,
             cronSchedule: scheduleCron1,
             timezone: scheduleTimezone1,
             qlikSenseTaskId: scheduleTaskId1,
-            startupState: 'stopped',
+            startupState: scheduleStartupState2,
             tags: [scheduleTag1, scheduleTag2],
         });
 
@@ -201,6 +208,23 @@ describe('PUT /v4/schedules/:scheduleId/start', () => {
         expect(result.status).toBe(200);
     });
 
+    test('Response should be an object', () => {
+        expect(result.data).toBeTruthy();
+        expect(typeof result.data).toBe('object');
+    });
+
+    test('Response should contain correct fields', () => {
+        expect(result.data[0].name).toEqual(scheduleName1);
+        expect(result.data[0].cronSchedule).toEqual(scheduleCron1);
+        expect(result.data[0].timezone).toEqual(scheduleTimezone1);
+        expect(result.data[0].qlikSenseTaskId).toEqual(scheduleTaskId1);
+        expect(result.data[0].startupState).toEqual(scheduleStartupState2);
+        expect(result.data[0].tags).toEqual([scheduleTag1, scheduleTag2]);
+        expect(result.data[0].id).toEqual(idExisting);
+        expect(result.data[0].created).toBeTruthy();
+        expect(result.data[0].lastKnownState).toEqual('started');
+    });
+
     test('Get the schedule again', async () => {
         result = await instance.get('/v4/schedules', {
             params: {
@@ -229,9 +253,10 @@ describe('PUT /v4/schedules/:scheduleId/start', () => {
 });
 
 /**
+ * H5
  * Start all schedules
  */
-describe('PUT /v4/schedules/startall', () => {
+describe('H5: PUT /v4/schedules/startall', () => {
     test('It should respond with 200 when starting all schedules', async () => {
         result = await instance.put('/v4/schedules/startall', {});
 
@@ -254,16 +279,17 @@ describe('PUT /v4/schedules/startall', () => {
 });
 
 /**
+ * H6
  * Stop a specific schedule
  */
-describe('PUT /v4/schedules/:scheduleId/stop', () => {
+describe('H6: PUT /v4/schedules/:scheduleId/stop', () => {
     test('Create new schedule', async () => {
         result = await instance.post('/v4/schedules', {
             name: scheduleName1,
             cronSchedule: scheduleCron1,
             timezone: scheduleTimezone1,
             qlikSenseTaskId: scheduleTaskId1,
-            startupState: 'started',
+            startupState: scheduleStartupState1,
             tags: [scheduleTag1, scheduleTag2],
         });
 
@@ -296,6 +322,23 @@ describe('PUT /v4/schedules/:scheduleId/stop', () => {
         expect(result.status).toBe(200);
     });
 
+    test('Response should be an object', () => {
+        expect(result.data).toBeTruthy();
+        expect(typeof result.data).toBe('object');
+    });
+
+    test('Response should contain correct fields', () => {
+        expect(result.data[0].name).toEqual(scheduleName1);
+        expect(result.data[0].cronSchedule).toEqual(scheduleCron1);
+        expect(result.data[0].timezone).toEqual(scheduleTimezone1);
+        expect(result.data[0].qlikSenseTaskId).toEqual(scheduleTaskId1);
+        expect(result.data[0].startupState).toEqual(scheduleStartupState1);
+        expect(result.data[0].tags).toEqual([scheduleTag1, scheduleTag2]);
+        expect(result.data[0].id).toEqual(idExisting);
+        expect(result.data[0].created).toBeTruthy();
+        expect(result.data[0].lastKnownState).toEqual('stopped');
+    });
+
     test('Get the schedule again', async () => {
         result = await instance.get('/v4/schedules', {
             params: {
@@ -324,9 +367,10 @@ describe('PUT /v4/schedules/:scheduleId/stop', () => {
 });
 
 /**
+ * H7
  * Stop all schedules
  */
-describe('PUT /v4/schedules/stopall', () => {
+describe('H7: PUT /v4/schedules/stopall', () => {
     test('It should respond with 200 when stopping all schedules', async () => {
         result = await instance.put('/v4/schedules/stopall', {});
 
@@ -349,9 +393,10 @@ describe('PUT /v4/schedules/stopall', () => {
 });
 
 /**
+ * H8
  * Get low-level info on all jobs
  */
-describe('GET /v4/schedules/status', () => {
+describe('H8: GET /v4/schedules/status', () => {
     test('It should respond with 200 when getting status', async () => {
         result = await instance.get('/v4/schedules/status', {});
 
