@@ -1,5 +1,42 @@
 # Changelog
 
+## [7.1.0](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.6...butler-v7.1.0) (2021-12-28)
+
+
+### Features
+
+* Add control of what tasks can be started by Butler ([92639e4](https://www.github.com/ptarmiganlabs/butler/commit/92639e49b3af2ac78dd313ef0ab43983c48cb1ea))
+* **api:** Verify that task IDs are valid ([a6612e1](https://www.github.com/ptarmiganlabs/butler/commit/a6612e137fe8fac864e10f471edbf00c75d95c1f)), closes [#319](https://www.github.com/ptarmiganlabs/butler/issues/319)
+* Refactor API for starting tasks. Add magic task guid "-". ([90613d5](https://www.github.com/ptarmiganlabs/butler/commit/90613d54d1266c66ab93d077e26485f089fa825d)), closes [#326](https://www.github.com/ptarmiganlabs/butler/issues/326)
+* Show URL to API docs page on Butler startup ([98b4518](https://www.github.com/ptarmiganlabs/butler/commit/98b4518f4e9f5b8c1467012482e4ee038ed29122))
+
+
+### Bug Fixes
+
+* **api:** API calls with http Expect header fails ([3707f3e](https://www.github.com/ptarmiganlabs/butler/commit/3707f3e3c6fa505e57ffa864a1d46a903d366d7e))
+* Increase timeout in API test cases ([9beb6fe](https://www.github.com/ptarmiganlabs/butler/commit/9beb6fe86db93f07dc55cd0b58689cc964ab08e9)), closes [#329](https://www.github.com/ptarmiganlabs/butler/issues/329)
+* Use correct return body format in API docs ([1862b92](https://www.github.com/ptarmiganlabs/butler/commit/1862b92fc2ee1a7d37b6e430d4121cf4cf16e5f5))
+* Use correct return body format in scheduler API docs ([faaa361](https://www.github.com/ptarmiganlabs/butler/commit/faaa3616aebfbb709652c387999f956cc35563e3))
+
+
+### Refactoring
+
+* Add test cases for start task API ([da320f0](https://www.github.com/ptarmiganlabs/butler/commit/da320f0a3952d0a43b82d70783b2f620317c46ad)), closes [#320](https://www.github.com/ptarmiganlabs/butler/issues/320)
+* Replace deprecated later library with @breejs/later ([346be74](https://www.github.com/ptarmiganlabs/butler/commit/346be7455ea681b2484c42e24900dfe733026aec)), closes [#280](https://www.github.com/ptarmiganlabs/butler/issues/280)
+
+
+### Documentation
+
+* Add missing lastKnownState to scheduler docs ([37baf36](https://www.github.com/ptarmiganlabs/butler/commit/37baf367b3521f2e666915dfa93e86ad6c9efd77))
+* Document all test cases ([3f2a761](https://www.github.com/ptarmiganlabs/butler/commit/3f2a761a096e7bf411d15826c884953fc6792d53))
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([f67a6db](https://www.github.com/ptarmiganlabs/butler/commit/f67a6db6edca7ef197088cc9812d9e097f94caf0))
+* **deps:** Updated dependencies ([a15f594](https://www.github.com/ptarmiganlabs/butler/commit/a15f594bdde4f4bff0ee5b01f98a120228a9498f))
+* Update dependencies ([b72ec44](https://www.github.com/ptarmiganlabs/butler/commit/b72ec447920c99d2d8bf4c1bf53c0bbd448fa60a))
+
 ### [7.0.6](https://www.github.com/ptarmiganlabs/butler/compare/butler-v7.0.5...butler-v7.0.6) (2021-12-10)
 
 
