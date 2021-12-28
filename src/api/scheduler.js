@@ -337,6 +337,12 @@ const apiPUTSchedulesStart = {
                         description: 'Can be used to categorise schedules.',
                         example: '["tag 1", "tag 2"]',
                     },
+                    lastKnownState: {
+                        type: 'string',
+                        description: 'Last known state (started/stopped) for the schedule.',
+                        enum: ['started', 'stopped'],
+                        example: 'started',
+                    },
                 },
             },
             400: {
@@ -431,6 +437,12 @@ const apiPUTSchedulesStop = {
                         },
                         description: 'Can be used to categorise schedules.',
                         example: '["tag 1", "tag 2"]',
+                    },
+                    lastKnownState: {
+                        type: 'string',
+                        description: 'Last known state (started/stopped) for the schedule.',
+                        enum: ['started', 'stopped'],
+                        example: 'started',
                     },
                 },
             },
