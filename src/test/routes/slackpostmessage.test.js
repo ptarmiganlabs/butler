@@ -30,9 +30,10 @@ afterAll(async () => {
 });
 
 /**
+ * J1
  * Post message to Slack
  */
-describe('PUT /v4/slackpostmessage', () => {
+describe('J1: PUT /v4/slackpostmessage', () => {
     test('It should respond with 201 when posting message to Slack', async () => {
         result = await instance.put(`/v4/slackpostmessage`, {
             channel: slackChannel,

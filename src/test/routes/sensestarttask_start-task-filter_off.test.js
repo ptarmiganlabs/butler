@@ -69,7 +69,7 @@ describe('Config file', () => {
 // NOTE: File in docs folder in GitHub repo contains full test case specification
 if (config.get('Butler.startTaskFilter.enable') === false) {
     /**
-     * 13
+     * A13
      */
     describe('A13: taskFilter=off: PUT /v4/reloadtask/:taskId/start', () => {
         test('It should respond with 200 when task is started', async () => {
@@ -113,7 +113,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 14
+     * A14
      */
     describe('A14: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('It should respond with 200 when task is started', async () => {
@@ -157,7 +157,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 15
+     * A15
      */
     describe('A15: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('It should respond with 200 and invalid tasks in separate when task ID is invalid', async () => {
@@ -200,7 +200,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 16
+     * A16
      */
     describe('A16: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=true flag when 1 invalid (URL) and 1 valid (body)', async () => {
@@ -248,7 +248,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 17
+     * A17
      */
     describe('A17: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (URL) and 1 valid (body)', async () => {
@@ -301,7 +301,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 18
+     * A18
      */
     describe('A18: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=true flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -354,7 +354,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 19
+     * A19
      */
     describe('A19: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -407,7 +407,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 20
+     * A20
      */
     describe('A20: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test task start using 2 tags that exist in Sense', async () => {
@@ -454,7 +454,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 21
+     * A21
      */
     describe('A21: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test task start using 2 tags that exist in Sense', async () => {
@@ -502,7 +502,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 22
+     * A22
      */
     describe('A22: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test task start using 2 CPs that exist in Sense', async () => {
@@ -555,7 +555,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 23
+     * A23
      */
     describe('A23: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test task start using 2 CPs that exist in Sense and 2 that does not exist', async () => {
@@ -616,7 +616,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 24
+     * A24
      */
     describe('A24: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test task start using taskIds, tags, CPs, KV pair', async () => {
@@ -715,7 +715,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 25
+     * A25
      */
     describe('A25: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -761,7 +761,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 26
+     * A26
      */
     describe('A26: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -807,7 +807,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 27
+     * A27
      */
     describe('A27: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -856,7 +856,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 28
+     * A28
      */
     describe('A28: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -913,7 +913,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 33
+     * A33
      */
     describe('A32: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
@@ -970,7 +970,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
     });
 
     /**
-     * 34
+     * A34
      */
     describe('A32: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {

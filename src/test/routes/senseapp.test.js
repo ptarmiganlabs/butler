@@ -31,9 +31,10 @@ afterAll(async () => {
 });
 
 /**
+ * I1
  * Reload app without using a task
  */
-describe('PUT /v4/app/:appId/reload', () => {
+describe('I1: PUT /v4/app/:appId/reload', () => {
     test('It should respond with 201 when app is successfully reloaded', async () => {
         result = await instance.put(`/v4/app/${appId1}/reload`, {
             reloadMode: appReloadMode1,
@@ -53,5 +54,55 @@ describe('PUT /v4/app/:appId/reload', () => {
     test('Response should contain correct fields', () => {
         expect(result.data.appId).toBeTruthy();
         expect(result.data.appId).toBe(appId1);
+    });
+});
+
+/**
+ * I2
+ * Serialize Sense app to JSON
+ */
+describe('I2: GET /v4/app/:appId/dump', () => {
+    test('It should respond with 200 when app is successfully serialized to JSON', async () => {
+        result = await instance.get(`/v4/app/${appId1}/dump`);
+
+        expect(result.status).toBe(200);
+    });
+
+    test('Response should be an object', () => {
+        expect(result.data).toBeTruthy();
+        expect(typeof result.data).toBe('object');
+    });
+
+    test('Response should contain correct fields', () => {
+        expect(result.data).toHaveProperty('properties');
+        expect(result.data).toHaveProperty('loadScript');
+        expect(result.data).toHaveProperty('sheets');
+        expect(result.data).toHaveProperty('stories');
+        expect(result.data).toHaveProperty('masterobjects');
+        expect(result.data).toHaveProperty('appprops');
+        expect(result.data).toHaveProperty('dataconnections');
+        expect(result.data).toHaveProperty('snapshots');
+        expect(result.data).toHaveProperty('fields');
+        expect(result.data).toHaveProperty('bookmarks');
+        expect(result.data).toHaveProperty('dimensions');
+        expect(result.data).toHaveProperty('measures');
+        expect(result.data).toHaveProperty('variables');
+        expect(result.data).toHaveProperty('embeddedmedia');
+    });
+});
+
+/**
+ * I3
+ * Get array of all apps on Sense server
+ */
+describe('I3: GET /v4/apps/list', () => {
+    test('It should respond with 200 when app list is retrieved', async () => {
+        result = await instance.get(`/v4/apps/list`);
+
+        expect(result.status).toBe(200);
+    });
+
+    test('Response should be an array', () => {
+        expect(Array.isArray(result.data)).toBe(true);
     });
 });

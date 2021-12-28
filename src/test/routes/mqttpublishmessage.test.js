@@ -25,9 +25,10 @@ afterAll(async () => {
 });
 
 /**
+ * G1
  * Send MQTT message
  */
-describe('PUT /v4/mqttpublishmessage', () => {
+describe('G1: PUT /v4/mqttpublishmessage', () => {
     test('It should respond with 201 when MQTT message is successfully sent', async () => {
         result = await instance.put('/v4/mqttpublishmessage', { topic: mqttTopic, message: mqttMsg });
 
@@ -42,6 +43,7 @@ describe('PUT /v4/mqttpublishmessage', () => {
     test('Response should contain correct fields', () => {
         expect(result.data.topic).toBeTruthy();
         expect(result.data.message).toBeTruthy();
+
         expect(result.data.topic).toEqual(mqttTopic);
         expect(result.data.message).toEqual(mqttMsg);
     });

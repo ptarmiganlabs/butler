@@ -12,7 +12,11 @@ const instance = axios.create({
 
 let result;
 
-describe('GET /v4/configfile/endpointsenabled', () => {
+/**
+ * B1
+ * Get array with all enabled endpoints
+ */
+describe('B1: GET /v4/configfile/endpointsenabled', () => {
     test('It should respond with 200 to the GET method', async () => {
         result = await instance.get(`/v4/configfile/endpointsenabled`);
 
