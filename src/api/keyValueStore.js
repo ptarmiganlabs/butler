@@ -295,7 +295,8 @@ const apiDeleteKVPair = {
         response: {
             204: {
                 description: 'Key-value pair successfully deleted.',
-                type: 'object',
+                type: 'string',
+                example: '',
             },
             400: {
                 description: '"Namespace or key not found" or "Required parameter missing".',
@@ -340,7 +341,8 @@ const apiDeleteNamespace = {
         response: {
             204: {
                 description: 'Namespace successfully deleted.',
-                type: 'object',
+                type: 'string',
+                example: '',
             },
             400: {
                 description: '"Namespace not found" or "Required parameter missing".',
