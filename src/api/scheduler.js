@@ -241,7 +241,8 @@ const apiDELETESchedules = {
         response: {
             204: {
                 description: 'Schedule successfully deleted.',
-                type: 'object',
+                type: 'string',
+                example: '',
             },
             400: {
                 description: 'Schedule not found.',
@@ -287,7 +288,7 @@ const apiPUTSchedulesStart = {
         response: {
             200: {
                 description:
-                    'Schedule successfully started.\n\nAn object with all inforomation about the started schedule is returned.',
+                    'Schedule successfully started.\n\nAn object with all information about the started schedule is returned.',
                 type: 'object',
                 properties: {
                     id: {
@@ -382,7 +383,7 @@ const apiPUTSchedulesStop = {
         response: {
             200: {
                 description:
-                    'Schedule successfully stopped.\n\nAn object with all inforomation about the stopped schedule is returned.',
+                    'Schedule successfully stopped.\n\nAn object with all information about the stopped schedule is returned.',
                 type: 'object',
                 properties: {
                     id: {
@@ -467,7 +468,7 @@ const apiPUTSchedulesStartAll = {
         response: {
             200: {
                 description:
-                    'Schedules successfully started.\n\nAn array with all inforomation about the started schedules is returned.',
+                    'Schedules successfully started.\n\nAn array with all information about the started schedules is returned.',
                 type: 'array',
                 items: {
                     type: 'object',
@@ -544,7 +545,7 @@ const apiPUTSchedulesStopAll = {
         response: {
             200: {
                 description:
-                    'Schedules successfully stopped.\n\nAn array with all inforomation about the stopped schedules is returned.',
+                    'Schedules successfully stopped.\n\nAn array with all information about the stopped schedules is returned.',
                 type: 'array',
                 items: {
                     type: 'object',
