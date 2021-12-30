@@ -318,7 +318,7 @@ Butler:
 
   # Controls which tasks can be started via Butler's REST API.
   # Enabling this feature gives Qlik Sense sysadmins a way to control which tasks can be started by third party systems and applications.
-  # If this feature is disabled all tasks can be started via the API (assuming the start task API itself is enable).
+  # If this feature is disabled all tasks can be started via the API (assuming the start task API itself is enabled).
   # Note that the taskId, tag and customProperty sections below are additive. I.e. a task only has to appear in one of those sections to be on the "allowed" list.
   startTaskFilter:
     enable: false
