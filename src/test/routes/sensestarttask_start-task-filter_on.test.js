@@ -502,6 +502,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
 
             // Detailed checks
             expect(result.data.tasksId.invalid[0].taskId).toEqual(taskId_invalid1);
+            expect(result.data.tasksTagDenied[0].tag).toEqual(taskTag_invalid1);
         });
     });
 
@@ -689,6 +690,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             // Detailed checks
             expect(result.data.tasksId.invalid[0].taskId).toEqual(taskId_invalid1);
             expect(result.data.tasksId.denied[0].taskId).toEqual(taskId_notallowed1);
+            expect(result.data.tasksTagDenied[0].tag).toEqual(taskTag_invalid1);
         });
 
         // Verify that KV pair was created
@@ -1031,6 +1033,114 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             // Detailed checks
             expect(result.data.tasksId.invalid[0].taskId).toEqual(taskId_invalid1);
             expect(result.data.tasksId.denied[0].taskId).toEqual(taskId_notallowed1);
+        });
+    });
+
+    /**
+     * A38
+     * Verify correct result code when "Expect: 100-Continue" is used in call to API
+     */
+    describe('A38: taskFilter=on: POST /v4/reloadtask/:taskId/start', () => {
+        test('Test task start using taskIds, tags, CPs, KV pair', async () => {
+            result = await instance.post(
+                `/v4/reloadtask/${taskId_valid1}/start`,
+                [
+                    { type: 'starttaskid', payload: { taskId: taskId_valid2 } },
+                    { type: 'starttaskid', payload: { taskId: taskId_invalid1 } },
+                    { type: 'starttaskid', payload: { taskId: taskId_valid3 } },
+                    { type: 'starttaskid', payload: { taskId: taskId_notallowed1 } },
+                    { type: 'starttasktag', payload: { tag: taskTag1 } },
+                    { type: 'starttasktag', payload: { tag: taskTag2 } },
+                    { type: 'starttasktag', payload: { tag: taskTag_invalid1 } },
+                    {
+                        type: 'starttaskcustomproperty',
+                        payload: { customPropertyName: taskCPName1, customPropertyValue: taskCPValue1 },
+                    },
+                    {
+                        type: 'starttaskcustomproperty',
+                        payload: { customPropertyName: taskCPName1, customPropertyValue: taskCPValue2 },
+                    },
+                    {
+                        type: 'starttaskcustomproperty',
+                        payload: { customPropertyName: taskCPName_invalid1, customPropertyValue: taskCPValue1 },
+                    },
+                    {
+                        type: 'starttaskcustomproperty',
+                        payload: { customPropertyName: taskCPName1, customPropertyValue: taskCPValue_invalid1 },
+                    },
+                    {
+                        type: 'keyvaluestore',
+                        payload: { namespace: taskKVNamespace1, key: taskKVKey1, value: taskKVValue1, ttl: taskKVTtl1 },
+                    },
+                ],
+                {
+                    headers: { Expect: '100-Continue' },
+                }
+            );
+
+            expect(result.status).toBe(200);
+        });
+
+        test('Response should be an object', () => {
+            expect(result.data).toBeTruthy();
+            expect(typeof result.data).toBe('object');
+        });
+
+        test('Response should contain correct fields', () => {
+            expect(result.data).toHaveProperty('tasksId');
+            expect(result.data).toHaveProperty('tasksTag');
+            expect(result.data).toHaveProperty('tasksTagDenied');
+            expect(result.data).toHaveProperty('tasksCP');
+            expect(result.data).toHaveProperty('tasksCPDenied');
+
+            // Should be arrays
+            expect(Array.isArray(result.data.tasksId.started)).toBe(true);
+            expect(Array.isArray(result.data.tasksId.invalid)).toBe(true);
+            expect(Array.isArray(result.data.tasksId.denied)).toBe(true);
+            expect(Array.isArray(result.data.tasksTag)).toBe(true);
+            expect(Array.isArray(result.data.tasksTagDenied)).toBe(true);
+            expect(Array.isArray(result.data.tasksCP)).toBe(true);
+            expect(Array.isArray(result.data.tasksCPDenied)).toBe(true);
+
+            expect(result.data.tasksId.started.length).toBe(3);
+            expect(result.data.tasksId.invalid.length).toBe(1);
+            expect(result.data.tasksId.denied.length).toBe(1);
+            expect(result.data.tasksTag.length).toBe(4);
+            expect(result.data.tasksTagDenied.length).toBe(1);
+            expect(result.data.tasksCP.length).toBe(4);
+            expect(result.data.tasksCPDenied.length).toBe(2);
+
+            // Detailed checks
+            expect(result.data.tasksId.invalid[0].taskId).toEqual(taskId_invalid1);
+            expect(result.data.tasksId.denied[0].taskId).toEqual(taskId_notallowed1);
+            expect(result.data.tasksTagDenied[0].tag).toEqual(taskTag_invalid1);
+        });
+
+        // Verify that KV pair was created
+        test('It should respond with 200 when reading KV pair', async () => {
+            // Read KV pair that was just created
+            try {
+                result = await instance.get(`/v4/keyvalues/${taskKVNamespace1}`, { params: { key: taskKVKey1 } });
+            } catch (err) {
+                // eslint-disable-next-line no-console
+                console.log(`err: ${err}`);
+            }
+
+            expect(result.status).toBe(200);
+        });
+
+        test('Response should be an object', () => {
+            expect(result.data).toBeTruthy();
+            expect(typeof result.data).toBe('object');
+        });
+
+        test('Response should contain correct fields', () => {
+            expect(result.data.namespace).toBeTruthy();
+            expect(result.data.key).toBeTruthy();
+            expect(result.data.value).toBeTruthy();
+            expect(result.data.namespace).toEqual(taskKVNamespace1);
+            expect(result.data.key).toEqual(taskKVKey1);
+            expect(result.data.value).toEqual(taskKVValue1);
         });
     });
 }

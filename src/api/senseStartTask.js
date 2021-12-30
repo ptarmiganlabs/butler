@@ -8,7 +8,8 @@ const apiPutStartTask = {
             properties: {
                 taskId: {
                     type: 'string',
-                    description: 'ID of Qlik Sense task.',
+                    description:
+                        'ID of Qlik Sense task.\nButler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.',
                     example: '210832b5-6174-4572-bd19-3e61eda675ef',
                 },
             },
@@ -42,19 +43,9 @@ const apiPutStartTask = {
             },
             example: [
                 {
-                    type: 'keyvaluestore',
-                    payload: { namespace: 'MyFineNamespace', key: 'AnImportantKey', value: 'TheValue', ttl: 10000 },
-                },
-                {
                     type: 'starttaskid',
                     payload: {
                         taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
-                    },
-                },
-                {
-                    type: 'starttaskid',
-                    payload: {
-                        taskId: 'fb0f317d-da91-4b86-aafa-0174ae1e8c8',
                     },
                 },
                 {
@@ -64,17 +55,15 @@ const apiPutStartTask = {
                     },
                 },
                 {
-                    type: 'starttasktag',
-                    payload: {
-                        tag: 'startTask2',
-                    },
-                },
-                {
                     type: 'starttaskcustomproperty',
                     payload: {
                         customPropertyName: 'taskGroup',
                         customPropertyValue: 'tasks2',
                     },
+                },
+                {
+                    type: 'keyvaluestore',
+                    payload: { namespace: 'MyFineNamespace', key: 'AnImportantKey', value: 'TheValue', ttl: 10000 },
                 },
             ],
         },
@@ -89,33 +78,27 @@ const apiPutStartTask = {
                                 taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
                                 taskName: 'Reload task of App1',
                             },
+                        ],
+                        invalid: [
                             {
-                                taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
-                                taskName: 'Reload task of App2',
-                            },
-                            {
-                                taskId: 'fb0f317d-da91-4b86-aafa-0174ae1e8c8f',
-                                taskName: 'Reload task of App3',
+                                taskId: 'abc',
                             },
                         ],
-                        invalid: [],
+                        denied: [
+                            {
+                                taskId: 'a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e',
+                            },
+                        ],
                     },
                     tasksTag: [
                         {
                             taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
                             taskName: 'Reload task of App1',
                         },
+                    ],
+                    tasksTagDenied: [
                         {
-                            taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
-                            taskName: 'Reload task of App2',
-                        },
-                        {
-                            taskId: 'fb0f317d-da91-4b86-aafa-0174ae1e8c8f',
-                            taskName: 'Reload task of App3',
-                        },
-                        {
-                            taskId: 'fb0f317d-da91-4b86-aafa-0174ae1e8c8f',
-                            taskName: 'Reload task of App3',
+                            tag: 'startTask_invalid1',
                         },
                     ],
                     tasksCP: [
@@ -123,17 +106,11 @@ const apiPutStartTask = {
                             taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
                             taskName: 'Reload task of App1',
                         },
+                    ],
+                    tasksCPDenied: [
                         {
-                            taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
-                            taskName: 'Reload task of App2',
-                        },
-                        {
-                            taskId: 'fb0f317d-da91-4b86-aafa-0174ae1e8c8f',
-                            taskName: 'Reload task of App3',
-                        },
-                        {
-                            taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
-                            taskName: 'Reload task of App2',
+                            name: 'taskGroup',
+                            value: 'cp_value_denied1',
                         },
                     ],
                 },

@@ -36,7 +36,7 @@
     "mkdirp": "^1.0.4",
     "moment": "^2.29.1",
     "moment-precise-range-plugin": "^1.3.0",
-    "mqtt": "^4.3.1",
+    "mqtt": "^4.3.2",
     "ms-teams-webhook": "^1.0.4",
     "nodemailer": "^6.7.2",
     "nodemailer-express-handlebars": "^4.0.0",
@@ -54,7 +54,7 @@
   "devDependencies": {
     "jest": "27.4.5",
     "prettier": "2.5.1",
-    "snyk": "1.811.0"
+    "snyk": "1.812.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",

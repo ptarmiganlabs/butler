@@ -319,3 +319,71 @@ describe('F5: DELETE /v4/keyvalues/:namespace', () => {
         expect(result.data).toEqual(expect.arrayContaining([expectedNamespace2]));
     });
 });
+
+/**
+ * F6
+ * Create new KV pair, verify it can be read out again.
+ * Verify correct result code when "Expect: 100-Continue" is used in call to API
+ */
+describe('F6: POST /v4/keyvalues/:namespace', () => {
+    test('It should respond with 201 when creating a KV pair', async () => {
+        // Create new namespace and KV pair
+        try {
+            result = await instance.post(
+                `/v4/keyvalues/${expectedNamespace1}`,
+                {
+                    key: expectedKey1,
+                    value: expectedValue,
+                },
+                {
+                    headers: { Expect: '100-Continue' },
+                }
+            );
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.log(`err: ${err}`);
+        }
+
+        expect(result.status).toBe(201);
+
+        expect(result.data.namespace).toBeTruthy();
+        expect(result.data.key).toBeTruthy();
+        expect(result.data.value).toBeTruthy();
+        // expect(result.data.ttl).toBeTruthy();
+
+        // Detailed checks
+        expect(result.data.namespace).toEqual(expectedNamespace1);
+        expect(result.data.key).toEqual(expectedKey1);
+        expect(result.data.value).toEqual(expectedValue);
+        expect(result.data.ttl).toEqual(0);
+    });
+
+    test('It should respond with 200 when reading KV pair', async () => {
+        // Read KV pair that was just created
+        try {
+            result = await instance.get(`/v4/keyvalues/${expectedNamespace1}`, { params: { key: expectedKey1 } });
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.log(`err: ${err}`);
+        }
+
+        expect(result.status).toBe(200);
+    });
+
+    test('Response should be an object', () => {
+        expect(result.data).toBeTruthy();
+        expect(typeof result.data).toBe('object');
+    });
+
+    test('Response should contain correct fields', () => {
+        expect(result.data.namespace).toBeTruthy();
+        expect(result.data.key).toBeTruthy();
+        expect(result.data.value).toBeTruthy();
+        expect(result.data.ttl).toBeFalsy();
+
+        // Detailed checks
+        expect(result.data.namespace).toEqual(expectedNamespace1);
+        expect(result.data.key).toEqual(expectedKey1);
+        expect(result.data.value).toEqual(expectedValue);
+    });
+});
