@@ -1,5 +1,24 @@
 # Changelog
 
+### [7.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.0...butler-v7.1.1) (2022-01-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency axios to ^0.25.0 ([710af09](https://github.com/ptarmiganlabs/butler/commit/710af096f29e396684e2b3a411d79c7a12431a60))
+* **deps:** update dependency axios to ^0.25.0 ([9fd90b4](https://github.com/ptarmiganlabs/butler/commit/9fd90b40df9cba852969e88f8562564d323d43fd))
+* src/package.json & src/package-lock.json to reduce vulnerabilities ([c7c7e77](https://github.com/ptarmiganlabs/butler/commit/c7c7e77be4171b9db161c8c42f4265f7ee444a48))
+
+
+### Miscellaneous
+
+* **deps:** bump follow-redirects from 1.14.4 to 1.14.7 in /src ([a4efb32](https://github.com/ptarmiganlabs/butler/commit/a4efb32d7c7e568f1d4ebeea649c08b5a9cc1bda))
+* **deps:** Update dependencies ([9ea062f](https://github.com/ptarmiganlabs/butler/commit/9ea062f1bfd955c7bc4e4117ce8d72bb81d8a5b1))
+* **deps:** update dependency jest to v27.4.7 ([3cd7ce7](https://github.com/ptarmiganlabs/butler/commit/3cd7ce7b13a24d4436b89b3dfeeca4e083f84bbe))
+* **deps:** update dependency snyk to v1.838.0 ([6560572](https://github.com/ptarmiganlabs/butler/commit/6560572f25b1462e3170de05249be9938188061d))
+* **deps:** Upgrade dependencies ([637ae47](https://github.com/ptarmiganlabs/butler/commit/637ae47a3b8de5905724b427a528562db10ac8d8))
+* Update dependencies ([bba2973](https://github.com/ptarmiganlabs/butler/commit/bba2973a507b42948df82d00a44391537e3a6f46))
+
 ## [7.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.0.6...butler-v7.1.0) (2021-12-30)
 
 
