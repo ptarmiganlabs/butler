@@ -58,10 +58,18 @@ async function handlerFileCopy(request, reply) {
                 });
 
                 if (copyIsOk) {
+                    globals.logger.debug(
+                        `FILECOPY: About to copy file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`
+                    );
+
                     await fs.copySync(fromFile, toFile, {
                         overwrite,
                         preserveTimestamps: preserveTimestamp,
                     });
+
+                    globals.logger.verbose(
+                        `FILECOPY: Copied file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`
+                    );
 
                     reply.code(201).send({
                         fromFile,
@@ -135,7 +143,13 @@ async function handlerFileMove(request, reply) {
                 });
 
                 if (moveIsOk) {
+                    globals.logger.debug(
+                        `FILEMOVE: About to move file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`
+                    );
                     await fs.moveSync(fromFile, toFile, { overwrite });
+                    globals.logger.verbose(
+                        `FILEMOVE: Moved file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`
+                    );
 
                     reply.code(201).send({ fromFile, toFile, overwrite });
                 } else {
@@ -183,9 +197,12 @@ async function handlerFileDelete(request, reply) {
             });
 
             if (deleteIsOk) {
+                // Finally, make sure that file realy exists
                 if (await fs.pathExists(deleteFile)) {
-                    // Finally, make sure that file realy exists
+                    // Delete!
+                    globals.logger.debug(`FILEDELETE: About to delete file ${deleteFile}`);
                     await fs.removeSync(deleteFile);
+                    globals.logger.verbose(`FILEDELETE: Deleted file ${deleteFile}`);
 
                     reply.code(204).send();
                 } else {
@@ -197,7 +214,7 @@ async function handlerFileDelete(request, reply) {
                 globals.logger.error(
                     `FILEDELETE: File delete request ${request.body.deleteFile} is not in any approved directories.`
                 );
-                reply.send(httpErrors(403, 'No approved fromDir/toDir for file move'));
+                reply.send(httpErrors(403, 'No approved directory for file delete'));
             }
         }
     } catch (err) {
@@ -215,8 +232,12 @@ async function handlerCreateDirQvd(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
+            globals.logger.debug(
+                `CREATEDIRQVD: About to create QVD directory ${globals.qvdFolder}/${request.body.directory}`
+            );
+
             mkdirp(`${globals.qvdFolder}/${request.body.directory}`)
-                .then((dir) => globals.logger.verbose(`Created dir ${dir}`))
+                .then((dir) => globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`))
 
                 .catch((error) => {
                     globals.logger.error(`CREATEDIRQVD: ${JSON.stringify(error, null, 2)}`);
@@ -239,8 +260,10 @@ async function handlerCreateDir(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
+            globals.logger.debug(`CREATEDIR: About to create directory ${request.body.directory}`);
+
             mkdirp(request.body.directory)
-                .then((dir) => globals.logger.verbose(`Created dir ${dir}`))
+                .then((dir) => globals.logger.verbose(`CREATEDIR: Created directory ${dir}`))
 
                 .catch((error) => {
                     globals.logger.error(`CREATEDIR: ${JSON.stringify(error, null, 2)}`);
