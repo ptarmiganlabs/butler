@@ -52,7 +52,7 @@
     "ws": "^8.4.2"
   },
   "devDependencies": {
-    "jest": "27.4.7",
+    "jest": "27.5.1",
     "prettier": "2.5.1",
     "snyk": "1.838.0"
   },
