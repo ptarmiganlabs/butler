@@ -6,7 +6,7 @@
     "@breejs/later": "^4.1.0",
     "@keyvhq/core": "^1.6.4",
     "any-base": "^1.1.0",
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "config": "^3.3.7",
     "cron-job-manager": "^2.2.1",
     "email-validator": "^2.0.4",
