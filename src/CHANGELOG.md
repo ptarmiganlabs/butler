@@ -1,5 +1,23 @@
 # Changelog
 
+### [7.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.1...butler-v7.1.2) (2022-02-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency axios to ^0.26.0 ([71ef323](https://github.com/ptarmiganlabs/butler/commit/71ef323d1c73d4a4d80169c2c52c565473c02d72))
+
+
+### Refactoring
+
+* Better logging for API file operations endpoints ([0001e7d](https://github.com/ptarmiganlabs/butler/commit/0001e7d2f8b69791e0fa858fa030262fdd634431)), closes [#348](https://github.com/ptarmiganlabs/butler/issues/348)
+
+
+### Miscellaneous
+
+* **deps:** update dependency jest to v27.5.1 ([9399294](https://github.com/ptarmiganlabs/butler/commit/9399294d075d35787c20580b618351a4c4130964))
+* **deps:** update dependency snyk to v1.852.0 ([943c448](https://github.com/ptarmiganlabs/butler/commit/943c448a85b1815e103a158a369fbaa3a042422c))
+
 ### [7.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.0...butler-v7.1.1) (2022-01-27)
 
 
