@@ -1,0 +1,73 @@
+name: 🐞 Bug Report
+description: Create a bug report for Butler
+labels: 'template: bug'
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+  - type: markdown
+    attributes:
+      value: 'Please first search the repository for similar issues and discussions.'
+  - type: input
+    attributes:
+      label: What version of Butler are you using?
+      description: '`node butler.js --version` or `butler --version` - For example: 7.0.1'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What version of Node.js are you using? Not applicable if you use the standalone version of Butler.
+      description: '`node --version` - For example: 16.0.0'
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: What command did you use to start Butler?
+      description: 'Please include all parameters!'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What operating system are you using?
+      description: 'For example: macOS, Windows, Windows Server, Ubuntu 20.04, Docker'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What CPU architecture are you using?
+      description: 'For example: x86_64, arm64, armv7, Intel 12900K, Apple M1, Not sure'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What Qlik Sense versions are you using?
+      description: 'For example: 2021-November sp2'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior, please provide as clear as possible description. Screenshots can be provided in the issue body below.
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: Before posting the issue go through the steps you've written down to make sure the steps provided are detailed and clear.
+  - type: markdown
+    attributes:
+      value: Contributors should be able to follow the steps provided in order to reproduce the bug.
+  - type: markdown
+    attributes:
+      value: The information you enter on this page will be used to improve and enhance this project. Thanks in advance!
