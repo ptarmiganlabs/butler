@@ -11,7 +11,7 @@ body:
   - type: input
     attributes:
       label: What version of Butler are you using?
-      description: '`node butler.js --version` or `butler --version` - For example: 7.0.1'
+      description: '`node butler.js --version`. For example: 7.0.1'
     validations:
       required: true
   - type: input
