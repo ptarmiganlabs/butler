@@ -1,5 +1,21 @@
 # Changelog
 
+### [7.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.2...butler-v7.1.3) (2022-03-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency eslint-config-prettier to v8.5.0 ([cdbc60b](https://github.com/ptarmiganlabs/butler/commit/cdbc60b1d1cffcd61945e245b97772cbc6c3e9e1))
+* **deps:** update dependency fastify-swagger to v5 ([d9a89fe](https://github.com/ptarmiganlabs/butler/commit/d9a89fee02c17548925c7a7d66837901adeb0736))
+* **deps:** update dependency nodemailer-express-handlebars to v5 ([a9ab9c2](https://github.com/ptarmiganlabs/butler/commit/a9ab9c2f69373526445a44937f3913de83d06dd5))
+* Update dep Prettier ([46c96fa](https://github.com/ptarmiganlabs/butler/commit/46c96fa81aa7ea5e63cace795d264c7dc9d0d88c))
+
+
+### Miscellaneous
+
+* **deps:** update dependency express-handlebars to 5.3.1 [security] ([616a07e](https://github.com/ptarmiganlabs/butler/commit/616a07ee38d943658e6c42145b4d758213b63929))
+* Update dependencies ([daaf3e2](https://github.com/ptarmiganlabs/butler/commit/daaf3e2f4ffbd06d7d6a6247e06341584da844c5))
+
 ### [7.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.1...butler-v7.1.2) (2022-02-15)
 
 
