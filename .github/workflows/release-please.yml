@@ -9,17 +9,23 @@ on:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      release_tag_name: ${{ steps.release.outputs['src--tag_name'] }}
+      release_upload_url: ${{ steps.release.outputs['src--upload_url'] }}
     env:
       GITHUB_REF: ${{ github.ref }}
       GITHUB_TOKEN: ${{ secrets.PAT }}
+      DIST_FILE_NAME: butler
     steps:
       - name: Show github.ref
         run: echo "$GITHUB_REF"
 
-      - uses: GoogleCloudPlatform/release-please-action@v3
+      - uses: google-github-actions/release-please-action@v3
         id: release
         if: |
-          github.repository_owner == 'ptarmiganlabs'
+          github.repository_owner == 'ptarmiganlabs' 
+          || github.repository_owner == 'mountaindude'
         with:
           command: manifest
 
@@ -39,15 +45,79 @@ jobs:
 #           path: src
 
 
-      - name: Show output from Release-Please
-        if: ${{ steps.release.outputs.release_created }}
+      - name: Show output from Release-Please 3
+        if: ${{ steps.release.outputs.releases_created }}
         run: |
-          echo "release_created: ${{ steps.release.outputs.release_created }}"
-          echo "upload_url: ${{ steps.release.outputs.upload_url }}"
-          echo "html_url: ${{ steps.release.outputs.html_url }}"
-          echo "tag_name: ${{ steps.release.outputs.tag_name }}"
-          echo "major: ${{ steps.release.outputs.major }}"
-          echo "minor: ${{ steps.release.outputs.minor }}"
-          echo "patch: ${{ steps.release.outputs.patch }}"
-          echo "sha: ${{ steps.release.outputs.sha }}"
-          echo "pr: ${{ steps.release.outputs.pr }}"
+          echo "releases_created: ${{ steps.release.outputs.releases_created }}"
+          echo "draft           : ${{ steps.release.outputs['src--draft'] }}"
+          echo "path            : ${{ steps.release.outputs['src--path'] }}"
+          echo "upload_url      : ${{ steps.release.outputs['src--upload_url'] }}"
+          echo "html_url        : ${{ steps.release.outputs['src--html_url'] }}"
+          echo "tag_name        : ${{ steps.release.outputs['src--tag_name'] }}"
+          echo "version         : ${{ steps.release.outputs['src--version'] }}"
+          echo "major           : ${{ steps.release.outputs['src--major'] }}"
+          echo "minor           : ${{ steps.release.outputs['src--minor'] }}"
+          echo "patch           : ${{ steps.release.outputs['src--patch'] }}"
+          echo "sha             : ${{ steps.release.outputs['src--sha'] }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          cd src
+          npm install
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=./src/package.json --sarif-file-output=snyk.sarif
+          # command: test
+          
+      - name: Upload Snyk result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: snyk.sarif
+
+      - name: Install tool for creating stand-alone executables
+        if: ${{ steps.release.outputs.releases_created }}
+        run: npm install -g pkg
+
+      - name: Package stand-alone binaries
+        if: ${{ steps.release.outputs.releases_created }}
+          # mkdir release/alpine
+        run: |
+          ls -la
+          mkdir release
+          mkdir release/macos
+          mkdir release/win
+          mkdir release/linux
+          pkg --config ./src/package.json --output release/macos/${DIST_FILE_NAME} -t node16-macos-x64 src/butler-sheet-icons.js
+          pkg --config ./src/package.json --output release/win/${DIST_FILE_NAME}.exe -t node16-win-x64 src/butler-sheet-icons.js
+          pkg --config ./src/package.json --output release/linux/${DIST_FILE_NAME} -t node16-linux-x64 src/butler-sheet-icons.js
+
+      - name: Debug
+        if: ${{ steps.release.outputs.releases_created }}
+        run: |
+          ls -la
+          ls -la release
+          ls -la release/macos
+          ls -la release/win
+          ls -la release/linux
+
+      # - name: Upload macOS build artifacts
+      #   if: ${{ steps.release.outputs.releases_created }}
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: binaries-macos
+      #     path: release/macos/*
+
+      - name: Upload Windows build artifacts
+        if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries-win
+          path: release/win/*
