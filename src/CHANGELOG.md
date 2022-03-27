@@ -1,5 +1,12 @@
 # Changelog
 
+### [7.1.4](https://github.com/mountaindude/butler/compare/butler-v7.1.3...butler-v7.1.4) (2022-03-27)
+
+
+### Miscellaneous
+
+* **master:** release butler 7.1.3 ([4542e94](https://github.com/mountaindude/butler/commit/4542e941fd1843bd2a24921ad50b6ead7095d969))
+
 ### [7.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.2...butler-v7.1.3) (2022-03-24)
 
 
