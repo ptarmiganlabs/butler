@@ -16,6 +16,8 @@ src/udp_client/node_modules/*
 npm-debug.log
 .DS_Store
 
+release/*
+src/release/*
 
 # Logs
 */log

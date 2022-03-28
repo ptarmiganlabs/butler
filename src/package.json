@@ -53,8 +53,8 @@
   },
   "devDependencies": {
     "jest": "^27.5.1",
-    "prettier": "2.6.0",
-    "snyk": "^1.881.0"
+    "prettier": "2.6.1",
+    "snyk": "1.885.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
@@ -97,5 +97,8 @@
   "directories": {
     "lib": "lib",
     "test": "test"
+  },
+  "pkg": {
+    "scripts": ["./node_modules/enigma.js/**/*.json"]
   }
 }

@@ -29,22 +29,6 @@ jobs:
         with:
           command: manifest
 
-
-# jobs:
-#   release-please:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: GoogleCloudPlatform/release-please-action@v2.32.0
-#         if: |
-#           github.repository_owner == 'ptarmiganlabs'
-#         with:
-#           token: ${{ secrets.PAT }}
-#           release-type: node
-#           package-name: butler
-#           default-branch: master
-#           path: src
-
-
       - name: Show output from Release-Please 3
         if: ${{ steps.release.outputs.releases_created }}
         run: |
@@ -95,9 +79,9 @@ jobs:
           mkdir release/macos
           mkdir release/win
           mkdir release/linux
-          pkg --config ./src/package.json --output release/macos/${DIST_FILE_NAME} -t node16-macos-x64 src/butler.js
-          pkg --config ./src/package.json --output release/win/${DIST_FILE_NAME}.exe -t node16-win-x64 src/butler.js
-          pkg --config ./src/package.json --output release/linux/${DIST_FILE_NAME} -t node16-linux-x64 src/butler.js
+          pkg --config ./src/package.json --output release/macos/${DIST_FILE_NAME} -t node16-macos-x64 src/butler.js --compress GZip
+          pkg --config ./src/package.json --output release/win/${DIST_FILE_NAME}.exe -t node16-win-x64 src/butler.js --compress GZip
+          pkg --config ./src/package.json --output release/linux/${DIST_FILE_NAME} -t node16-linux-x64 src/butler.js --compress GZip
 
       - name: Debug
         if: ${{ steps.release.outputs.releases_created }}
@@ -108,12 +92,12 @@ jobs:
           ls -la release/win
           ls -la release/linux
 
-      # - name: Upload macOS build artifacts
-      #   if: ${{ steps.release.outputs.releases_created }}
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: binaries-macos
-      #     path: release/macos/*
+      - name: Upload macOS build artifacts
+        if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries-macos
+          path: release/macos/*
 
       - name: Upload Windows build artifacts
         if: ${{ steps.release.outputs.releases_created }}
@@ -121,3 +105,157 @@ jobs:
         with:
           name: binaries-win
           path: release/win/*
+
+  release-macos:
+    needs: release-please
+    runs-on:
+      - self-hosted
+      - x64
+      - macos
+      - sp53
+    # timeout-minutes: 15
+
+    if: ${{ needs.release-please.outputs.releases_created }} 
+    env:
+      DIST_FILE_NAME: butler
+    steps:
+      - name: Release tag and upload url from previous job
+        run: |
+          echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+          echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Download-Binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries-macos
+          path: release-macos/
+
+      - name: Make binary executable
+        run: |
+          chmod +x release-macos/${DIST_FILE_NAME}
+
+      # Needed for GitHub hosted runner
+      # For self-hosted runner the cert must either be installed manually, or the code below run once and then disabled.
+      # - name: Import Code-Signing Certificates
+      #   uses: Apple-Actions/import-codesign-certs@v1
+      #   with:
+      #     # The certificates in a PKCS12 file encoded as a base64 string
+      #     p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+      #     # The password used to import the PKCS12 file.
+      #     p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+
+      # - name: Install gon via HomeBrew for code signing and app notarization
+      #   run: |
+      #     brew tap mitchellh/gon
+      #     brew install mitchellh/gon/gon
+
+      - name: Debug
+        run: |
+          ls -la
+          ls -la ./release-macos
+
+      - name: Sign the mac binaries with Gon
+        env:
+          AC_USERNAME: ${{ secrets.AC_USERNAME }}
+          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+        run: |
+          pwd
+          ls -la
+          gon ./release-config/gon.json
+
+      - name: Change name of zip file
+        run: |
+          pwd
+          ls -la
+          ls -la ./release-macos
+          mv ./${{ env.DIST_FILE_NAME }}-macos.zip ./${{ needs.release-please.outputs.release_tag_name }}-macos.zip
+
+      - name: Upload to existing release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifactContentType: raw
+          # artifactContentType: application/zip
+          draft: true
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
+          artifacts: ./${{ needs.release-please.outputs.release_tag_name }}-macos.zip
+          token: ${{ github.token }}
+
+      - name: Tidy up before existing
+        run: |
+          rm -r release-macos
+
+  release-win64:
+    needs: release-please
+    runs-on:
+      - self-hosted
+      - x64
+      - windows
+      - sp53
+    # timeout-minutes: 15
+    if: ${{ needs.release-please.outputs.releases_created }} 
+    env:
+      DIST_FILE_NAME: butler
+    steps:
+      - name: Release tag and upload url from previous job
+        run: |
+          Write-Output 'tag_name        : ${{ needs.release-please.outputs.release_tag_name }}'
+          Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Download-Binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries-win
+          path: release-win/
+
+      - name: Install dependencies, copy Chromium to release folder and zip into release asset
+        run: |
+          cd release-win
+          dir
+          $compress = @{
+            Path = "."
+            CompressionLevel = "Fastest"
+            DestinationPath = "${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+          }
+          Compress-Archive @compress
+
+      - name: Debug
+        run: |
+          dir
+          dir ./release-win
+
+      - name: Upload to existing release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifactContentType: raw
+          # artifactContentType: application/zip
+          draft: true
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
+          artifacts: release-win/${{ needs.release-please.outputs.release_tag_name }}-win.zip
+          token: ${{ github.token }}
+
+      - name: Tidy up before existing
+        run: |
+          dir
+          Remove-Item -path ./release-win -recurse 
