@@ -99,6 +99,8 @@
     "test": "test"
   },
   "pkg": {
-    "scripts": ["./node_modules/enigma.js/**/*.json"]
+    "scripts": [
+      "./node_modules/enigma.js/**/*.json"
+    ]
   }
 }

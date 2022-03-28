@@ -1,5 +1,18 @@
 # Changelog
 
+### [7.1.4](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.4...butler-v7.1.4) (2022-03-28)
+
+
+### Bug Fixes
+
+* Refactor CI ([98376a8](https://github.com/ptarmiganlabs/butler/commit/98376a86306a87bb0f286e4cf4591bd39c56e0ef))
+
+
+### Miscellaneous
+
+* **master:** release butler 7.1.4 ([ea2f0b5](https://github.com/ptarmiganlabs/butler/commit/ea2f0b5c8fe96e69eb153a5bfb6cc1092ef5efd7))
+* **master:** release butler 7.1.4 ([581c629](https://github.com/ptarmiganlabs/butler/commit/581c62972df8f977a52f90794cc1b940ab7faac0))
+
 ### [7.1.4](https://github.com/mountaindude/butler/compare/butler-v7.1.4...butler-v7.1.4) (2022-03-27)
 
 
