@@ -1,6 +1,4 @@
 {
-  "last-release-sha": "4542e941fd1843bd2a24921ad50b6ead7095d969",
-  "release-as": "7.1.4",
   "release-type": "node",
   "draft": true,
   "changelog-sections": [
