@@ -16,6 +16,7 @@ src/.prettierrc.yaml export-ignore
 src/.snyk export-ignore
 src/Dockerfile export-ignore
 src/jest.config.js export-ignore 
+release-config/* export-ignore 
 .codeclimate.yml export-ignore
 .jshintrc export-ignore
 .release-please-manifest.json export-ignore

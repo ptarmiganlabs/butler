@@ -82,7 +82,7 @@ if (options.configfile && options.configfile.length > 0) {
 // Are we running as standalone app or not?
 const isPkg = typeof process.pkg !== 'undefined';
 if (isPkg && configFileOption === undefined) {
-    // Show help if running as standalone app and mandatory options (e.g. config file) are specified
+    // Show help if running as standalone app and mandatory options (e.g. config file) are not specified
     program.help({ error: true });
 }
 
