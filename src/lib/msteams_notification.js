@@ -248,10 +248,11 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
         }
 
         const res = await teamsWebhookObj.send(JSON.stringify(msg));
-
-        globals.logger.debug(
-            `TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`
-        );
+        if (res !== undefined) {
+            globals.logger.debug(
+                `TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`
+            );
+        }
     } catch (err) {
         globals.logger.error(`TEAMSNOTIF: ${err}`);
     }
@@ -322,6 +323,55 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+
+                // Check if script log is longer than 3000 characters. Truncate if so.
+                if (templateContext.scriptLogHead.length >= 3000) {
+                    globals.logger.warn(
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
+                    );
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(0, 2900);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
+                }
+
+                if (templateContext.scriptLogTail.length >= 3000) {
+                    globals.logger.warn(
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
+                    );
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(-2900);
+
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
+                }
 
                 sendTeams(globals.teamsTaskFailureObj, teamsConfig, templateContext);
             } catch (err) {
@@ -401,6 +451,55 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+
+                // Check if script log is longer than 3000 characters. Truncate if so.
+                if (templateContext.scriptLogHead.length >= 3000) {
+                    globals.logger.warn(
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
+                    );
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(0, 2900);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
+                }
+
+                if (templateContext.scriptLogTail.length >= 3000) {
+                    globals.logger.warn(
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
+                    );
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(-2900);
+
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
+                }
 
                 sendTeams(globals.teamsTaskAbortedObj, TeamsConfig, templateContext);
             } catch (err) {
