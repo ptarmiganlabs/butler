@@ -1,4 +1,3 @@
-const config = require('config');
 const fs = require('fs-extra');
 const path = require('path');
 const Influx = require('influx');
@@ -7,14 +6,93 @@ const si = require('systeminformation');
 const os = require('os');
 const crypto = require('crypto');
 
+// Add dependencies
+const { Command, Option } = require('commander');
+
 const winston = require('winston');
 require('winston-daily-rotate-file');
 
 // Variable holding info about all defined schedules
 const configSchedule = [];
 
+function checkFileExistsSync(filepath) {
+    let flag = true;
+    try {
+        fs.accessSync(filepath, fs.constants.F_OK);
+    } catch (e) {
+        flag = false;
+    }
+    return flag;
+}
+
 // Get app version from package.json file
 const appVersion = require('./package.json').version;
+
+// Command line parameters
+const program = new Command();
+program
+    .version(appVersion)
+    .name('butler')
+    .description(
+        'Butler gives superpowers to client-managed Qlik Sense Enterprise on Windows!\nAdvanced reload failure alerts, task scheduler, key-value store, file system access and much more.'
+    )
+    .option('-c, --configfile <file>', 'path to config file')
+    .addOption(
+        new Option('-l, --loglevel <level>', 'log level').choices([
+            'error',
+            'warn',
+            'info',
+            'verbose',
+            'debug',
+            'silly',
+        ])
+    );
+
+// Parse command line params
+program.parse(process.argv);
+const options = program.opts();
+
+// Is there a config file specified on the command line?
+let configFileOption;
+let configFileExpanded;
+let configFilePath;
+let configFileBasename;
+let configFileExtension;
+if (options.configfile && options.configfile.length > 0) {
+    configFileOption = options.configfile;
+    configFileExpanded = path.resolve(options.configfile);
+    configFilePath = path.dirname(configFileExpanded);
+    configFileExtension = path.extname(configFileExpanded);
+    configFileBasename = path.basename(configFileExpanded, configFileExtension);
+
+    if (configFileExtension.toLowerCase() !== '.yaml') {
+        console.log('Error: Config file extension must be yaml');
+        process.exit(1);
+    }
+
+    if (checkFileExistsSync(options.configfile)) {
+        process.env.NODE_CONFIG_DIR = configFilePath;
+        process.env.NODE_ENV = configFileBasename;
+    } else {
+        console.log('Error: Specified config file does not exist');
+        process.exit(1);
+    }
+}
+
+// Are we running as standalone app or not?
+const isPkg = typeof process.pkg !== 'undefined';
+if (isPkg && configFileOption === undefined) {
+    // Show help if running as standalone app and mandatory options (e.g. config file) are specified
+    program.help({ error: true });
+}
+
+// eslint-disable-next-line import/order
+const config = require('config');
+
+// Is there a log level file specified on the command line?
+if (options.loglevel && options.loglevel.length > 0) {
+    config.Butler.logLevel = options.loglevel;
+}
 
 // Set up logger with timestamps and colors, and optional logging to disk file
 const logTransports = [];
@@ -32,10 +110,12 @@ logTransports.push(
     })
 );
 
+const execPath = isPkg ? path.dirname(process.execPath) : __dirname;
+
 if (config.get('Butler.fileLogging')) {
     logTransports.push(
         new winston.transports.DailyRotateFile({
-            dirname: path.join(__dirname, config.get('Butler.logDirectory')),
+            dirname: path.join(execPath, config.get('Butler.logDirectory')),
             filename: 'butler.%DATE%.log',
             level: config.get('Butler.logLevel'),
             datePattern: 'YYYY-MM-DD',
@@ -54,6 +134,9 @@ const logger = winston.createLogger({
 
 // Function to get current logging level
 const getLoggingLevel = () => logTransports.find((transport) => transport.name === 'console').level;
+
+// Are we running as standalone app or not?
+logger.verbose(`Running as standalone app: ${isPkg}`);
 
 // Helper function to read the contents of the certificate files:
 const readCert = (filename) => fs.readFileSync(filename);
@@ -419,4 +502,5 @@ module.exports = {
     endpointsEnabled,
     initHostInfo,
     hostInfo,
+    isPkg,
 };
