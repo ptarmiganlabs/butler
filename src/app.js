@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 // const Fastify = require('fastify');
 
 const path = require('path');
@@ -81,9 +82,9 @@ async function build(opts = {}) {
         globals.logger.info('--------------------------------------');
 
         // Log info about what Qlik Sense certificates are being used
-        globals.logger.info(`Client cert: ${certFile}`);
-        globals.logger.info(`Client cert key: ${keyFile}`);
-        globals.logger.info(`CA cert: ${caFile}`);
+        globals.logger.info(`Client cert     : ${certFile}`);
+        globals.logger.info(`Client cert key : ${keyFile}`);
+        globals.logger.info(`Client cert CA  : ${caFile}`);
 
         // Set up anon telemetry reports, if enabled
         if (
@@ -117,6 +118,25 @@ async function build(opts = {}) {
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
+
+    // This loads all plugins defined in plugins.
+    // Those should be support plugins that are reused through your application
+    restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
+    restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
+
+    // Loads all plugins defined in routes
+    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/baseConversion'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/butlerPing'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/keyValueStore'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/mqttPublishMessage'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/senseApp'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/senseAppDump'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/senseListApps'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/senseStartTask'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/slackPostMessage'), { options: Object.assign({}, opts) });
 
     restServer.register(FastifySwagger, {
         routePrefix: '/documentation',
@@ -218,25 +238,6 @@ async function build(opts = {}) {
     }
 
     dockerHealthCheckServer.register(FastifyHealthcheck);
-
-    // Do not touch the following lines
-
-    // This loads all plugins defined in plugins
-    // those should be support plugins that are reused
-    // through your application
-    restServer.register(AutoLoad, {
-        dir: path.join(__dirname, 'plugins'),
-        // eslint-disable-next-line prefer-object-spread
-        options: Object.assign({}, opts),
-    });
-
-    // This loads all plugins defined in routes
-    // define your routes in one of these
-    restServer.register(AutoLoad, {
-        dir: path.join(__dirname, 'routes'),
-        // eslint-disable-next-line prefer-object-spread
-        options: Object.assign({}, opts),
-    });
 
     return { restServer, proxyRestServer, dockerHealthCheckServer };
 }

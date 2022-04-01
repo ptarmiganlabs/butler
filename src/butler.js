@@ -1,6 +1,4 @@
 // Add dependencies
-// const restServer = require('fastify')({ logger: true });
-// const proxyRestServer = require('fastify')({ logger: true });
 const mqtt = require('mqtt');
 const dgram = require('dgram');
 
@@ -10,7 +8,6 @@ const globals = require('./globals');
 const build = require('./app');
 const udp = require('./udp');
 
-// async function mainScript() {
 const start = async () => {
     const apps = await build({});
 
