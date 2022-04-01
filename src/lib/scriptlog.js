@@ -181,43 +181,48 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                                 //   passphrase: "YYY"
                             };
 
-                            axios.request(axiosConfig).then((result3) => {
-                                const scriptLogFull = result3.data.split('\r\n');
+                            axios
+                                .request(axiosConfig)
+                                .then((result3) => {
+                                    const scriptLogFull = result3.data.split('\r\n');
 
-                                let scriptLogHead = '';
-                                let scriptLogTail = '';
+                                    let scriptLogHead = '';
+                                    let scriptLogTail = '';
 
-                                if (headLineCount > 0) {
-                                    scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
-                                }
+                                    if (headLineCount > 0) {
+                                        scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+                                    }
 
-                                if (tailLineCount > 0) {
-                                    scriptLogTail = scriptLogFull
-                                        .slice(Math.max(scriptLogFull.length - tailLineCount, 0))
-                                        .join('\r\n');
-                                }
+                                    if (tailLineCount > 0) {
+                                        scriptLogTail = scriptLogFull
+                                            .slice(Math.max(scriptLogFull.length - tailLineCount, 0))
+                                            .join('\r\n');
+                                    }
 
-                                globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
-                                globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
+                                    globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
+                                    globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
 
-                                globals.logger.verbose('SCRIPTLOG: Done getting script log');
+                                    globals.logger.verbose('SCRIPTLOG: Done getting script log');
 
-                                resolve({
-                                    executingNodeName: taskInfo.executingNodeName,
-                                    executionDetails: taskInfo.executionDetailsSorted,
-                                    executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
-                                    executionDuration: taskInfo.executionDuration,
-                                    executionStartTime: taskInfo.executionStartTime,
-                                    executionStopTime: taskInfo.executionStopTime,
-                                    executionStatusNum: taskInfo.executionStatusNum,
-                                    executionStatusText: taskInfo.executionStatusText,
-                                    scriptLogSize: taskInfo.scriptLogSize,
-                                    scriptLogHead,
-                                    scriptLogHeadCount: headLineCount,
-                                    scriptLogTail,
-                                    scriptLogTailCount: tailLineCount,
+                                    resolve({
+                                        executingNodeName: taskInfo.executingNodeName,
+                                        executionDetails: taskInfo.executionDetailsSorted,
+                                        executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
+                                        executionDuration: taskInfo.executionDuration,
+                                        executionStartTime: taskInfo.executionStartTime,
+                                        executionStopTime: taskInfo.executionStopTime,
+                                        executionStatusNum: taskInfo.executionStatusNum,
+                                        executionStatusText: taskInfo.executionStatusText,
+                                        scriptLogSize: taskInfo.scriptLogSize,
+                                        scriptLogHead,
+                                        scriptLogHeadCount: headLineCount,
+                                        scriptLogTail,
+                                        scriptLogTailCount: tailLineCount,
+                                    });
+                                })
+                                .catch((err) => {
+                                    globals.logger.error(`SCRIPTLOG ERROR: ${err}`);
                                 });
-                            });
                         });
                 } else {
                     // No script log is available
