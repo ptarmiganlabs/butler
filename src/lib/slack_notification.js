@@ -274,9 +274,11 @@ async function sendSlack(slackConfig, templateContext) {
         msg.text = slackMsg;
 
         const res = await slackApi.slackSend(msg, globals.logger);
-        globals.logger.debug(
-            `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
-        );
+        if (res !== undefined) {
+            globals.logger.debug(
+                `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
+            );
+        }
     } catch (err) {
         globals.logger.error(`SLACKNOTIF: ${err}`);
     }
@@ -347,6 +349,56 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+
+                // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
+                // https://api.slack.com/reference/block-kit/blocks#section_fields
+                if (templateContext.scriptLogHead.length >= 3000) {
+                    globals.logger.warn(
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
+                    );
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(0, 2900);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
+                }
+
+                if (templateContext.scriptLogTail.length >= 3000) {
+                    globals.logger.warn(
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
+                    );
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(-2900);
+
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
+                }
 
                 sendSlack(slackConfig, templateContext);
             } catch (err) {
@@ -426,6 +478,56 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+
+                // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
+                // https://api.slack.com/reference/block-kit/blocks#section_fields
+                if (templateContext.scriptLogHead.length >= 3000) {
+                    globals.logger.warn(
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
+                    );
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(0, 2900);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
+                }
+
+                if (templateContext.scriptLogTail.length >= 3000) {
+                    globals.logger.warn(
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
+                    );
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('=', '&#x3D;')
+                        .replaceAll("'", '&#x27;')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .slice(-2900);
+
+                    templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&#x3D;', '=')
+                        .replaceAll('&#x27;', "'")
+                        .replaceAll('&amp;', '&')
+                        .replaceAll('&lt;', '<')
+                        .replaceAll('&gt;', '>')
+                        .replaceAll('&quot;', '"');
+
+                    templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
+                }
 
                 sendSlack(slackConfig, templateContext);
             } catch (err) {
