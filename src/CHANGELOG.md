@@ -1,5 +1,29 @@
 # Changelog
 
+## [7.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.4...butler-v7.2.0) (2022-04-07)
+
+
+### Features
+
+* Create standalone binaries for Win, macOS, Linux ([6ae4e43](https://github.com/ptarmiganlabs/butler/commit/6ae4e438003328aa398e384ecd943d585f9c5c00))
+* Store failed reload logs to disk for later analysis ([137dd60](https://github.com/ptarmiganlabs/butler/commit/137dd606cc139e51aeb1bb9b3bc91dd37c163c4d))
+
+
+### Bug Fixes
+
+* Better error checking when calling Sense APIs ([3b3d76e](https://github.com/ptarmiganlabs/butler/commit/3b3d76e2b10e3a519cbdc93f45fe24df836ac9dc)), closes [#386](https://github.com/ptarmiganlabs/butler/issues/386)
+* Clean up Docker image and release ZIP files ([cb715b9](https://github.com/ptarmiganlabs/butler/commit/cb715b9778dc800c42e2cba6cbe37e1cadb6f2ac)), closes [#361](https://github.com/ptarmiganlabs/butler/issues/361)
+* Handle long script logs in MS Teams ([98ddbe3](https://github.com/ptarmiganlabs/butler/commit/98ddbe3fb5787b3c1dbb47825df2123f07ae6ca5)), closes [#389](https://github.com/ptarmiganlabs/butler/issues/389)
+* Handle long script logs in Slack notifications without crashing. ([d43e024](https://github.com/ptarmiganlabs/butler/commit/d43e0249972be22086906f9be8cbb6b04b8f62c9)), closes [#388](https://github.com/ptarmiganlabs/butler/issues/388)
+* Verify new CI 1 ([4cf92a3](https://github.com/ptarmiganlabs/butler/commit/4cf92a3366be90008d7bba3d6c73c58d1d2b1ded))
+
+
+### Miscellaneous
+
+* **deps:** pin dependency jest to 27.5.1 ([6326d20](https://github.com/ptarmiganlabs/butler/commit/6326d2066597b7dc5f3cb2d9331bfc60d3a4bcca))
+* **deps:** Pin versions of dev dependencies ([723da92](https://github.com/ptarmiganlabs/butler/commit/723da92970fb6ca15882374268b50d31a5541e2c))
+* **deps:** Update dependencies ([e6cae58](https://github.com/ptarmiganlabs/butler/commit/e6cae580866631aa1dd80cb487ae67e489fe75d2))
+
 ### [7.1.4](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.4...butler-v7.1.4) (2022-03-28)
 
 
