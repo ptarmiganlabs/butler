@@ -6,9 +6,13 @@
 .prettierrc
 .prettierrc.yaml
 .snyk
+.DS_Store
 
 __tests__
 jest.config.js
+coverage
+test
+test/*
 
 CHANGELOG.md
 Dockerfile
@@ -21,7 +25,7 @@ config
 config/*
 k8s
 k8s/*
-test
-test/*
+scriptlog
+log
 udp_client
 udp_client/*
