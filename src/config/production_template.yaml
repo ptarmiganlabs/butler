@@ -47,6 +47,15 @@ Butler:
         name: 10d
         duration: 10d
 
+  # Store script logs of failed reloads on disk.
+  # The script logs will be stored in daily directories under the specified main directory below
+  # NOTE: Use an absolute path when running Butler as a standalone executable! 
+  scriptLog:
+    storeOnDisk:
+      reloadTaskFailure:
+        enable: false
+        logDirectory: /path/to/scriptlogs
+
   # Qlik Sense related links used in notification messages
   qlikSenseUrls:
     qmc: <Link to Qlik Sense QMC>

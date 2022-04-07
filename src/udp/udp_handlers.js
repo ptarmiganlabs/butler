@@ -5,6 +5,7 @@ const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
+const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
 
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = (msg) => {
@@ -163,6 +164,25 @@ const schedulerFailed = (msg, legacyFlag) => {
     if (legacyFlag) {
         // First field in message (msg[0]) is host name
 
+        // Store script log to disk
+        if (
+            globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
+        ) {
+            failedTaskStoreLogOnDisk({
+                hostName: msg[0],
+                user: msg[3].replace(/\\/g, '/'),
+                taskName: msg[1],
+                taskId: msg[4],
+                appName: msg[2],
+                appId: msg[5],
+                logTimeStamp: msg[6],
+                logLevel: msg[7],
+                executionId: msg[8],
+                logMessage: msg[9],
+            });
+        }
+
         // Post to Signl4 when a task has failed, if enabled
         if (
             globals.config.has('Butler.incidentTool.signl4.enable') &&
@@ -303,6 +323,25 @@ const schedulerFailed = (msg, legacyFlag) => {
         }
     } else {
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
+
+        // Store script log to disk
+        if (
+            globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
+        ) {
+            failedTaskStoreLogOnDisk({
+                hostName: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+            });
+        }
 
         // Post to Signl4 when a task has failed, if enabled
         if (
