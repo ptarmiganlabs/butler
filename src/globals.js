@@ -247,7 +247,7 @@ let mqttClient = null;
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
-var udpServerTaskFailureSocket = null;
+let udpServerTaskFailureSocket = null;
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
 // const udpServerTaskFailureSocket = dgram.createSocket({
 //     type: 'udp4',
@@ -503,4 +503,5 @@ module.exports = {
     initHostInfo,
     hostInfo,
     isPkg,
+    checkFileExistsSync,
 };

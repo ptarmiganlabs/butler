@@ -2,6 +2,8 @@ const QrsInteract = require('qrs-interact');
 const axios = require('axios');
 const https = require('https');
 const luxon = require('luxon');
+const path = require('path');
+const fs = require('fs');
 
 const globals = require('../globals');
 
@@ -213,6 +215,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                                         executionStopTime: taskInfo.executionStopTime,
                                         executionStatusNum: taskInfo.executionStatusNum,
                                         executionStatusText: taskInfo.executionStatusText,
+                                        scriptLogFull,
                                         scriptLogSize: taskInfo.scriptLogSize,
                                         scriptLogHead,
                                         scriptLogHeadCount: headLineCount,
@@ -235,6 +238,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                         executionStopTime: taskInfo.executionStopTime,
                         executionStatusNum: taskInfo.executionStatusNum,
                         executionStatusText: taskInfo.executionStatusText,
+                        scriptLogFull: '',
                         scriptLogSize: 0,
                         scriptLogHead: '',
                         scriptLogHeadCount: 0,
@@ -250,6 +254,38 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     });
 }
 
+async function failedTaskStoreLogOnDisk(reloadParams) {
+    try {
+        // Get top level directory where logs should be stored
+        const reloadLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.logDirectory');
+
+        // Get misc script log info
+        const scriptLog = await getScriptLog(reloadParams.taskId, 1, 1);
+
+        // Create directory for script log, if needed
+        const logDate = reloadParams.logTimeStamp.slice(0, 10);
+        const reloadLogDir = path.resolve(reloadLogDirRoot, logDate);
+
+        globals.logger.debug(`SCRIPTLOG STORE: Creating directory for failed task script log: ${reloadLogDir}`);
+        fs.mkdirSync(reloadLogDir, { recursive: true });
+
+        const fileName = path.resolve(
+            reloadLogDir,
+            `${reloadParams.logTimeStamp.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-')}_appId=${
+                reloadParams.appId
+            }_taskId=${reloadParams.taskId}.log`
+        );
+
+        globals.logger.info(`SCRIPTLOG STORE: Writing failed task script log: ${fileName}`);
+        fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
+        return true;
+    } catch (err) {
+        globals.logger.error(`SCRIPTLOG STORE: ${err}`);
+        return false;
+    }
+}
+
 module.exports = {
     getScriptLog,
+    failedTaskStoreLogOnDisk,
 };

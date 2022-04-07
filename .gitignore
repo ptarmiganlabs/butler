@@ -10,6 +10,8 @@ src/config/default.yaml
 src/config/development.yaml
 src/config/development.json
 src/config/certificate/*.pem
+src/scriptlog
+scriptlog
 
 doc/*
 src/udp_client/node_modules/*
