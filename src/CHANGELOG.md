@@ -1,5 +1,13 @@
 # Changelog
 
+### [7.2.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.2.0...butler-v7.2.1) (2022-04-19)
+
+
+### Miscellaneous
+
+* **deps:** Pin dev dependencies ([871f9fb](https://github.com/ptarmiganlabs/butler/commit/871f9fb90483fd56eda0bf74b867d44120d5450a))
+* **deps:** Update dependencies to latest versions ([7d18589](https://github.com/ptarmiganlabs/butler/commit/7d185891de6e5cac417458d726524e1e74ea9ca3))
+
 ## [7.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.1.4...butler-v7.2.0) (2022-04-07)
 
 
