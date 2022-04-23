@@ -10,10 +10,10 @@ function postButlerMemoryUsageToInfluxdb(memory) {
                 butler_instance: memory.instanceTag,
             },
             fields: {
-                heap_used: memory.heapUsed,
-                heap_total: memory.heapTotal,
-                external: memory.external,
-                process_memory: memory.processMemory,
+                heap_used: memory.heapUsedMByte,
+                heap_total: memory.heapTotalMByte,
+                external: memory.externalMemoryMByte,
+                process_memory: memory.processMemoryMByte,
             },
         },
     ];

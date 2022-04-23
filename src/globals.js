@@ -46,7 +46,8 @@ program
             'debug',
             'silly',
         ])
-    );
+    )
+    .option('--new-relic-api-key <key>', 'insert API key to use with New Relic');
 
 // Parse command line params
 program.parse(process.argv);
@@ -92,6 +93,11 @@ const config = require('config');
 // Is there a log level file specified on the command line?
 if (options.loglevel && options.loglevel.length > 0) {
     config.Butler.logLevel = options.loglevel;
+}
+
+// Is there a New Relic API key specified on the command line?
+if (options.newRelicApiKey && options.newRelicApiKey.length > 0) {
+    config.Butler.uptimeMonitor.storeNewRelic.apiKey = options.newRelicApiKey;
 }
 
 // Set up logger with timestamps and colors, and optional logging to disk file

@@ -4,6 +4,7 @@ require('moment-precise-range-plugin');
 
 const globals = require('../globals');
 const postToInfluxdb = require('./post-to-influxdb');
+const postToHttp = require('./post-to-new-relic');
 
 function serviceUptimeStart() {
     const uptimeLogLevel = globals.config.get('Butler.uptimeMonitor.logLevel');
@@ -34,37 +35,69 @@ function serviceUptimeStart() {
     const startTime = Date.now();
     let startIterations = 0;
 
+    // const intervalMillisec = later.parse.text(uptimeInterval);
+    const sched = later.parse.text(uptimeInterval);
+    const nextOccurence = later.schedule(sched).next(4);
+    const intervalMillisec = nextOccurence[3].getTime() - nextOccurence[2].getTime();
+    globals.logger.debug(`UPTIME: Interval between uptime events: ${intervalMillisec} milliseconds`);
+
     later.setInterval(() => {
         startIterations += 1;
         const uptimeMilliSec = Date.now() - startTime;
         moment.duration(uptimeMilliSec);
 
-        const heapTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100;
-        const heapUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100;
-        const processMemory = Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100;
-        const external = Math.round((process.memoryUsage().external / 1024 / 1024) * 100) / 100;
+        const { heapTotal } = process.memoryUsage();
+        const { heapUsed } = process.memoryUsage();
+        const processMemory = process.memoryUsage().rss;
+        const externalMemory = process.memoryUsage().external;
+
+        const heapTotalMByte = Math.round((heapTotal / 1024 / 1024) * 100) / 100;
+        const heapUsedMByte = Math.round((heapUsed / 1024 / 1024) * 100) / 100;
+        const processMemoryMByte = Math.round((processMemory / 1024 / 1024) * 100) / 100;
+        const externalMemoryMByte = Math.round((externalMemory / 1024 / 1024) * 100) / 100;
+
+        const uptimeString = moment.preciseDiff(0, uptimeMilliSec);
 
         globals.logger.log(uptimeLogLevel, '--------------------------------');
         globals.logger.log(
             uptimeLogLevel,
-            `Iteration # ${formatter.format(startIterations)}, Uptime: ${moment.preciseDiff(
-                0,
-                uptimeMilliSec
-            )}, Heap used ${heapUsed} MB of total heap ${heapTotal} MB. External (off-heap): ${external} MB. Memory allocated to process: ${processMemory} MB.`
+            `Iteration # ${formatter.format(
+                startIterations
+            )}, Uptime: ${uptimeString}, Heap used ${heapUsedMByte} MB of total heap ${heapTotalMByte} MB. External (off-heap): ${externalMemoryMByte} MB. Memory allocated to process: ${processMemoryMByte} MB.`
         );
 
-        // Store to Influxdb
+        // Store to Influxdb if enabled
         const butlerMemoryInfluxTag = globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
             ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
             : '';
 
-        if (globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true) {
+        if (
+            globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
+            globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true
+        ) {
             postToInfluxdb.postButlerMemoryUsageToInfluxdb({
                 instanceTag: butlerMemoryInfluxTag,
+                heapUsedMByte,
+                heapTotalMByte,
+                externalMemoryMByte,
+                processMemoryMByte,
+            });
+        }
+
+        // Do generic http POST if enabled
+        if (
+            globals.config.has('Butler.uptimeMonitor.storeNewRelic.enable') &&
+            globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable') === true
+        ) {
+            postToHttp.postButlerUptimeToNewRelic({
+                intervalMillisec,
                 heapUsed,
                 heapTotal,
-                external,
+                externalMemory,
                 processMemory,
+                startIterations,
+                uptimeMilliSec,
+                uptimeString,
             });
         }
     }, later.parse.text(uptimeInterval));
