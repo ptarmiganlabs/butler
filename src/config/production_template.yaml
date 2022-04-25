@@ -46,6 +46,42 @@ Butler:
       retentionPolicy:
         name: 10d
         duration: 10d
+    storeNewRelic:
+      enable: true
+      # There are different URLs depending on whther you have an EU or US region New Relic account.
+      # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
+      # As of this writing the options for the New Relic metrics API are
+      # https://insights-collector.eu01.nr-data.net/metric/v1
+      # https://metric-api.newrelic.com/metric/v1 
+      url: https://insights-collector.eu01.nr-data.net/metric/v1   # Where should uptime data be sent?
+      header:                       # Custom http headers
+        - name: X-My-Header
+          value: Header value
+      metric:
+        dynamic:
+          butlerMemoryUsage:
+            enable: true            # Should Butler's memory/RAM usage be sent to New Relic?
+          butlerUptime:
+            enable: true            # Should Butler's uptime (how long since it was started) be sent to New Relic?
+      attribute: 
+        static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
+          - name: metricType
+            value: butler-uptime
+          - name: service
+            value: butler
+          - name: environment
+            value: prod
+        dynamic:
+          butlerVersion: 
+            enable: true            # Should the Butler version be included in the data sent to New Relic?
+
+  # Credentials for third party systems that Butler integrate with.
+  # These can also be specified via command line parameters when starting Butler. 
+  # Command line options takes precedence over settings in this config file.
+  thirdPartyToolsCredentials:
+    newRelic: 
+      insertApiKey: <insert API key from New Relic> 
+      accountId: <New Relic account ID>
 
   # Store script logs of failed reloads on disk.
   # The script logs will be stored in daily directories under the specified main directory below
@@ -206,7 +242,40 @@ Butler:
         rateLimit: 15             # Min seconds between emails for a given taskID. Defaults to 5 minutes
         serviceName: Qlik Sense   # Signl4 "service name" to use
         severity: 10              # Signl4 severity level for aborted reloads
-
+    newRelic:
+      enable: true
+      # There are different URLs depending on whther you have an EU or US region New Relic account.
+      # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
+      #
+      # Note that the URL path should *not* be included in the url setting below!
+      # As of this writing the valid options are
+      # https://insights-collector.eu01.nr-data.net
+      # https://insights-collector.newrelic.com 
+      url: https://insights-collector.eu01.nr-data.net
+      reloadTaskFailure:
+        enable: true
+        rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
+        header:                   # Custom http headers
+          - name: X-My-Header
+            value: Header value
+        attribute:
+          static:                 # Static attributes/dimensions to attach to events sent to New Relic.
+            - name: service
+              value: butler
+            - name: environment
+              value: prod
+      reloadTaskAborted:
+        enable: true
+        rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
+        header:                   # Custom http headers
+          - name: X-My-Header
+            value: Header value
+        attribute: 
+          static:                 # Static attributes/dimensions to attach to events sent to New Relic.
+            - name: service
+              value: butler
+            - name: environment
+              value: prod
 
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
