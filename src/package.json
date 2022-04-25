@@ -46,7 +46,7 @@
     "qrs-interact": "^6.3.1",
     "rate-limiter-flexible": "^2.3.6",
     "serializeapp": "^3.0.0",
-    "systeminformation": "^5.11.11",
+    "systeminformation": "^5.11.14",
     "uuid": "^8.3.2",
     "winston": "^3.7.2",
     "winston-daily-rotate-file": "^4.6.1",
@@ -55,7 +55,7 @@
   "devDependencies": {
     "jest": "28.0.0",
     "prettier": "2.6.2",
-    "snyk": "1.908.0"
+    "snyk": "1.912.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
