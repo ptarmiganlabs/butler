@@ -43,7 +43,8 @@ const callRemoteURL = async () => {
                     webhookNotification: globals.config.has('Butler.webhookNotification.enable') ? globals.config.get('Butler.webhookNotification.enable') : false,
                     webhookNotification_reloadTaskFailure: globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') ? globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') : false,
                     webhookNotification_reloadTaskAborted: globals.config.has('Butler.webhookNotification.reloadTaskAborted.enable') ? globals.config.get('Butler.webhookNotification.reloadTaskAborted.enable') : false,
-                    // TODO Add Signl4 status to telemetry payload
+                    signl4Notification_reloadTaskFailure: globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') ? globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') : false,
+                    signl4Notification_reloadTaskAborted: globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.enable') ? globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.enable') : false,
                     newRelicNotification_reloadTaskFailure: globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') ? globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') : false,
                     newRelicNotification_reloadTaskAborted: globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.enable') ? globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.enable') : false,
                     scheduler: globals.config.has('Butler.scheduler.enable') ? globals.config.get('Butler.scheduler.enable') : false,
