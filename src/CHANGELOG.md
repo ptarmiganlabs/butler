@@ -1,5 +1,28 @@
 # Changelog
 
+## [7.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.2.1...butler-v7.3.0) (2022-04-25)
+
+
+### Features
+
+* Add rate limiting to Butler's REST API ([852346d](https://github.com/ptarmiganlabs/butler/commit/852346d3e5ad33255e31fae54974d93db874a465)), closes [#403](https://github.com/ptarmiganlabs/butler/issues/403)
+* Optionally send uptime metrics to New Relic ([4417a3a](https://github.com/ptarmiganlabs/butler/commit/4417a3a253e0fa638bc0c2ff1f3e59b672cf53a8)), closes [#398](https://github.com/ptarmiganlabs/butler/issues/398)
+* Send failed/aborted task events to New Relic ([575f256](https://github.com/ptarmiganlabs/butler/commit/575f2562c375554ed12d85bca87b14f20a020641)), closes [#400](https://github.com/ptarmiganlabs/butler/issues/400)
+
+
+### Bug Fixes
+
+* Better parsing of Sense log files before sent to Teams/Slack ([b95ad05](https://github.com/ptarmiganlabs/butler/commit/b95ad05078faa22009b9a38a122d426a282dea35)), closes [#408](https://github.com/ptarmiganlabs/butler/issues/408)
+* Include Signl4 status in telemetry data ([0f21774](https://github.com/ptarmiganlabs/butler/commit/0f217745f02e772c0733422721ca6d29ddd1f83e)), closes [#402](https://github.com/ptarmiganlabs/butler/issues/402)
+* Incorrect telemetry status (true/false) for uptime data sent to InfluxDB ([9eb7ebd](https://github.com/ptarmiganlabs/butler/commit/9eb7ebd1dcbea66a08e3d53062ae15ab2bc90279)), closes [#401](https://github.com/ptarmiganlabs/butler/issues/401)
+
+
+### Miscellaneous
+
+* **deps:** update dependency jest to v28 ([f3df976](https://github.com/ptarmiganlabs/butler/commit/f3df97616b1730b0dc5cc6ea194f9dbdf92686ce))
+* **deps:** update node.js to v18 ([433b9dc](https://github.com/ptarmiganlabs/butler/commit/433b9dc8721719c8adf03ec8c9ee3ff64f134dcb))
+* **deps:** Updated dependencies ([99a84a5](https://github.com/ptarmiganlabs/butler/commit/99a84a59138cba81cd07d1c8ce0d5fcacb5ead0c))
+
 ### [7.2.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.2.0...butler-v7.2.1) (2022-04-19)
 
 
