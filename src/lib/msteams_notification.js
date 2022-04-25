@@ -330,9 +330,9 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -341,10 +341,10 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
@@ -354,9 +354,9 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -365,10 +365,10 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
@@ -458,9 +458,9 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -469,10 +469,10 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
@@ -482,9 +482,9 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -493,10 +493,10 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
