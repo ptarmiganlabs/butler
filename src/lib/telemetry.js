@@ -29,8 +29,7 @@ const callRemoteURL = async () => {
                     heartbeat: globals.config.has('Butler.heartbeat.enable') ? globals.config.get('Butler.heartbeat.enable') : false,
                     dockerHealthCheck: globals.config.has('Butler.dockerHealthCheck.enable') ? globals.config.get('Butler.dockerHealthCheck.enable') : false,
                     uptimeMonitor: globals.config.has('Butler.uptimeMonitor.enable') ? globals.config.get('Butler.uptimeMonitor.enable') : false,
-                    // TODO Fix uptime InfluxDB flag
-                    uptimeMonitor_storeInInfluxdb: globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.butlerSOSMemoryUsage') ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.butlerSOSMemoryUsage') : false,
+                    uptimeMonitor_storeInInfluxdb: globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') : false,
                     uptimeMonitor_storeInNewRelic: globals.config.has('Butler.uptimeMonitor.storeNewRelic.enable') ? globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable') : false,
                     teamsNotification: globals.config.has('Butler.teamsNotification.enable') ? globals.config.get('Butler.teamsNotification.enable') : false,
                     teamsNotification_reloadTaskFailure: globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') ? globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') : false,
