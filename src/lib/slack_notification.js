@@ -357,9 +357,9 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                         `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -368,10 +368,10 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
@@ -381,9 +381,9 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                         `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -392,10 +392,10 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
@@ -486,9 +486,9 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                         `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -497,10 +497,10 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
@@ -510,9 +510,9 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                         `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
+                        .replaceAll('&', '&amp;')
                         .replaceAll('=', '&#x3D;')
                         .replaceAll("'", '&#x27;')
-                        .replaceAll('&', '&amp;')
                         .replaceAll('<', '&lt;')
                         .replaceAll('>', '&gt;')
                         .replaceAll('"', '&quot;')
@@ -521,10 +521,10 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&#x3D;', '=')
                         .replaceAll('&#x27;', "'")
-                        .replaceAll('&amp;', '&')
                         .replaceAll('&lt;', '<')
                         .replaceAll('&gt;', '>')
-                        .replaceAll('&quot;', '"');
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&amp;', '&');
 
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
