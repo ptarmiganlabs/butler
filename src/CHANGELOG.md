@@ -1,5 +1,17 @@
 # Changelog
 
+### [7.3.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.3.0...butler-v7.3.1) (2022-04-25)
+
+
+### Bug Fixes
+
+* Add New Relic fields to sample/template config file ([9f7db18](https://github.com/ptarmiganlabs/butler/commit/9f7db18e3e09c72a1418325cdf575c3b99adf2c8)), closes [#411](https://github.com/ptarmiganlabs/butler/issues/411)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies to latest versions. ([a0f6b8d](https://github.com/ptarmiganlabs/butler/commit/a0f6b8d08d74ee4552a25a4eef976876f1f37acc))
+
 ## [7.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.2.1...butler-v7.3.0) (2022-04-25)
 
 
