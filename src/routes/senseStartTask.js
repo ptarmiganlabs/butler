@@ -310,7 +310,7 @@ async function handlerPutStartTask(request, reply) {
                 res.tasksId.invalid = tasksInvalid;
                 // eslint-disable-next-line no-restricted-syntax
                 for (const item of tasksToStartTaskId) {
-                    res.tasksId.denied.push({taskId: item.taskId})
+                    res.tasksId.denied.push({ taskId: item.taskId });
                 }
             }
         } else {

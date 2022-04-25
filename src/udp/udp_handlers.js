@@ -5,6 +5,7 @@ const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
+const newRelic = require('../lib/incident_mgmt/new-relic');
 const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
 
 // Handler for failed scheduler initiated reloads
@@ -204,6 +205,27 @@ const schedulerFailed = (msg, legacyFlag) => {
             });
         }
 
+        // Post to New Relic when a task has failed, if enabled
+        if (
+            globals.config.has('Butler.incidentTool.newRelic.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') === true
+        ) {
+            newRelic.sendReloadTaskFailureNotification({
+                qs_hostName: msg[0],
+                qs_user: msg[3].replace(/\\/g, '/'),
+                qs_taskName: msg[1],
+                qs_taskId: msg[4],
+                qs_appName: msg[2],
+                qs_appId: msg[5],
+                qs_logTimeStamp: msg[6],
+                qs_logLevel: msg[7],
+                qs_executionId: msg[8],
+                qs_logMessage: msg[9],
+            });
+        }
+
         // Post to Slack when a task has failed, if Slack is enabled
         if (
             globals.config.has('Butler.slackNotification.enable') &&
@@ -361,6 +383,27 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+            });
+        }
+
+        // Post to New Relic when a task has failed, if enabled
+        if (
+            globals.config.has('Butler.incidentTool.newRelic.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') === true
+        ) {
+            newRelic.sendReloadTaskFailureNotification({
+                qs_hostName: msg[1],
+                qs_user: msg[4].replace(/\\/g, '/'),
+                qs_taskName: msg[2],
+                qs_taskId: msg[5],
+                qs_appName: msg[3],
+                qs_appId: msg[6],
+                qs_logTimeStamp: msg[7],
+                qs_logLevel: msg[8],
+                qs_executionId: msg[9],
+                qs_logMessage: msg[10],
             });
         }
 

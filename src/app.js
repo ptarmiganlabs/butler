@@ -1,3 +1,4 @@
+/* eslint-disable prefer-object-spread */
 /* eslint-disable global-require */
 // const Fastify = require('fastify');
 
@@ -7,6 +8,7 @@ const AutoLoad = require('fastify-autoload');
 const FastifySwagger = require('fastify-swagger');
 const FastifyReplyFrom = require('fastify-reply-from');
 const FastifyHealthcheck = require('fastify-healthcheck');
+const FastifyRateLimit = require('fastify-rate-limit');
 
 const globals = require('./globals');
 const heartbeat = require('./lib/heartbeat');
@@ -118,6 +120,12 @@ async function build(opts = {}) {
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
+
+    // Register rate limited for API
+    restServer.register(FastifyRateLimit, {
+        max: 100,
+        timeWindow: '1 minute',
+    });
 
     // This loads all plugins defined in plugins.
     // Those should be support plugins that are reused through your application
