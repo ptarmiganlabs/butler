@@ -90,7 +90,7 @@ async function postButlerUptimeToNewRelic(fields) {
         // Add headers
         const headers = {
             'Content-Type': 'application/json',
-            'Api-Key': globals.config.get('Butler.uptimeMonitor.storeNewRelic.apiKey'),
+            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         // eslint-disable-next-line no-restricted-syntax

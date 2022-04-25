@@ -29,8 +29,9 @@ const callRemoteURL = async () => {
                     heartbeat: globals.config.has('Butler.heartbeat.enable') ? globals.config.get('Butler.heartbeat.enable') : false,
                     dockerHealthCheck: globals.config.has('Butler.dockerHealthCheck.enable') ? globals.config.get('Butler.dockerHealthCheck.enable') : false,
                     uptimeMonitor: globals.config.has('Butler.uptimeMonitor.enable') ? globals.config.get('Butler.uptimeMonitor.enable') : false,
+                    // TODO Fix uptime InfluxDB flag
                     uptimeMonitor_storeInInfluxdb: globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.butlerSOSMemoryUsage') ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.butlerSOSMemoryUsage') : false,
-                    // TODO Add storeNewRelic status to telemetry payload
+                    uptimeMonitor_storeInNewRelic: globals.config.has('Butler.uptimeMonitor.storeNewRelic.enable') ? globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable') : false,
                     teamsNotification: globals.config.has('Butler.teamsNotification.enable') ? globals.config.get('Butler.teamsNotification.enable') : false,
                     teamsNotification_reloadTaskFailure: globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') ? globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') : false,
                     teamsNotification_reloadTaskAborted: globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') ? globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') : false,
@@ -44,7 +45,8 @@ const callRemoteURL = async () => {
                     webhookNotification_reloadTaskFailure: globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') ? globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') : false,
                     webhookNotification_reloadTaskAborted: globals.config.has('Butler.webhookNotification.reloadTaskAborted.enable') ? globals.config.get('Butler.webhookNotification.reloadTaskAborted.enable') : false,
                     // TODO Add Signl4 status to telemetry payload
-                    // TODO Add storeFailedAbortedReloadsNewRelic status to telemetry payload
+                    newRelicNotification_reloadTaskFailure: globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') ? globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') : false,
+                    newRelicNotification_reloadTaskAborted: globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.enable') ? globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.enable') : false,
                     scheduler: globals.config.has('Butler.scheduler.enable') ? globals.config.get('Butler.scheduler.enable') : false,
                     mqtt: globals.config.has('Butler.mqttConfig.enable') ? globals.config.get('Butler.mqttConfig.enable') : false,
                     userActivityLogging: globals.config.has('Butler.userActivityLogging.enable') ? globals.config.get('Butler.userActivityLogging.enable') : false,
