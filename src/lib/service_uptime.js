@@ -35,7 +35,6 @@ function serviceUptimeStart() {
     const startTime = Date.now();
     let startIterations = 0;
 
-    // const intervalMillisec = later.parse.text(uptimeInterval);
     const sched = later.parse.text(uptimeInterval);
     const nextOccurence = later.schedule(sched).next(4);
     const intervalMillisec = nextOccurence[3].getTime() - nextOccurence[2].getTime();

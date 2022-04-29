@@ -66,7 +66,7 @@ function getReloadFailedNotificationConfigOk() {
         attributes.version = globals.appVersion;
 
         const cfg = {
-            eventType: 'Qlik Sense reload task failed',
+            eventType: 'qs_reloadTaskFailedEvent',
             url:
                 globals.config.get('Butler.incidentTool.newRelic.url').slice(-1) === '/'
                     ? globals.config.get('Butler.incidentTool.newRelic.url')
@@ -121,7 +121,7 @@ function getReloadAbortedNotificationConfigOk() {
         attributes.version = globals.appVersion;
 
         const cfg = {
-            eventType: 'Qlik Sense reload task failed',
+            eventType: 'qs_reloadTaskAbortedEvent',
             url:
                 globals.config.get('Butler.incidentTool.newRelic.url').slice(-1) === '/'
                     ? globals.config.get('Butler.incidentTool.newRelic.url')

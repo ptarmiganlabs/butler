@@ -40,25 +40,25 @@ async function postButlerUptimeToNewRelic(fields) {
             globals.config.get('Butler.uptimeMonitor.storeNewRelic.metric.dynamic.butlerMemoryUsage.enable') === true
         ) {
             metrics.push({
-                name: 'heapUsed',
+                name: 'qs_butlerHeapUsed',
                 type: 'gauge',
                 value: fields.heapUsed,
             });
 
             metrics.push({
-                name: 'heapTotal',
+                name: 'qs_butlerHeapTotal',
                 type: 'gauge',
                 value: fields.heapTotal,
             });
 
             metrics.push({
-                name: 'externalMem',
+                name: 'qs_butlerExternalMem',
                 type: 'gauge',
                 value: fields.externalMemory,
             });
 
             metrics.push({
-                name: 'processMem',
+                name: 'qs_butlerProcessMem',
                 type: 'gauge',
                 value: fields.processMemory,
             });
@@ -70,7 +70,7 @@ async function postButlerUptimeToNewRelic(fields) {
             globals.config.get('Butler.uptimeMonitor.storeNewRelic.metric.dynamic.butlerUptime.enable') === true
         ) {
             metrics.push({
-                name: 'uptimeMillisec',
+                name: 'qs_butlerUptimeMillisec',
                 type: 'gauge',
                 value: fields.uptimeMilliSec,
             });
@@ -98,7 +98,7 @@ async function postButlerUptimeToNewRelic(fields) {
             headers[header.name] = header.value;
         }
 
-        const res = await axios.post(remoteUrl, payload, { headers });
+        const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
         globals.logger.debug(
             `UPTIME NEW RELIC: Result code from posting to New Relic: ${res.status}, ${res.statusText}`
         );
