@@ -186,11 +186,11 @@ async function sendNewRelic(incidentConfig, reloadParams) {
 
 function sendReloadTaskFailureNotification(reloadParams) {
     rateLimiterFailedReloads
-        .consume(reloadParams.taskId, 1)
+        .consume(reloadParams.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `NEWRELIC TASK FAIL: Rate limiting ok: Sending reload failure notification to New Relic for task "${reloadParams.taskName}"`
+                    `NEWRELIC TASK FAIL: Rate limiting ok: Sending reload failure notification to New Relic for task "${reloadParams.qs_taskName}"`
                 );
                 globals.logger.verbose(
                     `NEWRELIC TASK FAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
@@ -211,7 +211,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `NEWRELIC TASK FAIL: Rate limiting failed. Not sending reload failure notification to New Relic for task "${reloadParams.taskName}"`
+                `NEWRELIC TASK FAIL: Rate limiting failed. Not sending reload failure notification to New Relic for task "${reloadParams.qs_taskName}"`
             );
             globals.logger.verbose(
                 `NEWRELIC TASK FAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
@@ -221,7 +221,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
 
 function sendReloadTaskAbortedNotification(reloadParams) {
     rateLimiterAbortedReloads
-        .consume(reloadParams.taskId, 1)
+        .consume(reloadParams.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
@@ -246,7 +246,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `NEWRELIC TASK ABORT: Rate limiting failed. Not sending reload aborted notification to New Relic for task "${reloadParams.taskName}"`
+                `NEWRELIC TASK ABORT: Rate limiting failed. Not sending reload aborted notification to New Relic for task "${reloadParams.qs_taskName}"`
             );
             globals.logger.verbose(
                 `NEWRELIC TASK ABORT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
