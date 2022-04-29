@@ -98,7 +98,7 @@ async function postButlerUptimeToNewRelic(fields) {
             headers[header.name] = header.value;
         }
 
-        const res = await axios.post(remoteUrl, payload, { headers });
+        const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
         globals.logger.debug(
             `UPTIME NEW RELIC: Result code from posting to New Relic: ${res.status}, ${res.statusText}`
         );
