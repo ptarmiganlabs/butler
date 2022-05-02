@@ -4,8 +4,8 @@ const anyBase = require('any-base');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiGetBase16ToBase62, apiGetBase62ToBase16 } = require('../api/baseConversion');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiGetBase16ToBase62, apiGetBase62ToBase16 } = require('../api/base_conversion');
 
 const base62_to_Hex = anyBase('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789abcdef');
 const hex_to_base62 = anyBase('0123456789abcdef', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');

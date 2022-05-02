@@ -5,7 +5,7 @@ const mkdirp = require('mkdirp');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
+const { logRESTCall } = require('../lib/log_rest_call');
 const { isDirectoryChildOf } = require('../lib/disk_utils');
 const { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } = require('../api/disk_utils');
 

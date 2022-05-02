@@ -80,7 +80,7 @@ Butler:
   # Command line options takes precedence over settings in this config file.
   thirdPartyToolsCredentials:
     newRelic: 
-      insertApiKey: <insert API key from New Relic> 
+      insertApiKey: <API key (with insert permissions) from New Relic> 
       accountId: <New Relic account ID>
 
   # Store script logs of failed reloads on disk.
@@ -172,6 +172,17 @@ Butler:
               userId: <userId>
             - directory: <Sense user directory>
               userId: <userId>
+      # Custom property used to control which aborted tasks will cause alert emails to be sent
+      # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+      # If this setting is false, alerts will be sent for all aborted reload tasks.
+      alertEnableByCustomProperty:
+        enable: true
+        customPropertyName: 'Butler_AbortedAlertEnableEmail'
+        enabledValue: 'Yes'
+      # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+      # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+      alertEnabledByEmailAddress:
+        customPropertyName: 'Butler_AbortedAlertSendToEmail'
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 15                          # Number of lines from start of script to include in email
       tailScriptLogLines: 15                          # Number of lines from end of script to include in email
@@ -201,6 +212,17 @@ Butler:
               userId: <userId>
             - directory: <Sense user directory>
               userId: <userId>
+      # Custom property used to control which task failures will cause alert emails to be sent
+      # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+      # If this setting is false, alerts will be sent for all failed reload tasks.
+      alertEnableByCustomProperty:
+        enable: true
+        customPropertyName: 'Butler_FailedAlertEnableEmail'
+        enabledValue: 'Yes'
+      # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+      # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+      alertEnabledByEmailAddress:
+        customPropertyName: 'Butler_FailedAlertSendToEmail'
       rateLimit: 600                                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 15                          # Number of lines from start of script to include in email
       tailScriptLogLines: 15                          # Number of lines from end of script to include in email

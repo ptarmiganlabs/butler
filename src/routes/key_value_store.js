@@ -3,8 +3,8 @@ const httpErrors = require('http-errors');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-// const kvStore = require('../lib/keyValueStore');
+const { logRESTCall } = require('../lib/log_rest_call');
+
 const {
     getNamespaceList,
     getNamespace,
@@ -12,7 +12,7 @@ const {
     addKeyValuePair,
     deleteKeyValuePair,
     getValue,
-} = require('../lib/keyValueStore');
+} = require('../lib/key_value_store');
 const {
     apiGetAllNamespaces,
     apiGetKVPair,
@@ -21,7 +21,7 @@ const {
     apiDeleteKVPair,
     apiDeleteNamespace,
     apiGetKeysInNamespace,
-} = require('../api/keyValueStore');
+} = require('../api/key_value_store');
 
 async function handlerGetNamespaceList(request, reply) {
     try {

@@ -6,8 +6,8 @@ const WebSocket = require('ws');
 // Load global variables and functions
 const globals = require('../globals');
 const qrsUtil = require('../qrs_util');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiPutAppReload } = require('../api/senseApp');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiPutAppReload } = require('../api/sense_app');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require

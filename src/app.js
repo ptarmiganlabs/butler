@@ -134,17 +134,17 @@ async function build(opts = {}) {
 
     // Loads all plugins defined in routes
     restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/baseConversion'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/butlerPing'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/keyValueStore'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/mqttPublishMessage'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/senseApp'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/senseAppDump'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/senseListApps'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/senseStartTask'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/slackPostMessage'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
 
     restServer.register(FastifySwagger, {
         routePrefix: '/documentation',

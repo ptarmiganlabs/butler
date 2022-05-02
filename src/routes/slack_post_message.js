@@ -2,9 +2,9 @@ const httpErrors = require('http-errors');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
+const { logRESTCall } = require('../lib/log_rest_call');
 const slackApi = require('../lib/slack_api');
-const { apiPutSlackPostMessage } = require('../api/slackPostMessage');
+const { apiPutSlackPostMessage } = require('../api/slack_post_message');
 
 async function handlerPutSlackPostMessage(request, reply) {
     try {

@@ -3,8 +3,8 @@ const moment = require('moment');
 require('moment-precise-range-plugin');
 
 const globals = require('../globals');
-const postToInfluxdb = require('./post-to-influxdb');
-const postToHttp = require('./post-to-new-relic');
+const postToInfluxdb = require('./post_to_influxdb');
+const postToHttp = require('./post_to_new_relic');
 
 function serviceUptimeStart() {
     const uptimeLogLevel = globals.config.get('Butler.uptimeMonitor.logLevel');

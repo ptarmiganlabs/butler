@@ -5,7 +5,7 @@ const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
-const newRelic = require('../lib/incident_mgmt/new-relic');
+const newRelic = require('../lib/incident_mgmt/new_relic');
 const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
 
 // Handler for failed scheduler initiated reloads

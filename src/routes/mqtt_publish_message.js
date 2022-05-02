@@ -2,8 +2,8 @@ const httpErrors = require('http-errors');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiPutMqttMessage } = require('../api/mqttPublishMessage');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiPutMqttMessage } = require('../api/mqtt_publish_message');
 
 // eslint-disable-next-line consistent-return
 function handlerPutMqttMessage(request, reply) {
