@@ -4,8 +4,8 @@ const enigma = require('enigma.js');
 const WebSocket = require('ws');
 
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiGetSenseAppDump, apiGetAppDump } = require('../api/senseAppDump');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiGetSenseAppDump, apiGetAppDump } = require('../api/sense_app_dump');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require

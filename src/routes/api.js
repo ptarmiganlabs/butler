@@ -2,7 +2,7 @@ const httpErrors = require('http-errors');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
+const { logRESTCall } = require('../lib/log_rest_call');
 const { apiGetAPIEndpointsEnabled } = require('../api/api');
 
 async function handlerGetAPIEndpointsEnabled(request, reply) {

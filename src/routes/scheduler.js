@@ -3,7 +3,7 @@ const uuid = require('uuid');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
+const { logRESTCall } = require('../lib/log_rest_call');
 const scheduler = require('../lib/scheduler');
 const {
     apiGETSchedules,

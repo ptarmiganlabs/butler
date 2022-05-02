@@ -2,8 +2,8 @@ const httpErrors = require('http-errors');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiGetButlerPing } = require('../api/butlerPing');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiGetButlerPing } = require('../api/butler_ping');
 
 async function handlerGetButlerPing(request, reply) {
     try {

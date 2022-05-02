@@ -3,9 +3,9 @@ const httpErrors = require('http-errors');
 // Load global variables and functions
 const globals = require('../globals');
 const qrsUtil = require('../qrs_util');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { addKeyValuePair } = require('../lib/keyValueStore');
-const { apiPutStartTask } = require('../api/senseStartTask');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { addKeyValuePair } = require('../lib/key_value_store');
+const { apiPutStartTask } = require('../api/sense_start_task');
 const { verifyTaskId } = require('../lib/config_util');
 
 // Get array of allowed task IDs

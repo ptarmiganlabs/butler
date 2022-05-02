@@ -4,8 +4,8 @@ const WebSocket = require('ws');
 
 // Load global variables and functions
 const globals = require('../globals');
-const { logRESTCall } = require('../lib/logRESTCall');
-const { apiGetSenseListApps, apiGetAppsList } = require('../api/senseListApps');
+const { logRESTCall } = require('../lib/log_rest_call');
+const { apiGetSenseListApps, apiGetAppsList } = require('../api/sense_list_apps');
 
 // Set up enigma.js configuration
 // eslint-disable-next-line import/no-dynamic-require
