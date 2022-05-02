@@ -82,9 +82,15 @@ function isEmailReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName')
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName'
+            ) ||
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue'
+            ) ||
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName'
+            )
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload failure email config info missing in Butler config file');
@@ -124,9 +130,15 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enabledValue') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName')
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName'
+            ) ||
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enabledValue'
+            ) ||
+            !globals.config.has(
+                'Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName'
+            )
         ) {
             // Not enough info in config file
             globals.logger.error('SMTP: Reload aborted email config info missing in Butler config file');
@@ -490,7 +502,9 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 globals.logger.warn(
                     `TASK FAILED ALERT EMAIL: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                 );
-                globals.logger.debug(`TASK FAILED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(
+                    `TASK FAILED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+                );
             });
     }
 }
@@ -725,7 +739,9 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                 globals.logger.warn(
                     `TASK ABORTED ALERT EMAIL: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                 );
-                globals.logger.debug(`TASK ABORTED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(
+                    `TASK ABORTED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`
+                );
             });
     }
 }
