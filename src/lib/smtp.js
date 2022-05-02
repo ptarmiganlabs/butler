@@ -309,7 +309,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // 2 Should alert emails be sent for all failed reload tasks?
     if (globals.config.get('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable') === false) {
         // 2.1 Yes: Add system-wide list of recipients to send list
-        globals.logger.verbose(`SMTPFAILED: Send alert emails for all tasks`);
+        globals.logger.verbose(`TASK FAILED ALERT EMAIL: Send alert emails for all tasks`);
 
         if (globalSendList.length > 0) {
             mainSendList = mainSendList.concat(globalSendList);
@@ -318,7 +318,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // Only send alert email if the failed task has email alerts enabled
         // 2.2 No : Does the failed reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `SMTPFAILED: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
+            `TASK FAILED ALERT EMAIL: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
         );
 
         const sendAlert = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
@@ -400,7 +400,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             }
         } else {
             globals.logger.warn(
-                `SMTPFAILED: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                `TASK FAILED ALERT EMAIL: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
             );
         }
     }
@@ -422,7 +422,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines'),
         globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines')
     );
-    globals.logger.debug(`SMTPFAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+    globals.logger.debug(`TASK FAILED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
@@ -462,10 +462,10 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `SMTPFAILED: Rate limiting ok: Sending reload failure notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                        `TASK FAILED ALERT EMAIL: Rate limiting ok: Sending reload failure notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                     );
                     globals.logger.debug(
-                        `SMTPFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `TASK FAILED ALERT EMAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                     );
 
                     // Only send email if there is at least one recipient
@@ -480,17 +480,17 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                             templateContext
                         );
                     } else {
-                        globals.logger.warn(`SMTPFAILED: No recipients to send alert email to.`);
+                        globals.logger.warn(`TASK FAILED ALERT EMAIL: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`SMTPFAILED: ${err}`);
+                    globals.logger.error(`TASK FAILED ALERT EMAIL: ${err}`);
                 }
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `SMTPFAILED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                    `TASK FAILED ALERT EMAIL: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                 );
-                globals.logger.debug(`SMTPFAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`TASK FAILED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }
@@ -544,7 +544,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // 2 Should alert emails be sent for all aborted reload tasks?
     if (globals.config.get('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable') === false) {
         // 2.1 Yes: Add system-wide list of recipients to send list
-        globals.logger.verbose(`SMTPABORTED: Send alert emails for all tasks`);
+        globals.logger.verbose(`TASK ABORTED ALERT EMAIL: Send alert emails for all tasks`);
 
         if (globalSendList.length > 0) {
             mainSendList = mainSendList.concat(globalSendList);
@@ -553,7 +553,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         // Only send alert email if the aborted task has email alerts enabled
         // 2.2 No : Does the aborted reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `SMTPABORTED: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
+            `TASK ABORTED ALERT EMAIL: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
         );
 
         const sendAlert = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
@@ -635,7 +635,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             }
         } else {
             globals.logger.warn(
-                `SMTPABORTED: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                `TASK ABORTED ALERT EMAIL: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
             );
         }
     }
@@ -657,7 +657,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines'),
         globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines')
     );
-    globals.logger.debug(`SMTPABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+    globals.logger.debug(`TASK ABORTED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
@@ -697,10 +697,10 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `SMTPABORTED: Rate limiting ok: Sending reload aborted notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                        `TASK ABORTED ALERT EMAIL: Rate limiting ok: Sending reload aborted notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                     );
                     globals.logger.debug(
-                        `SMTPABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `TASK ABORTED ALERT EMAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
                     );
 
                     // Only send email if there is at least one recipient
@@ -715,17 +715,17 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                             templateContext
                         );
                     } else {
-                        globals.logger.warn(`SMTPABORTED: No recipients to send alert email to.`);
+                        globals.logger.warn(`TASK ABORTED ALERT EMAIL: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`SMTPABORTED: ${err}`);
+                    globals.logger.error(`TASK ABORTED ALERT EMAIL: ${err}`);
                 }
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `SMTPABORTED: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                    `TASK ABORTED ALERT EMAIL: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
                 );
-                globals.logger.debug(`SMTPABORTED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`TASK ABORTED ALERT EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }
