@@ -1,4 +1,5 @@
 /* eslint-disable consistent-return */
+
 const fs = require('fs');
 const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
@@ -43,7 +44,9 @@ function getSlackReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK FAILED ALERT SLACK: Reload failure Slack config info missing in Butler config file');
+            globals.logger.error(
+                'TASK FAILED ALERT SLACK: Reload failure Slack config info missing in Butler config file'
+            );
             return false;
         }
 
@@ -125,7 +128,9 @@ function getSlackReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK ABORTED ALERT SLACK: Reload aborted Slack config info missing in Butler config file');
+            globals.logger.error(
+                'TASK ABORTED ALERT SLACK: Reload aborted Slack config info missing in Butler config file'
+            );
             return false;
         }
 
@@ -267,17 +272,27 @@ async function sendSlack(slackConfig, templateContext) {
                 ],
             };
         } else if (slackConfig.messageType === 'formatted') {
-            const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
-            compiledTemplate = handlebars.compile(template);
-            slackMsg = compiledTemplate(templateContext);
+            try {
+                if (fs.existsSync(slackConfig.templateFile) === true) {
+                    const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
+                    compiledTemplate = handlebars.compile(template);
+                    slackMsg = compiledTemplate(templateContext);
+                } else {
+                    globals.logger.error(`SLACKNOTIF: Could not open Slack template file ${slackConfig.templateFile}.`);
+                }
+            } catch (err) {
+                globals.logger.error(`SLACKNOTIF: Error processing Slack template file: ${err}`);
+            }
         }
-        msg.text = slackMsg;
 
-        const res = await slackApi.slackSend(msg, globals.logger);
-        if (res !== undefined) {
-            globals.logger.debug(
-                `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
-            );
+        if (slackMsg !== null) {
+            msg.text = slackMsg;
+            const res = await slackApi.slackSend(msg, globals.logger);
+            if (res !== undefined) {
+                globals.logger.debug(
+                    `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
+                );
+            }
         }
     } catch (err) {
         globals.logger.error(`SLACKNOTIF: ${err}`);
@@ -308,7 +323,9 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines'),
                     globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines')
                 );
-                globals.logger.debug(`TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -437,7 +454,9 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines'),
                     globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines')
                 );
-                globals.logger.debug(`TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(
+                    `TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
