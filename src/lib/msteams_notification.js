@@ -244,7 +244,7 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
             };
         } else if (teamsConfig.messageType === 'formatted') {
             try {
-                if (fs.existsSync(slackConfig.templateFile) === true) {
+                if (fs.existsSync(teamsConfig.templateFile) === true) {
                     const template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
                     compiledTemplate = handlebars.compile(template);
                     renderedText = compiledTemplate(templateContext);
@@ -252,10 +252,10 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
                     // Parse the JSON string to get rid of extra linebreaks etc.
                     msg = JSON.parse(renderedText);
                 } else {
-                    globals.logger.error(`SLACKNOTIF: Could not open Slack template file ${slackConfig.templateFile}.`);
+                    globals.logger.error(`TEAMSNOTIF: Could not open Teams template file ${teamsConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`SLACKNOTIF: Error processing Slack template file: ${err}`);
+                globals.logger.error(`TEAMSNOTIF: Error processing Teams template file: ${err}`);
             }
         }
 
