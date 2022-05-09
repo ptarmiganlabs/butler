@@ -106,7 +106,7 @@ jobs:
       # https://github.com/marketplace/actions/docker-metadata-action
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
