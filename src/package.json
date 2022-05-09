@@ -55,7 +55,7 @@
   "devDependencies": {
     "jest": "28.1.0",
     "prettier": "2.6.2",
-    "snyk": "1.915.0"
+    "snyk": "1.922.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
