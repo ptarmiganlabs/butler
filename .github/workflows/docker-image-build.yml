@@ -48,7 +48,7 @@ jobs:
           github.repository_owner == 'ptarmiganlabs'
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
