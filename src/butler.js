@@ -21,24 +21,20 @@ const start = async () => {
         globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
         globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
-        restServer.listen(
-            globals.config.get('Butler.restServerConfig.backgroundServerPort'),
-            'localhost',
-            (err, address) => {
-                if (err) {
-                    globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
-                    globals.logger.error(`MAIN: ${err}`);
-                    restServer.log.error(err);
-                    process.exit(1);
-                }
-                globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
-
-                restServer.ready((err2) => {
-                    if (err2) throw err;
-                    restServer.swagger();
-                });
+        restServer.listen(globals.config.get('Butler.restServerConfig.backgroundServerPort'), 'localhost', (err, address) => {
+            if (err) {
+                globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
+                globals.logger.error(`MAIN: ${err}`);
+                restServer.log.error(err);
+                process.exit(1);
             }
-        );
+            globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
+
+            restServer.ready((err2) => {
+                if (err2) throw err;
+                restServer.swagger();
+            });
+        });
 
         proxyRestServer.listen(
             globals.config.get('Butler.restServerConfig.serverPort'),
@@ -60,26 +56,18 @@ const start = async () => {
 
     // Start Docker healthcheck REST server on port set in config file
     if (
-        (globals.config.has('Butler.dockerHealthCheck.enabled') &&
-            globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
-        (globals.config.has('Butler.dockerHealthCheck.enable') &&
-            globals.config.get('Butler.dockerHealthCheck.enable') === true)
+        (globals.config.has('Butler.dockerHealthCheck.enabled') && globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
+        (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true)
     ) {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 
             await dockerHealthCheckServer.listen(globals.config.get('Butler.dockerHealthCheck.port'));
 
-            globals.logger.info(
-                `MAIN: Started Docker healthcheck server on port ${globals.config.get(
-                    'Butler.dockerHealthCheck.port'
-                )}.`
-            );
+            globals.logger.info(`MAIN: Started Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`);
         } catch (err) {
             globals.logger.error(
-                `MAIN: Error while starting Docker healthcheck server on port ${globals.config.get(
-                    'Butler.dockerHealthCheck.port'
-                )}.`
+                `MAIN: Error while starting Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`
             );
             dockerHealthCheckServer.log.error(err);
             process.exit(1);

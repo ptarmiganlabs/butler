@@ -123,21 +123,6 @@ async function build(opts = {}) {
     restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
     restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
 
-    // Loads all plugins defined in routes
-    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
-
     restServer.register(FastifySwagger, {
         routePrefix: '/documentation',
         swagger: {
@@ -152,9 +137,11 @@ async function build(opts = {}) {
                 url: 'https://github.com/ptarmiganlabs',
                 description: 'Butler family of tools on GitHub',
             },
+            host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
+            schemes: ['http'],
+            // consumes: ['application/json'],
             produces: ['application/json'],
         },
-        host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
         uiConfig: {
             deepLinking: true,
             operationsSorter: 'alpha', // can also be 'alpha' or a function
@@ -162,6 +149,21 @@ async function build(opts = {}) {
         hideUntagged: false,
         exposeRoute: true,
     });
+
+    // Loads all plugins defined in routes
+    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
 
     // ---------------------------------------------------
     // Configure X-HTTP-Method-Override handling
