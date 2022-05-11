@@ -6,7 +6,8 @@ const fp = require('fastify-plugin');
  * @see https://github.com/fastify/fastify-sensible
  */
 module.exports = fp(async (fastify, opts) => {
-    fastify.register(require('fastify-sensible'), {
+    // eslint-disable-next-line global-require
+    fastify.register(require('@fastify/sensible'), {
         errorHandler: false,
     });
 });

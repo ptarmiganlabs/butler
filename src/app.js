@@ -4,11 +4,11 @@
 
 const path = require('path');
 const Fastify = require('fastify');
-const AutoLoad = require('fastify-autoload');
-const FastifySwagger = require('fastify-swagger');
-const FastifyReplyFrom = require('fastify-reply-from');
+const AutoLoad = require('@fastify/autoload');
+const FastifySwagger = require('@fastify/swagger');
+const FastifyReplyFrom = require('@fastify/reply-from');
 const FastifyHealthcheck = require('fastify-healthcheck');
-const FastifyRateLimit = require('fastify-rate-limit');
+const FastifyRateLimit = require('@fastify/rate-limit');
 
 const globals = require('./globals');
 const heartbeat = require('./lib/heartbeat');
@@ -27,10 +27,8 @@ async function build(opts = {}) {
     globals.initInfluxDB();
 
     if (
-        (globals.config.has('Butler.uptimeMonitor.enabled') &&
-            globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
-        (globals.config.has('Butler.uptimeMonitor.enable') &&
-            globals.config.get('Butler.uptimeMonitor.enable') === true)
+        (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
+        (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
     ) {
         serviceUptime.serviceUptimeStart();
     }
@@ -101,21 +99,14 @@ async function build(opts = {}) {
         configUtil.configVerifyAllTaskId();
 
         // Show link to Swagger API docs page, if the API is enabled
-        if (
-            globals.config.has('Butler.restServerConfig.enable') &&
-            globals.config.get('Butler.restServerConfig.enable') === true
-        ) {
+        if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
             globals.logger.info(
                 `REST API documentation available at http://${globals.config.get(
                     'Butler.restServerConfig.serverHost'
                 )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
             );
-            globals.logger.info(
-                '--> Note re API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
-            );
-            globals.logger.info(
-                "--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page."
-            );
+            globals.logger.info('--> Note re API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.');
+            globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
@@ -139,6 +130,7 @@ async function build(opts = {}) {
     restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
@@ -162,9 +154,7 @@ async function build(opts = {}) {
             },
             produces: ['application/json'],
         },
-        host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-            'Butler.restServerConfig.serverPort'
-        )}`,
+        host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
         uiConfig: {
             deepLinking: true,
             operationsSorter: 'alpha', // can also be 'alpha' or a function
