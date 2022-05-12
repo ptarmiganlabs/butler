@@ -131,8 +131,7 @@ const apiGetKVExists = {
                 properties: {
                     keyExists: {
                         type: 'boolean',
-                        description:
-                            'true/false flag indicating whether the specified key exists in the given namespace.',
+                        description: 'true/false flag indicating whether the specified key exists in the given namespace.',
                     },
                     keyValue: {
                         type: 'object',
@@ -240,8 +239,7 @@ const apiPostKVPair = {
                     },
                     ttl: {
                         type: 'number',
-                        description:
-                            'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
+                        description: 'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
                         example: 60000,
                     },
                 },

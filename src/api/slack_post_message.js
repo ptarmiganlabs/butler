@@ -36,8 +36,7 @@ const apiPutSlackPostMessage = {
                 properties: {
                     channel: {
                         type: 'string',
-                        description:
-                            'Slack channel to post message into. Prefix channel name with #.',
+                        description: 'Slack channel to post message into. Prefix channel name with #.',
                         example: '#reload-notification',
                     },
                     from_user: {

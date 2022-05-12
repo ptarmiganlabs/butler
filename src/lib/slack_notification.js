@@ -44,9 +44,7 @@ function getSlackReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'TASK FAILED ALERT SLACK: Reload failure Slack config info missing in Butler config file'
-            );
+            globals.logger.error('TASK FAILED ALERT SLACK: Reload failure Slack config info missing in Butler config file');
             return false;
         }
 
@@ -128,9 +126,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'TASK ABORTED ALERT SLACK: Reload aborted Slack config info missing in Butler config file'
-            );
+            globals.logger.error('TASK ABORTED ALERT SLACK: Reload aborted Slack config info missing in Butler config file');
             return false;
         }
 
@@ -289,9 +285,7 @@ async function sendSlack(slackConfig, templateContext) {
             msg.text = slackMsg;
             const res = await slackApi.slackSend(msg, globals.logger);
             if (res !== undefined) {
-                globals.logger.debug(
-                    `SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`
-                );
+                globals.logger.debug(`SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
@@ -307,9 +301,7 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 globals.logger.info(
                     `TASK FAILED ALERT SLACK: Rate limiting ok: Sending reload failure notification Slack for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK FAILED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK FAILED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const slackConfig = getSlackReloadFailedNotificationConfigOk();
@@ -323,9 +315,7 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines'),
                     globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines')
                 );
-                globals.logger.debug(
-                    `TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
-                );
+                globals.logger.debug(`TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -438,9 +428,7 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 globals.logger.info(
                     `TASK ABORTED ALERT SLACK: Rate limiting ok: Sending reload aborted notification Slack for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK ABORTED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK ABORTED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const slackConfig = getSlackReloadAbortedNotificationConfigOk();
@@ -454,9 +442,7 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines'),
                     globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines')
                 );
-                globals.logger.debug(
-                    `TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
-                );
+                globals.logger.debug(`TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();

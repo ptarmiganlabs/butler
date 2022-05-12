@@ -23,9 +23,7 @@ function postButlerMemoryUsageToInfluxdb(memory) {
         .writePoints(deepClonedDatapoint)
 
         .then(() => {
-            globals.logger.silly(
-                `MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(datapoint, null, 2)}`
-            );
+            globals.logger.silly(`MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(datapoint, null, 2)}`);
 
             datapoint = null;
             globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');

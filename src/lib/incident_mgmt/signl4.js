@@ -133,9 +133,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
                 globals.logger.info(
                     `TASK FAILED ALERT SIGNL4: Rate limiting ok: Sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK FAILED ALERT SIGNL4: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK FAILED ALERT SIGNL4: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const incidentConfig = getReloadFailedNotificationConfigOk();
@@ -166,9 +164,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
                 globals.logger.info(
                     `SIGNL4ABORTED: Rate limiting ok: Sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
                 const incidentConfig = getReloadAbortedNotificationConfigOk();

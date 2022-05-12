@@ -28,9 +28,7 @@ module.exports.mqttInitHandlers = () => {
         // Handler for MQTT messages matching the previously set up subscription
         globals.mqttClient.on('message', (topic, message) => {
             try {
-                globals.logger.verbose(
-                    `MQTT message received. Topic=${topic.toString()},  Message=${message.toString()}`
-                );
+                globals.logger.verbose(`MQTT message received. Topic=${topic.toString()},  Message=${message.toString()}`);
 
                 // **MQTT message dispatch**
                 // Start Sense task

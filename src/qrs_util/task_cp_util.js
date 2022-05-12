@@ -64,9 +64,7 @@ function isCustomPropertyValueSet(taskId, cpName, cpValue) {
  */
 function getTaskCustomPropertyValues(taskId, cpName) {
     return new Promise(async (resolve, reject) => {
-        globals.logger.debug(
-            `GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`
-        );
+        globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
         try {
             const qrsInstance = new QrsInteract({

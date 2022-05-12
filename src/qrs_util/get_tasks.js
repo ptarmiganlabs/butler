@@ -48,9 +48,7 @@ module.exports.getTasks = (filter) =>
                     const result = await qrsInstance.Get(
                         `task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`
                     );
-                    globals.logger.debug(
-                        `GETTASKS: Got response: ${result.statusCode} for tag filter ${filter.customProperty.name}`
-                    );
+                    globals.logger.debug(`GETTASKS: Got response: ${result.statusCode} for tag filter ${filter.customProperty.name}`);
 
                     if (result.statusCode === 200 && result.body.length > 0) {
                         // At least one task matches the tag

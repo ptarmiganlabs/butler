@@ -24,22 +24,22 @@ function handlerPutMqttMessage(request, reply) {
                 }
             } catch (err) {
                 globals.logger.error(
-                    `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
-                        request.body,
+                    `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
+                        err,
                         null,
                         2
-                    )}, error is: ${JSON.stringify(err, null, 2)}`
+                    )}`
                 );
                 reply.send(httpErrors(500, 'Failed publishing MQTT message'));
             }
         }
     } catch (err) {
         globals.logger.error(
-            `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(
-                request.body,
+            `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
+                err,
                 null,
                 2
-            )}, error is: ${JSON.stringify(err, null, 2)}`
+            )}`
         );
         reply.send(httpErrors(500, 'Failed publishing MQTT message'));
     }
