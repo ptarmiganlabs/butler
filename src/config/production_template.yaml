@@ -47,7 +47,7 @@ Butler:
         name: 10d
         duration: 10d
     storeNewRelic:
-      enable: true
+      enable: false
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
       # As of this writing the options for the New Relic metrics API are
@@ -122,9 +122,8 @@ Butler:
   # Settings for notifications and messages sent to Slack
   slackNotification:
     enable: false
-    restMessage:
-      enable: false
-      webhookURL: <web hook URL from Slack>
+    restMessage:                      
+      webhookURL: <web hook URL from Slack>   # Webhook to use when sending basic Slack messages via Butler's REST API 
     reloadTaskFailure:
       enable: false
       webhookURL: <web hook URL from Slack>
@@ -191,7 +190,7 @@ Butler:
       bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
       htmlTemplateFile: aborted-reload                # Name of email body template file to use
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
-      recipients:                                       # Array of email addresses to which the notification email will be sent
+      recipients:                                     # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
     reloadTaskFailure:
@@ -216,7 +215,7 @@ Butler:
       # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
       # If this setting is false, alerts will be sent for all failed reload tasks.
       alertEnableByCustomProperty:
-        enable: true
+        enable: false
         customPropertyName: 'Butler_FailedAlertEnableEmail'
         enabledValue: 'Yes'
       # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
@@ -402,6 +401,8 @@ Butler:
     fileCopy: false
     keyValueStore: false
     mqttPublishMessage: false
+    newRelic:
+      postNewRelicMetric: true
     scheduler:
       createNewSchedule: false
       getSchedule: false
@@ -415,6 +416,22 @@ Butler:
     senseListApps: false
     senseStartTask: false
     slackPostMessage: false 
+
+  restServerEndpointsConfig:
+    newRelic:
+      postNewRelictMetric:          # Setings used by post metric to New Relic API endpoint
+        # Note that the URL path should *not* be included in the url setting below!
+        # As of this writing the valid options are
+        # https://insights-collector.eu01.nr-data.net
+        # https://insights-collector.newrelic.com 
+        url: https://insights-collector.eu01.nr-data.net
+        header:                   # Custom http headers
+          - name: X-My-Header
+            value: Header value
+        attribute: 
+          static:                   # Static attributes/dimensions to attach to the metrics data sent to New Relic.
+            - name: env
+              value: prod
 
   # Controls which tasks can be started via Butler's REST API.
   # Enabling this feature gives Qlik Sense sysadmins a way to control which tasks can be started by third party systems and applications.
