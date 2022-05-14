@@ -91,9 +91,7 @@ async function handlerFileCopy(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `FILECOPY: Failed copying file ${request.body.fromFile} to ${
-                request.body.toFile
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            `FILECOPY: Failed copying file ${request.body.fromFile} to ${request.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed copying file'));
     }
@@ -143,13 +141,9 @@ async function handlerFileMove(request, reply) {
                 });
 
                 if (moveIsOk) {
-                    globals.logger.debug(
-                        `FILEMOVE: About to move file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`
-                    );
+                    globals.logger.debug(`FILEMOVE: About to move file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`);
                     await fs.moveSync(fromFile, toFile, { overwrite });
-                    globals.logger.verbose(
-                        `FILEMOVE: Moved file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`
-                    );
+                    globals.logger.verbose(`FILEMOVE: Moved file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`);
 
                     reply.code(201).send({ fromFile, toFile, overwrite });
                 } else {
@@ -211,9 +205,7 @@ async function handlerFileDelete(request, reply) {
                     reply.send(httpErrors(400, 'Delete failed, file does not exist'));
                 }
             } else {
-                globals.logger.error(
-                    `FILEDELETE: File delete request ${request.body.deleteFile} is not in any approved directories.`
-                );
+                globals.logger.error(`FILEDELETE: File delete request ${request.body.deleteFile} is not in any approved directories.`);
                 reply.send(httpErrors(403, 'No approved directory for file delete'));
             }
         }
@@ -232,9 +224,7 @@ async function handlerCreateDirQvd(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            globals.logger.debug(
-                `CREATEDIRQVD: About to create QVD directory ${globals.qvdFolder}/${request.body.directory}`
-            );
+            globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${globals.qvdFolder}/${request.body.directory}`);
 
             mkdirp(`${globals.qvdFolder}/${request.body.directory}`)
                 .then((dir) => globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`))

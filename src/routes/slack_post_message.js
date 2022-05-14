@@ -10,11 +10,7 @@ async function handlerPutSlackPostMessage(request, reply) {
     try {
         logRESTCall(request);
 
-        if (
-            request.body.channel === undefined ||
-            request.body.from_user === undefined ||
-            request.body.msg === undefined
-        ) {
+        if (request.body.channel === undefined || request.body.from_user === undefined || request.body.msg === undefined) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter(s) missing'));
         } else {
@@ -43,11 +39,7 @@ async function handlerPutSlackPostMessage(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed sending Slack message'));
     }

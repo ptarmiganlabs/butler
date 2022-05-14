@@ -13,8 +13,7 @@ const apiFileCopy = {
                 },
                 toFile: {
                     type: 'string',
-                    description:
-                        'Name of destination file. Can be different from source file name, if needed.',
+                    description: 'Name of destination file. Can be different from source file name, if needed.',
                     example: 'archive/file1_20200925.qvd',
                 },
                 overwrite: {
@@ -43,8 +42,7 @@ const apiFileCopy = {
                     },
                     toFile: {
                         type: 'string',
-                        description:
-                            'Name of destination file. Can be different from source file name, if needed.',
+                        description: 'Name of destination file. Can be different from source file name, if needed.',
                         example: 'archive/file1_20200925.qvd',
                     },
                     overwrite: {
@@ -113,14 +111,12 @@ const apiFileMove = {
                 },
                 toFile: {
                     type: 'string',
-                    description:
-                        'Name of destination file. Can be different from source file name, if needed.',
+                    description: 'Name of destination file. Can be different from source file name, if needed.',
                     example: 'archive/file1_20200925.qvd',
                 },
                 overwrite: {
                     type: 'boolean',
-                    description:
-                        'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
+                    description: 'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
                     example: false,
                 },
             },
@@ -137,14 +133,12 @@ const apiFileMove = {
                     },
                     toFile: {
                         type: 'string',
-                        description:
-                            'Name of destination file. Can be different from source file name, if needed.',
+                        description: 'Name of destination file. Can be different from source file name, if needed.',
                         example: 'archive/file1_20200925.qvd',
                     },
                     overwrite: {
                         type: 'boolean',
-                        description:
-                            'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
+                        description: 'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
                         example: false,
                     },
                 },
@@ -208,8 +202,7 @@ const apiFileDelete = {
                 type: 'object',
             },
             400: {
-                description:
-                    '"Required parameter missing" or "File requested for delete not found".',
+                description: '"Required parameter missing" or "File requested for delete not found".',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },
@@ -255,8 +248,7 @@ const apiCreateDir = {
             properties: {
                 directory: {
                     type: 'string',
-                    description:
-                        'Path to directory that should be created. Can be a relative or absolute path.',
+                    description: 'Path to directory that should be created. Can be a relative or absolute path.',
                     example: '/Users/joe/data/qvds/2020',
                 },
             },
@@ -301,8 +293,7 @@ const apiCreateDir = {
 
 const apiCreateDirQvd = {
     schema: {
-        description:
-            "Creates a directory in QVD directory (which is defined in Butler's config file).",
+        description: "Creates a directory in QVD directory (which is defined in Butler's config file).",
         summary: 'Creates a directory in designated QVD directory.',
         body: {
             type: 'object',

@@ -28,11 +28,7 @@ async function handlerGetBase62ToBase16(request, reply) {
         };
     } catch (err) {
         globals.logger.error(
-            `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed converting from base62 to base16'));
         return null;
@@ -53,11 +49,7 @@ async function handlerGetBase16ToBase62(request, reply) {
         return null;
     } catch (err) {
         globals.logger.error(
-            `BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(err, null, 2)}`
         );
         reply.send(httpErrors(500, 'Failed converting from base16 to base62'));
         return null;

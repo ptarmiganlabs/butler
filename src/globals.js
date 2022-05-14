@@ -37,16 +37,7 @@ program
         'Butler gives superpowers to client-managed Qlik Sense Enterprise on Windows!\nAdvanced reload failure alerts, task scheduler, key-value store, file system access and much more.'
     )
     .option('-c, --configfile <file>', 'path to config file')
-    .addOption(
-        new Option('-l, --loglevel <level>', 'log level').choices([
-            'error',
-            'warn',
-            'info',
-            'verbose',
-            'debug',
-            'silly',
-        ])
-    )
+    .addOption(new Option('-l, --loglevel <level>', 'log level').choices(['error', 'warn', 'info', 'verbose', 'debug', 'silly']))
     .option('--new-relic-api-key <key>', 'insert API key to use with New Relic')
     .option('--new-relic-account-id <id>', 'New Relic account ID');
 
@@ -116,6 +107,7 @@ logTransports.push(
         name: 'console',
         level: config.get('Butler.logLevel'),
         format: winston.format.combine(
+            winston.format.errors({ stack: true }),
             winston.format.timestamp(),
             winston.format.colorize(),
             winston.format.simple(),
@@ -357,9 +349,7 @@ logger.info(`CONFIG: Influxdb db name: ${config.get('Butler.uptimeMonitor.storeI
 const influx = new Influx.InfluxDB({
     host: config.get('Butler.uptimeMonitor.storeInInfluxdb.hostIP'),
     port: `${
-        config.has('Butler.uptimeMonitor.storeInInfluxdb.hostPort')
-            ? config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort')
-            : '8086'
+        config.has('Butler.uptimeMonitor.storeInInfluxdb.hostPort') ? config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort') : '8086'
     }`,
     database: config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName'),
     username: `${
@@ -414,9 +404,7 @@ function initInfluxDB() {
                                     logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
                                 })
                                 .catch((err) => {
-                                    logger.error(
-                                        `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.stack}`
-                                    );
+                                    logger.error(`CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.stack}`);
                                 });
                         })
                         .catch((err) => {
@@ -449,8 +437,7 @@ async function initHostInfo() {
 
         const networkInterface = siNetwork.filter((item) => item.iface === defaultNetworkInterface);
 
-        const idSrc =
-            networkInterface[0].mac + networkInterface[0].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
+        const idSrc = networkInterface[0].mac + networkInterface[0].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
         const salt = networkInterface[0].mac;
         const hash = crypto.createHmac('sha256', salt);
         hash.update(idSrc);

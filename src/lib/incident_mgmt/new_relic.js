@@ -192,9 +192,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
                 globals.logger.info(
                     `TASK FAILED ALERT NEWRELIC: Rate limiting ok: Sending reload failure notification to New Relic for task "${reloadParams.qs_taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK FAILED ALERT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK FAILED ALERT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const incidentConfig = getReloadFailedNotificationConfigOk();
@@ -213,9 +211,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
             globals.logger.verbose(
                 `TASK FAILED ALERT NEWRELIC: Rate limiting failed. Not sending reload failure notification to New Relic for task "${reloadParams.qs_taskName}"`
             );
-            globals.logger.verbose(
-                `TASK FAILED ALERT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.verbose(`TASK FAILED ALERT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -227,9 +223,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
                 globals.logger.info(
                     `NEWRELIC TASK ABORT: Rate limiting ok: Sending reload aborted notification to New Relic for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `NEWRELIC TASK ABORT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`NEWRELIC TASK ABORT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
                 const incidentConfig = getReloadAbortedNotificationConfigOk();
@@ -248,9 +242,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
             globals.logger.verbose(
                 `NEWRELIC TASK ABORT: Rate limiting failed. Not sending reload aborted notification to New Relic for task "${reloadParams.qs_taskName}"`
             );
-            globals.logger.verbose(
-                `NEWRELIC TASK ABORT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.verbose(`NEWRELIC TASK ABORT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

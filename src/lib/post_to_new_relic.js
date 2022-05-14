@@ -99,9 +99,7 @@ async function postButlerUptimeToNewRelic(fields) {
         }
 
         const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
-        globals.logger.debug(
-            `UPTIME NEW RELIC: Result code from posting to New Relic: ${res.status}, ${res.statusText}`
-        );
+        globals.logger.debug(`UPTIME NEW RELIC: Result code from posting to New Relic: ${res.status}, ${res.statusText}`);
         globals.logger.verbose(`UPTIME NEW RELIC: Sent Butler memory usage data to New Relic`);
     } catch (error) {
         // handle error

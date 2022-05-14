@@ -273,8 +273,7 @@ const apiDELETESchedules = {
 const apiPUTSchedulesStart = {
     schema: {
         summary: 'Start a schedule.',
-        description:
-            "Start a schedule, i.e. have the scheduler run the associated reload task according to the schedule's cron settings.",
+        description: "Start a schedule, i.e. have the scheduler run the associated reload task according to the schedule's cron settings.",
         params: {
             type: 'object',
             properties: {
@@ -287,8 +286,7 @@ const apiPUTSchedulesStart = {
         },
         response: {
             200: {
-                description:
-                    'Schedule successfully started.\n\nAn object with all information about the started schedule is returned.',
+                description: 'Schedule successfully started.\n\nAn object with all information about the started schedule is returned.',
                 type: 'object',
                 properties: {
                     id: {
@@ -374,8 +372,7 @@ const apiPUTSchedulesStart = {
 const apiPUTSchedulesStop = {
     schema: {
         summary: 'Stop a schedule.',
-        description:
-            'Stop a schedule, i.e. tell the scheduler to no longer execute the schedule according to its cron settings.',
+        description: 'Stop a schedule, i.e. tell the scheduler to no longer execute the schedule according to its cron settings.',
         params: {
             type: 'object',
             properties: {
@@ -388,8 +385,7 @@ const apiPUTSchedulesStop = {
         },
         response: {
             200: {
-                description:
-                    'Schedule successfully stopped.\n\nAn object with all information about the stopped schedule is returned.',
+                description: 'Schedule successfully stopped.\n\nAn object with all information about the stopped schedule is returned.',
                 type: 'object',
                 properties: {
                     id: {
@@ -479,8 +475,7 @@ const apiPUTSchedulesStartAll = {
             "Start all schedules, i.e. tell the scheduler to run each schedule and start associated tasks according to each schedule's settings.",
         response: {
             200: {
-                description:
-                    'Schedules successfully started.\n\nAn array with all information about the started schedules is returned.',
+                description: 'Schedules successfully started.\n\nAn array with all information about the started schedules is returned.',
                 type: 'array',
                 items: {
                     type: 'object',
@@ -552,12 +547,10 @@ const apiPUTSchedulesStartAll = {
 const apiPUTSchedulesStopAll = {
     schema: {
         summary: 'Stop all schedules.',
-        description:
-            'Stop all schedules, i.e. tell the scheduler to no longer execute any schedule according to its cron settings.',
+        description: 'Stop all schedules, i.e. tell the scheduler to no longer execute any schedule according to its cron settings.',
         response: {
             200: {
-                description:
-                    'Schedules successfully stopped.\n\nAn array with all information about the stopped schedules is returned.',
+                description: 'Schedules successfully stopped.\n\nAn array with all information about the stopped schedules is returned.',
                 type: 'array',
                 items: {
                     type: 'object',

@@ -21,10 +21,7 @@ function getTaskIdAllowed() {
 
 // Get array of allowed task tags
 function getTaskTagAllowed() {
-    if (
-        globals.config.has('Butler.startTaskFilter.allowTask.tag') === true &&
-        globals.config.get('Butler.startTaskFilter.allowTask.tag')
-    ) {
+    if (globals.config.has('Butler.startTaskFilter.allowTask.tag') === true && globals.config.get('Butler.startTaskFilter.allowTask.tag')) {
         return globals.config.get('Butler.startTaskFilter.allowTask.tag');
     }
     return [];
@@ -90,17 +87,12 @@ async function handlerPutStartTask(request, reply) {
 
         // Check if task filtering is enabled
         // If it's enabled, get the arrays of allowed task IDs, tags and custom properties
-        if (
-            globals.config.has('Butler.startTaskFilter.enable') &&
-            globals.config.get('Butler.startTaskFilter.enable') === true
-        ) {
+        if (globals.config.has('Butler.startTaskFilter.enable') && globals.config.get('Butler.startTaskFilter.enable') === true) {
             taskFilterEnabled = true;
 
             globals.logger.debug(`STARTTASK: Allowed task IDs: ${JSON.stringify(getTaskIdAllowed(), null, 2)}`);
             globals.logger.debug(`STARTTASK: Allowed task tags: ${JSON.stringify(getTaskTagAllowed(), null, 2)}`);
-            globals.logger.debug(
-                `STARTTASK: Allowed task custom properties: ${JSON.stringify(getTaskCPAllowed(), null, 2)}`
-            );
+            globals.logger.debug(`STARTTASK: Allowed task custom properties: ${JSON.stringify(getTaskCPAllowed(), null, 2)}`);
         } else {
             taskFilterEnabled = false;
         }
@@ -110,12 +102,7 @@ async function handlerPutStartTask(request, reply) {
         // If taskId is NOT '-' it is assumed to be a proper tas ID, which will then be started.
         if (request.params.taskId === undefined || request.params.taskId === '') {
             // Required parameter is missing
-            reply.send(
-                httpErrors(
-                    400,
-                    'Required parameter (task ID) missing. Should be a task ID or "-" if task info is passed in body'
-                )
-            );
+            reply.send(httpErrors(400, 'Required parameter (task ID) missing. Should be a task ID or "-" if task info is passed in body'));
         } else {
             // One task should be started, it's ID is specied by the taskId URL parameter
 
@@ -128,8 +115,7 @@ async function handlerPutStartTask(request, reply) {
                 // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
                 if (
                     request.params.taskId !== '-' &&
-                    (taskFilterEnabled === false ||
-                        (taskFilterEnabled === true && isTaskIdAllowed(request.params.taskId)))
+                    (taskFilterEnabled === false || (taskFilterEnabled === true && isTaskIdAllowed(request.params.taskId)))
                 ) {
                     // Task ID is allowed
                     // Verify task exists
@@ -170,22 +156,13 @@ async function handlerPutStartTask(request, reply) {
                             if (globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')) {
                                 // Store KV pair
                                 // eslint-disable-next-line no-await-in-loop
-                                await addKeyValuePair(
-                                    item.payload.namespace,
-                                    item.payload.key,
-                                    item.payload.value,
-                                    item.payload.ttl
-                                );
+                                await addKeyValuePair(item.payload.namespace, item.payload.key, item.payload.value, item.payload.ttl);
                             } else {
-                                globals.logger.warn(
-                                    'STARTTASK: Trying to store key-value data, but KV store is not enabled.'
-                                );
+                                globals.logger.warn('STARTTASK: Trying to store key-value data, but KV store is not enabled.');
                             }
                         } else {
                             // Missing KV data
-                            globals.logger.warn(
-                                'STARTTASK: Trying to store key-value data, but method call is missing some KV fields..'
-                            );
+                            globals.logger.warn('STARTTASK: Trying to store key-value data, but method call is missing some KV fields..');
                         }
                     } else if (item.type === 'starttaskid') {
                         // ID of a task that should be started
@@ -193,10 +170,7 @@ async function handlerPutStartTask(request, reply) {
                         // Is task ID a valid guid?
                         if (verifyTaskId(item.payload.taskId)) {
                             // Check if a) task filtering is enabled, and if so b) if task ID is in allow list
-                            if (
-                                taskFilterEnabled === false ||
-                                (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId))
-                            ) {
+                            if (taskFilterEnabled === false || (taskFilterEnabled === true && isTaskIdAllowed(item.payload.taskId))) {
                                 // Task ID is allowed
                                 // Verify task exists
                                 // payload: { taskId: 'abc' }
@@ -215,9 +189,7 @@ async function handlerPutStartTask(request, reply) {
                                 }
                             } else {
                                 // Task filtering is enabled and task ID is not on allowed list
-                                globals.logger.warn(
-                                    `STARTTASK: Task ID in msg body is not allowed: ${item.payload.taskId}`
-                                );
+                                globals.logger.warn(`STARTTASK: Task ID in msg body is not allowed: ${item.payload.taskId}`);
                                 tasksIdDenied.push({ taskId: item.payload.taskId });
                             }
                         } else {
@@ -227,10 +199,7 @@ async function handlerPutStartTask(request, reply) {
                         // All tasks with this tag should be started
 
                         // Check if a) task filtering is enabled, and if so b) if task tag is in allow list
-                        if (
-                            taskFilterEnabled === false ||
-                            (taskFilterEnabled === true && isTaskTagAllowed(item.payload.tag))
-                        ) {
+                        if (taskFilterEnabled === false || (taskFilterEnabled === true && isTaskTagAllowed(item.payload.tag))) {
                             // Task tag is allowed
                             // Use QRS to search for all tasks with the given tag
                             // payload: { tag: 'abc' }
@@ -346,9 +315,7 @@ async function handlerPutStartTask(request, reply) {
 
         reply.code(200).send(JSON.stringify(res, null, 2));
     } catch (err) {
-        globals.logger.error(
-            `STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
         reply.send(httpErrors(500, 'Failed starting task'));
     }
 }

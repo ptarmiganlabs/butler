@@ -38,9 +38,7 @@ module.exports.getAppOwner = (appId) =>
                 globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app owner ${appOwner.id}`);
 
                 // Find email attribute
-                const emailAttributes = result.body.attributes.filter(
-                    (attribute) => attribute.attributeType.toLowerCase() === 'email'
-                );
+                const emailAttributes = result.body.attributes.filter((attribute) => attribute.attributeType.toLowerCase() === 'email');
                 const resultAttributes = emailAttributes.map((attribute) => attribute.attributeValue);
 
                 // if (resultAttributes.length > 0) {
@@ -53,9 +51,7 @@ module.exports.getAppOwner = (appId) =>
                 });
                 // }
             } catch (err) {
-                globals.logger.error(
-                    `APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`
-                );
+                globals.logger.error(`APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`);
             }
         } catch (err) {
             globals.logger.error(`APPOWNER: Error while getting app owner details 2: ${JSON.stringify(err, null, 2)}`);

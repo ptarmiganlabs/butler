@@ -123,20 +123,26 @@ async function build(opts = {}) {
     restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
     restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
 
-    // Loads all plugins defined in routes
-    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
+    // let apiDocPath = '';
+    // if (process.pkg) {
+    //     globals.logger.debug(`CONFIG: Running as standalone app.`);
+    //     // apiDocPath = path.resolve(`${process.execPath}/docs/api_doc/butler-api.yaml`);
+    //     apiDocPath = path.join(__dirname, '../docs/api_doc/butler-api.yaml');
+    // } else {
+    //     globals.logger.debug(`CONFIG: Not standalone app.`);
+    //     apiDocPath = path.join(process.cwd(), '../docs/api_doc/butler-api.yaml');
+    // }
+    // globals.logger.debug(`CONFIG: Reading static API doc file from ${apiDocPath}`);
+
+    // restServer.register(FastifySwagger, {
+    //     mode: 'static',
+    //     specification: {
+    //         path: apiDocPath,
+    //     },
+    //     routePrefix: '/documentation',
+    //     hideUntagged: false,
+    //     exposeRoute: true,
+    // });
 
     restServer.register(FastifySwagger, {
         routePrefix: '/documentation',
@@ -152,9 +158,11 @@ async function build(opts = {}) {
                 url: 'https://github.com/ptarmiganlabs',
                 description: 'Butler family of tools on GitHub',
             },
+            host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
+            schemes: ['http'],
+            // consumes: ['application/json'],
             produces: ['application/json'],
         },
-        host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
         uiConfig: {
             deepLinking: true,
             operationsSorter: 'alpha', // can also be 'alpha' or a function
@@ -163,10 +171,28 @@ async function build(opts = {}) {
         exposeRoute: true,
     });
 
+    // Loads all plugins defined in routes
+    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
+
     // ---------------------------------------------------
     // Configure X-HTTP-Method-Override handling
     proxyRestServer.register(FastifyReplyFrom, {
-        base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+            'Butler.restServerConfig.backgroundServerPort'
+        )}`,
         http: true,
     });
 

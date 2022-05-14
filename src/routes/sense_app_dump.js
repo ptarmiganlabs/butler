@@ -54,23 +54,17 @@ function handlerGetSenseAppDump(request, reply) {
                             try {
                                 session.close();
                             } catch (err) {
-                                globals.logger.error(
-                                    `APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
-                                );
+                                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
                                 reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
                             }
                         })
                         .catch((error) => {
-                            globals.logger.error(
-                                `APPDUMP: Error while opening doc during app dump: ${JSON.stringify(error, null, 2)}`
-                            );
+                            globals.logger.error(`APPDUMP: Error while opening doc during app dump: ${JSON.stringify(error, null, 2)}`);
 
                             try {
                                 session.close();
                             } catch (err) {
-                                globals.logger.error(
-                                    `APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
-                                );
+                                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
                                 reply.send(httpErrors(500, 'Error closing connection to Sense server'));
                             }
 
@@ -79,19 +73,13 @@ function handlerGetSenseAppDump(request, reply) {
                 })
                 .catch((error) => {
                     globals.logger.error(
-                        `APPDUMP: Error while opening session to Sense engine during app dump: ${JSON.stringify(
-                            error,
-                            null,
-                            2
-                        )}`
+                        `APPDUMP: Error while opening session to Sense engine during app dump: ${JSON.stringify(error, null, 2)}`
                     );
 
                     try {
                         session.close();
                     } catch (err) {
-                        globals.logger.error(
-                            `APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`
-                        );
+                        globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
                         reply.send(httpErrors(500, 'Error closing connection to Sense server'));
                     }
 
@@ -99,9 +87,7 @@ function handlerGetSenseAppDump(request, reply) {
                 });
         }
     } catch (err) {
-        globals.logger.error(
-            `APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);
         reply.send(httpErrors(500, 'Failed dumping app'));
     }
 }

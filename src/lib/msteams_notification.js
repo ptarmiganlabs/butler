@@ -41,9 +41,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.teamsNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'TASK FAILED ALERT TEAMS: Reload failure Teams config info missing in Butler config file'
-            );
+            globals.logger.error('TASK FAILED ALERT TEAMS: Reload failure Teams config info missing in Butler config file');
             return false;
         }
 
@@ -116,9 +114,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.teamsNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error(
-                'TASK ABORTED ALERT TEAMS: Reload aborted Teams config info missing in Butler config file'
-            );
+            globals.logger.error('TASK ABORTED ALERT TEAMS: Reload aborted Teams config info missing in Butler config file');
             return false;
         }
 
@@ -262,9 +258,7 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
         if (msg !== null) {
             const res = await teamsWebhookObj.send(JSON.stringify(msg));
             if (res !== undefined) {
-                globals.logger.debug(
-                    `TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`
-                );
+                globals.logger.debug(`TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
@@ -280,9 +274,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 globals.logger.info(
                     `TASK FAILED ALERT TEAMS: Rate limiting ok: Sending reload failure notification Teams for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
                 const teamsConfig = getTeamsReloadFailedNotificationConfigOk();
@@ -296,9 +288,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines'),
                     globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines')
                 );
-                globals.logger.debug(
-                    `TASK FAILED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
-                );
+                globals.logger.debug(`TASK FAILED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -398,9 +388,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
             globals.logger.warn(
                 `TASK FAILED ALERT TEAMS: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
             );
-            globals.logger.debug(
-                `TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.debug(`TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -412,9 +400,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 globals.logger.info(
                     `TASK ABORTED ALERT TEAMS: Rate limiting ok: Sending reload aborted notification Teams for task "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(
-                    `TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-                );
+                globals.logger.verbose(`TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
                 const TeamsConfig = getTeamsReloadAbortedNotificationConfigOk();
@@ -428,9 +414,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines'),
                     globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines')
                 );
-                globals.logger.debug(
-                    `TASK ABORTED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`
-                );
+                globals.logger.debug(`TASK ABORTED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -530,9 +514,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
             globals.logger.verbose(
                 `TASK ABORTED ALERT TEAMS: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(
-                `TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
-            );
+            globals.logger.verbose(`TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

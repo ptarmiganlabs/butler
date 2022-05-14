@@ -226,7 +226,7 @@ jobs:
           name: binaries-win
           path: release-win/
 
-      - name: Install dependencies, copy Chromium to release folder and zip into release asset
+      - name: Install dependencies and zip into release asset
         run: |
           cd release-win
           dir

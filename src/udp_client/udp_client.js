@@ -1,11 +1,9 @@
-var dgram = require('dgram');
-var yargs = require('yargs');
+const dgram = require('dgram');
+const yargs = require('yargs');
 
 // Parse command line parameters
-var argv = yargs
-    .usage(
-        'Usage: node $0 [options]\n\nThis app sends messages to the UDP server(s) built into Butler (or any other UDP server)',
-    )
+const { argv } = yargs
+    .usage('Usage: node $0 [options]\n\nThis app sends messages to the UDP server(s) built into Butler (or any other UDP server)')
 
     .alias('a', 'about')
     .alias('i', 'ip')
@@ -19,16 +17,18 @@ var argv = yargs
     .describe('m', 'Message to send')
     .demandOption(['i', 'p'])
     .help('h')
-    .alias('h', 'help').argv;
+    .alias('h', 'help');
 
-var client = dgram.createSocket({
+const client = dgram.createSocket({
     type: 'udp4',
     reuseAddr: true,
 });
-var msg = new Buffer(argv.msg.toString());
+// eslint-disable-next-line no-buffer-constructor
+const msg = new Buffer(argv.msg.toString());
 
-client.send(msg, 0, msg.length, argv.port, argv.ip, function (err, bytes) {
+client.send(msg, 0, msg.length, argv.port, argv.ip, (err, bytes) => {
     if (err) throw err;
-    console.info('UDP message sent to ' + argv.ip + ':' + argv.port + ', ' + bytes + ' bytes.');
+    // eslint-disable-next-line no-console
+    console.info(`UDP message sent to ${argv.ip}:${argv.port}, ${bytes} bytes.`);
     client.close();
 });

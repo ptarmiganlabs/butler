@@ -19,9 +19,7 @@ function addCronEntry(newSchedule) {
         newSchedule.id.toString(),
         newSchedule.cronSchedule,
         () => {
-            globals.logger.info(
-                `SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`
-            );
+            globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
             qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
         },
         {
@@ -41,8 +39,7 @@ function addSchedule(newSchedule) {
         globals.configSchedule.push(newSchedule);
 
         // eslint-disable-next-line no-param-reassign
-        newSchedule.lastKnownState =
-            newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? 'started' : 'stopped';
+        newSchedule.lastKnownState = newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? 'started' : 'stopped';
 
         // Persist schedule to disk
         saveSchedulesToDisk();
@@ -54,11 +51,7 @@ function addSchedule(newSchedule) {
         globals.logger.verbose(`SCHEDULER: Added new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
     } catch (err) {
         globals.logger.error(
-            `SCHEDULER: Failed adding new schedule ${JSON.stringify(newSchedule, null, 2)}: ${JSON.stringify(
-                err,
-                null,
-                2
-            )}`
+            `SCHEDULER: Failed adding new schedule ${JSON.stringify(newSchedule, null, 2)}: ${JSON.stringify(err, null, 2)}`
         );
     }
 }
@@ -180,9 +173,7 @@ function deleteSchedule(deleteScheduleId) {
         }
         return false;
     } catch (err) {
-        globals.logger.error(
-            `SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${JSON.stringify(err, null, 2)}`
-        );
+        globals.logger.error(`SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${JSON.stringify(err, null, 2)}`);
         return false;
     }
 }

@@ -9,6 +9,7 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}/src/butler.js",
+            "cwd": "${workspaceFolder}/src",
             // "args": [
             //     "--configfile",
             //     "./config/production.yaml",

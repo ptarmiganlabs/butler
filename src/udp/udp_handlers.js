@@ -103,10 +103,7 @@ const schedulerAborted = (msg) => {
     // Call outgoing webhooks when task has been aborted
     // Note that there is no enable/disable flag for failed reloads.
     // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
-    if (
-        globals.config.has('Butler.webhookNotification.enable') &&
-        globals.config.get('Butler.webhookNotification.enable') === true
-    ) {
+    if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
         webhookOut.sendReloadTaskAbortedNotificationWebhook({
             hostName: msg[1],
             user: msg[4],
@@ -473,10 +470,7 @@ const schedulerFailed = (msg, legacyFlag) => {
         // Call outgoing webhooks when task has failed
         // Note that there is no enable/disable flag for failed reloads.
         // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
-        if (
-            globals.config.has('Butler.webhookNotification.enable') &&
-            globals.config.get('Butler.webhookNotification.enable') === true
-        ) {
+        if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
             webhookOut.sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[1],
                 user: msg[4].replace(/\\\\/g, '\\'),

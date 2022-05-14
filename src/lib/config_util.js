@@ -6,10 +6,7 @@ const guidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}
 const configVerifyAllTaskId = () => {
     try {
         // Only verify allowed task IDs if that feature is turned on
-        if (
-            globals.config.has('Butler.startTaskFilter.enable') &&
-            globals.config.get('Butler.startTaskFilter.enable') === true
-        ) {
+        if (globals.config.has('Butler.startTaskFilter.enable') && globals.config.get('Butler.startTaskFilter.enable') === true) {
             globals.logger.info('CONFIG_VERIFY: Verifying that task IDs are valid...');
 
             if (

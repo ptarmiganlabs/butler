@@ -719,9 +719,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
      */
     describe('A25: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
-            result = await instance.post(`/v4/reloadtask/-/start`, [
-                { type: 'starttaskid', payload: { taskId: taskId_valid1 } },
-            ]);
+            result = await instance.post(`/v4/reloadtask/-/start`, [{ type: 'starttaskid', payload: { taskId: taskId_valid1 } }]);
 
             expect(result.status).toBe(200);
         });
@@ -765,9 +763,7 @@ if (config.get('Butler.startTaskFilter.enable') === false) {
      */
     describe('A26: taskFilter=off: POST /v4/reloadtask/:taskId/start', () => {
         test('Test allTaskIdsMustExist=false flag when 1 invalid (body) and 1 valid (URL)', async () => {
-            result = await instance.post(`/v4/reloadtask/-/start`, [
-                { type: 'starttaskid', payload: { taskId: taskId_invalid1 } },
-            ]);
+            result = await instance.post(`/v4/reloadtask/-/start`, [{ type: 'starttaskid', payload: { taskId: taskId_invalid1 } }]);
 
             expect(result.status).toBe(200);
         });

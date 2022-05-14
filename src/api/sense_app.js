@@ -21,8 +21,7 @@ const apiPutAppReload = {
                 },
                 partialReload: {
                     type: 'boolean',
-                    description:
-                        'Should a full (=false) or partial (=true) reload be done? If not specified a full reload will be done.',
+                    description: 'Should a full (=false) or partial (=true) reload be done? If not specified a full reload will be done.',
                     example: true,
                 },
                 startQSEoWTaskOnSuccess: {
