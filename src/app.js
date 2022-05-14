@@ -123,6 +123,27 @@ async function build(opts = {}) {
     restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
     restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
 
+    // let apiDocPath = '';
+    // if (process.pkg) {
+    //     globals.logger.debug(`CONFIG: Running as standalone app.`);
+    //     // apiDocPath = path.resolve(`${process.execPath}/docs/api_doc/butler-api.yaml`);
+    //     apiDocPath = path.join(__dirname, '../docs/api_doc/butler-api.yaml');
+    // } else {
+    //     globals.logger.debug(`CONFIG: Not standalone app.`);
+    //     apiDocPath = path.join(process.cwd(), '../docs/api_doc/butler-api.yaml');
+    // }
+    // globals.logger.debug(`CONFIG: Reading static API doc file from ${apiDocPath}`);
+
+    // restServer.register(FastifySwagger, {
+    //     mode: 'static',
+    //     specification: {
+    //         path: apiDocPath,
+    //     },
+    //     routePrefix: '/documentation',
+    //     hideUntagged: false,
+    //     exposeRoute: true,
+    // });
+
     restServer.register(FastifySwagger, {
         routePrefix: '/documentation',
         swagger: {
@@ -168,7 +189,10 @@ async function build(opts = {}) {
     // ---------------------------------------------------
     // Configure X-HTTP-Method-Override handling
     proxyRestServer.register(FastifyReplyFrom, {
-        base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+        base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+            'Butler.restServerConfig.backgroundServerPort'
+        )}`,
         http: true,
     });
 

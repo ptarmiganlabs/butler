@@ -21,20 +21,25 @@ const start = async () => {
         globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
         globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
-        restServer.listen(globals.config.get('Butler.restServerConfig.backgroundServerPort'), 'localhost', (err, address) => {
-            if (err) {
-                globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
-                globals.logger.error(`MAIN: ${err}`);
-                restServer.log.error(err);
-                process.exit(1);
-            }
-            globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
+        // restServer.listen(globals.config.get('Butler.restServerConfig.backgroundServerPort'), 'localhost', (err, address) => {
+        restServer.listen(
+            globals.config.get('Butler.restServerConfig.backgroundServerPort'),
+            globals.config.get('Butler.restServerConfig.serverHost'),
+            (err, address) => {
+                if (err) {
+                    globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
+                    globals.logger.error(`MAIN: ${err}`);
+                    restServer.log.error(err);
+                    process.exit(1);
+                }
+                globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
 
-            restServer.ready((err2) => {
-                if (err2) throw err;
-                restServer.swagger();
-            });
-        });
+                restServer.ready((err2) => {
+                    if (err2) throw err;
+                    restServer.swagger();
+                });
+            }
+        );
 
         proxyRestServer.listen(
             globals.config.get('Butler.restServerConfig.serverPort'),

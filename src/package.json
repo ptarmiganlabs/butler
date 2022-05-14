@@ -102,7 +102,9 @@
       "node_modules/enigma.js/**/*.json"
     ],
     "assets": [
-      "node_modules/fsevents/fsevents.node"
+      "node_modules/fsevents/fsevents.node",
+      "../docs/api_doc/butler-api.yaml",
+      "node_modules/@fastify/swagger"
     ]
   }
 }
