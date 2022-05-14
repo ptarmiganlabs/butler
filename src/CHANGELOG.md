@@ -1,5 +1,44 @@
 # Changelog
 
+## [7.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.3.2...butler-v7.4.0) (2022-05-14)
+
+
+### Features
+
+* Add config setting to enable create-API-docs-mode ([d9127f0](https://github.com/ptarmiganlabs/butler/commit/d9127f05657459d6d09f66142f658839398d1103)), closes [#447](https://github.com/ptarmiganlabs/butler/issues/447)
+* API endpoint for sending gauge metrics to New Relic ([13063a0](https://github.com/ptarmiganlabs/butler/commit/13063a0cf031c87fac69d6b5e8472c4506e3732c)), closes [#440](https://github.com/ptarmiganlabs/butler/issues/440)
+* Base alert email rate limits on taskId + email address combination ([bc07935](https://github.com/ptarmiganlabs/butler/commit/bc0793589d4fc2774f497d68d10d58721341ff7e)), closes [#424](https://github.com/ptarmiganlabs/butler/issues/424)
+* Enable/disable alert emails per reload task. ([3a2a9f6](https://github.com/ptarmiganlabs/butler/commit/3a2a9f64bce2d5181e0d59fcbbcec50f2bb08fdb))
+
+
+### Bug Fixes
+
+* API docs REST endpoint doesn't work for pre-built binaries ([53cf3fa](https://github.com/ptarmiganlabs/butler/commit/53cf3faed13e5d66f1ee81845fda2bea6afe3394)), closes [#443](https://github.com/ptarmiganlabs/butler/issues/443)
+* Change name of New Relic event for failed and aborted reload tasks ([d81ab39](https://github.com/ptarmiganlabs/butler/commit/d81ab391027da7b484145d21d782d60b2eb9e386)), closes [#418](https://github.com/ptarmiganlabs/butler/issues/418)
+* Change New Relic metric names for Butler uptime metrics ([6ead1f6](https://github.com/ptarmiganlabs/butler/commit/6ead1f69633996c442778c1797b964262574f586)), closes [#419](https://github.com/ptarmiganlabs/butler/issues/419)
+* REST API docs not showing ([bef031f](https://github.com/ptarmiganlabs/butler/commit/bef031f2843312447d0ab177e6ee3a767f0a866a)), closes [#442](https://github.com/ptarmiganlabs/butler/issues/442)
+* Verify that Slack/Teams message template file exists before opening it. ([0a44792](https://github.com/ptarmiganlabs/butler/commit/0a4479279abd3750e58f983a06d325182eaf07b4)), closes [#427](https://github.com/ptarmiganlabs/butler/issues/427)
+
+
+### Refactoring
+
+* Change Butler's log prefixes for failed reloads ([5d6e19b](https://github.com/ptarmiganlabs/butler/commit/5d6e19bb8d97c83d5521567332bb903e7cb0412c)), closes [#425](https://github.com/ptarmiganlabs/butler/issues/425)
+* Enable better logging of errors to console ([f52d716](https://github.com/ptarmiganlabs/butler/commit/f52d7165cf678092a796d3b3870be3f0b3c67ab2)), closes [#434](https://github.com/ptarmiganlabs/butler/issues/434)
+* Make source code file names consistent throughout Butler ([590285a](https://github.com/ptarmiganlabs/butler/commit/590285a9a7e9f2c4f20ea8b968b946ffcf87e48b)), closes [#422](https://github.com/ptarmiganlabs/butler/issues/422)
+
+
+### Miscellaneous
+
+* **deps:** pin dependency snyk to 1.931.0 ([b04767b](https://github.com/ptarmiganlabs/butler/commit/b04767b3141a0304226c81942d2b45c5efd42aea))
+* **deps:** Update dependencies ([7e95736](https://github.com/ptarmiganlabs/butler/commit/7e95736ba0aa91f80ba671d51f39e14cddc97cb6))
+* **deps:** update dependency jest to v28.0.3 ([918cad1](https://github.com/ptarmiganlabs/butler/commit/918cad1acce0a9217521f6a12d82d0cc68efb591))
+* **deps:** update dependency jest to v28.1.0 ([910eb8a](https://github.com/ptarmiganlabs/butler/commit/910eb8a079723534e356c3a1454e9f0a24300df8))
+* **deps:** update dependency snyk to v1.914.0 ([2fc2275](https://github.com/ptarmiganlabs/butler/commit/2fc2275a6e6c177314bdca33404282d99f185460))
+* **deps:** update dependency snyk to v1.922.0 ([769fadd](https://github.com/ptarmiganlabs/butler/commit/769fadd46a116247103b2acce7ffeab9dd1bc473))
+* **deps:** update Fastify plugins ([f16c0fb](https://github.com/ptarmiganlabs/butler/commit/f16c0fb1b4c955f50ab3fb03c9a5873c2bb6d905))
+* **deps:** Updated dependencies ([d957494](https://github.com/ptarmiganlabs/butler/commit/d9574944a21e8a4e9f8742d0c8e13f5dd4dc7a42))
+* Source code formatting ([f8b6e1c](https://github.com/ptarmiganlabs/butler/commit/f8b6e1cd0cc6c08f10fbd42597ba3eb5b249e040))
+
 ### [7.3.2](https://github.com/ptarmiganlabs/butler/compare/butler-v7.3.1...butler-v7.3.2) (2022-04-25)
 
 
