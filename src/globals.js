@@ -107,6 +107,7 @@ logTransports.push(
         name: 'console',
         level: config.get('Butler.logLevel'),
         format: winston.format.combine(
+            winston.format.errors({ stack: true }),
             winston.format.timestamp(),
             winston.format.colorize(),
             winston.format.simple(),
