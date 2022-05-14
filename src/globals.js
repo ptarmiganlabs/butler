@@ -151,36 +151,43 @@ const certPath = path.resolve(__dirname, config.get('Butler.cert.clientCert'));
 const keyPath = path.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
 const caPath = path.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
 
-//  Engine config
-const configEngine = {
-    engineVersion: config.get('Butler.configEngine.engineVersion'),
-    host: config.get('Butler.configEngine.host'),
-    port: config.get('Butler.configEngine.port'),
-    isSecure: config.get('Butler.configEngine.useSSL'),
-    headers: config.get('Butler.configEngine.headers'),
-    cert: readCert(config.get('Butler.cert.clientCert')),
-    key: readCert(config.get('Butler.cert.clientCertKey')),
-    rejectUnauthorized: config.get('Butler.configEngine.rejectUnauthorized'),
-};
+let configEngine;
+let configQRS;
+if (config.has('Butler.restServerApiDocGenerate') === false || config.get('Butler.restServerApiDocGenerate') === false) {
+    logger.debug('CONFIG: API doc mode=off');
+    //  Engine config
+    configEngine = {
+        engineVersion: config.get('Butler.configEngine.engineVersion'),
+        host: config.get('Butler.configEngine.host'),
+        port: config.get('Butler.configEngine.port'),
+        isSecure: config.get('Butler.configEngine.useSSL'),
+        headers: config.get('Butler.configEngine.headers'),
+        cert: readCert(config.get('Butler.cert.clientCert')),
+        key: readCert(config.get('Butler.cert.clientCertKey')),
+        rejectUnauthorized: config.get('Butler.configEngine.rejectUnauthorized'),
+    };
 
-// QRS config
-const configQRS = {
-    authentication: config.get('Butler.configQRS.authentication'),
-    host: config.get('Butler.configQRS.host'),
-    port: config.get('Butler.configQRS.port'),
-    useSSL: config.get('Butler.configQRS.useSSL'),
-    headerKey: config.get('Butler.configQRS.headerKey'),
-    headerValue: config.get('Butler.configQRS.headerValue'),
-    rejectUnauthorized: config.get('Butler.configQRS.rejectUnauthorized'),
-    cert: readCert(certPath),
-    key: readCert(keyPath),
-    ca: readCert(caPath),
-    certPaths: {
-        certPath,
-        keyPath,
-        caPath,
-    },
-};
+    // QRS config
+    configQRS = {
+        authentication: config.get('Butler.configQRS.authentication'),
+        host: config.get('Butler.configQRS.host'),
+        port: config.get('Butler.configQRS.port'),
+        useSSL: config.get('Butler.configQRS.useSSL'),
+        headerKey: config.get('Butler.configQRS.headerKey'),
+        headerValue: config.get('Butler.configQRS.headerValue'),
+        rejectUnauthorized: config.get('Butler.configQRS.rejectUnauthorized'),
+        cert: readCert(certPath),
+        key: readCert(keyPath),
+        ca: readCert(caPath),
+        certPaths: {
+            certPath,
+            keyPath,
+            caPath,
+        },
+    };
+} else {
+    logger.debug('CONFIG: API doc mode=on');
+}
 
 // MS Teams notification objects
 let teamsTaskFailureObj;

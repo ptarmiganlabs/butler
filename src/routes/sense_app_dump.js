@@ -8,11 +8,12 @@ const { logRESTCall } = require('../lib/log_rest_call');
 const { apiGetSenseAppDump, apiGetAppDump } = require('../api/sense_app_dump');
 
 // Set up enigma.js configuration
-// eslint-disable-next-line import/no-dynamic-require
-const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
 function handlerGetSenseAppDump(request, reply) {
     try {
+        // eslint-disable-next-line import/no-dynamic-require, global-require
+        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+
         logRESTCall(request);
 
         if (request.params.appId === undefined) {

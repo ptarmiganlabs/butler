@@ -10,11 +10,12 @@ const { logRESTCall } = require('../lib/log_rest_call');
 const { apiPutAppReload } = require('../api/sense_app');
 
 // Set up enigma.js configuration
-// eslint-disable-next-line import/no-dynamic-require
-const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
 async function handlerPutAppReload(request, reply) {
     try {
+        // eslint-disable-next-line import/no-dynamic-require, global-require
+        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+
         logRESTCall(request);
 
         // TODO: Add app exists test. Return error if not existing.

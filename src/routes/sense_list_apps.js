@@ -8,11 +8,12 @@ const { logRESTCall } = require('../lib/log_rest_call');
 const { apiGetSenseListApps, apiGetAppsList } = require('../api/sense_list_apps');
 
 // Set up enigma.js configuration
-// eslint-disable-next-line import/no-dynamic-require
-const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
 
 function handlerGetSenseListApps(request, reply) {
     try {
+        // eslint-disable-next-line import/no-dynamic-require, global-require
+        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+
         logRESTCall(request);
 
         // create a new session
