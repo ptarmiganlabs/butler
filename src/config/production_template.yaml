@@ -388,6 +388,11 @@ Butler:
     - /Users/goran/butler-test-dir1//abc//..
     - /Users/goran/butler-test-dir2
   
+  # If set to true, Butler will be started with a focus on creating an API documentation file
+  # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.
+  # NOTE: This setting should always be false (or just deleted), unless you want to regenerate the API doc files.
+  restServerApiDocGenerate: true
+
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
     apiListEnbledEndpoints: false

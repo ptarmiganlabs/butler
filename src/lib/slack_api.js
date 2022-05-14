@@ -27,7 +27,7 @@ async function slackSend(slackConfig, logger) {
         logger.debug(`SLACKSEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
         return res;
     } catch (err) {
-        logger.error(`SLACKSEND: ${err}, "${err.response.data}"`);
+        logger.error(`SLACKSEND: ${err}"`);
     }
 }
 
