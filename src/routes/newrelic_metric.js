@@ -29,6 +29,12 @@ async function handlerPostNewRelicMetric(request, reply) {
         }
 
         // Add attributes passed as parameters
+        if (request.body.attributes && request.body.attributes.length > 0) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of request.body.attributes) {
+                attributes[item.name] = item.value;
+            }
+        }
 
         // Build New Relic metric common block
         const common = {
@@ -65,7 +71,7 @@ async function handlerPostNewRelicMetric(request, reply) {
         };
 
         // eslint-disable-next-line no-restricted-syntax
-        for (const header of globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelictMetric.header')) {
+        for (const header of globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header')) {
             headers[header.name] = header.value;
         }
 
@@ -75,11 +81,10 @@ async function handlerPostNewRelicMetric(request, reply) {
         if (res.status === 202) {
             // Posting done without error
             globals.logger.verbose(`NEWRELIC METRIC: Sent metric to New Relic`);
-            reply.code(202).send('ok');
+            reply.type('text/plain').code(202).send(res.statusText);
             // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
         } else {
-            // reply.send(httpErrors(500, 'Failed publishing MQTT message'));
-            reply.send(httpErrors(res.status, 'Failed posting metric to New Relic'));
+            reply.send(httpErrors(res.status, `Failed posting metric to New Relic: ${res.statusText}`));
         }
 
         // Required parameter is missing

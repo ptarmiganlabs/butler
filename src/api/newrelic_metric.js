@@ -9,11 +9,13 @@ const apiPostNewRelicMetric = {
                     type: 'string',
                     description: 'Metric name.',
                     example: 'memory.heap',
+                    maxLength: 254,
                 },
                 type: {
                     type: 'string',
-                    description: 'Metric type. Valid options are count, distribution, gauge, summary.',
+                    description: 'Metric type.',
                     example: 'gauge',
+                    enum: ['gauge'],
                 },
                 value: {
                     type: 'number',
@@ -28,7 +30,7 @@ const apiPostNewRelicMetric = {
                 },
                 interval: {
                     type: 'number',
-                    description: 'The length of the time window. Required for count and summary metric types.',
+                    description: 'The length of the time window (millisec). Required for count and summary metric types.',
                 },
                 attributes: {
                     type: 'array',
@@ -39,6 +41,7 @@ const apiPostNewRelicMetric = {
                             name: {
                                 type: 'string',
                                 example: 'host.name',
+                                maxLength: 254,
                             },
                             value: {
                                 type: 'string',
