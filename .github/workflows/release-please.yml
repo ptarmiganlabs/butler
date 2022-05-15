@@ -52,6 +52,28 @@ jobs:
           cd src
           npm install
 
+      - name: Install tool for creating stand-alone API html docs file
+        run: |
+          npm install redoc-cli --global
+
+      - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
+        run: |
+          pwd
+          cd src
+          node butler.js -c ./config/config-gen-api-docs.yaml & 
+          sleep 10
+          curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
+          curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml
+          redoc-cli build ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
+          pkill -f 'node butler.js'
+          git config --global user.name 'GitHub action'
+          git config --global user.email 'mountaindude@users.noreply.github.com'  
+          git add ../docs/api_doc/butler-api.yaml
+          git add ../docs/api_doc/butler-api.json
+          git add ../docs/api_doc/butler-api.html
+          git commit -m "Auto-adding API docs"
+          git push
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -74,6 +96,7 @@ jobs:
         if: ${{ steps.release.outputs.releases_created }}
           # mkdir release/alpine
         run: |
+          pwd
           ls -la
           mkdir release
           mkdir release/macos
