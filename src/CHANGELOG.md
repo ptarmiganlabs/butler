@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.5.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.4.0...butler-v7.5.0) (2022-05-15)
+
+
+### Features
+
+* Automatic cration of API docs as part of CI pipeline ([7ecf05b](https://github.com/ptarmiganlabs/butler/commit/7ecf05b9e5ec0800656137ad192257fd142c58d1)), closes [#444](https://github.com/ptarmiganlabs/butler/issues/444)
+
 ## [7.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.3.2...butler-v7.4.0) (2022-05-14)
 
 
