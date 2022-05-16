@@ -264,7 +264,7 @@ Butler:
         serviceName: Qlik Sense   # Signl4 "service name" to use
         severity: 10              # Signl4 severity level for aborted reloads
     newRelic:
-      enable: true
+      enable: false
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
       #
@@ -391,7 +391,7 @@ Butler:
   # If set to true, Butler will be started with a focus on creating an API documentation file
   # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.
   # NOTE: This setting should always be false (or just deleted), unless you want to regenerate the API doc files.
-  restServerApiDocGenerate: true
+  restServerApiDocGenerate: false
 
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
