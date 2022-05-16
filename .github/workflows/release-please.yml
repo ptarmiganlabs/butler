@@ -64,10 +64,11 @@ jobs:
           sleep 10
           curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
           curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml
+          rm -f -- ../docs/api_doc/butler-api.html
           redoc-cli build ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
           pkill -f 'node butler.js'
           git config --global user.name 'GitHub action'
-          git config --global user.email 'mountaindude@users.noreply.github.com'  
+          git config --global user.email 'mountaindude@users.noreply.github.com'
           git add ../docs/api_doc/butler-api.yaml
           git add ../docs/api_doc/butler-api.json
           git add ../docs/api_doc/butler-api.html
