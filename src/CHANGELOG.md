@@ -1,5 +1,13 @@
 # Changelog
 
+### [7.5.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.5.0...butler-v7.5.1) (2022-05-16)
+
+
+### Bug Fixes
+
+* **config:** Disable API-generate-doc setting in sample config file ([0b4a784](https://github.com/ptarmiganlabs/butler/commit/0b4a78446c6fd52040b1aefd7447524afc98bfb1)), closes [#453](https://github.com/ptarmiganlabs/butler/issues/453)
+* **config:** Disable sending alerts to New Relic in sample config file ([38219f6](https://github.com/ptarmiganlabs/butler/commit/38219f686be73cf3e3a9275a9cc235986a63fb0b)), closes [#452](https://github.com/ptarmiganlabs/butler/issues/452)
+
 ## [7.5.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.4.0...butler-v7.5.0) (2022-05-15)
 
 
