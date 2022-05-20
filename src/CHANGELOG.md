@@ -1,5 +1,12 @@
 # Changelog
 
+### [8.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.0.0...butler-v8.0.1) (2022-05-20)
+
+
+### Bug Fixes
+
+* Empty attribute arrays in New Relic config no longer cause errors ([6bf5ea5](https://github.com/ptarmiganlabs/butler/commit/6bf5ea55b83cb188224ce219c9486d1dd5349e7b)), closes [#464](https://github.com/ptarmiganlabs/butler/issues/464)
+
 ## [8.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.5.1...butler-v8.0.0) (2022-05-20)
 
 
