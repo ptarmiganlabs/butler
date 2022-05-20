@@ -64,7 +64,7 @@ async function handlerPostNewRelicMetric(request, reply) {
         globals.logger.debug(`NEWRELIC METRIC: Payload: ${JSON.stringify(payload, null, 2)}`);
 
         // Preapare call to remote host
-        const remoteUrl = globals.config.get('Butler.uptimeMonitor.storeNewRelic.url');
+        const remoteUrl = globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.url');
 
         // Add headers
         const headers = {
