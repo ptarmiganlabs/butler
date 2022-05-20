@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v7.5.1...butler-v8.0.0) (2022-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* Forward script logs for failed and aborted reloads to New Relic
+
+### Features
+
+* Command line option for sending test email ([4899e6c](https://github.com/ptarmiganlabs/butler/commit/4899e6c4436fabaae5633b890d88d1a24d03037a)), closes [#430](https://github.com/ptarmiganlabs/butler/issues/430)
+* Forward script logs for failed and aborted reloads to New Relic ([d1237ab](https://github.com/ptarmiganlabs/butler/commit/d1237abddc42c44c07ad7b22f04c98c5be77c91d)), closes [#460](https://github.com/ptarmiganlabs/butler/issues/460)
+
+
+### Miscellaneous
+
+* **deps:** Updated dependencies ([7e3aed0](https://github.com/ptarmiganlabs/butler/commit/7e3aed058a4d308a981041c267381cb0896e0486))
+
 ### [7.5.1](https://github.com/ptarmiganlabs/butler/compare/butler-v7.5.0...butler-v7.5.1) (2022-05-16)
 
 
