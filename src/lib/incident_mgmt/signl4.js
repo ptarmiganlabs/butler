@@ -30,7 +30,7 @@ if (globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.rateLimit')
     });
 }
 
-function getReloadFailedNotificationConfigOk() {
+function getReloadFailedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
         if (
@@ -65,7 +65,7 @@ function getReloadFailedNotificationConfigOk() {
     }
 }
 
-function getReloadAbortedNotificationConfigOk() {
+function getReloadAbortedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
         if (
@@ -136,7 +136,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
                 globals.logger.verbose(`TASK FAILED ALERT SIGNL4: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
-                const incidentConfig = getReloadFailedNotificationConfigOk();
+                const incidentConfig = getReloadFailedEventConfig();
                 if (incidentConfig === false) {
                     return 1;
                 }
@@ -167,7 +167,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
                 globals.logger.verbose(`SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
-                const incidentConfig = getReloadAbortedNotificationConfigOk();
+                const incidentConfig = getReloadAbortedEventConfig();
                 if (incidentConfig === false) {
                     return 1;
                 }

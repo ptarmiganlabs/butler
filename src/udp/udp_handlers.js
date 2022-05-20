@@ -11,12 +11,12 @@ const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = (msg) => {
     globals.logger.verbose(
-        `TASKFABORTED: Received reload aborted UDP message from scheduler: Host=${msg[1]}, App name=${msg[3]}, User=${msg[4]}, Log level=${msg[8]}`
+        `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
     );
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
-    // Post to Signl4 when a task has failed, if enabled
+    // Post to Signl4 when a task has been aborted
     if (
         globals.config.has('Butler.incidentTool.signl4.enable') &&
         globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.enable') &&
@@ -34,6 +34,48 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+        });
+    }
+
+    // Post event to New Relic when a task has been aborted
+    if (
+        globals.config.has('Butler.incidentTool.newRelic.enable') &&
+        globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') &&
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+        globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') === true
+    ) {
+        newRelic.sendReloadTaskAbortedEvent({
+            qs_hostName: msg[1],
+            qs_user: msg[4].replace(/\\/g, '/'),
+            qs_taskName: msg[2],
+            qs_taskId: msg[5],
+            qs_appName: msg[3],
+            qs_appId: msg[6],
+            qs_logTimeStamp: msg[7],
+            qs_logLevel: msg[8],
+            qs_executionId: msg[9],
+            qs_logMessage: msg[10],
+        });
+    }
+
+    // Post log to New Relic when a task has been aborted
+    if (
+        globals.config.has('Butler.incidentTool.newRelic.enable') &&
+        globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.enable') &&
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+        globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.enable') === true
+    ) {
+        newRelic.sendReloadTaskAbortedLog({
+            qs_hostName: msg[1],
+            qs_user: msg[4].replace(/\\/g, '/'),
+            qs_taskName: msg[2],
+            qs_taskId: msg[5],
+            qs_appName: msg[3],
+            qs_appId: msg[6],
+            qs_logTimeStamp: msg[7],
+            qs_logLevel: msg[8],
+            qs_executionId: msg[9],
+            qs_logMessage: msg[10],
         });
     }
 
@@ -155,10 +197,6 @@ const schedulerAborted = (msg) => {
 
 // Handler for failed scheduler initiated reloads
 const schedulerFailed = (msg, legacyFlag) => {
-    globals.logger.verbose(
-        `TASKFAILURE: Received reload failed UDP message from scheduler: Host=${msg[0]}, App name=${msg[2]}, Task name=${msg[1]}, Log level=${msg[7]}`
-    );
-
     if (legacyFlag) {
         // First field in message (msg[0]) is host name
 
@@ -181,7 +219,7 @@ const schedulerFailed = (msg, legacyFlag) => {
             });
         }
 
-        // Post to Signl4 when a task has failed, if enabled
+        // Post to Signl4 when a task has failed
         if (
             globals.config.has('Butler.incidentTool.signl4.enable') &&
             globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
@@ -202,14 +240,35 @@ const schedulerFailed = (msg, legacyFlag) => {
             });
         }
 
-        // Post to New Relic when a task has failed, if enabled
+        // Post event to New Relic when a task has failed
         if (
             globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') === true
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureNotification({
+            newRelic.sendReloadTaskFailureEvent({
+                qs_hostName: msg[0],
+                qs_user: msg[3].replace(/\\/g, '/'),
+                qs_taskName: msg[1],
+                qs_taskId: msg[4],
+                qs_appName: msg[2],
+                qs_appId: msg[5],
+                qs_logTimeStamp: msg[6],
+                qs_logLevel: msg[7],
+                qs_executionId: msg[8],
+                qs_logMessage: msg[9],
+            });
+        }
+
+        // Post log to New Relic when a task has failed
+        if (
+            globals.config.has('Butler.incidentTool.newRelic.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
+            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
+        ) {
+            newRelic.sendReloadTaskFailureLog({
                 qs_hostName: msg[0],
                 qs_user: msg[3].replace(/\\/g, '/'),
                 qs_taskName: msg[1],
@@ -341,6 +400,10 @@ const schedulerFailed = (msg, legacyFlag) => {
             );
         }
     } else {
+        globals.logger.verbose(
+            `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+        );
+
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
         // Store script log to disk
@@ -362,7 +425,7 @@ const schedulerFailed = (msg, legacyFlag) => {
             });
         }
 
-        // Post to Signl4 when a task has failed, if enabled
+        // Post to Signl4 when a task has failed
         if (
             globals.config.has('Butler.incidentTool.signl4.enable') &&
             globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
@@ -383,14 +446,35 @@ const schedulerFailed = (msg, legacyFlag) => {
             });
         }
 
-        // Post to New Relic when a task has failed, if enabled
+        // Post evemt to New Relic when a task has failed
         if (
             globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.enable') === true
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureNotification({
+            newRelic.sendReloadTaskFailureEvent({
+                qs_hostName: msg[1],
+                qs_user: msg[4].replace(/\\/g, '/'),
+                qs_taskName: msg[2],
+                qs_taskId: msg[5],
+                qs_appName: msg[3],
+                qs_appId: msg[6],
+                qs_logTimeStamp: msg[7],
+                qs_logLevel: msg[8],
+                qs_executionId: msg[9],
+                qs_logMessage: msg[10],
+            });
+        }
+
+        // Post log to New Relic when a task has failed
+        if (
+            globals.config.has('Butler.incidentTool.newRelic.enable') &&
+            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
+            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
+        ) {
+            newRelic.sendReloadTaskFailureLog({
                 qs_hostName: msg[1],
                 qs_user: msg[4].replace(/\\/g, '/'),
                 qs_taskName: msg[2],

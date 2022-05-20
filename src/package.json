@@ -5,7 +5,7 @@
   "dependencies": {
     "@breejs/later": "^4.1.0",
     "@fastify/autoload": "^4.0.1",
-    "@fastify/rate-limit": "^6.0.0",
+    "@fastify/rate-limit": "^6.0.1",
     "@fastify/reply-from": "^7.0.1",
     "@fastify/sensible": "^4.1.0",
     "@fastify/static": "^5.0.2",
@@ -56,7 +56,7 @@
   "devDependencies": {
     "jest": "28.1.0",
     "prettier": "2.6.2",
-    "snyk": "1.931.0"
+    "snyk": "1.934.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",

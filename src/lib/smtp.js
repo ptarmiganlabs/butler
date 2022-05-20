@@ -246,6 +246,53 @@ async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars
     }
 }
 
+async function sendEmailBasic(from, recipientsEmail, emailPriority, subject, body) {
+    try {
+        // First make sure email sending is enabled in the config file and that we have all required SMTP settings
+        if (isSmtpConfigOk() === false) {
+            return 1;
+        }
+
+        const smtpOptions = getSmtpOptions();
+        const transporter = nodemailer.createTransport(smtpOptions);
+
+        // Loop over all email recipients
+        // eslint-disable-next-line no-restricted-syntax
+        for (const recipientEmail of recipientsEmail) {
+            // Verify that email address is valid
+            if (emailValidator.validate(recipientEmail) === true) {
+                // Recipient email address has valid format
+                // Set up mail object
+                const message = {
+                    priority: emailPriority,
+                    from,
+                    to: recipientEmail,
+                    subject,
+                    text: body,
+                };
+
+                // Verify SMTP configuration
+                // eslint-disable-next-line no-await-in-loop
+                const smtpStatus = await transporter.verify();
+                globals.logger.debug(`SMTP BASIC: SMTP status: ${smtpStatus}`);
+                globals.logger.debug(`SMTP BASIC: Message=${JSON.stringify(message, null, 2)}`);
+
+                if (smtpStatus) {
+                    // eslint-disable-next-line no-await-in-loop
+                    const result = await transporter.sendMail(message);
+                    globals.logger.debug(`SMTP BASIC: Sending email result: ${JSON.stringify(result, null, 2)}`);
+                } else {
+                    globals.logger.warn('SMTP BASIC: SMTP transporter not ready');
+                }
+            } else {
+                globals.logger.warn(`SMTP BASIC: Recipient email adress not valid: ${recipientEmail}`);
+            }
+        }
+    } catch (err) {
+        globals.logger.error(`SMTP BASIC: ${err}`);
+    }
+}
+
 async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable is true
@@ -691,4 +738,5 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 module.exports = {
     sendReloadTaskFailureNotificationEmail,
     sendReloadTaskAbortedNotificationEmail,
+    sendEmailBasic,
 };
