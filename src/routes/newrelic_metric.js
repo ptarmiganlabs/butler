@@ -22,9 +22,11 @@ async function handlerPostNewRelicMetric(request, reply) {
         if (globals.config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static')) {
             const staticAttributes = globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static');
 
-            // eslint-disable-next-line no-restricted-syntax
-            for (const item of staticAttributes) {
-                attributes[item.name] = item.value;
+            if (staticAttributes !== null && staticAttributes.length > 0) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const item of staticAttributes) {
+                    attributes[item.name] = item.value;
+                }
             }
         }
 
@@ -62,7 +64,7 @@ async function handlerPostNewRelicMetric(request, reply) {
         globals.logger.debug(`NEWRELIC METRIC: Payload: ${JSON.stringify(payload, null, 2)}`);
 
         // Preapare call to remote host
-        const remoteUrl = globals.config.get('Butler.uptimeMonitor.storeNewRelic.url');
+        const remoteUrl = globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.url');
 
         // Add headers
         const headers = {
@@ -70,9 +72,11 @@ async function handlerPostNewRelicMetric(request, reply) {
             'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const header of globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header')) {
-            headers[header.name] = header.value;
+        if (globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const header of globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header')) {
+                headers[header.name] = header.value;
+            }
         }
 
         const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
