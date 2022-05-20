@@ -184,6 +184,7 @@ async function build(opts = {}) {
     restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+    restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
     restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
