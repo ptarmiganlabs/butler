@@ -39,7 +39,8 @@ program
     .option('-c, --configfile <file>', 'path to config file')
     .addOption(new Option('-l, --loglevel <level>', 'log level').choices(['error', 'warn', 'info', 'verbose', 'debug', 'silly']))
     .option('--new-relic-api-key <key>', 'insert API key to use with New Relic')
-    .option('--new-relic-account-id <id>', 'New Relic account ID');
+    .option('--new-relic-account-id <id>', 'New Relic account ID')
+    .option('--test-email-address <address>', 'send test email to this address. Used to verify email settings in the config file.');
 
 // Parse command line params
 program.parse(process.argv);
@@ -512,4 +513,5 @@ module.exports = {
     hostInfo,
     isPkg,
     checkFileExistsSync,
+    options,
 };

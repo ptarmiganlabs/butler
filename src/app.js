@@ -17,6 +17,7 @@ const scheduler = require('./lib/scheduler');
 const serviceUptime = require('./lib/service_uptime');
 const telemetry = require('./lib/telemetry');
 const configUtil = require('./lib/config_util');
+const { sendTestEmail } = require('./lib/testemail');
 
 async function build(opts = {}) {
     const restServer = Fastify({ logger: true });
@@ -85,6 +86,11 @@ async function build(opts = {}) {
         globals.logger.info(`Client cert     : ${certFile}`);
         globals.logger.info(`Client cert key : ${keyFile}`);
         globals.logger.info(`Client cert CA  : ${caFile}`);
+
+        // Is there a email address specified on the command line? Send test email to it if so.
+        if (globals.options.testEmailAddress && globals.options.testEmailAddress.length > 0) {
+            sendTestEmail(globals.options.testEmailAddress);
+        }
 
         // Set up anon telemetry reports, if enabled
         if (

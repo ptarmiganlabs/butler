@@ -10,10 +10,10 @@
             "name": "Launch Program",
             "program": "${workspaceFolder}/src/butler.js",
             "cwd": "${workspaceFolder}/src",
-            // "args": [
-            //     "--configfile",
-            //     "./config/production.yaml",
-            // ],
+            "args": [
+                // "--configfile",
+                // "./config/production.yaml",
+            ],
             "env": {
                 "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
                 "NODE_ENV": "production"
