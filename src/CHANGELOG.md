@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.0.1...butler-v8.1.0) (2022-05-20)
+
+
+### Features
+
+* Send New Relic events via Butler REST API ([0da0d85](https://github.com/ptarmiganlabs/butler/commit/0da0d85cd192587fe6e02b174ab8547a03304b83)), closes [#441](https://github.com/ptarmiganlabs/butler/issues/441)
+
+
+### Bug Fixes
+
+* Incorrect New Relic API url used when posting metrics via Butler's REST API ([43c037a](https://github.com/ptarmiganlabs/butler/commit/43c037adb334e03a422be6925c6053b7f77a0abb)), closes [#468](https://github.com/ptarmiganlabs/butler/issues/468)
+* No more errors when empty New Relic metrics attribute/header arrays in config file ([81e65ca](https://github.com/ptarmiganlabs/butler/commit/81e65caf9930314a8f652e51ab5875e6d9903db6)), closes [#467](https://github.com/ptarmiganlabs/butler/issues/467)
+
 ### [8.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.0.0...butler-v8.0.1) (2022-05-20)
 
 
