@@ -72,24 +72,30 @@ function getReloadFailedEventConfig() {
             'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
-            headers[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
+                headers[item.name] = item.value;
+            }
         }
 
         // Add static attributes
         const attributes = {};
 
         // Get shared static attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Get event-specific attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Add dynamic attributes
@@ -134,24 +140,30 @@ function getReloadFailedLogConfig() {
             'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
-            headers[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
+                headers[item.name] = item.value;
+            }
         }
 
         // Add static attributes
         const attributes = {};
 
         // Get shared static attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Get log-specific attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Add dynamic attributes
