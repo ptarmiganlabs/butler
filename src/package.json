@@ -10,12 +10,12 @@
     "@fastify/sensible": "^4.1.0",
     "@fastify/static": "^5.0.2",
     "@fastify/swagger": "^6.0.1",
-    "@keyvhq/core": "^1.6.9",
+    "@keyvhq/core": "^1.6.14",
     "any-base": "^1.1.0",
     "axios": "^0.27.2",
-    "commander": "^9.2.0",
+    "commander": "^9.3.0",
     "config": "^3.3.7",
-    "cron-job-manager": "^2.2.1",
+    "cron-job-manager": "^2.2.2",
     "email-validator": "^2.0.4",
     "enigma.js": "^2.9.0",
     "eslint": "^7.32.0",
@@ -47,16 +47,16 @@
     "qrs-interact": "^6.3.1",
     "rate-limiter-flexible": "^2.3.7",
     "serializeapp": "^3.0.0",
-    "systeminformation": "^5.11.15",
+    "systeminformation": "^5.11.16",
     "uuid": "^8.3.2",
     "winston": "^3.7.2",
-    "winston-daily-rotate-file": "^4.6.1",
-    "ws": "^8.6.0"
+    "winston-daily-rotate-file": "^4.7.1",
+    "ws": "^8.7.0"
   },
   "devDependencies": {
-    "jest": "28.1.0",
+    "jest": "^28.1.1",
     "prettier": "2.6.2",
-    "snyk": "1.934.0"
+    "snyk": "^1.947.0"
   },
   "homepage": "https://github.com/ptarmiganlabs/butler",
   "author": "Göran Sander",
