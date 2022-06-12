@@ -1,5 +1,25 @@
 # Changelog
 
+## [8.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.1.0...butler-v8.2.0) (2022-06-12)
+
+
+### Features
+
+* Add failed/aborted reload task and app tags as metadata for New Relic events and logs ([df65ae5](https://github.com/ptarmiganlabs/butler/commit/df65ae5966a910928cf92b3ed4811185c7e9d956)), closes [#479](https://github.com/ptarmiganlabs/butler/issues/479)
+* Add optional "from" option when sending test email ([aa4e148](https://github.com/ptarmiganlabs/butler/commit/aa4e1482da1af262c6cb56820eee43c2aa7eb260)), closes [#486](https://github.com/ptarmiganlabs/butler/issues/486)
+
+
+### Bug Fixes
+
+* Add better debug logging around which email addresses are used when sending alert emails ([8e6fb32](https://github.com/ptarmiganlabs/butler/commit/8e6fb32496ceaff3c24a5bc932a50a44a0031bbc)), closes [#487](https://github.com/ptarmiganlabs/butler/issues/487)
+* Back slash in script log breaks Slack and Teams messages ([f36aa36](https://github.com/ptarmiganlabs/butler/commit/f36aa36988bdbfef43462caac3f3df2a346143cf)), closes [#485](https://github.com/ptarmiganlabs/butler/issues/485)
+* Better debug logging when posting data to New Relic ([dbf0156](https://github.com/ptarmiganlabs/butler/commit/dbf0156e7f208db1e1ac218f0e1f8aab0eb8f571))
+
+
+### Miscellaneous
+
+* **deps:** Updated dependencies ([0a9c116](https://github.com/ptarmiganlabs/butler/commit/0a9c116c8933fd38602696f3ddb9b3df8f4a37cd))
+
 ## [8.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.1.0...butler-v8.1.0) (2022-05-20)
 
 
