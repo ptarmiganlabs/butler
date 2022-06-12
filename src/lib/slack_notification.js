@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 
 const fs = require('fs');
@@ -272,7 +273,18 @@ async function sendSlack(slackConfig, templateContext) {
                 if (fs.existsSync(slackConfig.templateFile) === true) {
                     const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
                     compiledTemplate = handlebars.compile(template);
+
+                    // Escape any back slashes in the script logs
+                    const regExpText = /(?!\\n)\\{1}/gm;
+                    globals.logger.debug(`TEAMSNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                    globals.logger.debug(`TEAMSNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
+                    templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
+
                     slackMsg = compiledTemplate(templateContext);
+
+                    globals.logger.debug(`SLACKNOTIF: Rendered message:\n${slackMsg}`);
                 } else {
                     globals.logger.error(`SLACKNOTIF: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }

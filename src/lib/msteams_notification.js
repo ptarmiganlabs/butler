@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 const fs = require('fs');
 const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
@@ -243,7 +244,18 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext) {
                 if (fs.existsSync(teamsConfig.templateFile) === true) {
                     const template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
                     compiledTemplate = handlebars.compile(template);
+
+                    // Escape any back slashes in the script logs
+                    const regExpText = /(?!\\n)\\{1}/gm;
+                    globals.logger.debug(`TEAMSNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                    globals.logger.debug(`TEAMSNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+
+                    templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
+                    templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
+
                     renderedText = compiledTemplate(templateContext);
+
+                    globals.logger.debug(`TEAMSNOTIF: Rendered message:\n${renderedText}`);
 
                     // Parse the JSON string to get rid of extra linebreaks etc.
                     msg = JSON.parse(renderedText);
