@@ -357,7 +357,7 @@ async function sendNewRelicEvent(incidentConfig, reloadParams) {
         };
 
         const response = await axios.request(axiosRequest);
-        globals.logger.debug(`NEWRELIC: Response from API: ${response}`);
+        globals.logger.debug(`NEWRELIC: Response from API: ${response.status}, ${response.statusText}`);
     } catch (err) {
         globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
     }
@@ -427,7 +427,7 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
         };
 
         const response = await axios.request(axiosRequest);
-        globals.logger.debug(`NEWRELIC: Response from API: ${response}`);
+        globals.logger.debug(`NEWRELIC: Response from API: ${response.status}, ${response.statusText}`);
     } catch (err) {
         globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
     }
