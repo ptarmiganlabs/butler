@@ -1,5 +1,6 @@
 // Load global variables and functions
 const globals = require('../globals');
+const QrsInteract = require('qrs-interact');
 const smtp = require('../lib/smtp');
 const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');
@@ -7,14 +8,29 @@ const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
 const newRelic = require('../lib/incident_mgmt/new_relic');
 const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
+const { getTaskTags } = require('../qrs_util/task_tag_util');
+const { getAppTags } = require('../qrs_util/app_tag_util');
 
 // Handler for failed scheduler initiated reloads
-const schedulerAborted = (msg) => {
+const schedulerAborted = async (msg) => {
     globals.logger.verbose(
         `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
     );
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
+
+    // Check if app/task tags are used by any of the alert destinations.
+    // If so, get those tags once so they can be re-used where needed.
+    let appTags = [];
+    let taskTags = [];
+
+    // Get tags for the app that failed reloading
+    appTags = await getAppTags(msg[6]);
+    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+
+    // Get tags for the task that failed reloading
+    taskTags = await getTaskTags(msg[5]);
+    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
     // Post to Signl4 when a task has been aborted
     if (
@@ -34,6 +50,8 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -55,6 +73,8 @@ const schedulerAborted = (msg) => {
             qs_logLevel: msg[8],
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -76,6 +96,8 @@ const schedulerAborted = (msg) => {
             qs_logLevel: msg[8],
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -97,6 +119,8 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -118,6 +142,8 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -139,6 +165,8 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -157,6 +185,8 @@ const schedulerAborted = (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
         });
     }
 
@@ -190,13 +220,15 @@ const schedulerAborted = (msg) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             })
         );
     }
 };
 
 // Handler for failed scheduler initiated reloads
-const schedulerFailed = (msg, legacyFlag) => {
+const schedulerFailed = async (msg, legacyFlag) => {
     if (legacyFlag) {
         // First field in message (msg[0]) is host name
 
@@ -406,6 +438,19 @@ const schedulerFailed = (msg, legacyFlag) => {
 
         // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
+        // Check if app/task tags are used by any of the alert destinations.
+        // If so, get those tags once so they can be re-used where needed.
+        let appTags = [];
+        let taskTags = [];
+
+        // Get tags for the app that failed reloading
+        appTags = await getAppTags(msg[6]);
+        globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+
+        // Get tags for the task that failed reloading
+        taskTags = await getTaskTags(msg[5]);
+        globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
         // Store script log to disk
         if (
             globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
@@ -422,6 +467,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -443,10 +490,12 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
-        // Post evemt to New Relic when a task has failed
+        // Post event to New Relic when a task has failed
         if (
             globals.config.has('Butler.incidentTool.newRelic.enable') &&
             globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
@@ -464,6 +513,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 qs_logLevel: msg[8],
                 qs_executionId: msg[9],
                 qs_logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -485,6 +536,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 qs_logLevel: msg[8],
                 qs_executionId: msg[9],
                 qs_logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -506,6 +559,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -527,6 +582,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -548,6 +605,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -566,6 +625,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
             });
         }
 
@@ -599,6 +660,8 @@ const schedulerFailed = (msg, legacyFlag) => {
                     logLevel: msg[8],
                     executionId: msg[9],
                     logMessage: msg[10],
+                    qs_appTags: appTags,
+                    qs_taskTags: taskTags,
                 })
             );
         }

@@ -62,7 +62,7 @@ function getReloadFailedEventConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC: Reload failure New Relic event config info missing in Butler config file');
+            globals.logger.error('RELOADFAILEDEVENT: Reload failure New Relic event config info missing in Butler config file');
             return false;
         }
 
@@ -90,7 +90,7 @@ function getReloadFailedEventConfig() {
             }
         }
 
-        // Get event-specific attributes
+        // Get event-specific static attributes
         if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static') !== null) {
             // eslint-disable-next-line no-restricted-syntax
             for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static')) {
@@ -116,7 +116,7 @@ function getReloadFailedEventConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${err}`);
+        globals.logger.error(`NEWRELIC RELOADFAILEDEVENT: ${err}`);
         return false;
     }
 }
@@ -130,7 +130,7 @@ function getReloadFailedLogConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC: Reload failure New Relic log config info missing in Butler config file');
+            globals.logger.error('NEWRELIC RELOADFAILEDLOG: Reload failure New Relic log config info missing in Butler config file');
             return false;
         }
 
@@ -181,7 +181,7 @@ function getReloadFailedLogConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${err}`);
+        globals.logger.error(`NEWRELIC RELOADFAILEDLOG: ${err}`);
         return false;
     }
 }
@@ -190,12 +190,12 @@ function getReloadAbortedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
         if (
-            !globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination') ||
-            !globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.enable') ||
+            !globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event') ||
+            !globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') ||
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC: Reload aborted New Relic event config info missing in Butler config file');
+            globals.logger.error('NEWRELIC RELOADABORTEDEVENT: Reload aborted New Relic event config info missing in Butler config file');
             return false;
         }
 
@@ -205,24 +205,30 @@ function getReloadAbortedEventConfig() {
             'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const header of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
-            headers[header.name] = header.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const header of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
+                headers[header.name] = header.value;
+            }
         }
 
         // Add static attributes
         const attributes = {};
 
         // Get shared static settings
-        // eslint-disable-next-line no-restricted-syntax
-        for (const header of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
-            attributes[header.name] = header.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const header of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
+                attributes[header.name] = header.value;
+            }
         }
 
-        // Get event-specific attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static')) {
-            attributes[item.name] = item.value;
+        // Get event-specific static attributes
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Add dynamic attributes
@@ -243,7 +249,7 @@ function getReloadAbortedEventConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${err}`);
+        globals.logger.error(`NEWRELIC RELOADABORTEDEVENT: ${err}`);
         return false;
     }
 }
@@ -257,7 +263,7 @@ function getReloadAbortedLogConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC: Reload aborted New Relic log config info missing in Butler config file');
+            globals.logger.error('NEWRELIC RELOADABORTEDLOG: Reload aborted New Relic log config info missing in Butler config file');
             return false;
         }
 
@@ -267,24 +273,30 @@ function getReloadAbortedLogConfig() {
             'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
-            headers[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
+                headers[item.name] = item.value;
+            }
         }
 
         // Add static attributes
         const attributes = {};
 
         // Get shared static attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Get log-specific attributes
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static')) {
-            attributes[item.name] = item.value;
+        if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
         }
 
         // Add dynamic attributes
@@ -302,7 +314,7 @@ function getReloadAbortedLogConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${err}`);
+        globals.logger.error(`NEWRELIC RELOADABORTEDLOG: ${err}`);
         return false;
     }
 }
@@ -422,12 +434,14 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
 }
 
 function sendReloadTaskFailureEvent(reloadParams) {
+    const params = reloadParams;
+
     rateLimiterFailedReloadsEvent
-        .consume(reloadParams.qs_taskId, 1)
+        .consume(params.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure event to New Relic for task "${reloadParams.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure event to New Relic for task "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -437,7 +451,35 @@ function sendReloadTaskFailureEvent(reloadParams) {
                     return 1;
                 }
 
-                sendNewRelicEvent(incidentConfig, reloadParams);
+                // Convert task and app tag arrays to attributes that can be sent to New Relic
+
+                // Should task tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.dynamic.useTaskTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.dynamic.useTaskTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_taskTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_taskTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_taskTags;
+
+                // Should app tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.dynamic.useAppTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.dynamic.useAppTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_appTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_appTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_appTags;
+
+                sendNewRelicEvent(incidentConfig, params);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
@@ -446,19 +488,21 @@ function sendReloadTaskFailureEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${reloadParams.qs_taskName}"`
+                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${params.qs_taskName}"`
             );
             globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
 function sendReloadTaskFailureLog(reloadParams) {
+    const params = reloadParams;
+
     rateLimiterFailedReloadsLog
-        .consume(reloadParams.qs_taskId, 1)
+        .consume(params.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure log entry to New Relic for task "${reloadParams.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure log entry to New Relic for task "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -468,7 +512,35 @@ function sendReloadTaskFailureLog(reloadParams) {
                     return 1;
                 }
 
-                sendNewRelicLog(incidentConfig, reloadParams);
+                // Convert task and app tag arrays to attributes that can be sent to New Relic
+
+                // Should task tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useTaskTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useTaskTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_taskTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_taskTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_taskTags;
+
+                // Should app tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useAppTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useAppTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_appTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_appTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_appTags;
+
+                sendNewRelicLog(incidentConfig, params);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
@@ -477,19 +549,21 @@ function sendReloadTaskFailureLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${reloadParams.qs_taskName}"`
+                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${params.qs_taskName}"`
             );
             globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
 function sendReloadTaskAbortedEvent(reloadParams) {
+    const params = reloadParams;
+
     rateLimiterAbortedReloadsEvent
-        .consume(reloadParams.qs_taskId, 1)
+        .consume(params.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload aborted event to New Relic for task "${reloadParams.taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload aborted event to New Relic for task "${params.taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -499,7 +573,35 @@ function sendReloadTaskAbortedEvent(reloadParams) {
                     return 1;
                 }
 
-                sendNewRelicEvent(incidentConfig, reloadParams);
+                // Convert task and app tag arrays to attributes that can be sent to New Relic
+
+                // Should task tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.dynamic.useTaskTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.dynamic.useTaskTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_taskTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_taskTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_taskTags;
+
+                // Should app tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.dynamic.useAppTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.dynamic.useAppTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_appTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_appTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_appTags;
+
+                sendNewRelicEvent(incidentConfig, params);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
@@ -508,19 +610,21 @@ function sendReloadTaskAbortedEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${reloadParams.qs_taskName}"`
+                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${params.qs_taskName}"`
             );
             globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
 function sendReloadTaskAbortedLog(reloadParams) {
+    const params = reloadParams;
+
     rateLimiterAbortedReloadsLog
-        .consume(reloadParams.qs_taskId, 1)
+        .consume(params.qs_taskId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload abort log entry to New Relic for task "${reloadParams.qs_taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload abort log entry to New Relic for task "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -530,7 +634,35 @@ function sendReloadTaskAbortedLog(reloadParams) {
                     return 1;
                 }
 
-                sendNewRelicLog(incidentConfig, reloadParams);
+                // Convert task and app tag arrays to attributes that can be sent to New Relic
+
+                // Should task tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.dynamic.useTaskTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.dynamic.useTaskTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_taskTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_taskTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_taskTags;
+
+                // Should app tags be included as New Relic attributes?
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.dynamic.useAppTags') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.dynamic.useAppTags')
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of params.qs_appTags) {
+                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
+                        params[`qs_appTag_${item}`] = 'true';
+                    }
+                }
+                delete params.qs_appTags;
+
+                sendNewRelicLog(incidentConfig, params);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
@@ -539,7 +671,7 @@ function sendReloadTaskAbortedLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${reloadParams.qs_taskName}"`
+                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${params.qs_taskName}"`
             );
             globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
