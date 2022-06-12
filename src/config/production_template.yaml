@@ -284,52 +284,64 @@ Butler:
             enable: true
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: event-specific-attribute 1
-                  value: abc 123
+                - name: event-specific-attribute 1  # Example
+                  value: abc 123                    # Example
+              dynamic:
+                useAppTags: true      # Should app tags be sent to New Relic as attributes?
+                useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
             enable: true
             tailScriptLogLines: 20
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: log-specific-attribute 1
-                  value: def 123
+                - name: log-specific-attribute 1    # Example
+                  value: def 123                    # Example
+              dynamic:
+                useAppTags: true      # Should app tags be sent to New Relic as attributes?
+                useTaskTags: true     # Should task tags be sent to New Relic as attributes?
         sharedSettings:
           rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
           header:                   # Custom http headers
-            - name: X-My-Header
-              value: Header value 1
+            - name: X-My-Header     # Example
+              value: Header value 1 # Example
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-              - name: service
-                value: butler
-              - name: environment
-                value: prod
+              - name: service       # Example
+                value: butler       # Example
+              - name: environment   # Example
+                value: prod         # Example
       reloadTaskAborted:
         destination:
           event: 
             enable: true
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: event-specific-attribute 2
-                  value: abc 123
+                - name: event-specific-attribute 2  # Example
+                  value: abc 123                    # Example
+              dynamic:
+                useAppTags: true      # Should app tags be sent to New Relic as attributes?
+                useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
             enable: true
             tailScriptLogLines: 20
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: log-specific-attribute 2
-                  value: def 123
+                - name: log-specific-attribute 2    # Example
+                  value: def 123                    # Example
+              dynamic:
+                useAppTags: true      # Should app tags be sent to New Relic as attributes?
+                useTaskTags: true     # Should task tags be sent to New Relic as attributes?
         sharedSettings:
           rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
           header:                   # Custom http headers
-            - name: X-My-Header
-              value: Header value 2
+            - name: X-My-Header     # Example
+              value: Header value 2 # Example
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-              - name: service
-                value: butler
-              - name: environment
-                value: prod
+              - name: service       # Example
+                value: butler       # Example
+              - name: environment   # Example
+                value: prod         # Example
 
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
@@ -441,6 +453,7 @@ Butler:
     mqttPublishMessage: false
     newRelic:
       postNewRelicMetric: true
+      postNewRelicEvent: true
     scheduler:
       createNewSchedule: false
       getSchedule: false
@@ -463,6 +476,19 @@ Butler:
         # https://insights-collector.eu01.nr-data.net
         # https://insights-collector.newrelic.com 
         url: https://insights-collector.eu01.nr-data.net
+        header:                   # Custom http headers
+          - name: X-My-Header
+            value: Header value
+        attribute: 
+          static:                   # Static attributes/dimensions to attach to the metrics data sent to New Relic.
+            - name: env
+              value: prod
+      postNewRelicEvent:            # Setings used by post event to New Relic API endpoint
+        # Note that the URL path should *not* be included in the url setting below!
+        # As of this writing the valid options are
+        # https://insights-collector.eu01.nr-data.net
+        # https://insights-collector.newrelic.com 
+        url: https://insights-collector.eu01.nr-data.net/
         header:                   # Custom http headers
           - name: X-My-Header
             value: Header value
