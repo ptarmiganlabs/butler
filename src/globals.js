@@ -40,7 +40,11 @@ program
     .addOption(new Option('-l, --loglevel <level>', 'log level').choices(['error', 'warn', 'info', 'verbose', 'debug', 'silly']))
     .option('--new-relic-api-key <key>', 'insert API key to use with New Relic')
     .option('--new-relic-account-id <id>', 'New Relic account ID')
-    .option('--test-email-address <address>', 'send test email to this address. Used to verify email settings in the config file.');
+    .option('--test-email-address <address>', 'send test email to this address. Used to verify email settings in the config file.')
+    .option(
+        '--test-email-from-address <address>',
+        'send test email from this address. Only relevant when SMTP server allows from address to be set.'
+    );
 
 // Parse command line params
 program.parse(process.argv);

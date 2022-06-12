@@ -89,7 +89,12 @@ async function build(opts = {}) {
 
         // Is there a email address specified on the command line? Send test email to it if so.
         if (globals.options.testEmailAddress && globals.options.testEmailAddress.length > 0) {
-            sendTestEmail(globals.options.testEmailAddress);
+            // Is there a from address specified in a separate command line option?
+            if (globals.options.testEmailFromAddress && globals.options.testEmailFromAddress.length > 0) {
+                sendTestEmail(globals.options.testEmailAddress, globals.options.testEmailFromAddress);
+            } else {
+                sendTestEmail(globals.options.testEmailAddress, '');
+            }
         }
 
         // Set up anon telemetry reports, if enabled
