@@ -336,6 +336,10 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     );
 
     if (taskSpecificAlertEmailAddresses.length > 0) {
+        globals.logger.debug(
+            `TASK FAILED ALERT EMAIL: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`
+        );
+
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
     }
 
@@ -345,6 +349,9 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         globals.logger.verbose(`TASK FAILED ALERT EMAIL: Send alert emails for all tasks`);
 
         if (globalSendList.length > 0) {
+            globals.logger.debug(
+                `TASK FAILED ALERT EMAIL: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
+            );
             mainSendList = mainSendList.concat(globalSendList);
         }
     } else {
@@ -359,6 +366,9 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         );
 
         if (sendAlert === true) {
+            globals.logger.debug(
+                `TASK FAILED ALERT EMAIL: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`
+            );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList.length > 0) {
                 mainSendList = mainSendList.concat(globalSendList);
