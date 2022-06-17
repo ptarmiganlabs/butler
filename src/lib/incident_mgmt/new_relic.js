@@ -69,7 +69,6 @@ function getReloadFailedEventConfig() {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header') !== null) {
@@ -137,7 +136,6 @@ function getReloadFailedLogConfig() {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header') !== null) {
@@ -202,7 +200,6 @@ function getReloadAbortedEventConfig() {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header') !== null) {
@@ -270,7 +267,6 @@ function getReloadAbortedLogConfig() {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header') !== null) {
@@ -321,11 +317,6 @@ function getReloadAbortedLogConfig() {
 
 async function sendNewRelicEvent(incidentConfig, reloadParams) {
     try {
-        // Build final URL
-        const eventApiUrl = `${incidentConfig.url}v1/accounts/${globals.config.get(
-            'Butler.thirdPartyToolsCredentials.newRelic.accountId'
-        )}/events`;
-
         // Build final payload
         const payload = Object.assign(incidentConfig.attributes, reloadParams);
         payload.eventType = incidentConfig.eventType;
@@ -347,17 +338,54 @@ async function sendNewRelicEvent(incidentConfig, reloadParams) {
         // Remove log timestamp field from payload as it is no longer needed
         delete payload.logTimeStamp;
 
-        // Build body for HTTP POST
-        const axiosRequest = {
-            url: eventApiUrl,
-            method: 'post',
-            timeout: 10000,
-            data: payload,
-            headers: incidentConfig.headers,
-        };
+        const { headers } = incidentConfig;
 
-        const response = await axios.request(axiosRequest);
-        globals.logger.debug(`NEWRELIC: Response from API: ${response.status}, ${response.statusText}`);
+        //
+        // Send data to all New Relic accounts that are enabled for this metric/event
+        //
+        // Get New Relic accounts
+        const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const accountName of globals.config.Butler.incidentTool.newRelic.destinationAccount.event) {
+            globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic config=${JSON.stringify(accountName)}`);
+
+            // Is there any config available for the current account?
+            const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
+            if (newRelicConfig.length === 0) {
+                globals.logger.error(`NEWRELIC EVENT: New Relic config "${accountName}" does not exist in the Butler config file.`);
+            } else {
+                headers['Api-Key'] = newRelicConfig[0].insertApiKey;
+                const newRelicAccountId = newRelicConfig[0].accountId;
+
+                const eventApiUrl = `${incidentConfig.url}v1/accounts/${newRelicAccountId}/events`;
+
+                // Build body for HTTP POST
+                const axiosRequest = {
+                    url: eventApiUrl,
+                    method: 'post',
+                    timeout: 10000,
+                    data: payload,
+                    headers,
+                };
+
+                // eslint-disable-next-line no-await-in-loop
+                const res = await axios.request(axiosRequest);
+                globals.logger.debug(
+                    `NEWRELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                );
+
+                if (res.status === 200 || res.status === 202) {
+                    // Posting done without error
+                    globals.logger.verbose(`NEWRELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
+                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                } else {
+                    globals.logger.error(
+                        `NEWRELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    );
+                }
+            }
+        }
     } catch (err) {
         globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
     }
@@ -417,17 +445,51 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
         // Remove log timestamp field from payload as it is no longer needed
         delete payload.logTimeStamp;
 
-        // Build body for HTTP POST
-        const axiosRequest = {
-            url: logApiUrl,
-            method: 'post',
-            timeout: 10000,
-            data: payload,
-            headers: incidentConfig.headers,
-        };
+        const { headers } = incidentConfig;
 
-        const response = await axios.request(axiosRequest);
-        globals.logger.debug(`NEWRELIC: Response from API: ${response.status}, ${response.statusText}`);
+        //
+        // Send data to all New Relic accounts that are enabled for this metric/event
+        //
+        // Get New Relic accounts
+        const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const accountName of globals.config.Butler.incidentTool.newRelic.destinationAccount.log) {
+            globals.logger.debug(`NEWRELIC LOG: Current loop New Relic config=${JSON.stringify(accountName)}`);
+
+            // Is there any config available for the current account?
+            const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
+            if (newRelicConfig.length === 0) {
+                globals.logger.error(`NEWRELIC LOG: New Relic config "${accountName}" does not exist in the Butler config file.`);
+            } else {
+                headers['Api-Key'] = newRelicConfig[0].insertApiKey;
+
+                // Build body for HTTP POST
+                const axiosRequest = {
+                    url: logApiUrl,
+                    method: 'post',
+                    timeout: 10000,
+                    data: payload,
+                    headers: incidentConfig.headers,
+                };
+
+                // eslint-disable-next-line no-await-in-loop
+                const res = await axios.request(axiosRequest);
+                globals.logger.debug(
+                    `NEWRELIC LOG: Result code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                );
+
+                if (res.status === 200 || res.status === 202) {
+                    // Posting done without error
+                    globals.logger.verbose(`NEWRELIC LOG: Sent log New Relic account ${newRelicConfig[0].accountId}`);
+                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                } else {
+                    globals.logger.error(
+                        `NEWRELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    );
+                }
+            }
+        }
     } catch (err) {
         globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
     }

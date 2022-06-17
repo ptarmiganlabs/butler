@@ -61,12 +61,9 @@ async function handlerPostNewRelicEvent(request, reply) {
                 ? globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.url')
                 : `${globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.url')}/`;
 
-        const eventApiUrl = `${remoteUrl}v1/accounts/${globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.accountId')}/events`;
-
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header') !== null) {
@@ -76,28 +73,51 @@ async function handlerPostNewRelicEvent(request, reply) {
             }
         }
 
-        // Build body for HTTP POST
-        const axiosRequest = {
-            url: eventApiUrl,
-            method: 'post',
-            timeout: 5000,
-            data: event,
-            headers,
-        };
+        //
+        // Send data to all New Relic accounts that are enabled for this metric/event
+        //
+        // Get New Relic accounts
+        const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
-        const res = await axios.request(axiosRequest);
-        globals.logger.debug(`NEWRELIC EVENT: Result code from posting event to New Relic: ${res.status}, ${res.statusText}`);
+        // eslint-disable-next-line no-restricted-syntax
+        for (const accountName of globals.config.Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount) {
+            globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic config=${JSON.stringify(accountName)}`);
 
-        if (res.status === 200) {
-            // Posting done without error
-            globals.logger.verbose(`NEWRELIC EVENT: Sent event to New Relic`);
-            reply.type('text/plain').code(202).send(res.statusText);
-            // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
-        } else {
-            reply.send(httpErrors(res.status, `Failed posting event to New Relic: ${res.statusText}`));
+            // Is there any config available for the current account?
+            const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
+            if (newRelicConfig.length === 0) {
+                globals.logger.error(`NEWRELIC EVENT: New Relic config "${accountName}" does not exist in the Butler config file.`);
+            } else {
+                headers['Api-Key'] = newRelicConfig[0].insertApiKey;
+                const newRelicAccountId = newRelicConfig[0].accountId;
+
+                const eventApiUrl = `${remoteUrl}v1/accounts/${newRelicAccountId}/events`;
+
+                // Build body for HTTP POST
+                const axiosRequest = {
+                    url: eventApiUrl,
+                    method: 'post',
+                    timeout: 5000,
+                    data: event,
+                    headers,
+                };
+
+                // eslint-disable-next-line no-await-in-loop
+                const res = await axios.request(axiosRequest);
+                globals.logger.debug(
+                    `NEWRELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                );
+
+                if (res.status === 200 || res.status === 202) {
+                    // Posting done without error
+                    globals.logger.verbose(`NEWRELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
+                    reply.type('text/plain').code(202).send(res.statusText);
+                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                } else {
+                    reply.send(httpErrors(res.status, `Failed posting event to New Relic: ${res.statusText}`));
+                }
+            }
         }
-
-        // Required parameter is missing
     } catch (err) {
         globals.logger.error(
             `NEWRELIC EVENT: Failed posting event to New Relic: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(

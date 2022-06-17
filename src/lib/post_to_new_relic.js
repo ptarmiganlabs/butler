@@ -90,7 +90,6 @@ async function postButlerUptimeToNewRelic(fields) {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         // eslint-disable-next-line no-restricted-syntax
@@ -98,9 +97,36 @@ async function postButlerUptimeToNewRelic(fields) {
             headers[header.name] = header.value;
         }
 
-        const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
-        globals.logger.debug(`UPTIME NEW RELIC: Result code from posting to New Relic: ${res.status}, ${res.statusText}`);
-        globals.logger.verbose(`UPTIME NEW RELIC: Sent Butler memory usage data to New Relic`);
+        //
+        // Send data to all New Relic accounts that are enabled for this metric/event
+        //
+        // Get New Relic accounts
+        const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
+        globals.logger.debug(`UPTIME NEW RELIC: Complete New Relic config=${JSON.stringify(nrAccounts)}`);
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const accountName of globals.config.Butler.uptimeMonitor.storeNewRelic.destinationAccount) {
+            globals.logger.debug(`UPTIME NEW RELIC: Current loop New Relic config=${JSON.stringify(accountName)}`);
+
+            // Is there any config available for the current account?
+            const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
+            globals.logger.debug(`UPTIME NEW RELIC: New Relic config=${JSON.stringify(newRelicConfig)}`);
+
+            if (newRelicConfig.length === 0) {
+                globals.logger.error(`UPTIME NEW RELIC: New Relic config "${accountName}" does not exist in the Butler config file.`);
+            } else {
+                headers['Api-Key'] = newRelicConfig[0].insertApiKey;
+
+                // eslint-disable-next-line no-await-in-loop
+                const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
+                globals.logger.debug(
+                    `UPTIME NEW RELIC: Result code from posting to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                );
+                globals.logger.verbose(
+                    `UPTIME NEW RELIC: Sent Butler memory usage data to New Relic account ${newRelicConfig[0].accountId}`
+                );
+            }
+        }
     } catch (error) {
         // handle error
         globals.logger.error(`UPTIME NEW RELIC: Error sending uptime: ${error}`);
