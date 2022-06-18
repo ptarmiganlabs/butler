@@ -119,12 +119,21 @@ async function postButlerUptimeToNewRelic(fields) {
 
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
+
                 globals.logger.debug(
                     `UPTIME NEW RELIC: Result code from posting to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                 );
-                globals.logger.verbose(
-                    `UPTIME NEW RELIC: Sent Butler memory usage data to New Relic account ${newRelicConfig[0].accountId}`
-                );
+                if (res.status === 200 || res.status === 202) {
+                    // Posting done without error
+                    globals.logger.verbose(
+                        `UPTIME NEW RELIC: Sent Butler memory usage data to New Relic account ${newRelicConfig[0].accountId}`
+                    );
+                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                } else {
+                    globals.logger.error(
+                        `UPTIME NEW RELIC: Error code from posting memory usage data to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    );
+                }
             }
         }
     } catch (error) {
