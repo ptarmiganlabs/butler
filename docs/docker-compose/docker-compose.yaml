@@ -1,13 +1,13 @@
 # docker-compose.yml
-version: '3.3'
+version: "3.3"
 services:
   butler:
     image: ptarmiganlabs/butler:latest
     container_name: butler
     restart: always
     ports:
-      - "8080:8080"       # REST API available on port 8180 to services outside the container
-      - "9998:9998/udp"   # UDP port for task failure events
+      - "8080:8080" # REST API available on port 8180 to services outside the container
+      - "9998:9998/udp" # UDP port for task failure events
     volumes:
       # Make config file accessible outside of container
       - "./config:/nodeapp/config"
@@ -19,5 +19,3 @@ services:
       options:
         max-file: "5"
         max-size: "5m"
-      
-

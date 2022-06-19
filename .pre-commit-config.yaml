@@ -20,5 +20,7 @@ repos:
               .github/.*|
               src/config/.*|
               src/CHANGELOG.md|
+              src/config/.*|
+              changelog.md|
               docs/api_doc/butler-api.html
           )$

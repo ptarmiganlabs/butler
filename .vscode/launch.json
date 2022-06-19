@@ -1,24 +1,24 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/src/butler.js",
-            "cwd": "${workspaceFolder}/src",
-            "args": [
-                // "--configfile",
-                // "./config/production.yaml",
-            ],
-            "env": {
-                "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
-                "NODE_ENV": "production"
-            },
-            "outFiles": ["${workspaceFolder}/**/*.js"]
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/src/butler.js",
+      "cwd": "${workspaceFolder}/src",
+      "args": [
+        // "--configfile",
+        // "./config/production.yaml",
+      ],
+      "env": {
+        "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
+        "NODE_ENV": "production"
+      },
+      "outFiles": ["${workspaceFolder}/**/*.js"]
+    }
+  ]
 }

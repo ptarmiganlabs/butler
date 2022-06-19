@@ -1,58 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.controller.type: deployment
-    kompose.service.export: "true"
-    kompose.service.type: nodeport
-    kompose.version: 1.21.0 ()
-  creationTimestamp: null
-  labels:
-    io.kompose.service: butler
-  name: butler
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      io.kompose.service: butler
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      annotations:
+    annotations:
         kompose.cmd: kompose convert
         kompose.controller.type: deployment
-        kompose.service.export: "true"
+        kompose.service.export: 'true'
         kompose.service.type: nodeport
         kompose.version: 1.21.0 ()
-      creationTimestamp: null
-      labels:
+    creationTimestamp: null
+    labels:
         io.kompose.service: butler
-    spec:
-      containers:
-      - env:
-        - name: NODE_ENV
-          value: production
-        image: ptarmiganlabs/butler:3.1.0
-        imagePullPolicy: ""
-        name: butler
-        ports:
-        - containerPort: 8080
-        - containerPort: 9997
-        - containerPort: 9998
-        resources: {}
-        volumeMounts:
-        - mountPath: /nodeapp/config
-          # name: butler-claim0
-          name: butler-config-volume
-      restartPolicy: Always
-      serviceAccountName: ""
-      volumes:
-      # - name: butler-claim0
-        # persistentVolumeClaim:
-        #   claimName: butler-claim0
-      - name: butler-config-volume
-        configMap:
-          name: production.yaml
+    name: butler
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            io.kompose.service: butler
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            annotations:
+                kompose.cmd: kompose convert
+                kompose.controller.type: deployment
+                kompose.service.export: 'true'
+                kompose.service.type: nodeport
+                kompose.version: 1.21.0 ()
+            creationTimestamp: null
+            labels:
+                io.kompose.service: butler
+        spec:
+            containers:
+                - env:
+                      - name: NODE_ENV
+                        value: production
+                  image: ptarmiganlabs/butler:3.1.0
+                  imagePullPolicy: ''
+                  name: butler
+                  ports:
+                      - containerPort: 8080
+                      - containerPort: 9997
+                      - containerPort: 9998
+                  resources: {}
+                  volumeMounts:
+                      - mountPath: /nodeapp/config
+                        # name: butler-claim0
+                        name: butler-config-volume
+            restartPolicy: Always
+            serviceAccountName: ''
+            volumes:
+                # - name: butler-claim0
+                # persistentVolumeClaim:
+                #   claimName: butler-claim0
+                - name: butler-config-volume
+                  configMap:
+                      name: production.yaml
 status: {}
