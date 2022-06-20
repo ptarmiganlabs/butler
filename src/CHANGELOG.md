@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.3.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.0...butler-v8.3.1) (2022-06-20)
+
+
+### Bug Fixes
+
+* Add missing API endpoint docs to HTML/YAML/JSON API documents ([83a3c65](https://github.com/ptarmiganlabs/butler/commit/83a3c65b38126a16a9d0c87076f5a4d68121c91d)), closes [#502](https://github.com/ptarmiganlabs/butler/issues/502)
+
 ## [8.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.2.0...butler-v8.3.0) (2022-06-20)
 
 
