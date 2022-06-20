@@ -1,4 +1,4 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
   title: Butler API documentation
   description: >-
@@ -25,7 +25,7 @@ paths:
         Note: Endpoints are enabled/disabled in the Butler main configuration
         file.
       responses:
-        "200":
+        '200':
           description: Enabled API enpooints.
           schema:
             description: Enabled API enpooints.
@@ -48,7 +48,7 @@ paths:
           in: query
           name: base62
       responses:
-        "200":
+        '200':
           description: Base conversion successful.
           schema:
             description: Base conversion successful.
@@ -63,7 +63,7 @@ paths:
             example:
               base62: 6DMW88LpSok9Z7P7hUK0wv7bF
               base16: 3199af08bfeeaf5d420f27ed9c01e74370077
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -79,7 +79,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -107,7 +107,7 @@ paths:
           in: query
           name: base16
       responses:
-        "200":
+        '200':
           description: Base conversion successful.
           schema:
             description: Base conversion successful.
@@ -122,7 +122,7 @@ paths:
             example:
               base16: 3199af08bfeeaf5d420f27ed9c01e74370077
               base62: 6DMW88LpSok9Z7P7hUK0wv7bF
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -138,7 +138,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -159,7 +159,7 @@ paths:
       summary: Tests if Butler is alive and responding
       description: Tests if Butler is alive and responding
       responses:
-        "200":
+        '200':
           description: Butler is alive and well.
           schema:
             description: Butler is alive and well.
@@ -171,7 +171,7 @@ paths:
               butlerVersion:
                 type: string
                 example: 5.5.0
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -231,7 +231,7 @@ paths:
                   behaviour is OS-dependent. Defaults to false.
                 example: false
       responses:
-        "201":
+        '201':
           description: File copied.
           schema:
             description: File copied.
@@ -262,7 +262,7 @@ paths:
                   preserved on the destination file(s). When false, timestamp
                   behaviour is OS-dependent. Defaults to false.
                 example: false
-        "400":
+        '400':
           description: '"Required parameter missing" or "fromFile not found".'
           schema:
             description: '"Required parameter missing" or "fromFile not found".'
@@ -278,7 +278,7 @@ paths:
                 type: string
               time:
                 type: string
-        "403":
+        '403':
           description: No approved fromDir/toDir for file copy.
           schema:
             description: No approved fromDir/toDir for file copy.
@@ -294,7 +294,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -345,7 +345,7 @@ paths:
                   already exists. Defaults to false.
                 example: false
       responses:
-        "201":
+        '201':
           description: File moved.
           schema:
             description: File moved.
@@ -367,7 +367,7 @@ paths:
                   Controls whether destination file should be overwritten if it
                   already exists. Defaults to false.
                 example: false
-        "400":
+        '400':
           description: '"Required parameter missing" or "fromFile not found".'
           schema:
             description: '"Required parameter missing" or "fromFile not found".'
@@ -383,7 +383,7 @@ paths:
                 type: string
               time:
                 type: string
-        "403":
+        '403':
           description: No approved fromDir/toDir for file copy.
           schema:
             description: No approved fromDir/toDir for file copy.
@@ -399,7 +399,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -437,12 +437,12 @@ paths:
                   Windows/non-Windows platform.
                 example: data/qvdstore/sales/file1.qvd
       responses:
-        "204":
+        '204':
           description: File deleted.
           schema:
             description: File deleted.
             type: object
-        "400":
+        '400':
           description: >-
             "Required parameter missing" or "File requested for delete not
             found".
@@ -462,7 +462,7 @@ paths:
                 type: string
               time:
                 type: string
-        "403":
+        '403':
           description: No approved directory matches the delete request.
           schema:
             description: No approved directory matches the delete request.
@@ -478,7 +478,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -511,7 +511,7 @@ paths:
                 description: Directory that should be created.
                 example: subfolder/2020-10
       responses:
-        "201":
+        '201':
           description: Directory created.
           schema:
             description: Directory created.
@@ -521,7 +521,7 @@ paths:
                 type: string
                 description: Directory that was created.
                 example: subfolder/2020-10
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -537,7 +537,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -574,7 +574,7 @@ paths:
                   absolute path.
                 example: /Users/joe/data/qvds/2020
       responses:
-        "201":
+        '201':
           description: Directory created.
           schema:
             description: Directory created.
@@ -584,7 +584,7 @@ paths:
                 type: string
                 description: Directory that was created.
                 example: /Users/joe/data/qvds/2020
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -600,7 +600,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error (file system permissions etc).
           schema:
             description: Internal error (file system permissions etc).
@@ -620,7 +620,7 @@ paths:
     get:
       summary: List all currently defined namespaces.
       responses:
-        "200":
+        '200':
           description: Array of all namespaces.
           schema:
             description: Array of all namespaces.
@@ -631,7 +631,7 @@ paths:
               - Weekly sales app
               - Sales ETL step 1
               - Sales ETL step 2
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -652,19 +652,19 @@ paths:
       summary: Get the value associated with a key, in a specific namespace.
       parameters:
         - type: string
-          description: ""
+          description: ''
           example: Last extract timestamp
           required: true
           in: query
           name: key
         - type: string
-          description: ""
+          description: ''
           example: Sales ETL step 2
           required: true
           in: path
           name: namespace
       responses:
-        "200":
+        '200':
           description: Key and it's associated value and metadata returned.
           schema:
             description: Key and it's associated value and metadata returned.
@@ -681,8 +681,8 @@ paths:
               value:
                 type: string
                 description: Value stored in the key-value pair.
-                example: "2020-09-29 17:14:56"
-        "400":
+                example: '2020-09-29 17:14:56'
+        '400':
           description: '"Namespace or key not found" or "Required parameter missing".'
           schema:
             description: '"Namespace or key not found" or "Required parameter missing".'
@@ -698,7 +698,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -738,7 +738,7 @@ paths:
               value:
                 type: string
                 description: Value to set
-                example: "12345.789"
+                example: '12345.789'
               ttl:
                 type: number
                 description: >-
@@ -752,7 +752,7 @@ paths:
           in: path
           name: namespace
       responses:
-        "201":
+        '201':
           description: Key successfully set.
           schema:
             description: Key successfully set.
@@ -769,14 +769,14 @@ paths:
               value:
                 type: string
                 description: Value stored in the key-value pair.
-                example: "2020-09-29 17:14:56"
+                example: '2020-09-29 17:14:56'
               ttl:
                 type: number
                 description: >-
                   Time-to-live for the key-value pair. 0 if no ttl was set,
                   otherwise in milliseconds.
                 example: 60000
-        "400":
+        '400':
           description: '"Namespace not found" or "Required parameter missing".'
           schema:
             description: '"Namespace not found" or "Required parameter missing".'
@@ -792,7 +792,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -818,13 +818,13 @@ paths:
           in: path
           name: namespace
       responses:
-        "204":
+        '204':
           description: Namespace successfully deleted.
           schema:
             description: Namespace successfully deleted.
             type: string
-            example: ""
-        "400":
+            example: ''
+        '400':
           description: '"Namespace not found" or "Required parameter missing".'
           schema:
             description: '"Namespace not found" or "Required parameter missing".'
@@ -840,7 +840,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -862,19 +862,19 @@ paths:
       description: Returns true if the specified key exists, otherwise false.
       parameters:
         - type: string
-          description: ""
+          description: ''
           example: Last extract timestamp
           required: true
           in: query
           name: key
         - type: string
-          description: ""
+          description: ''
           example: Sales ETL step 2
           required: true
           in: path
           name: namespace
       responses:
-        "200":
+        '200':
           description: >-
             Key exist/no-exist returned, together with the data if the does
             exist.
@@ -903,8 +903,8 @@ paths:
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    example: "2020-09-29 17:14:56"
-        "400":
+                    example: '2020-09-29 17:14:56'
+        '400':
           description: '"Namespace not found" or "Required parameter missing".'
           schema:
             description: '"Namespace not found" or "Required parameter missing".'
@@ -920,7 +920,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -953,13 +953,13 @@ paths:
           in: path
           name: key
       responses:
-        "204":
+        '204':
           description: Key-value pair successfully deleted.
           schema:
             description: Key-value pair successfully deleted.
             type: string
-            example: ""
-        "400":
+            example: ''
+        '400':
           description: '"Namespace or key not found" or "Required parameter missing".'
           schema:
             description: '"Namespace or key not found" or "Required parameter missing".'
@@ -975,7 +975,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1002,7 +1002,7 @@ paths:
           in: path
           name: namespace
       responses:
-        "200":
+        '200':
           description: Object containing namespace name + list of allkeys in the namespace.
           schema:
             description: >-
@@ -1012,7 +1012,7 @@ paths:
             properties:
               namespace:
                 type: string
-                description: ""
+                description: ''
                 example: Sales ETL step 2
               keys:
                 type: array
@@ -1023,7 +1023,7 @@ paths:
                 example:
                   - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
                   - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
-        "400":
+        '400':
           description: '"Namespace not found" or "Required parameter missing".'
           schema:
             description: '"Namespace not found" or "Required parameter missing".'
@@ -1039,7 +1039,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1079,7 +1079,7 @@ paths:
               - topic
               - message
       responses:
-        "201":
+        '201':
           description: MQTT message successfully published.
           schema:
             description: MQTT message successfully published.
@@ -1091,7 +1091,7 @@ paths:
               message:
                 type: string
                 example: dt=20201028
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1107,7 +1107,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1182,7 +1182,7 @@ paths:
               - type
               - value
       responses:
-        "202":
+        '202':
           description: Data accepted and sent to New Relic.
           schema:
             description: Data accepted and sent to New Relic.
@@ -1190,11 +1190,11 @@ paths:
             properties:
               newRelicResultCode:
                 type: number
-                example: "202"
+                example: '202'
               newRelicResultText:
                 type: string
                 example: Data accepted.
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1210,7 +1210,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1275,7 +1275,7 @@ paths:
           in: path
           name: appId
       responses:
-        "201":
+        '201':
           description: App successfully reloaded.
           schema:
             description: App successfully reloaded.
@@ -1285,7 +1285,7 @@ paths:
                 type: string
                 description: ID of reloaded app
                 example: 210832b5-6174-4572-bd19-3e61eda675ef
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1301,7 +1301,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1329,14 +1329,14 @@ paths:
           in: path
           name: appId
       responses:
-        "200":
+        '200':
           description: App dump successful. App metadata returned as JSON.
           schema:
             description: App dump successful. App metadata returned as JSON.
             type: object
             example:
               properties: {}
-              loadScript: ""
+              loadScript: ''
               sheets: []
               stories: []
               masterobjects: []
@@ -1349,7 +1349,7 @@ paths:
               fields: []
               variables: []
               measures: []
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1365,7 +1365,7 @@ paths:
                 type: string
               time:
                 type: string
-        "422":
+        '422':
           description: App not found in  Qlik Sense.
           schema:
             description: App not found in  Qlik Sense.
@@ -1381,7 +1381,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1409,14 +1409,14 @@ paths:
           in: path
           name: appId
       responses:
-        "200":
+        '200':
           description: App dump successful. App metadata returned as JSON.
           schema:
             description: App dump successful. App metadata returned as JSON.
             type: object
             example:
               properties: {}
-              loadScript: ""
+              loadScript: ''
               sheets: []
               stories: []
               masterobjects: []
@@ -1429,7 +1429,7 @@ paths:
               fields: []
               variables: []
               measures: []
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1445,7 +1445,7 @@ paths:
                 type: string
               time:
                 type: string
-        "422":
+        '422':
           description: App not found in  Qlik Sense.
           schema:
             description: App not found in  Qlik Sense.
@@ -1461,7 +1461,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1482,7 +1482,7 @@ paths:
       summary: Get a list of all apps in Sense environment.
       description: Does the same thing as `/v4/apps/list`
       responses:
-        "200":
+        '200':
           description: App list successfully retrieved.
           schema:
             description: App list successfully retrieved.
@@ -1498,7 +1498,7 @@ paths:
                   type: string
                   description: App name
                   example: 2021 sales targets
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1519,7 +1519,7 @@ paths:
       summary: Get a list of all apps in Sense environment.
       description: Does the same thing as `/v4/senselistapps`
       responses:
-        "200":
+        '200':
           description: App list successfully retrieved.
           schema:
             description: App list successfully retrieved.
@@ -1535,7 +1535,7 @@ paths:
                   type: string
                   description: App name
                   example: 2021 sales targets
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1648,7 +1648,7 @@ paths:
           in: path
           name: taskId
       responses:
-        "200":
+        '200':
           description: Task successfully started.
           schema:
             description: Task successfully started.
@@ -1673,7 +1673,7 @@ paths:
               tasksCPDenied:
                 - name: taskGroup
                   value: cp_value_denied1
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1689,7 +1689,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1801,7 +1801,7 @@ paths:
           in: path
           name: taskId
       responses:
-        "200":
+        '200':
           description: Task successfully started.
           schema:
             description: Task successfully started.
@@ -1826,7 +1826,7 @@ paths:
               tasksCPDenied:
                 - name: taskGroup
                   value: cp_value_denied1
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1842,7 +1842,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
@@ -1873,7 +1873,7 @@ paths:
                 description: >-
                   Slack channel to post message into. Prefix channel name with
                   #.
-                example: "#reload-notification"
+                example: '#reload-notification'
               from_user:
                 type: string
                 description: Name of sending user, as shown in the Slack message
@@ -1891,7 +1891,7 @@ paths:
               - from_user
               - msg
       responses:
-        "201":
+        '201':
           description: Message successfully sent to Slack.
           schema:
             description: Message successfully sent to Slack.
@@ -1902,7 +1902,7 @@ paths:
                 description: >-
                   Slack channel to post message into. Prefix channel name with
                   #.
-                example: "#reload-notification"
+                example: '#reload-notification'
               from_user:
                 type: string
                 description: Name of sending user, as shown in the Slack message
@@ -1915,7 +1915,7 @@ paths:
                 type: string
                 description: Emoji to shown next to Slack message
                 example: thumbsup
-        "400":
+        '400':
           description: Required parameter missing.
           schema:
             description: Required parameter missing.
@@ -1931,7 +1931,7 @@ paths:
                 type: string
               time:
                 type: string
-        "500":
+        '500':
           description: Internal error.
           schema:
             description: Internal error.
