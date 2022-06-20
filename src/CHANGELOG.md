@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.3.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.1...butler-v8.3.2) (2022-06-20)
+
+
+### Bug Fixes
+
+* Update template config file wrt sending data to multiple New Relic accounts ([58277dc](https://github.com/ptarmiganlabs/butler/commit/58277dc3a2b3a76fe9b3591fed18eca55003858a)), closes [#505](https://github.com/ptarmiganlabs/butler/issues/505)
+
 ## [8.3.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.0...butler-v8.3.1) (2022-06-20)
 
 
