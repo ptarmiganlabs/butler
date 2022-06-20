@@ -59,6 +59,7 @@ jobs:
       - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
         run: |
           pwd
+          ls -la
           cd src
           node butler.js -c ./config/config-gen-api-docs.yaml & 
           sleep 10
