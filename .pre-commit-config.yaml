@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.12.0
+    hooks:
+      - id: ggshield
+        language_version: python3
+        stages: [commit]
+
+  # -   repo: https://github.com/pre-commit/mirrors-jshint
+  #     rev: ''  # Use the sha / tag you want to point at
+  #     hooks:
+  #     -   id: jshint
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v2.7.1" # Use the sha / tag you want to point at
+    hooks:
+      - id: prettier
+        exclude: |
+          (?x)^(
+              .github/.*|
+              src/config/.*|
+              src/CHANGELOG.md|
+              src/config/.*|
+              changelog.md|
+              docs/api_doc/butler-api.html
+          )$

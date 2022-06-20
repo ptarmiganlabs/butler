@@ -70,15 +70,11 @@
           "alias": "Process memory",
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -90,9 +86,7 @@
           "select": [
             [
               {
-                "params": [
-                  "process_memory"
-                ],
+                "params": ["process_memory"],
                 "type": "field"
               },
               {
@@ -107,15 +101,11 @@
           "alias": "Heap total",
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -127,9 +117,7 @@
           "select": [
             [
               {
-                "params": [
-                  "heap_total"
-                ],
+                "params": ["heap_total"],
                 "type": "field"
               },
               {
@@ -144,15 +132,11 @@
           "alias": "Heap used",
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -164,9 +148,7 @@
           "select": [
             [
               {
-                "params": [
-                  "heap_used"
-                ],
+                "params": ["heap_used"],
                 "type": "field"
               },
               {

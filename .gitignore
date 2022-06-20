@@ -21,6 +21,8 @@ npm-debug.log
 release/*
 src/release/*
 
+.cache_ggshield
+
 # Logs
 */log
 logs

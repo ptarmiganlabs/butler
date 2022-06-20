@@ -26,6 +26,8 @@ scriptlog export-ignore
 .release-please-manifest.json export-ignore
 release-please-config.json export-ignore
 renovate.json export-ignore
+.cache_ggshield
+
 # general text files
 changelog.md export-ignore
 

@@ -69,7 +69,6 @@ async function handlerPostNewRelicMetric(request, reply) {
         // Add headers
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Api-Key': globals.config.get('Butler.thirdPartyToolsCredentials.newRelic.insertApiKey'),
         };
 
         if (globals.config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header') !== null) {
@@ -79,18 +78,39 @@ async function handlerPostNewRelicMetric(request, reply) {
             }
         }
 
-        const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
-        globals.logger.debug(`NEWRELIC METRIC: Result code from posting metric to New Relic: ${res.status}, ${res.statusText}`);
+        //
+        // Send data to all New Relic accounts that are enabled for this metric/event
+        //
+        // Get New Relic accounts
+        const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
-        if (res.status === 202) {
-            // Posting done without error
-            globals.logger.verbose(`NEWRELIC METRIC: Sent metric to New Relic`);
-            reply.type('text/plain').code(202).send(res.statusText);
-            // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
-        } else {
-            reply.send(httpErrors(res.status, `Failed posting metric to New Relic: ${res.statusText}`));
+        // eslint-disable-next-line no-restricted-syntax
+        for (const accountName of globals.config.Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount) {
+            globals.logger.debug(`NEWRELIC METRIC: Current loop New Relic config=${JSON.stringify(accountName)}`);
+
+            // Is there any config available for the current account?
+            const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
+            if (newRelicConfig.length === 0) {
+                globals.logger.error(`NEWRELIC METRIC: New Relic config "${accountName}" does not exist in the Butler config file.`);
+            } else {
+                headers['Api-Key'] = newRelicConfig[0].insertApiKey;
+
+                // eslint-disable-next-line no-await-in-loop
+                const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
+                globals.logger.debug(
+                    `NEWRELIC METRIC: Result code from posting metric to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                );
+
+                if (res.status === 202) {
+                    // Posting done without error
+                    globals.logger.verbose(`NEWRELIC METRIC: Sent metric New Relic account ${newRelicConfig[0].accountId}`);
+                    reply.type('text/plain').code(202).send(res.statusText);
+                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                } else {
+                    reply.send(httpErrors(res.status, `Failed posting metric to New Relic: ${res.statusText}`));
+                }
+            }
         }
-
         // Required parameter is missing
         // reply.send(httpErrors(400, 'Required parameter missing'));
     } catch (err) {
