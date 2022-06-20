@@ -15,7 +15,7 @@
         "axios": "^0.27.2",
         "commander": "^9.3.0",
         "config": "^3.3.7",
-        "cron-job-manager": "^2.2.2",
+        "cron-job-manager": "^2.3.0",
         "email-validator": "^2.0.4",
         "enigma.js": "^2.9.0",
         "eslint": "^7.32.0",
