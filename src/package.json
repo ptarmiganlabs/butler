@@ -8,7 +8,7 @@
         "@fastify/rate-limit": "^6.0.1",
         "@fastify/reply-from": "^7.0.1",
         "@fastify/sensible": "^4.1.0",
-        "@fastify/static": "^5.0.2",
+        "@fastify/static": "^6.0.0",
         "@fastify/swagger": "^6.0.1",
         "@keyvhq/core": "^1.6.14",
         "any-base": "^1.1.0",
