@@ -6,7 +6,7 @@
         "@breejs/later": "^4.1.0",
         "@fastify/autoload": "^4.0.1",
         "@fastify/rate-limit": "^6.0.1",
-        "@fastify/reply-from": "^7.0.1",
+        "@fastify/reply-from": "^8.0.0",
         "@fastify/sensible": "^4.1.0",
         "@fastify/static": "^5.0.2",
         "@fastify/swagger": "^6.0.1",
