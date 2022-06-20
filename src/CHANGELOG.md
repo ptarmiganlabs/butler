@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.2.0...butler-v8.3.0) (2022-06-20)
+
+
+### Features
+
+* Send New Relic metrics, events and logs to zero, one or more New Relic accounts ([d3b8968](https://github.com/ptarmiganlabs/butler/commit/d3b8968d6146db441cbdf2ff2ddac99fc8ab2968)), closes [#489](https://github.com/ptarmiganlabs/butler/issues/489)
+
+
+### Refactoring
+
+* Enforce code style across all files. ([c3f97e5](https://github.com/ptarmiganlabs/butler/commit/c3f97e572b49c6ad0327475ae0e1eb4831d54af3)), closes [#497](https://github.com/ptarmiganlabs/butler/issues/497)
+
+
+### Miscellaneous
+
+* Update dependencies ([ac3ffc0](https://github.com/ptarmiganlabs/butler/commit/ac3ffc0f0fda4d9e42b61bff4faea06869f09009))
+* Update dependencies ([d8ff101](https://github.com/ptarmiganlabs/butler/commit/d8ff10171b3472c5e657e052f42eb1dfc0853af3))
+
 ## [8.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.1.0...butler-v8.2.0) (2022-06-12)
 
 
