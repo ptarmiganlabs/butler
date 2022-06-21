@@ -124,15 +124,15 @@ async function build(opts = {}) {
     }
 
     // Register rate limited for API
-    restServer.register(FastifyRateLimit, {
+    await restServer.register(FastifyRateLimit, {
         max: 100,
         timeWindow: '1 minute',
     });
 
     // This loads all plugins defined in plugins.
     // Those should be support plugins that are reused through your application
-    restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
-    restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
 
     // let apiDocPath = '';
     // if (process.pkg) {
@@ -155,9 +155,9 @@ async function build(opts = {}) {
     //     exposeRoute: true,
     // });
 
-    restServer.register(FastifySwagger, {
+    await restServer.register(FastifySwagger, {
         routePrefix: '/documentation',
-        swagger: {
+        openapi: {
             mode: 'dynamic',
             info: {
                 title: 'Butler API documentation',
@@ -169,11 +169,34 @@ async function build(opts = {}) {
                 url: 'https://github.com/ptarmiganlabs',
                 description: 'Butler family of tools on GitHub',
             },
-            host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
-            schemes: ['http'],
+            servers: [
+                {
+                    url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+                        'Butler.restServerConfig.serverPort'
+                    )}`,
+                },
+            ],
             // consumes: ['application/json'],
             produces: ['application/json'],
         },
+
+        // swagger: {
+        //     mode: 'dynamic',
+        //     info: {
+        //         title: 'Butler API documentation',
+        //         description:
+        //             'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.\nButler offers both a REST API and things like failed reload notifications etc.\n\nThis page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
+        //         version: globals.appVersion,
+        //     },
+        //     externalDocs: {
+        //         url: 'https://github.com/ptarmiganlabs',
+        //         description: 'Butler family of tools on GitHub',
+        //     },
+        //     host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
+        //     schemes: ['http'],
+        //     // consumes: ['application/json'],
+        //     produces: ['application/json'],
+        // },
         uiConfig: {
             deepLinking: true,
             operationsSorter: 'alpha', // can also be 'alpha' or a function
@@ -183,24 +206,24 @@ async function build(opts = {}) {
     });
 
     // Loads all plugins defined in routes
-    restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
-    restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
+    await restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
 
     // ---------------------------------------------------
     // Configure X-HTTP-Method-Override handling
-    proxyRestServer.register(FastifyReplyFrom, {
+    await proxyRestServer.register(FastifyReplyFrom, {
         // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
         base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
             'Butler.restServerConfig.backgroundServerPort'
@@ -273,7 +296,7 @@ async function build(opts = {}) {
         }
     }
 
-    dockerHealthCheckServer.register(FastifyHealthcheck);
+    await dockerHealthCheckServer.register(FastifyHealthcheck);
 
     return { restServer, proxyRestServer, dockerHealthCheckServer };
 }
