@@ -10,7 +10,7 @@ const apiPutStartTask = {
                     type: 'string',
                     description:
                         'ID of Qlik Sense task.\nButler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.',
-                    example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                    examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
         },
@@ -21,7 +21,7 @@ const apiPutStartTask = {
                     type: 'boolean',
                     description:
                         'If set to `true`, all specified taskIds must exist. If one or more taskIds does not exist in the Sense server, *no* tasks will be started.\n\nIf set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.\n\nIn either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.\n\nNote: Tasks started by specifying tags and/or custom properties are not affected by this.',
-                    example: true,
+                    examples: [true],
                 },
             },
         },
@@ -33,7 +33,7 @@ const apiPutStartTask = {
                 properties: {
                     type: {
                         type: 'string',
-                        example: 'keyvaluestore',
+                        examples: ['keyvaluestore'],
                         enum: ['keyvaluestore', 'starttaskid', 'starttasktag', 'starttaskcustomproperty'],
                     },
                     payload: {
@@ -41,79 +41,83 @@ const apiPutStartTask = {
                     },
                 },
             },
-            example: [
-                {
-                    type: 'starttaskid',
-                    payload: {
-                        taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
+            examples: [
+                [
+                    {
+                        type: 'starttaskid',
+                        payload: {
+                            taskId: '7552d9fc-d1bb-4975-9a38-18357de531ea',
+                        },
                     },
-                },
-                {
-                    type: 'starttasktag',
-                    payload: {
-                        tag: 'startTask1',
+                    {
+                        type: 'starttasktag',
+                        payload: {
+                            tag: 'startTask1',
+                        },
                     },
-                },
-                {
-                    type: 'starttaskcustomproperty',
-                    payload: {
-                        customPropertyName: 'taskGroup',
-                        customPropertyValue: 'tasks2',
+                    {
+                        type: 'starttaskcustomproperty',
+                        payload: {
+                            customPropertyName: 'taskGroup',
+                            customPropertyValue: 'tasks2',
+                        },
                     },
-                },
-                {
-                    type: 'keyvaluestore',
-                    payload: { namespace: 'MyFineNamespace', key: 'AnImportantKey', value: 'TheValue', ttl: 10000 },
-                },
+                    {
+                        type: 'keyvaluestore',
+                        payload: { namespace: 'MyFineNamespace', key: 'AnImportantKey', value: 'TheValue', ttl: 10000 },
+                    },
+                ],
             ],
         },
         response: {
             200: {
                 description: 'Task successfully started.',
                 type: 'object',
-                example: {
-                    tasksId: {
-                        started: [
+                examples: [
+                    {
+                        tasksId: {
+                            started: [
+                                {
+                                    taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
+                                    taskName: 'Reload task of App1',
+                                },
+                            ],
+                            invalid: [
+                                {
+                                    taskId: 'abc',
+                                },
+                            ],
+                            denied: [
+                                {
+                                    taskId: 'a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e',
+                                },
+                            ],
+                        },
+                        tasksTag: [
                             {
                                 taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
                                 taskName: 'Reload task of App1',
                             },
                         ],
-                        invalid: [
+                        tasksTagDenied: [
                             {
-                                taskId: 'abc',
+                                tag: 'startTask_invalid1',
                             },
                         ],
-                        denied: [
+                        tasksCP: [
                             {
-                                taskId: 'a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e',
+                                taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
+                                taskName: 'Reload task of App1',
+                            },
+                        ],
+                        tasksCPDenied: [
+                            {
+                                name: 'taskGroup',
+                                value: 'cp_value_denied1',
                             },
                         ],
                     },
-                    tasksTag: [
-                        {
-                            taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
-                            taskName: 'Reload task of App1',
-                        },
-                    ],
-                    tasksTagDenied: [
-                        {
-                            tag: 'startTask_invalid1',
-                        },
-                    ],
-                    tasksCP: [
-                        {
-                            taskId: 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e',
-                            taskName: 'Reload task of App1',
-                        },
-                    ],
-                    tasksCPDenied: [
-                        {
-                            name: 'taskGroup',
-                            value: 'cp_value_denied1',
-                        },
-                    ],
-                },
+                ],
             },
             400: {
                 description: 'Required parameter missing.',

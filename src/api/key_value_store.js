@@ -9,7 +9,7 @@ const apiGetAllNamespaces = {
                 items: {
                     type: 'string',
                 },
-                example: ['Weekly sales app', 'Sales ETL step 1', 'Sales ETL step 2'],
+                examples: [['Weekly sales app', 'Sales ETL step 1', 'Sales ETL step 2']],
             },
             500: {
                 description: 'Internal error.',
@@ -36,7 +36,7 @@ const apiGetKVPair = {
                 namespace: {
                     type: 'string',
                     description: '',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
             },
         },
@@ -46,7 +46,7 @@ const apiGetKVPair = {
                 key: {
                     type: 'string',
                     description: '',
-                    example: 'Last extract timestamp',
+                    examples: ['Last extract timestamp'],
                 },
             },
             required: ['key'],
@@ -59,17 +59,17 @@ const apiGetKVPair = {
                     namespace: {
                         type: 'string',
                         description: 'Namespace name.',
-                        example: 'Sales ETL step 2',
+                        examples: ['Sales ETL step 2'],
                     },
                     key: {
                         type: 'string',
                         description: 'Key name.',
-                        example: 'Last extract timestamp',
+                        examples: ['Last extract timestamp'],
                     },
                     value: {
                         type: 'string',
                         description: 'Value stored in the key-value pair.',
-                        example: '2020-09-29 17:14:56',
+                        examples: ['2020-09-29 17:14:56'],
                     },
                 },
             },
@@ -109,7 +109,7 @@ const apiGetKVExists = {
                 namespace: {
                     type: 'string',
                     description: '',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
             },
         },
@@ -119,7 +119,7 @@ const apiGetKVExists = {
                 key: {
                     type: 'string',
                     description: '',
-                    example: 'Last extract timestamp',
+                    examples: ['Last extract timestamp'],
                 },
             },
             required: ['key'],
@@ -139,17 +139,17 @@ const apiGetKVExists = {
                             namespace: {
                                 type: 'string',
                                 description: 'Namespace name.',
-                                example: 'Sales ETL step 2',
+                                examples: ['Sales ETL step 2'],
                             },
                             key: {
                                 type: 'string',
                                 description: 'Key name.',
-                                example: 'Last extract timestamp',
+                                examples: ['Last extract timestamp'],
                             },
                             value: {
                                 type: 'string',
                                 description: 'Value stored in the key-value pair.',
-                                example: '2020-09-29 17:14:56',
+                                examples: ['2020-09-29 17:14:56'],
                             },
                         },
                     },
@@ -192,7 +192,7 @@ const apiPostKVPair = {
                 namespace: {
                     type: 'string',
                     description: 'Name of namespace.',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
             },
         },
@@ -202,18 +202,18 @@ const apiPostKVPair = {
                 key: {
                     type: 'string',
                     description: 'Key to use',
-                    example: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
+                    examples: ['ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1'],
                 },
                 value: {
                     type: 'string',
                     description: 'Value to set',
-                    example: '12345.789',
+                    examples: ['12345.789'],
                 },
                 ttl: {
                     type: 'number',
                     description:
                         'Time to live = how long (milliseconds) the key-value pair should exist before being automatically deleted',
-                    example: 10000,
+                    examples: [10000],
                 },
             },
         },
@@ -225,22 +225,22 @@ const apiPostKVPair = {
                     namespace: {
                         type: 'string',
                         description: 'Name of namespace.',
-                        example: 'Sales ETL step 2',
+                        examples: ['Sales ETL step 2'],
                     },
                     key: {
                         type: 'string',
                         description: 'Key name.',
-                        example: 'Last extract timestamp',
+                        examples: ['Last extract timestamp'],
                     },
                     value: {
                         type: 'string',
                         description: 'Value stored in the key-value pair.',
-                        example: '2020-09-29 17:14:56',
+                        examples: ['2020-09-29 17:14:56'],
                     },
                     ttl: {
                         type: 'number',
                         description: 'Time-to-live for the key-value pair. 0 if no ttl was set, otherwise in milliseconds.',
-                        example: 60000,
+                        examples: [60000],
                     },
                 },
             },
@@ -280,12 +280,12 @@ const apiDeleteKVPair = {
                 namespace: {
                     type: 'string',
                     description: 'Name of namespace.',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
                 key: {
                     type: 'string',
                     description: 'Key to use',
-                    example: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
+                    examples: ['ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1'],
                 },
             },
             required: ['namespace', 'key'],
@@ -294,7 +294,7 @@ const apiDeleteKVPair = {
             204: {
                 description: 'Key-value pair successfully deleted.',
                 type: 'string',
-                example: '',
+                examples: [''],
             },
             400: {
                 description: '"Namespace or key not found" or "Required parameter missing".',
@@ -332,7 +332,7 @@ const apiDeleteNamespace = {
                 namespace: {
                     type: 'string',
                     description: 'Name of namespace.',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
             },
         },
@@ -340,7 +340,7 @@ const apiDeleteNamespace = {
             204: {
                 description: 'Namespace successfully deleted.',
                 type: 'string',
-                example: '',
+                examples: [''],
             },
             400: {
                 description: '"Namespace not found" or "Required parameter missing".',
@@ -378,7 +378,7 @@ const apiGetKeysInNamespace = {
                 namespace: {
                     type: 'string',
                     description: 'Name of namespace whose keys should be returned.',
-                    example: 'Sales ETL step 2',
+                    examples: ['Sales ETL step 2'],
                 },
             },
         },
@@ -390,7 +390,7 @@ const apiGetKeysInNamespace = {
                     namespace: {
                         type: 'string',
                         description: '',
-                        example: 'Sales ETL step 2',
+                        examples: ['Sales ETL step 2'],
                     },
                     keys: {
                         type: 'array',
@@ -400,13 +400,15 @@ const apiGetKeysInNamespace = {
                                 type: 'string',
                             },
                         },
-                        example: [
-                            {
-                                key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
-                            },
-                            {
-                                key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2',
-                            },
+                        examples: [
+                            [
+                                {
+                                    key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1',
+                                },
+                                {
+                                    key: 'ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2',
+                                },
+                            ],
                         ],
                     },
                 },

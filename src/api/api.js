@@ -10,7 +10,7 @@ const apiGetAPIEndpointsEnabled = {
                 items: {
                     type: 'string',
                 },
-                example: ['activeUserCount', 'activeUsers', 'apiListEnbledEndpoints'],
+                examples: [['activeUserCount', 'activeUsers', 'apiListEnbledEndpoints']],
             },
         },
     },

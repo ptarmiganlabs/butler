@@ -8,7 +8,7 @@ const apiPutAppReload = {
                 appId: {
                     type: 'string',
                     description: 'ID of Qlik Sense app.',
-                    example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                    examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
         },
@@ -22,25 +22,23 @@ const apiPutAppReload = {
                 partialReload: {
                     type: 'boolean',
                     description: 'Should a full (=false) or partial (=true) reload be done? If not specified a full reload will be done.',
-                    example: true,
+                    examples: [true],
                 },
                 startQSEoWTaskOnSuccess: {
                     type: 'array',
                     description: 'Array of task IDs that should be started when the app has successfully reloaded.',
                     items: {
                         type: 'string',
-                        minItems: 0,
                     },
-                    example: ['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3'],
+                    examples: [['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3']],
                 },
                 startQSEoWTaskOnFailure: {
                     type: 'array',
                     description: 'Array of task IDs that should be started if the app fails reloading.',
                     items: {
                         type: 'string',
-                        minItems: 0,
                     },
-                    example: ['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3'],
+                    examples: [['09b3c78f-04dd-45e3-a4bf-1b074d6572fa', 'eaf1da4f-fd44-4cea-b2de-7b67a6496ee3']],
                 },
             },
         },
@@ -52,7 +50,7 @@ const apiPutAppReload = {
                     appId: {
                         type: 'string',
                         description: 'ID of reloaded app',
-                        example: '210832b5-6174-4572-bd19-3e61eda675ef',
+                        examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                     },
                 },
             },

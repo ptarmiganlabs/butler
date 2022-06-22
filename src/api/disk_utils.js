@@ -9,24 +9,24 @@ const apiFileCopy = {
                 fromFile: {
                     type: 'string',
                     description: 'Name of source file.',
-                    example: 'subfolder/file1.qvd',
+                    examples: ['subfolder/file1.qvd'],
                 },
                 toFile: {
                     type: 'string',
                     description: 'Name of destination file. Can be different from source file name, if needed.',
-                    example: 'archive/file1_20200925.qvd',
+                    examples: ['archive/file1_20200925.qvd'],
                 },
                 overwrite: {
                     type: 'boolean',
                     description:
                         'Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.',
-                    example: false,
+                    examples: [false],
                 },
                 preserveTimestamp: {
                     type: 'boolean',
                     description:
                         'When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.',
-                    example: false,
+                    examples: [false],
                 },
             },
         },
@@ -38,24 +38,24 @@ const apiFileCopy = {
                     fromFile: {
                         type: 'string',
                         description: 'Name of source file.',
-                        example: 'subfolder/file1.qvd',
+                        examples: ['subfolder/file1.qvd'],
                     },
                     toFile: {
                         type: 'string',
                         description: 'Name of destination file. Can be different from source file name, if needed.',
-                        example: 'archive/file1_20200925.qvd',
+                        examples: ['archive/file1_20200925.qvd'],
                     },
                     overwrite: {
                         type: 'boolean',
                         description:
                             'Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.',
-                        example: false,
+                        examples: [false],
                     },
                     preserveTimestamp: {
                         type: 'boolean',
                         description:
                             'When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.',
-                        example: false,
+                        examples: [false],
                     },
                 },
             },
@@ -107,17 +107,17 @@ const apiFileMove = {
                 fromFile: {
                     type: 'string',
                     description: 'Name of source file.',
-                    example: 'subfolder/file1.qvd',
+                    examples: ['subfolder/file1.qvd'],
                 },
                 toFile: {
                     type: 'string',
                     description: 'Name of destination file. Can be different from source file name, if needed.',
-                    example: 'archive/file1_20200925.qvd',
+                    examples: ['archive/file1_20200925.qvd'],
                 },
                 overwrite: {
                     type: 'boolean',
                     description: 'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
-                    example: false,
+                    examples: [false],
                 },
             },
         },
@@ -129,17 +129,17 @@ const apiFileMove = {
                     fromFile: {
                         type: 'string',
                         description: 'Name of source file.',
-                        example: 'subfolder/file1.qvd',
+                        examples: ['subfolder/file1.qvd'],
                     },
                     toFile: {
                         type: 'string',
                         description: 'Name of destination file. Can be different from source file name, if needed.',
-                        example: 'archive/file1_20200925.qvd',
+                        examples: ['archive/file1_20200925.qvd'],
                     },
                     overwrite: {
                         type: 'boolean',
                         description: 'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
-                        example: false,
+                        examples: [false],
                     },
                 },
             },
@@ -192,7 +192,7 @@ const apiFileDelete = {
                     type: 'string',
                     description:
                         'Name of file to be deleted. Use forward/backward slashes in paths as needed, depending on whether Butler runs on Windows/non-Windows platform.',
-                    example: 'data/qvdstore/sales/file1.qvd',
+                    examples: ['data/qvdstore/sales/file1.qvd'],
                 },
             },
         },
@@ -249,7 +249,7 @@ const apiCreateDir = {
                 directory: {
                     type: 'string',
                     description: 'Path to directory that should be created. Can be a relative or absolute path.',
-                    example: '/Users/joe/data/qvds/2020',
+                    examples: ['/Users/joe/data/qvds/2020'],
                 },
             },
         },
@@ -261,7 +261,7 @@ const apiCreateDir = {
                     directory: {
                         type: 'string',
                         description: 'Directory that was created.',
-                        example: '/Users/joe/data/qvds/2020',
+                        examples: ['/Users/joe/data/qvds/2020'],
                     },
                 },
             },
@@ -301,7 +301,7 @@ const apiCreateDirQvd = {
                 directory: {
                     type: 'string',
                     description: 'Directory that should be created.',
-                    example: 'subfolder/2020-10',
+                    examples: ['subfolder/2020-10'],
                 },
             },
         },
@@ -313,7 +313,7 @@ const apiCreateDirQvd = {
                     directory: {
                         type: 'string',
                         description: 'Directory that was created.',
-                        example: 'subfolder/2020-10',
+                        examples: ['subfolder/2020-10'],
                     },
                 },
             },
