@@ -23,8 +23,11 @@ const start = async () => {
 
         // restServer.listen(globals.config.get('Butler.restServerConfig.backgroundServerPort'), 'localhost', (err, address) => {
         restServer.listen(
-            globals.config.get('Butler.restServerConfig.backgroundServerPort'),
-            globals.config.get('Butler.restServerConfig.serverHost'),
+            {
+                port: globals.config.get('Butler.restServerConfig.backgroundServerPort'),
+                host: globals.config.get('Butler.restServerConfig.serverHost'),
+            },
+
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
@@ -42,11 +45,14 @@ const start = async () => {
         );
 
         proxyRestServer.listen(
-            globals.config.get('Butler.restServerConfig.serverPort'),
-            globals.config.get('Butler.restServerConfig.serverHost'),
+            {
+                port: globals.config.get('Butler.restServerConfig.serverPort'),
+                host: globals.config.get('Butler.restServerConfig.serverHost'),
+            },
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: REST server could not listen on ${address}`);
+                    globals.logger.error(`MAIN: ${err.stack}`);
                     proxyRestServer.log.error(err);
                     process.exit(1);
                 }
@@ -67,7 +73,9 @@ const start = async () => {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 
-            await dockerHealthCheckServer.listen(globals.config.get('Butler.dockerHealthCheck.port'));
+            await dockerHealthCheckServer.listen({
+                port: globals.config.get('Butler.dockerHealthCheck.port'),
+            });
 
             globals.logger.info(`MAIN: Started Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`);
         } catch (err) {

@@ -8,25 +8,25 @@ const apiPostNewRelicMetric = {
                 name: {
                     type: 'string',
                     description: 'Metric name.',
-                    example: 'memory.heap',
+                    examples: ['memory.heap'],
                     maxLength: 254,
                 },
                 type: {
                     type: 'string',
                     description: 'Metric type.',
-                    example: 'gauge',
+                    examples: ['gauge'],
                     enum: ['gauge'],
                 },
                 value: {
                     type: 'number',
                     description: 'Value of the metric.',
-                    example: 2.3,
+                    examples: [2.3],
                 },
                 timestamp: {
                     type: 'number',
                     description:
                         "The metric's start time in Unix time. Uses UTC time zone. This field also support seconds, microseconds, and nanoseconds. However, the data will be converted to milliseconds for storage and query. Metrics reported with a timestamp older than 48 hours ago or newer than 24 hours from the time they are reported are dropped by New Relic. If left empty Butler will use the current time as timestamp.",
-                    example: 1642164296053,
+                    examples: [1642164296053],
                 },
                 interval: {
                     type: 'number',
@@ -40,12 +40,12 @@ const apiPostNewRelicMetric = {
                         properties: {
                             name: {
                                 type: 'string',
-                                example: 'host.name',
+                                examples: ['host.name'],
                                 maxLength: 254,
                             },
                             value: {
                                 type: 'string',
-                                example: 'dev.server.com',
+                                examples: ['dev.server.com'],
                             },
                         },
                     },
@@ -58,8 +58,8 @@ const apiPostNewRelicMetric = {
                 description: 'Data accepted and sent to New Relic.',
                 type: 'object',
                 properties: {
-                    newRelicResultCode: { type: 'number', example: '202' },
-                    newRelicResultText: { type: 'string', example: 'Data accepted.' },
+                    newRelicResultCode: { type: 'number', examples: ['202'] },
+                    newRelicResultText: { type: 'string', examples: ['Data accepted.'] },
                 },
             },
             400: {

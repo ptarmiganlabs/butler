@@ -8,14 +8,14 @@ const apiPostNewRelicEvent = {
                 eventType: {
                     type: 'string',
                     description: 'Event type. Can be a combination of alphanumeric characters, _ underscores, and : colons.',
-                    example: 'relead-failed',
+                    examples: ['relead-failed'],
                     maxLength: 254,
                 },
                 timestamp: {
                     type: 'number',
                     description:
                         "The event's start time in Unix time. Uses UTC time zone. This field also support seconds, microseconds, and nanoseconds. However, the data will be converted to milliseconds for storage and query. Events reported with a timestamp older than 48 hours ago or newer than 24 hours from the time they are reported are dropped by New Relic. If left empty Butler will use the current time as timestamp.",
-                    example: 1642164296053,
+                    examples: [1642164296053],
                 },
                 attributes: {
                     type: 'array',
@@ -25,12 +25,12 @@ const apiPostNewRelicEvent = {
                         properties: {
                             name: {
                                 type: 'string',
-                                example: 'host.name',
+                                examples: ['host.name'],
                                 maxLength: 254,
                             },
                             value: {
                                 type: 'string',
-                                example: 'dev.server.com',
+                                examples: ['dev.server.com'],
                                 maxLength: 4096,
                             },
                         },
@@ -44,8 +44,8 @@ const apiPostNewRelicEvent = {
                 description: 'Data accepted and sent to New Relic.',
                 type: 'object',
                 properties: {
-                    newRelicResultCode: { type: 'number', example: '202' },
-                    newRelicResultText: { type: 'string', example: 'Data accepted.' },
+                    newRelicResultCode: { type: 'number', examples: ['202'] },
+                    newRelicResultText: { type: 'string', examples: ['Data accepted.'] },
                 },
             },
             400: {

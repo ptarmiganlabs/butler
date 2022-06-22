@@ -8,22 +8,22 @@ const apiPutSlackPostMessage = {
                 channel: {
                     type: 'string',
                     description: 'Slack channel to post message into. Prefix channel name with #.',
-                    example: '#reload-notification',
+                    examples: ['#reload-notification'],
                 },
                 from_user: {
                     type: 'string',
                     description: 'Name of sending user, as shown in the Slack message',
-                    example: 'Butler the Bot',
+                    examples: ['Butler the Bot'],
                 },
                 msg: {
                     type: 'string',
                     description: 'Text going into the Slack message',
-                    example: 'This is a message from Qlik Sense',
+                    examples: ['This is a message from Qlik Sense'],
                 },
                 emoji: {
                     type: 'string',
                     description: 'Emoji to shown next to Slack message',
-                    example: 'thumbsup',
+                    examples: ['thumbsup'],
                 },
             },
             required: ['channel', 'from_user', 'msg'],
@@ -37,22 +37,22 @@ const apiPutSlackPostMessage = {
                     channel: {
                         type: 'string',
                         description: 'Slack channel to post message into. Prefix channel name with #.',
-                        example: '#reload-notification',
+                        examples: ['#reload-notification'],
                     },
                     from_user: {
                         type: 'string',
                         description: 'Name of sending user, as shown in the Slack message',
-                        example: 'Butler the Bot',
+                        examples: ['Butler the Bot'],
                     },
                     msg: {
                         type: 'string',
                         description: 'Text going into the Slack message',
-                        example: 'This is a message from Qlik Sense',
+                        examples: ['This is a message from Qlik Sense'],
                     },
                     emoji: {
                         type: 'string',
                         description: 'Emoji to shown next to Slack message',
-                        example: 'thumbsup',
+                        examples: ['thumbsup'],
                     },
                 },
             },

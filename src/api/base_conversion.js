@@ -8,7 +8,7 @@ const apiGetBase62ToBase16 = {
                 base62: {
                     type: 'string',
                     description: 'The base62 encoded string that should be converted to base16',
-                    example: '6DMW88LpSok9Z7P7hUK0wv7bF',
+                    examples: ['6DMW88LpSok9Z7P7hUK0wv7bF'],
                 },
             },
             required: ['base62'],
@@ -27,10 +27,7 @@ const apiGetBase62ToBase16 = {
                         description: 'Resulting base16 encoded string.',
                     },
                 },
-                example: {
-                    base62: '6DMW88LpSok9Z7P7hUK0wv7bF',
-                    base16: '3199af08bfeeaf5d420f27ed9c01e74370077',
-                },
+                examples: [{ base62: '6DMW88LpSok9Z7P7hUK0wv7bF', base16: '3199af08bfeeaf5d420f27ed9c01e74370077' }],
             },
             400: {
                 description: 'Required parameter missing.',
@@ -68,7 +65,7 @@ const apiGetBase16ToBase62 = {
                 base16: {
                     type: 'string',
                     description: 'The base16 encoded string that should be converted to base62',
-                    example: '3199af08bfeeaf5d420f27ed9c01e74370077',
+                    examples: ['3199af08bfeeaf5d420f27ed9c01e74370077'],
                 },
             },
             required: ['base16'],
@@ -87,10 +84,12 @@ const apiGetBase16ToBase62 = {
                         description: 'Resulting base62 encoded string.',
                     },
                 },
-                example: {
-                    base16: '3199af08bfeeaf5d420f27ed9c01e74370077',
-                    base62: '6DMW88LpSok9Z7P7hUK0wv7bF',
-                },
+                examples: [
+                    {
+                        base16: '3199af08bfeeaf5d420f27ed9c01e74370077',
+                        base62: '6DMW88LpSok9Z7P7hUK0wv7bF',
+                    },
+                ],
             },
             400: {
                 description: 'Required parameter missing.',

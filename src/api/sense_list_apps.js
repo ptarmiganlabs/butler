@@ -12,12 +12,12 @@ const apiGetSenseListApps = {
                         id: {
                             type: 'string',
                             description: 'App ID',
-                            example: '5d7ae888-61cd-4539-97b2-6cf5baaa6f9d',
+                            examples: ['5d7ae888-61cd-4539-97b2-6cf5baaa6f9d'],
                         },
                         name: {
                             type: 'string',
                             description: 'App name',
-                            example: '2021 sales targets',
+                            examples: ['2021 sales targets'],
                         },
                     },
                 },
@@ -51,12 +51,12 @@ const apiGetAppsList = {
                         id: {
                             type: 'string',
                             description: 'App ID',
-                            example: '5d7ae888-61cd-4539-97b2-6cf5baaa6f9d',
+                            examples: ['5d7ae888-61cd-4539-97b2-6cf5baaa6f9d'],
                         },
                         name: {
                             type: 'string',
                             description: 'App name',
-                            example: '2021 sales targets',
+                            examples: ['2021 sales targets'],
                         },
                     },
                 },

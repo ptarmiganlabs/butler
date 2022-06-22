@@ -22,10 +22,7 @@ async function handlerGetBase62ToBase16(request, reply) {
             return { base62: request.query.base62, base16 };
         }
 
-        return {
-            response: 'Butler reporting for duty',
-            butlerVersion: globals.appVersion,
-        };
+        return null;
     } catch (err) {
         globals.logger.error(
             `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`
@@ -46,6 +43,7 @@ async function handlerGetBase16ToBase62(request, reply) {
             const base62 = hex_to_base62(request.query.base16);
             return { base16: request.query.base16, base62 };
         }
+
         return null;
     } catch (err) {
         globals.logger.error(

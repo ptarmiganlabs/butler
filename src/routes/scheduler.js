@@ -208,6 +208,12 @@ module.exports = async (fastify, options) => {
             fastify.put('/v4/schedules/stopall', apiPUTSchedulesStopAll, handlerPUTSchedulesStop);
         }
 
-        fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
+        if (
+            globals.config.has('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll') &&
+            globals.config.get('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll')
+        ) {
+            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/status');
+            fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
+        }
     }
 };
