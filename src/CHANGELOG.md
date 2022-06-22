@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.3.3](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.2...butler-v8.3.3) (2022-06-22)
+
+
+### Bug Fixes
+
+* API endpoint /v4/schedules/status now respects enable/disable in config file ([f8d9417](https://github.com/ptarmiganlabs/butler/commit/f8d94170c9b610d34d264f65ad24dbb742232537)), closes [#509](https://github.com/ptarmiganlabs/butler/issues/509)
+* Incorrect return value from base conversion API endpoint ([25583c5](https://github.com/ptarmiganlabs/butler/commit/25583c5a8ba12df38e6d96142a5edb96bcf0a0e2)), closes [#508](https://github.com/ptarmiganlabs/butler/issues/508)
+
+
+### Refactoring
+
+* Migrate to Fastify 4 ([2e4b00e](https://github.com/ptarmiganlabs/butler/commit/2e4b00ea0a5f9e7286b35030eeac47af1ee7fea8)), closes [#510](https://github.com/ptarmiganlabs/butler/issues/510)
+
+
+### Documentation
+
+* Upgrade internal API docs to use OpenAPI 3.x ([c444943](https://github.com/ptarmiganlabs/butler/commit/c4449431a2c25748ec0900777a2c63fcf1e18092)), closes [#511](https://github.com/ptarmiganlabs/butler/issues/511)
+
 ## [8.3.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.1...butler-v8.3.2) (2022-06-20)
 
 
