@@ -34,7 +34,7 @@
         "js-yaml": "^4.1.0",
         "jshint": "^2.13.4",
         "lodash": "^4.17.21",
-        "luxon": "^2.4.0",
+        "luxon": "^3.0.0",
         "mkdirp": "^1.0.4",
         "moment": "^2.29.3",
         "moment-precise-range-plugin": "^1.3.0",
