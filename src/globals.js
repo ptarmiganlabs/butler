@@ -1,5 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
+const upath = require('upath');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
 const si = require('systeminformation');
@@ -337,7 +338,9 @@ if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fil
     config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
         logger.verbose(`fileDelete directory from config file: ${element}`);
 
-        const deleteDir = path.normalize(element);
+        // const deleteDir = path.normalize(element);
+        const deleteDir = upath.normalizeSafe(element);
+        // const deleteDir = element;
 
         logger.info(`Adding normalized fileDelete directory ${deleteDir}`);
 

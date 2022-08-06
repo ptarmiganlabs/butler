@@ -1,6 +1,7 @@
 const httpErrors = require('http-errors');
 const fs = require('fs-extra');
 const path = require('path');
+const upath = require('upath');
 const mkdirp = require('mkdirp');
 
 // Load global variables and functions
@@ -176,22 +177,34 @@ async function handlerFileDelete(request, reply) {
             // 1. file exists
             // 2. file is in a valid directoryv (or subdirectory thereof),
 
-            const deleteFile = path.normalize(request.body.deleteFile);
-            const deleteDir = path.dirname(deleteFile);
+            // const deleteFile = path.normalize(request.body.deleteFile);
+            const deleteFile = upath.normalizeSafe(request.body.deleteFile);
+            const deleteDir = upath.dirname(deleteFile);
+
+            // const { deleteFile } = request.body;
+            // const deleteDir = path.dirname(request.body.deleteFile);
 
             let deleteIsOk = false; // Only allow delete if this flag is true
 
             // Ensure the file to be deleted is in an approved directory hierarchy
-            globals.fileDeleteDirectories.forEach((element) => {
-                if (isDirectoryChildOf(deleteDir, element)) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const approvedPath of globals.fileDeleteDirectories) {
+                if (isDirectoryChildOf(deleteDir, approvedPath)) {
                     // The deleteFile passed as parameter matches an approved directory specified in the config file
-
                     deleteIsOk = true;
                 }
-            });
+            }
+
+            // globals.fileDeleteDirectories.forEach((element) => {
+            //     if (isDirectoryChildOf(deleteDir, element)) {
+            //         // The deleteFile passed as parameter matches an approved directory specified in the config file
+
+            //         deleteIsOk = true;
+            //     }
+            // });
 
             if (deleteIsOk) {
-                // Finally, make sure that file realy exists
+                // Finally, make sure that file really exists
                 if (await fs.pathExists(deleteFile)) {
                     // Delete!
                     globals.logger.debug(`FILEDELETE: About to delete file ${deleteFile}`);
