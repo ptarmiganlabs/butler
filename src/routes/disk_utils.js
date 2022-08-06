@@ -1,6 +1,5 @@
 const httpErrors = require('http-errors');
 const fs = require('fs-extra');
-const path = require('path');
 const upath = require('upath');
 const mkdirp = require('mkdirp');
 
@@ -38,25 +37,25 @@ async function handlerFileCopy(request, reply) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            const fromFile = path.normalize(request.body.fromFile);
-            const toFile = path.normalize(request.body.toFile);
+            const fromFile = upath.normalize(request.body.fromFile);
+            const toFile = upath.normalize(request.body.toFile);
 
-            const fromDir = path.dirname(fromFile);
-            const toDir = path.dirname(toFile);
+            const fromDir = upath.dirname(fromFile);
+            const toDir = upath.dirname(toFile);
 
             let copyIsOk = false; // Only allow copy if this flag is true
 
             // Ensure fromFile exists
             if (await fs.pathExists(fromFile)) {
-                globals.fileCopyDirectories.forEach((element) => {
-                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const approvedCopyDir of globals.fileCopyDirectories) {
+                    if (isDirectoryChildOf(fromDir, approvedCopyDir.fromDir) && isDirectoryChildOf(toDir, approvedCopyDir.toDir)) {
                         // The fromFile passed as parameter matches an approved fromDir specified in the config file
                         // AND
                         // toFile passed as parameter matches the associated approved toDir specified in the config file
-
                         copyIsOk = true;
                     }
-                });
+                }
 
                 if (copyIsOk) {
                     globals.logger.debug(
@@ -121,25 +120,25 @@ async function handlerFileMove(request, reply) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            const fromFile = path.normalize(request.body.fromFile);
-            const toFile = path.normalize(request.body.toFile);
+            const fromFile = upath.normalize(request.body.fromFile);
+            const toFile = upath.normalize(request.body.toFile);
 
-            const fromDir = path.dirname(fromFile);
-            const toDir = path.dirname(toFile);
+            const fromDir = upath.dirname(fromFile);
+            const toDir = upath.dirname(toFile);
 
             let moveIsOk = false; // Only allow move if this flag is true
 
             // Ensure fromFile exists
             if (await fs.pathExists(fromFile)) {
-                globals.fileMoveDirectories.forEach((element) => {
-                    if (isDirectoryChildOf(fromDir, element.fromDir) && isDirectoryChildOf(toDir, element.toDir)) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const approvedMoveDir of globals.fileMoveDirectories) {
+                    if (isDirectoryChildOf(fromDir, approvedMoveDir.fromDir) && isDirectoryChildOf(toDir, approvedMoveDir.toDir)) {
                         // The fromFile passed as parameter matches an approved fromDir specified in the config file
                         // AND
                         // toFile passed as parameter matches the associated approved toDir specified in the config file
-
                         moveIsOk = true;
                     }
-                });
+                }
 
                 if (moveIsOk) {
                     globals.logger.debug(`FILEMOVE: About to move file from ${fromFile} to ${toFile}, overwrite flag=${overwrite}`);
@@ -188,20 +187,12 @@ async function handlerFileDelete(request, reply) {
 
             // Ensure the file to be deleted is in an approved directory hierarchy
             // eslint-disable-next-line no-restricted-syntax
-            for (const approvedPath of globals.fileDeleteDirectories) {
-                if (isDirectoryChildOf(deleteDir, approvedPath)) {
+            for (const approvedDeleteDir of globals.fileDeleteDirectories) {
+                if (isDirectoryChildOf(deleteDir, approvedDeleteDir)) {
                     // The deleteFile passed as parameter matches an approved directory specified in the config file
                     deleteIsOk = true;
                 }
             }
-
-            // globals.fileDeleteDirectories.forEach((element) => {
-            //     if (isDirectoryChildOf(deleteDir, element)) {
-            //         // The deleteFile passed as parameter matches an approved directory specified in the config file
-
-            //         deleteIsOk = true;
-            //     }
-            // });
 
             if (deleteIsOk) {
                 // Finally, make sure that file really exists
