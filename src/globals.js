@@ -1,5 +1,4 @@
 const fs = require('fs-extra');
-const path = require('path');
 const upath = require('upath');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
@@ -63,10 +62,10 @@ let configFileBasename;
 let configFileExtension;
 if (options.configfile && options.configfile.length > 0) {
     configFileOption = options.configfile;
-    configFileExpanded = path.resolve(options.configfile);
-    configFilePath = path.dirname(configFileExpanded);
-    configFileExtension = path.extname(configFileExpanded);
-    configFileBasename = path.basename(configFileExpanded, configFileExtension);
+    configFileExpanded = upath.resolve(options.configfile);
+    configFilePath = upath.dirname(configFileExpanded);
+    configFileExtension = upath.extname(configFileExpanded);
+    configFileBasename = upath.basename(configFileExpanded, configFileExtension);
 
     if (configFileExtension.toLowerCase() !== '.yaml') {
         // eslint-disable-next-line no-console
@@ -116,12 +115,12 @@ logTransports.push(
     })
 );
 
-const execPath = isPkg ? path.dirname(process.execPath) : __dirname;
+const execPath = isPkg ? upath.dirname(process.execPath) : __dirname;
 
 if (config.get('Butler.fileLogging')) {
     logTransports.push(
         new winston.transports.DailyRotateFile({
-            dirname: path.join(execPath, config.get('Butler.logDirectory')),
+            dirname: upath.join(execPath, config.get('Butler.logDirectory')),
             filename: 'butler.%DATE%.log',
             level: config.get('Butler.logLevel'),
             datePattern: 'YYYY-MM-DD',
@@ -171,9 +170,9 @@ logger.verbose(`Running as standalone app: ${isPkg}`);
 // Helper function to read the contents of the certificate files:
 const readCert = (filename) => fs.readFileSync(filename);
 
-const certPath = path.resolve(__dirname, config.get('Butler.cert.clientCert'));
-const keyPath = path.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
-const caPath = path.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
+const certPath = upath.resolve(__dirname, config.get('Butler.cert.clientCert'));
+const keyPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
+const caPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
 
 let configEngine;
 let configQRS;
@@ -303,8 +302,8 @@ if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileC
         logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
 
         const newDirCombo = {
-            fromDir: path.normalize(element.fromDirectory),
-            toDir: path.normalize(element.toDirectory),
+            fromDir: upath.normalizeSafe(element.fromDirectory),
+            toDir: upath.normalizeSafe(element.toDirectory),
         };
 
         logger.info(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
@@ -321,8 +320,8 @@ if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileM
         logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
 
         const newDirCombo = {
-            fromDir: path.normalize(element.fromDirectory),
-            toDir: path.normalize(element.toDirectory),
+            fromDir: upath.normalizeSafe(element.fromDirectory),
+            toDir: upath.normalizeSafe(element.toDirectory),
         };
 
         logger.info(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
@@ -338,9 +337,7 @@ if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fil
     config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
         logger.verbose(`fileDelete directory from config file: ${element}`);
 
-        // const deleteDir = path.normalize(element);
         const deleteDir = upath.normalizeSafe(element);
-        // const deleteDir = element;
 
         logger.info(`Adding normalized fileDelete directory ${deleteDir}`);
 
