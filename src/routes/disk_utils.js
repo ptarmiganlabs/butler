@@ -37,8 +37,8 @@ async function handlerFileCopy(request, reply) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            const fromFile = upath.normalize(request.body.fromFile);
-            const toFile = upath.normalize(request.body.toFile);
+            const fromFile = upath.normalizeSafe(request.body.fromFile);
+            const toFile = upath.normalizeSafe(request.body.toFile);
 
             const fromDir = upath.dirname(fromFile);
             const toDir = upath.dirname(toFile);
@@ -120,8 +120,8 @@ async function handlerFileMove(request, reply) {
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
             // 2. toFile is in a valid associated destination directory (or subdirectory thereof)
 
-            const fromFile = upath.normalize(request.body.fromFile);
-            const toFile = upath.normalize(request.body.toFile);
+            const fromFile = upath.normalizeSafe(request.body.fromFile);
+            const toFile = upath.normalizeSafe(request.body.toFile);
 
             const fromDir = upath.dirname(fromFile);
             const toDir = upath.dirname(toFile);
@@ -176,7 +176,6 @@ async function handlerFileDelete(request, reply) {
             // 1. file exists
             // 2. file is in a valid directoryv (or subdirectory thereof),
 
-            // const deleteFile = path.normalize(request.body.deleteFile);
             const deleteFile = upath.normalizeSafe(request.body.deleteFile);
             const deleteDir = upath.dirname(deleteFile);
 
