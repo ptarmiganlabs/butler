@@ -2,6 +2,8 @@ const httpErrors = require('http-errors');
 const fs = require('fs-extra');
 const upath = require('upath');
 const mkdirp = require('mkdirp');
+const isUncPath = require('is-unc-path');
+const os = require('os');
 
 // Load global variables and functions
 const globals = require('../globals');
@@ -31,6 +33,35 @@ async function handlerFileCopy(request, reply) {
 
             if (request.body.preserveTimestamp === 'true' || request.body.preserveTimestamp === true) {
                 preserveTimestamp = true;
+            }
+
+            // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+            // Warn if so, then return error
+            if (os.platform().toLowerCase() !== 'windows') {
+                if (isUncPath(request.body.fromFile) === true) {
+                    globals.logger.warn(
+                        `FILE COPY FROM: UNC paths not supported work on non-Windows OSs ("${
+                            request.body.fromFile
+                        }"). OS is "${os.platform()}".`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`
+                        )
+                    );
+                }
+                if (isUncPath(request.body.toFile) === true) {
+                    globals.logger.warn(
+                        `FILE COPY TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${os.platform()}".`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`
+                        )
+                    );
+                }
             }
 
             // Make sure that
@@ -115,6 +146,34 @@ async function handlerFileMove(request, reply) {
             if (request.body.overwrite === 'true' || request.body.overwrite === true) {
                 overwrite = true;
             }
+            // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+            // Warn if so, then return error
+            if (os.platform().toLowerCase() !== 'windows') {
+                if (isUncPath(request.body.fromFile) === true) {
+                    globals.logger.warn(
+                        `FILE MOVE FROM: UNC paths not supported work on non-Windows OSs ("${
+                            request.body.fromFile
+                        }"). OS is "${os.platform()}".`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`
+                        )
+                    );
+                }
+                if (isUncPath(request.body.toFile) === true) {
+                    globals.logger.warn(
+                        `FILE MOVE TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${os.platform()}".`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`
+                        )
+                    );
+                }
+            }
 
             // Make sure that
             // 1. fromFile is in a valid source directory (or subdirectory thereof),
@@ -172,6 +231,26 @@ async function handlerFileDelete(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
+            // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+            // Warn if so, then return error
+            if (os.platform().toLowerCase() !== 'windows') {
+                if (isUncPath(request.body.deleteFile) === true) {
+                    globals.logger.warn(
+                        `FILE COPY FROM: UNC paths not supported work on non-Windows OSs ("${
+                            request.body.deleteFile
+                        }"). OS is "${os.platform()}".`
+                    );
+                    reply.send(
+                        httpErrors(
+                            400,
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.deleteFile}`
+                        )
+                    );
+
+                    return;
+                }
+            }
+
             // Make sure that
             // 1. file exists
             // 2. file is in a valid directoryv (or subdirectory thereof),

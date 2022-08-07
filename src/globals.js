@@ -5,6 +5,7 @@ const { IncomingWebhook } = require('ms-teams-webhook');
 const si = require('systeminformation');
 const os = require('os');
 const crypto = require('crypto');
+const isUncPath = require('is-unc-path');
 
 // Add dependencies
 const { Command, Option } = require('commander');
@@ -301,6 +302,21 @@ if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileC
     config.get('Butler.fileCopyApprovedDirectories').forEach((element) => {
         logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
 
+        // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+        // Warn if so
+        if (os.platform().toLowerCase() !== 'windows') {
+            if (isUncPath(element.fromDirectory) === true) {
+                logger.warn(
+                    `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${os.platform()}".`
+                );
+            }
+            if (isUncPath(element.toDirectory) === true) {
+                logger.warn(
+                    `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${os.platform()}".`
+                );
+            }
+        }
+
         const newDirCombo = {
             fromDir: upath.normalizeSafe(element.fromDirectory),
             toDir: upath.normalizeSafe(element.toDirectory),
@@ -318,6 +334,21 @@ const fileMoveDirectories = [];
 if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileMoveApprovedDirectories') != null) {
     config.get('Butler.fileMoveApprovedDirectories').forEach((element) => {
         logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
+
+        // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+        // Warn if so
+        if (os.platform().toLowerCase() !== 'windows') {
+            if (isUncPath(element.fromDirectory) === true) {
+                logger.warn(
+                    `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${os.platform()}".`
+                );
+            }
+            if (isUncPath(element.toDirectory) === true) {
+                logger.warn(
+                    `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${os.platform()}".`
+                );
+            }
+        }
 
         const newDirCombo = {
             fromDir: upath.normalizeSafe(element.fromDirectory),
@@ -337,8 +368,15 @@ if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fil
     config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
         logger.verbose(`fileDelete directory from config file: ${element}`);
 
-        const deleteDir = upath.normalizeSafe(element);
+        // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+        // Warn if so
+        if (os.platform().toLowerCase() !== 'windows') {
+            if (isUncPath(element) === true) {
+                logger.warn(`FILE DELETE CONFIG: UNC paths won't work on non-Windows OSs ("${element}"). OS is "${os.platform()}".`);
+            }
+        }
 
+        const deleteDir = upath.normalizeSafe(element);
         logger.info(`Adding normalized fileDelete directory ${deleteDir}`);
 
         fileDeleteDirectories.push(deleteDir);
