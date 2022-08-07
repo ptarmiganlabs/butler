@@ -3,7 +3,6 @@ const fs = require('fs-extra');
 const upath = require('upath');
 const mkdirp = require('mkdirp');
 const isUncPath = require('is-unc-path');
-const os = require('os');
 
 // Load global variables and functions
 const globals = require('../globals');
