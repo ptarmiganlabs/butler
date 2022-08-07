@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.3...butler-v8.4.0) (2022-08-07)
+
+
+### Features
+
+* Make file copy/move/delete REST endpoints more robust ([ca91a2b](https://github.com/ptarmiganlabs/butler/commit/ca91a2b6c7bcf7f6ce778fcbd8c8c8d509701ba7)), closes [#521](https://github.com/ptarmiganlabs/butler/issues/521)
+* Warn if UNC paths used with file API calls when Butler runs on non-Windows OS ([843f781](https://github.com/ptarmiganlabs/butler/commit/843f7815767cba549b8fffd4865979fad08622aa)), closes [#522](https://github.com/ptarmiganlabs/butler/issues/522)
+
+
+### Bug Fixes
+
+* Make startup logging of approved directories for file copy/move/delete less verbose ([e6a94c3](https://github.com/ptarmiganlabs/butler/commit/e6a94c32473a49a60f7f76949b04506477c2f523)), closes [#523](https://github.com/ptarmiganlabs/butler/issues/523)
+
+
+### Miscellaneous
+
+* Update dependencies ([2bc7a61](https://github.com/ptarmiganlabs/butler/commit/2bc7a618fec2b3302e4c475f76a591bb204dc8d8))
+
 ## [8.3.3](https://github.com/ptarmiganlabs/butler/compare/butler-v8.3.2...butler-v8.3.3) (2022-06-22)
 
 
