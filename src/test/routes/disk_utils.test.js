@@ -245,9 +245,9 @@ describe('E5: DELETE /v4/filedelete', () => {
 describe('E6: POST /v4/createdirqvd', () => {
     test('It should respond with 201 to the POST method', async () => {
         // Make sure the directory doesn't aleady exist
-        const p = upath.join(config.get('Butler.configDirectories.qvdPath'), dirQvd);
+        const p2 = upath.join(config.get('Butler.configDirectories.qvdPath'), dirQvd);
         try {
-            await fs.rm(p, { recursive: true });
+            await fs.rm(p2, { recursive: true });
         } catch {
             //
         }
@@ -264,14 +264,14 @@ describe('E6: POST /v4/createdirqvd', () => {
         await new Promise((r) => setTimeout(r, 2000));
 
         try {
-            file1Stat = await fs.stat(p);
+            file1Stat = await fs.stat(p2);
         } catch (err) {
             file1Stat = null;
         }
 
         // Clean up
         try {
-            await fs.rm(p, { recursive: true });
+            await fs.rm(p2, { recursive: true });
         } catch {
             //
         }

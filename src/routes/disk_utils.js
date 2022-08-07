@@ -251,9 +251,6 @@ async function handlerFileDelete(request, reply) {
             const deleteFile = upath.normalizeSafe(request.body.deleteFile);
             const deleteDir = upath.dirname(deleteFile);
 
-            // const { deleteFile } = request.body;
-            // const deleteDir = path.dirname(request.body.deleteFile);
-
             let deleteIsOk = false; // Only allow delete if this flag is true
 
             // Ensure the file to be deleted is in an approved directory hierarchy
