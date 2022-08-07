@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 const fs = require('fs/promises');
 const axios = require('axios');
-const path = require('path');
+const upath = require('upath');
 
-process.env.NODE_CONFIG_DIR = path.resolve('./config/');
+process.env.NODE_CONFIG_DIR = upath.resolve('./config/');
 process.env.NODE_ENV = 'production';
 const config = require('config');
 
@@ -54,8 +54,8 @@ afterAll(async () => {
 describe('E1: PUT /v4/filecopy', () => {
     test('It should respond with 201 to the PUT method', async () => {
         result = await instance.put('/v4/filecopy', {
-            fromFile: path.resolve(dir1File1_1),
-            toFile: path.resolve(dir2File1_1),
+            fromFile: upath.resolve(dir1File1_1),
+            toFile: upath.resolve(dir2File1_1),
             overwrite: true,
             preserveTimestamp: true,
         });
@@ -73,8 +73,8 @@ describe('E1: PUT /v4/filecopy', () => {
         expect(result.data.toFile).toBeTruthy();
         expect(result.data.overwrite).toBeTruthy();
         expect(result.data.preserveTimestamp).toBeTruthy();
-        expect(result.data.fromFile).toEqual(path.resolve(dir1File1_1));
-        expect(result.data.toFile).toEqual(path.resolve(dir2File1_1));
+        expect(result.data.fromFile).toEqual(upath.normalizeSafe(upath.resolve(dir1File1_1)));
+        expect(result.data.toFile).toEqual(upath.resolve(dir2File1_1));
         expect(result.data.overwrite).toEqual(true);
         expect(result.data.preserveTimestamp).toEqual(true);
     });
@@ -89,8 +89,8 @@ describe('E1: PUT /v4/filecopy', () => {
 describe('E2: PUT /v4/filecopy (overwrite=false)', () => {
     test('It should respond with 201 to the PUT method', async () => {
         result = await instance.put('/v4/filecopy', {
-            fromFile: path.resolve(dir1File1_1),
-            toFile: path.resolve(dir2File1_1),
+            fromFile: upath.resolve(dir1File1_1),
+            toFile: upath.resolve(dir2File1_1),
             overwrite: false,
             preserveTimestamp: true,
         });
@@ -104,8 +104,8 @@ describe('E2: PUT /v4/filecopy (overwrite=false)', () => {
     });
 
     test('Response should contain correct fields', () => {
-        expect(result.data.fromFile).toEqual(path.resolve(dir1File1_1));
-        expect(result.data.toFile).toEqual(path.resolve(dir2File1_1));
+        expect(result.data.fromFile).toEqual(upath.normalizeSafe(upath.resolve(dir1File1_1)));
+        expect(result.data.toFile).toEqual(upath.resolve(dir2File1_1));
         expect(result.data.overwrite).toEqual(false);
         expect(result.data.preserveTimestamp).toEqual(true);
     });
@@ -123,14 +123,14 @@ describe('E3: PUT /v4/filemove (overwrite=true)', () => {
         await fs.writeFile(dir1File1_1, 'Foo');
 
         result = await instance.put('/v4/filemove', {
-            fromFile: path.resolve(dir1File1_1),
-            toFile: path.resolve(dir2File1_1),
+            fromFile: upath.resolve(dir1File1_1),
+            toFile: upath.resolve(dir2File1_1),
             overwrite: true,
         });
 
         try {
             // Does source file still exist?
-            file1Stat = await fs.stat(path.resolve(dir1File1_1));
+            file1Stat = await fs.stat(upath.resolve(dir1File1_1));
         } catch (err) {
             file1Stat = null;
         }
@@ -145,8 +145,8 @@ describe('E3: PUT /v4/filemove (overwrite=true)', () => {
 
     test('Response should contain correct fields', () => {
         expect(file1Stat).toBeFalsy();
-        expect(result.data.fromFile).toEqual(path.resolve(dir1File1_1));
-        expect(result.data.toFile).toEqual(path.resolve(dir2File1_1));
+        expect(result.data.fromFile).toEqual(upath.normalizeSafe(upath.resolve(dir1File1_1)));
+        expect(result.data.toFile).toEqual(upath.resolve(dir2File1_1));
         expect(result.data.overwrite).toEqual(true);
     });
 });
@@ -159,13 +159,13 @@ describe('E3: PUT /v4/filemove (overwrite=true)', () => {
 describe('E4: PUT /v4/filemove (overwrite=false)', () => {
     test('It should respond with 500 to the PUT method', async () => {
         // Create files to work with
-        await fs.writeFile(path.resolve(dir1File1_1), 'Foo');
-        await fs.writeFile(path.resolve(dir2File1_1), 'Bar');
+        await fs.writeFile(upath.resolve(dir1File1_1), 'Foo');
+        await fs.writeFile(upath.resolve(dir2File1_1), 'Bar');
 
         try {
             result = await instance.put('/v4/filemove', {
-                fromFile: path.resolve(dir1File1_1),
-                toFile: path.resolve(dir2File1_1),
+                fromFile: upath.resolve(dir1File1_1),
+                toFile: upath.resolve(dir2File1_1),
                 overwrite: false,
             });
         } catch (err) {
@@ -174,7 +174,7 @@ describe('E4: PUT /v4/filemove (overwrite=false)', () => {
 
         try {
             // Does source file still exist?
-            file1Stat = await fs.stat(path.resolve(dir1File1_1));
+            file1Stat = await fs.stat(upath.resolve(dir1File1_1));
         } catch (err) {
             file1Stat = null;
         }
@@ -208,12 +208,12 @@ describe('E4: PUT /v4/filemove (overwrite=false)', () => {
 describe('E5: DELETE /v4/filedelete', () => {
     test('It should respond with 204 to the DELETE method', async () => {
         // Create files to work with
-        await fs.writeFile(path.resolve(dir2File2_1), 'Bar');
+        await fs.writeFile(upath.resolve(dir2File2_1), 'Bar');
 
         try {
             result = await instance.delete('/v4/filedelete', {
                 data: {
-                    deleteFile: path.resolve(dir2File2_1),
+                    deleteFile: upath.resolve(dir2File2_1),
                 },
             });
         } catch (err) {
@@ -221,7 +221,7 @@ describe('E5: DELETE /v4/filedelete', () => {
         }
 
         try {
-            file1Stat = await fs.stat(path.resolve(dir2File2_1));
+            file1Stat = await fs.stat(upath.resolve(dir2File2_1));
         } catch (err) {
             file1Stat = null;
         }
@@ -245,9 +245,9 @@ describe('E5: DELETE /v4/filedelete', () => {
 describe('E6: POST /v4/createdirqvd', () => {
     test('It should respond with 201 to the POST method', async () => {
         // Make sure the directory doesn't aleady exist
-        const p = path.join(config.get('Butler.configDirectories.qvdPath'), dirQvd);
+        const p2 = upath.join(config.get('Butler.configDirectories.qvdPath'), dirQvd);
         try {
-            await fs.rm(p, { recursive: true });
+            await fs.rm(p2, { recursive: true });
         } catch {
             //
         }
@@ -264,14 +264,14 @@ describe('E6: POST /v4/createdirqvd', () => {
         await new Promise((r) => setTimeout(r, 2000));
 
         try {
-            file1Stat = await fs.stat(p);
+            file1Stat = await fs.stat(p2);
         } catch (err) {
             file1Stat = null;
         }
 
         // Clean up
         try {
-            await fs.rm(p, { recursive: true });
+            await fs.rm(p2, { recursive: true });
         } catch {
             //
         }
@@ -302,7 +302,7 @@ describe('E6: POST /v4/createdirqvd', () => {
  * Create directory anywhere in file system
  */
 const dirTest = './testDir1';
-const p = path.resolve(dirTest);
+const p = upath.resolve(dirTest);
 describe('E7: POST /v4/createdir', () => {
     test('It should respond with 201 to the POST method', async () => {
         // Make sure the directory doesn't aleady exist

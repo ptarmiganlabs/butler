@@ -1,10 +1,11 @@
 const fs = require('fs-extra');
-const path = require('path');
+const upath = require('upath');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
 const si = require('systeminformation');
 const os = require('os');
 const crypto = require('crypto');
+const isUncPath = require('is-unc-path');
 
 // Add dependencies
 const { Command, Option } = require('commander');
@@ -14,6 +15,9 @@ require('winston-daily-rotate-file');
 
 // Variable holding info about all defined schedules
 const configSchedule = [];
+
+// Variable to hold information about the computer where Butler is running
+let hostInfo;
 
 function checkFileExistsSync(filepath) {
     let flag = true;
@@ -62,10 +66,10 @@ let configFileBasename;
 let configFileExtension;
 if (options.configfile && options.configfile.length > 0) {
     configFileOption = options.configfile;
-    configFileExpanded = path.resolve(options.configfile);
-    configFilePath = path.dirname(configFileExpanded);
-    configFileExtension = path.extname(configFileExpanded);
-    configFileBasename = path.basename(configFileExpanded, configFileExtension);
+    configFileExpanded = upath.resolve(options.configfile);
+    configFilePath = upath.dirname(configFileExpanded);
+    configFileExtension = upath.extname(configFileExpanded);
+    configFileBasename = upath.basename(configFileExpanded, configFileExtension);
 
     if (configFileExtension.toLowerCase() !== '.yaml') {
         // eslint-disable-next-line no-console
@@ -115,12 +119,12 @@ logTransports.push(
     })
 );
 
-const execPath = isPkg ? path.dirname(process.execPath) : __dirname;
+const execPath = isPkg ? upath.dirname(process.execPath) : __dirname;
 
 if (config.get('Butler.fileLogging')) {
     logTransports.push(
         new winston.transports.DailyRotateFile({
-            dirname: path.join(execPath, config.get('Butler.logDirectory')),
+            dirname: upath.join(execPath, config.get('Butler.logDirectory')),
             filename: 'butler.%DATE%.log',
             level: config.get('Butler.logLevel'),
             datePattern: 'YYYY-MM-DD',
@@ -170,9 +174,9 @@ logger.verbose(`Running as standalone app: ${isPkg}`);
 // Helper function to read the contents of the certificate files:
 const readCert = (filename) => fs.readFileSync(filename);
 
-const certPath = path.resolve(__dirname, config.get('Butler.cert.clientCert'));
-const keyPath = path.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
-const caPath = path.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
+const certPath = upath.resolve(__dirname, config.get('Butler.cert.clientCert'));
+const keyPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
+const caPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
 
 let configEngine;
 let configQRS;
@@ -294,56 +298,10 @@ const udpPortTaskFailure = config.get('Butler.udpServerConfig.portTaskFailure');
 // Folder under which QVD folders are to be created
 const qvdFolder = config.get('Butler.configDirectories.qvdPath');
 
-// Load approved fromDir and toDir for fileCopy operation
+// Variables to hold info on what directories are approved for file system operations via Butler's REST API
 const fileCopyDirectories = [];
-
-if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileCopyApprovedDirectories') != null) {
-    config.get('Butler.fileCopyApprovedDirectories').forEach((element) => {
-        logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
-
-        const newDirCombo = {
-            fromDir: path.normalize(element.fromDirectory),
-            toDir: path.normalize(element.toDirectory),
-        };
-
-        logger.info(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
-
-        fileCopyDirectories.push(newDirCombo);
-    });
-}
-
-// Load approved fromDir and toDir for fileMove operation
 const fileMoveDirectories = [];
-
-if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileMoveApprovedDirectories') != null) {
-    config.get('Butler.fileMoveApprovedDirectories').forEach((element) => {
-        logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
-
-        const newDirCombo = {
-            fromDir: path.normalize(element.fromDirectory),
-            toDir: path.normalize(element.toDirectory),
-        };
-
-        logger.info(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
-
-        fileMoveDirectories.push(newDirCombo);
-    });
-}
-
-// Load approved dir for fileDelete operation
 const fileDeleteDirectories = [];
-
-if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fileDeleteApprovedDirectories') != null) {
-    config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
-        logger.verbose(`fileDelete directory from config file: ${element}`);
-
-        const deleteDir = path.normalize(element);
-
-        logger.info(`Adding normalized fileDelete directory ${deleteDir}`);
-
-        fileDeleteDirectories.push(deleteDir);
-    });
-}
 
 // Create list of enabled API endpoints
 const endpointsEnabled = [];
@@ -450,8 +408,97 @@ function initInfluxDB() {
     }
 }
 
-// Anon telemetry reporting
-let hostInfo;
+async function loadApprovedDirectories() {
+    try {
+        // Load approved fromDir and toDir for fileCopy operation
+        if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileCopyApprovedDirectories') != null) {
+            config.get('Butler.fileCopyApprovedDirectories').forEach((element) => {
+                logger.verbose(`fileCopy directories from config file: ${JSON.stringify(element, null, 2)}`);
+
+                // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+                // Warn if so
+                if (hostInfo.si.os.platform.toLowerCase() !== 'windows') {
+                    if (isUncPath(element.fromDirectory) === true) {
+                        logger.warn(
+                            `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${hostInfo.si.os.platform}".`
+                        );
+                    }
+                    if (isUncPath(element.toDirectory) === true) {
+                        logger.warn(
+                            `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${hostInfo.si.os.platform}".`
+                        );
+                    }
+                }
+
+                const newDirCombo = {
+                    fromDir: upath.normalizeSafe(element.fromDirectory),
+                    toDir: upath.normalizeSafe(element.toDirectory),
+                };
+
+                logger.verbose(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
+
+                fileCopyDirectories.push(newDirCombo);
+            });
+        }
+
+        // Load approved fromDir and toDir for fileMove operation
+        if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileMoveApprovedDirectories') != null) {
+            config.get('Butler.fileMoveApprovedDirectories').forEach((element) => {
+                logger.verbose(`fileMove directories from config file: ${JSON.stringify(element, null, 2)}`);
+
+                // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+                // Warn if so
+                if (hostInfo.si.os.platform.toLowerCase() !== 'windows') {
+                    if (isUncPath(element.fromDirectory) === true) {
+                        logger.warn(
+                            `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${hostInfo.si.os.platform}".`
+                        );
+                    }
+                    if (isUncPath(element.toDirectory) === true) {
+                        logger.warn(
+                            `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${hostInfo.si.os.platform}".`
+                        );
+                    }
+                }
+
+                const newDirCombo = {
+                    fromDir: upath.normalizeSafe(element.fromDirectory),
+                    toDir: upath.normalizeSafe(element.toDirectory),
+                };
+
+                logger.verbose(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
+
+                fileMoveDirectories.push(newDirCombo);
+            });
+        }
+
+        // Load approved dir for fileDelete operation
+        if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fileDeleteApprovedDirectories') != null) {
+            config.get('Butler.fileDeleteApprovedDirectories').forEach((element) => {
+                logger.verbose(`fileDelete directory from config file: ${element}`);
+
+                // Check if Butler is running on Linux-ish host and UNC path(s) are specified
+                // Warn if so
+                if (hostInfo.si.os.platform.toLowerCase() !== 'windows') {
+                    if (isUncPath(element) === true) {
+                        logger.warn(
+                            `FILE DELETE CONFIG: UNC paths won't work on non-Windows OSs ("${element}"). OS is "${hostInfo.si.os.platform}".`
+                        );
+                    }
+                }
+
+                const deleteDir = upath.normalizeSafe(element);
+                logger.verbose(`Adding normalized fileDelete directory ${deleteDir}`);
+
+                fileDeleteDirectories.push(deleteDir);
+            });
+        }
+
+        return;
+    } catch (err) {
+        logger.error(`CONFIG: Getting approved directories: ${err}`);
+    }
+}
 
 async function initHostInfo() {
     try {
@@ -531,6 +578,7 @@ module.exports = {
     fileMoveDirectories,
     fileDeleteDirectories,
     endpointsEnabled,
+    loadApprovedDirectories,
     initHostInfo,
     hostInfo,
     isPkg,

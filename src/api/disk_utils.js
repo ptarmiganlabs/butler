@@ -71,7 +71,8 @@ const apiFileCopy = {
                 },
             },
             403: {
-                description: 'No approved fromDir/toDir for file copy.',
+                description:
+                    'No approved fromDir/toDir for file copy, or UNC path used when Butler is running on non-Windows operating system',
                 type: 'object',
                 properties: {
                     statusCode: { type: 'number' },

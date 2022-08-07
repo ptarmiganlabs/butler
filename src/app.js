@@ -87,6 +87,9 @@ async function build(opts = {}) {
         globals.logger.info(`Client cert key : ${keyFile}`);
         globals.logger.info(`Client cert CA  : ${caFile}`);
 
+        // Load approved directories for file system API operations from config file
+        await globals.loadApprovedDirectories();
+
         // Is there a email address specified on the command line? Send test email to it if so.
         if (globals.options.testEmailAddress && globals.options.testEmailAddress.length > 0) {
             // Is there a from address specified in a separate command line option?
