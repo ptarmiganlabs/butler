@@ -322,7 +322,7 @@ if (config.has('Butler.fileCopyApprovedDirectories') && config.get('Butler.fileC
             toDir: upath.normalizeSafe(element.toDirectory),
         };
 
-        logger.info(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
+        logger.verbose(`Adding normalized fileCopy directories ${JSON.stringify(newDirCombo, null, 2)}`);
 
         fileCopyDirectories.push(newDirCombo);
     });
@@ -355,7 +355,7 @@ if (config.has('Butler.fileMoveApprovedDirectories') && config.get('Butler.fileM
             toDir: upath.normalizeSafe(element.toDirectory),
         };
 
-        logger.info(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
+        logger.verbose(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
 
         fileMoveDirectories.push(newDirCombo);
     });
@@ -377,7 +377,7 @@ if (config.has('Butler.fileDeleteApprovedDirectories') && config.get('Butler.fil
         }
 
         const deleteDir = upath.normalizeSafe(element);
-        logger.info(`Adding normalized fileDelete directory ${deleteDir}`);
+        logger.verbose(`Adding normalized fileDelete directory ${deleteDir}`);
 
         fileDeleteDirectories.push(deleteDir);
     });
