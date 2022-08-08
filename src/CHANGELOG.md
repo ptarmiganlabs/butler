@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.4.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.0...butler-v8.4.1) (2022-08-08)
+
+
+### Bug Fixes
+
+* Properly store demo apps in Git ([1fa541a](https://github.com/ptarmiganlabs/butler/commit/1fa541ab7db1573eb6b8fe089406e9daf73962a3)), closes [#533](https://github.com/ptarmiganlabs/butler/issues/533)
+
 ## [8.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.0...butler-v8.4.0) (2022-08-08)
 
 
