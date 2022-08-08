@@ -464,6 +464,7 @@ async function loadApprovedDirectories() {
                     fromDir: upath.normalizeSafe(element.fromDirectory),
                     toDir: upath.normalizeSafe(element.toDirectory),
                 };
+
                 logger.verbose(`Adding normalized fileMove directories ${JSON.stringify(newDirCombo, null, 2)}`);
 
                 fileMoveDirectories.push(newDirCombo);
