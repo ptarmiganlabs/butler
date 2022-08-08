@@ -43,3 +43,5 @@ changelog.md export-ignore
 *.gif binary
 *.png binary
 *.jpeg binary
+*.zip binary
+*.qvf binary
