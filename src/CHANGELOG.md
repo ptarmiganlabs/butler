@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.4.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.1...butler-v8.4.2) (2022-08-09)
+
+
+### Bug Fixes
+
+* Add Linux binaries to build pipeline ([95e4db5](https://github.com/ptarmiganlabs/butler/commit/95e4db5e3d272dba4cb9a3146d740b1b43c60ec4)), closes [#540](https://github.com/ptarmiganlabs/butler/issues/540)
+
 ## [8.4.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.0...butler-v8.4.1) (2022-08-08)
 
 
