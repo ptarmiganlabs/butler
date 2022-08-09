@@ -123,6 +123,13 @@ jobs:
           name: binaries-macos
           path: release/macos/*
 
+      - name: Upload Linux build artifacts
+        if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries-linux
+          path: release/linux/*
+
       - name: Upload Windows build artifacts
         if: ${{ steps.release.outputs.releases_created }}
         uses: actions/upload-artifact@v3
@@ -218,6 +225,61 @@ jobs:
       - name: Tidy up before existing
         run: |
           rm -r release-macos
+
+  release-linux:
+    needs: release-please
+    runs-on: ubuntu-latest
+    # timeout-minutes: 15
+
+    if: ${{ needs.release-please.outputs.releases_created }} 
+    env:
+      DIST_FILE_NAME: butler
+    steps:
+      - name: Release tag and upload url from previous job
+        run: |
+          echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+          echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Download-Binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries-linux
+          path: release-linux/
+
+      - name: Make binary executable
+        run: |
+          chmod +x release-linux/${DIST_FILE_NAME}
+
+      - name: Compress into zip
+        run: |
+          ls -la
+          ls -la ./release-linux
+          zip -9 -r ./${{ needs.release-please.outputs.release_tag_name }}-linux.zip release-linux/
+
+      - name: Upload to existing release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          artifactContentType: raw
+          # artifactContentType: application/zip
+          draft: true
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
+          artifacts: ./${{ needs.release-please.outputs.release_tag_name }}-linux.zip
+          token: ${{ github.token }}
+
+      - name: Tidy up before existing
+        run: |
+          rm -r release-linux
 
   release-win64:
     needs: release-please
