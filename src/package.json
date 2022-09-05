@@ -50,7 +50,7 @@
         "serializeapp": "^3.0.0",
         "systeminformation": "^5.12.3",
         "upath": "^2.0.1",
-        "uuid": "^8.3.2",
+        "uuid": "^9.0.0",
         "winston": "^3.8.1",
         "winston-daily-rotate-file": "^4.7.1",
         "ws": "^8.8.1"
