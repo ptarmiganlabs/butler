@@ -175,6 +175,7 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                                 'x-qlik-xrfkey': 'abcdefghijklmnop',
                                 'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
                             },
+                            timeout: 10000,
                             responseType: 'text',
                             httpsAgent,
                             //   passphrase: "YYY"
