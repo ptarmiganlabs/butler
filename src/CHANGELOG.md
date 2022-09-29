@@ -1,5 +1,31 @@
 # Changelog
 
+## [8.5.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.2...butler-v8.5.0) (2022-09-29)
+
+
+### Features
+
+* Add new command line option --no-qs-connection ([eda18a0](https://github.com/ptarmiganlabs/butler/commit/eda18a0b01a2744d537285eee93b452933d826d8)), closes [#555](https://github.com/ptarmiganlabs/butler/issues/555)
+* **new-relic:** Allow per-reload-task control of to which New Relic account failed/aborted reload alerts are sent ([aa81ceb](https://github.com/ptarmiganlabs/butler/commit/aa81cebef19aadd505072a7d2990efe47b5606c2)), closes [#475](https://github.com/ptarmiganlabs/butler/issues/475)
+
+
+### Bug Fixes
+
+* **deps:** Dependencies minor updates ([4ca858b](https://github.com/ptarmiganlabs/butler/commit/4ca858bae9b968fa0794aed4d1cd0ed6f584064a))
+* **deps:** Dependencies patch updates ([445e1fa](https://github.com/ptarmiganlabs/butler/commit/445e1fa453199371d1a7ff2b9d80f5f59462080a))
+* **deps:** Update dependency Jest 28.1.3 > 29.0.3 ([c9adf26](https://github.com/ptarmiganlabs/butler/commit/c9adf264cda806ae9f0800ad5a16c1ec89dce1f1))
+* **deps:** Update dependency uuid 8.3.2 > 9.0.0 ([98349dd](https://github.com/ptarmiganlabs/butler/commit/98349ddca2147a617143767727adf0859ab03cff))
+* **deps:** Update eslint 7.32.0 > 8.24.0 ([e69ecd2](https://github.com/ptarmiganlabs/butler/commit/e69ecd2171e38a2ec77ad31079e998a47a42a78d))
+* **deps:** Update sub-level deps to latest versions ([0a8cc73](https://github.com/ptarmiganlabs/butler/commit/0a8cc739069a83e74d41acef32d08b79ef918dbb))
+* Increase timeout when getting script logs ([eb1de8c](https://github.com/ptarmiganlabs/butler/commit/eb1de8c773200c74d29794a61a508793e08f8467)), closes [#473](https://github.com/ptarmiganlabs/butler/issues/473)
+* **scriptlog:** More descriptive messages when script log retrieval fails ([923182b](https://github.com/ptarmiganlabs/butler/commit/923182b04ded55507a54baad5d5b0d1c16a31747)), closes [#551](https://github.com/ptarmiganlabs/butler/issues/551)
+
+
+### Miscellaneous
+
+* **deps:** pin dependencies ([e6e60c2](https://github.com/ptarmiganlabs/butler/commit/e6e60c20a22d453be6e25710aafe44adede55a84))
+* **deps:** Update dependencies to latest versions ([2d9fb99](https://github.com/ptarmiganlabs/butler/commit/2d9fb99b9226742b1ca06e8df30a7acf08918f67))
+
 ## [8.4.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.1...butler-v8.4.2) (2022-08-09)
 
 
