@@ -53,7 +53,8 @@ program
     .option(
         '--test-email-from-address <address>',
         'send test email from this address. Only relevant when SMTP server allows from address to be set.'
-    );
+    )
+    .option('--no-qs-connection', "don't connect to Qlik Sense server at all. Run in isolated mode");
 
 // Parse command line params
 program.parse(process.argv);
@@ -218,7 +219,9 @@ if (config.has('Butler.restServerApiDocGenerate') === false || config.get('Butle
 }
 
 // Verify select parts/values in config file
-configFileNewRelicAssert(config, configQRS, logger);
+if (options.qsConnection) {
+    configFileNewRelicAssert(config, configQRS, logger);
+}
 
 // MS Teams notification objects
 let teamsTaskFailureObj;
