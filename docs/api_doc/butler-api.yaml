@@ -2,15 +2,13 @@ openapi: 3.0.3
 info:
   title: Butler API documentation
   description: >-
-    Butler is a microservice that provides add-on features to Qlik Sense
-    Enterprise on Windows.
+    Butler is a microservice that provides add-on features to Qlik
+    Sense Enterprise on Windows.
 
-    Butler offers both a REST API and things like failed reload notifications
-    etc.
+    Butler offers both a REST API and things like failed reload notifications etc.
 
 
-    This page contains the API documentation. Full documentation is available at
-    https://butler.ptarmiganlabs.com
+    This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com
   version: 8.4.2
 components:
   schemas: {}
@@ -19,14 +17,13 @@ paths:
     get:
       summary: Get an array of all enabled API endpoints.
       description: >-
-        Get an array of all enabled API endpoints, using the key names from the
-        Butler config file.
+        Get an array of all enabled API endpoints, using the key names from
+        the Butler config file.
 
 
-        Note: Endpoints are enabled/disabled in the Butler main configuration
-        file.
+        Note: Endpoints are enabled/disabled in the Butler main configuration file.
       responses:
-        '200':
+        "200":
           description: Enabled API enpooints.
           content:
             application/json:
@@ -35,11 +32,12 @@ paths:
                 type: array
                 items:
                   type: string
-                example: &ref_0
+                example:
+                  &a1
                   - activeUserCount
                   - activeUsers
                   - apiListEnbledEndpoints
-              example: *ref_0
+              example: *a1
   /v4/base62tobase16:
     get:
       summary: Converts strings from base62 to base16.
@@ -54,7 +52,7 @@ paths:
           required: true
           description: The base62 encoded string that should be converted to base16
       responses:
-        '200':
+        "200":
           description: Base conversion successful.
           content:
             application/json:
@@ -64,17 +62,16 @@ paths:
                 properties:
                   base62:
                     type: string
-                    description: >-
-                      The base62 encoded string that should be converted to
-                      base16
+                    description: The base62 encoded string that should be converted to base16
                   base16:
                     type: string
                     description: Resulting base16 encoded string.
-                example: &ref_1
+                example:
+                  &a2
                   base62: 6DMW88LpSok9Z7P7hUK0wv7bF
                   base16: 3199af08bfeeaf5d420f27ed9c01e74370077
-              example: *ref_1
-        '400':
+              example: *a2
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -92,7 +89,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -124,7 +121,7 @@ paths:
           required: true
           description: The base16 encoded string that should be converted to base62
       responses:
-        '200':
+        "200":
           description: Base conversion successful.
           content:
             application/json:
@@ -134,17 +131,16 @@ paths:
                 properties:
                   base62:
                     type: string
-                    description: >-
-                      The base62 encoded string that should be converted to
-                      base16
+                    description: The base62 encoded string that should be converted to base16
                   base16:
                     type: string
                     description: Resulting base62 encoded string.
-                example: &ref_2
+                example:
+                  &a3
                   base16: 3199af08bfeeaf5d420f27ed9c01e74370077
                   base62: 6DMW88LpSok9Z7P7hUK0wv7bF
-              example: *ref_2
-        '400':
+              example: *a3
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -162,7 +158,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -185,7 +181,7 @@ paths:
       summary: Tests if Butler is alive and responding
       description: Tests if Butler is alive and responding
       responses:
-        '200':
+        "200":
           description: Butler is alive and well.
           content:
             application/json:
@@ -199,7 +195,7 @@ paths:
                   butlerVersion:
                     type: string
                     example: 5.5.0
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -221,14 +217,13 @@ paths:
     put:
       summary: Copy file(s) between well defined, approved locations.
       description: >-
-        Copying of files is only posttible between pre-approved directories.
+        Copying of files is only posttible between pre-approved
+        directories.
 
-        Defining approved source and destination directories is done in Butler's
-        config file.
+        Defining approved source and destination directories is done in Butler's config file.
 
 
-        If the source directory contains subdirectories, these will be copied
-        too.
+        If the source directory contains subdirectories, these will be copied too.
       requestBody:
         content:
           application/json:
@@ -241,27 +236,24 @@ paths:
                   example: subfolder/file1.qvd
                 toFile:
                   type: string
-                  description: >-
-                    Name of destination file. Can be different from source file
-                    name, if needed.
+                  description: Name of destination file. Can be different from source file name,
+                    if needed.
                   example: archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
-                  description: >-
-                    Controls whether destination file should be overwritten if
-                    it already exists. Note that the copy operation will
-                    silently fail if you set this to false and the destination
-                    exists. Defaults to false.
+                  description: Controls whether destination file should be overwritten if it
+                    already exists. Note that the copy operation will silently
+                    fail if you set this to false and the destination exists.
+                    Defaults to false.
                   example: false
                 preserveTimestamp:
                   type: boolean
-                  description: >-
-                    When true, the timestamp of the source file(s) will be
-                    preserved on the destination file(s). When false, timestamp
-                    behaviour is OS-dependent. Defaults to false.
+                  description: When true, the timestamp of the source file(s) will be preserved on
+                    the destination file(s). When false, timestamp behaviour is
+                    OS-dependent. Defaults to false.
                   example: false
       responses:
-        '201':
+        "201":
           description: File copied.
           content:
             application/json:
@@ -275,26 +267,23 @@ paths:
                     example: subfolder/file1.qvd
                   toFile:
                     type: string
-                    description: >-
-                      Name of destination file. Can be different from source
-                      file name, if needed.
+                    description: Name of destination file. Can be different from source file name,
+                      if needed.
                     example: archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
-                    description: >-
-                      Controls whether destination file should be overwritten if
-                      it already exists. Note that the copy operation will
-                      silently fail if you set this to false and the destination
-                      exists. Defaults to false.
+                    description: Controls whether destination file should be overwritten if it
+                      already exists. Note that the copy operation will silently
+                      fail if you set this to false and the destination exists.
+                      Defaults to false.
                     example: false
                   preserveTimestamp:
                     type: boolean
-                    description: >-
-                      When true, the timestamp of the source file(s) will be
-                      preserved on the destination file(s). When false,
-                      timestamp behaviour is OS-dependent. Defaults to false.
+                    description: When true, the timestamp of the source file(s) will be preserved on
+                      the destination file(s). When false, timestamp behaviour
+                      is OS-dependent. Defaults to false.
                     example: false
-        '400':
+        "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
             application/json:
@@ -312,15 +301,13 @@ paths:
                     type: string
                   time:
                     type: string
-        '403':
-          description: >-
-            No approved fromDir/toDir for file copy, or UNC path used when
+        "403":
+          description: No approved fromDir/toDir for file copy, or UNC path used when
             Butler is running on non-Windows operating system
           content:
             application/json:
               schema:
-                description: >-
-                  No approved fromDir/toDir for file copy, or UNC path used when
+                description: No approved fromDir/toDir for file copy, or UNC path used when
                   Butler is running on non-Windows operating system
                 type: object
                 properties:
@@ -334,7 +321,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -358,12 +345,10 @@ paths:
       description: >-
         Moving of files is only posttible between pre-approved directories.
 
-        Defining approved source and destination directories is done in Butler's
-        config file.
+        Defining approved source and destination directories is done in Butler's config file.
 
 
-        If the source directory contains subdirectories, these will be moved
-        too.
+        If the source directory contains subdirectories, these will be moved too.
       requestBody:
         content:
           application/json:
@@ -376,18 +361,16 @@ paths:
                   example: subfolder/file1.qvd
                 toFile:
                   type: string
-                  description: >-
-                    Name of destination file. Can be different from source file
-                    name, if needed.
+                  description: Name of destination file. Can be different from source file name,
+                    if needed.
                   example: archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
-                  description: >-
-                    Controls whether destination file should be overwritten if
-                    it already exists. Defaults to false.
+                  description: Controls whether destination file should be overwritten if it
+                    already exists. Defaults to false.
                   example: false
       responses:
-        '201':
+        "201":
           description: File moved.
           content:
             application/json:
@@ -401,17 +384,15 @@ paths:
                     example: subfolder/file1.qvd
                   toFile:
                     type: string
-                    description: >-
-                      Name of destination file. Can be different from source
-                      file name, if needed.
+                    description: Name of destination file. Can be different from source file name,
+                      if needed.
                     example: archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
-                    description: >-
-                      Controls whether destination file should be overwritten if
-                      it already exists. Defaults to false.
+                    description: Controls whether destination file should be overwritten if it
+                      already exists. Defaults to false.
                     example: false
-        '400':
+        "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
             application/json:
@@ -429,7 +410,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '403':
+        "403":
           description: No approved fromDir/toDir for file copy.
           content:
             application/json:
@@ -447,7 +428,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -481,29 +462,26 @@ paths:
               properties:
                 deleteFile:
                   type: string
-                  description: >-
-                    Name of file to be deleted. Use forward/backward slashes in
-                    paths as needed, depending on whether Butler runs on
+                  description: Name of file to be deleted. Use forward/backward slashes in paths
+                    as needed, depending on whether Butler runs on
                     Windows/non-Windows platform.
                   example: data/qvdstore/sales/file1.qvd
       responses:
-        '204':
+        "204":
           description: File deleted.
           content:
             application/json:
               schema:
                 description: File deleted.
                 type: object
-        '400':
-          description: >-
-            "Required parameter missing" or "File requested for delete not
-            found".
+        "400":
+          description: '"Required parameter missing" or "File requested for delete not
+            found".'
           content:
             application/json:
               schema:
-                description: >-
-                  "Required parameter missing" or "File requested for delete not
-                  found".
+                description: '"Required parameter missing" or "File requested for delete not
+                  found".'
                 type: object
                 properties:
                   statusCode:
@@ -516,7 +494,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '403':
+        "403":
           description: No approved directory matches the delete request.
           content:
             application/json:
@@ -534,7 +512,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -555,8 +533,7 @@ paths:
   /v4/createdirqvd:
     post:
       summary: Creates a directory in designated QVD directory.
-      description: >-
-        Creates a directory in QVD directory (which is defined in Butler's
+      description: Creates a directory in QVD directory (which is defined in Butler's
         config file).
       requestBody:
         content:
@@ -569,7 +546,7 @@ paths:
                   description: Directory that should be created.
                   example: subfolder/2020-10
       responses:
-        '201':
+        "201":
           description: Directory created.
           content:
             application/json:
@@ -581,7 +558,7 @@ paths:
                     type: string
                     description: Directory that was created.
                     example: subfolder/2020-10
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -599,7 +576,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -623,8 +600,7 @@ paths:
       description: >-
         If the directory already exists nothing will happen.
 
-        If permissions don't allow a directory to be created, or if the path is
-        invalid, an error will be returned.
+        If permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.
       requestBody:
         content:
           application/json:
@@ -633,12 +609,11 @@ paths:
               properties:
                 directory:
                   type: string
-                  description: >-
-                    Path to directory that should be created. Can be a relative
-                    or absolute path.
+                  description: Path to directory that should be created. Can be a relative or
+                    absolute path.
                   example: /Users/joe/data/qvds/2020
       responses:
-        '201':
+        "201":
           description: Directory created.
           content:
             application/json:
@@ -650,7 +625,7 @@ paths:
                     type: string
                     description: Directory that was created.
                     example: /Users/joe/data/qvds/2020
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -668,7 +643,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error (file system permissions etc).
           content:
             application/json:
@@ -690,7 +665,7 @@ paths:
     get:
       summary: List all currently defined namespaces.
       responses:
-        '200':
+        "200":
           description: Array of all namespaces.
           content:
             application/json:
@@ -699,12 +674,13 @@ paths:
                 type: array
                 items:
                   type: string
-                example: &ref_3
+                example:
+                  &a4
                   - Weekly sales app
                   - Sales ETL step 1
                   - Sales ETL step 2
-              example: *ref_3
-        '500':
+              example: *a4
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -722,7 +698,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/keyvalues/{namespace}:
+  "/v4/keyvalues/{namespace}":
     get:
       summary: Get the value associated with a key, in a specific namespace.
       parameters:
@@ -741,7 +717,7 @@ paths:
           name: namespace
           required: true
       responses:
-        '200':
+        "200":
           description: Key and it's associated value and metadata returned.
           content:
             application/json:
@@ -760,8 +736,8 @@ paths:
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    example: '2020-09-29 17:14:56'
-        '400':
+                    example: 2020-09-29 17:14:56
+        "400":
           description: '"Namespace or key not found" or "Required parameter missing".'
           content:
             application/json:
@@ -779,7 +755,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -803,11 +779,9 @@ paths:
         If the specified key already exists it will be overwritten.
 
 
-        If the posted data has a TTL, it will start counting when the post
-        occur.
+        If the posted data has a TTL, it will start counting when the post occur.
 
-        I.e. if a previouly posted key also had a TTL, it will be replace with
-        the most recent TTL.
+        I.e. if a previouly posted key also had a TTL, it will be replace with the most recent TTL.
       requestBody:
         content:
           application/json:
@@ -821,12 +795,11 @@ paths:
                 value:
                   type: string
                   description: Value to set
-                  example: '12345.789'
+                  example: "12345.789"
                 ttl:
                   type: number
-                  description: >-
-                    Time to live = how long (milliseconds) the key-value pair
-                    should exist before being automatically deleted
+                  description: Time to live = how long (milliseconds) the key-value pair should
+                    exist before being automatically deleted
                   example: 10000
       parameters:
         - schema:
@@ -838,7 +811,7 @@ paths:
           required: true
           description: Name of namespace.
       responses:
-        '201':
+        "201":
           description: Key successfully set.
           content:
             application/json:
@@ -857,14 +830,13 @@ paths:
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    example: '2020-09-29 17:14:56'
+                    example: 2020-09-29 17:14:56
                   ttl:
                     type: number
-                    description: >-
-                      Time-to-live for the key-value pair. 0 if no ttl was set,
-                      otherwise in milliseconds.
+                    description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise
+                      in milliseconds.
                     example: 60000
-        '400':
+        "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
             application/json:
@@ -882,7 +854,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -912,15 +884,15 @@ paths:
           required: true
           description: Name of namespace.
       responses:
-        '204':
+        "204":
           description: Namespace successfully deleted.
           content:
             application/json:
               schema:
                 description: Namespace successfully deleted.
                 type: string
-                example: ''
-        '400':
+                example: ""
+        "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
             application/json:
@@ -938,7 +910,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -956,7 +928,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/keyvalues/{namespace}/keyexists:
+  "/v4/keyvalues/{namespace}/keyexists":
     get:
       summary: Checks if a key exists in a namespace.
       description: Returns true if the specified key exists, otherwise false.
@@ -976,23 +948,20 @@ paths:
           name: namespace
           required: true
       responses:
-        '200':
-          description: >-
-            Key exist/no-exist returned, together with the data if the does
+        "200":
+          description: Key exist/no-exist returned, together with the data if the does
             exist.
           content:
             application/json:
               schema:
-                description: >-
-                  Key exist/no-exist returned, together with the data if the
-                  does exist.
+                description: Key exist/no-exist returned, together with the data if the does
+                  exist.
                 type: object
                 properties:
                   keyExists:
                     type: boolean
-                    description: >-
-                      true/false flag indicating whether the specified key
-                      exists in the given namespace.
+                    description: true/false flag indicating whether the specified key exists in the
+                      given namespace.
                   keyValue:
                     type: object
                     properties:
@@ -1007,8 +976,8 @@ paths:
                       value:
                         type: string
                         description: Value stored in the key-value pair.
-                        example: '2020-09-29 17:14:56'
-        '400':
+                        example: 2020-09-29 17:14:56
+        "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
             application/json:
@@ -1026,7 +995,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1044,7 +1013,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/keyvalues/{namespace}/{key}:
+  "/v4/keyvalues/{namespace}/{key}":
     delete:
       summary: Delete a key-value pair in a specific namespace.
       parameters:
@@ -1065,15 +1034,15 @@ paths:
           required: true
           description: Key to use
       responses:
-        '204':
+        "204":
           description: Key-value pair successfully deleted.
           content:
             application/json:
               schema:
                 description: Key-value pair successfully deleted.
                 type: string
-                example: ''
-        '400':
+                example: ""
+        "400":
           description: '"Namespace or key not found" or "Required parameter missing".'
           content:
             application/json:
@@ -1091,7 +1060,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1109,7 +1078,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/keylist/{namespace}:
+  "/v4/keylist/{namespace}":
     get:
       summary: Retrieve a list of all keys present in the specified namespace.
       parameters:
@@ -1122,19 +1091,18 @@ paths:
           required: true
           description: Name of namespace whose keys should be returned.
       responses:
-        '200':
+        "200":
           description: Object containing namespace name + list of allkeys in the namespace.
           content:
             application/json:
               schema:
-                description: >-
-                  Object containing namespace name + list of allkeys in the
+                description: Object containing namespace name + list of allkeys in the
                   namespace.
                 type: object
                 properties:
                   namespace:
                     type: string
-                    description: ''
+                    description: ""
                     example: Sales ETL step 2
                   keys:
                     type: array
@@ -1145,7 +1113,7 @@ paths:
                     example:
                       - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
                       - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
-        '400':
+        "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
             application/json:
@@ -1163,7 +1131,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1196,17 +1164,16 @@ paths:
                   example: qliksense/new_data_notification/sales
                 message:
                   type: string
-                  description: >-
-                    The message is a generic text string and can thus contain
-                    anything that can be represented in a string, including
-                    JSON, key-value pairs, plain text etc.
+                  description: The message is a generic text string and can thus contain anything
+                    that can be represented in a string, including JSON,
+                    key-value pairs, plain text etc.
                   example: dt=20201028
               required:
                 - topic
                 - message
         required: true
       responses:
-        '201':
+        "201":
           description: MQTT message successfully published.
           content:
             application/json:
@@ -1220,7 +1187,7 @@ paths:
                   message:
                     type: string
                     example: dt=20201028
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1238,7 +1205,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1268,21 +1235,19 @@ paths:
               properties:
                 eventType:
                   type: string
-                  description: >-
-                    Event type. Can be a combination of alphanumeric characters,
-                    _ underscores, and : colons.
+                  description: "Event type. Can be a combination of alphanumeric characters, _
+                    underscores, and : colons."
                   maxLength: 254
                   example: relead-failed
                 timestamp:
                   type: number
-                  description: >-
-                    The event's start time in Unix time. Uses UTC time zone.
-                    This field also support seconds, microseconds, and
-                    nanoseconds. However, the data will be converted to
-                    milliseconds for storage and query. Events reported with a
-                    timestamp older than 48 hours ago or newer than 24 hours
-                    from the time they are reported are dropped by New Relic. If
-                    left empty Butler will use the current time as timestamp.
+                  description: The event's start time in Unix time. Uses UTC time zone. This field
+                    also support seconds, microseconds, and nanoseconds.
+                    However, the data will be converted to milliseconds for
+                    storage and query. Events reported with a timestamp older
+                    than 48 hours ago or newer than 24 hours from the time they
+                    are reported are dropped by New Relic. If left empty Butler
+                    will use the current time as timestamp.
                   example: 1642164296053
                 attributes:
                   type: array
@@ -1302,7 +1267,7 @@ paths:
                 - eventType
         required: true
       responses:
-        '202':
+        "202":
           description: Data accepted and sent to New Relic.
           content:
             application/json:
@@ -1312,11 +1277,11 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    example: '202'
+                    example: "202"
                   newRelicResultText:
                     type: string
                     example: Data accepted.
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1334,7 +1299,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1379,20 +1344,18 @@ paths:
                   example: 2.3
                 timestamp:
                   type: number
-                  description: >-
-                    The metric's start time in Unix time. Uses UTC time zone.
-                    This field also support seconds, microseconds, and
-                    nanoseconds. However, the data will be converted to
-                    milliseconds for storage and query. Metrics reported with a
-                    timestamp older than 48 hours ago or newer than 24 hours
-                    from the time they are reported are dropped by New Relic. If
-                    left empty Butler will use the current time as timestamp.
+                  description: The metric's start time in Unix time. Uses UTC time zone. This
+                    field also support seconds, microseconds, and nanoseconds.
+                    However, the data will be converted to milliseconds for
+                    storage and query. Metrics reported with a timestamp older
+                    than 48 hours ago or newer than 24 hours from the time they
+                    are reported are dropped by New Relic. If left empty Butler
+                    will use the current time as timestamp.
                   example: 1642164296053
                 interval:
                   type: number
-                  description: >-
-                    The length of the time window (millisec). Required for count
-                    and summary metric types.
+                  description: The length of the time window (millisec). Required for count and
+                    summary metric types.
                 attributes:
                   type: array
                   description: Dimensions that will be associated with the metric.
@@ -1412,7 +1375,7 @@ paths:
                 - value
         required: true
       responses:
-        '202':
+        "202":
           description: Data accepted and sent to New Relic.
           content:
             application/json:
@@ -1422,11 +1385,11 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    example: '202'
+                    example: "202"
                   newRelicResultText:
                     type: string
                     example: Data accepted.
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1444,7 +1407,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1462,7 +1425,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/app/{appId}/reload:
+  "/v4/app/{appId}/reload":
     put:
       summary: Do a stand-alone reload of a Qlik Sense app, without using a task.
       requestBody:
@@ -1473,19 +1436,16 @@ paths:
               properties:
                 reloadMode:
                   type: integer
-                  description: >-
-                    Reload mode that will be used. 0, 1 or 2. If not specified 0
-                    will be used
+                  description: Reload mode that will be used. 0, 1 or 2. If not specified 0 will
+                    be used
                 partialReload:
                   type: boolean
-                  description: >-
-                    Should a full (=false) or partial (=true) reload be done? If
-                    not specified a full reload will be done.
+                  description: Should a full (=false) or partial (=true) reload be done? If not
+                    specified a full reload will be done.
                   example: true
                 startQSEoWTaskOnSuccess:
                   type: array
-                  description: >-
-                    Array of task IDs that should be started when the app has
+                  description: Array of task IDs that should be started when the app has
                     successfully reloaded.
                   items:
                     type: string
@@ -1494,8 +1454,7 @@ paths:
                     - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
                 startQSEoWTaskOnFailure:
                   type: array
-                  description: >-
-                    Array of task IDs that should be started if the app fails
+                  description: Array of task IDs that should be started if the app fails
                     reloading.
                   items:
                     type: string
@@ -1512,7 +1471,7 @@ paths:
           required: true
           description: ID of Qlik Sense app.
       responses:
-        '201':
+        "201":
           description: App successfully reloaded.
           content:
             application/json:
@@ -1524,7 +1483,7 @@ paths:
                     type: string
                     description: ID of reloaded app
                     example: 210832b5-6174-4572-bd19-3e61eda675ef
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1542,7 +1501,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1560,7 +1519,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/senseappdump/{appId}:
+  "/v4/senseappdump/{appId}":
     get:
       summary: Dump a Sense app to JSON.
       description: Does the same thing as `/v4/app/:appId/dump`
@@ -1574,16 +1533,17 @@ paths:
           required: true
           description: ID of Qlik Sense app.
       responses:
-        '200':
+        "200":
           description: App dump successful. App metadata returned as JSON.
           content:
             application/json:
               schema:
                 description: App dump successful. App metadata returned as JSON.
                 type: object
-                example: &ref_4
+                example:
+                  &a5
                   properties: {}
-                  loadScript: ''
+                  loadScript: ""
                   sheets: []
                   stories: []
                   masterobjects: []
@@ -1596,8 +1556,8 @@ paths:
                   fields: []
                   variables: []
                   measures: []
-              example: *ref_4
-        '400':
+              example: *a5
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1615,7 +1575,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '422':
+        "422":
           description: App not found in  Qlik Sense.
           content:
             application/json:
@@ -1633,7 +1593,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1651,7 +1611,7 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/app/{appId}/dump:
+  "/v4/app/{appId}/dump":
     get:
       summary: Dump a Sense app to JSON.
       description: Does the same thing as `/v4/senseappdump/:appId`
@@ -1665,16 +1625,17 @@ paths:
           required: true
           description: ID of Qlik Sense app.
       responses:
-        '200':
+        "200":
           description: App dump successful. App metadata returned as JSON.
           content:
             application/json:
               schema:
                 description: App dump successful. App metadata returned as JSON.
                 type: object
-                example: &ref_5
+                example:
+                  &a6
                   properties: {}
-                  loadScript: ''
+                  loadScript: ""
                   sheets: []
                   stories: []
                   masterobjects: []
@@ -1687,8 +1648,8 @@ paths:
                   fields: []
                   variables: []
                   measures: []
-              example: *ref_5
-        '400':
+              example: *a6
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1706,7 +1667,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '422':
+        "422":
           description: App not found in  Qlik Sense.
           content:
             application/json:
@@ -1724,7 +1685,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1747,7 +1708,7 @@ paths:
       summary: Get a list of all apps in Sense environment.
       description: Does the same thing as `/v4/apps/list`
       responses:
-        '200':
+        "200":
           description: App list successfully retrieved.
           content:
             application/json:
@@ -1765,7 +1726,7 @@ paths:
                       type: string
                       description: App name
                       example: 2021 sales targets
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1788,7 +1749,7 @@ paths:
       summary: Get a list of all apps in Sense environment.
       description: Does the same thing as `/v4/senselistapps`
       responses:
-        '200':
+        "200":
           description: App list successfully retrieved.
           content:
             application/json:
@@ -1806,7 +1767,7 @@ paths:
                       type: string
                       description: App name
                       example: 2021 sales targets
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1824,24 +1785,21 @@ paths:
                     type: string
                   time:
                     type: string
-  /v4/reloadtask/{taskId}/start:
+  "/v4/reloadtask/{taskId}/start":
     put:
       summary: Start a Qlik Sense task.
       description: >-
-        An optional array of zero or more objects can be passed in the message
-        body. It is used to pass additional info related to the reload task
-        being started.
+        An optional array of zero or more objects can be passed in the
+        message body. It is used to pass additional info related to the reload
+        task being started.
 
 
         Currently supported values in this array are:
 
 
-        - A key-value pair that will be stored in Butler's KV store. If Butler's
-        key-value store is not enabled, any key-value information passed in this
-        parameter will simply be ignored.
+        - A key-value pair that will be stored in Butler's KV store. If Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.
 
-        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not
-        expire.
+        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not expire.
 
         - A task identified by its taskId that should be started.
 
@@ -1872,7 +1830,8 @@ paths:
                     example: keyvaluestore
                   payload:
                     type: object
-              example: &ref_6
+              example:
+                &a7
                 - type: starttaskid
                   payload:
                     taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
@@ -1889,7 +1848,7 @@ paths:
                     key: AnImportantKey
                     value: TheValue
                     ttl: 10000
-            example: *ref_6
+            example: *a7
       parameters:
         - schema:
             type: boolean
@@ -1904,16 +1863,13 @@ paths:
             started.
 
 
-            If set to `false`, all existing taskIds will be started.
-            Missing/invalid taskIds will be ignored.
+            If set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.
 
 
-            In either case, missing/invalid taskIds will be reported in the
-            result set back to the client calling the API.
+            In either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.
 
 
-            Note: Tasks started by specifying tags and/or custom properties are
-            not affected by this.
+            Note: Tasks started by specifying tags and/or custom properties are not affected by this.
         - schema:
             type: string
             example: 210832b5-6174-4572-bd19-3e61eda675ef
@@ -1924,17 +1880,17 @@ paths:
           description: >-
             ID of Qlik Sense task.
 
-            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This
-            ID will not be reported as invalid.
+            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.
       responses:
-        '200':
+        "200":
           description: Task successfully started.
           content:
             application/json:
               schema:
                 description: Task successfully started.
                 type: object
-                example: &ref_7
+                example:
+                  &a8
                   tasksId:
                     started:
                       - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
@@ -1954,8 +1910,8 @@ paths:
                   tasksCPDenied:
                     - name: taskGroup
                       value: cp_value_denied1
-              example: *ref_7
-        '400':
+              example: *a8
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -1973,7 +1929,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -1994,20 +1950,17 @@ paths:
     post:
       summary: Start a Qlik Sense task.
       description: >-
-        An optional array of zero or more objects can be passed in the message
-        body. It is used to pass additional info related to the reload task
-        being started.
+        An optional array of zero or more objects can be passed in the
+        message body. It is used to pass additional info related to the reload
+        task being started.
 
 
         Currently supported values in this array are:
 
 
-        - A key-value pair that will be stored in Butler's KV store. If Butler's
-        key-value store is not enabled, any key-value information passed in this
-        parameter will simply be ignored.
+        - A key-value pair that will be stored in Butler's KV store. If Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.
 
-        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not
-        expire.
+        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not expire.
 
         - A task identified by its taskId that should be started.
 
@@ -2038,7 +1991,8 @@ paths:
                     example: keyvaluestore
                   payload:
                     type: object
-              example: &ref_8
+              example:
+                &a9
                 - type: starttaskid
                   payload:
                     taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
@@ -2055,7 +2009,7 @@ paths:
                     key: AnImportantKey
                     value: TheValue
                     ttl: 10000
-            example: *ref_8
+            example: *a9
       parameters:
         - schema:
             type: boolean
@@ -2070,16 +2024,13 @@ paths:
             started.
 
 
-            If set to `false`, all existing taskIds will be started.
-            Missing/invalid taskIds will be ignored.
+            If set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.
 
 
-            In either case, missing/invalid taskIds will be reported in the
-            result set back to the client calling the API.
+            In either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.
 
 
-            Note: Tasks started by specifying tags and/or custom properties are
-            not affected by this.
+            Note: Tasks started by specifying tags and/or custom properties are not affected by this.
         - schema:
             type: string
             example: 210832b5-6174-4572-bd19-3e61eda675ef
@@ -2090,17 +2041,17 @@ paths:
           description: >-
             ID of Qlik Sense task.
 
-            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This
-            ID will not be reported as invalid.
+            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.
       responses:
-        '200':
+        "200":
           description: Task successfully started.
           content:
             application/json:
               schema:
                 description: Task successfully started.
                 type: object
-                example: &ref_9
+                example:
+                  &a10
                   tasksId:
                     started:
                       - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
@@ -2120,8 +2071,8 @@ paths:
                   tasksCPDenied:
                     - name: taskGroup
                       value: cp_value_denied1
-              example: *ref_9
-        '400':
+              example: *a10
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -2139,7 +2090,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
@@ -2169,10 +2120,8 @@ paths:
               properties:
                 channel:
                   type: string
-                  description: >-
-                    Slack channel to post message into. Prefix channel name with
-                    #.
-                  example: '#reload-notification'
+                  description: "Slack channel to post message into. Prefix channel name with #."
+                  example: "#reload-notification"
                 from_user:
                   type: string
                   description: Name of sending user, as shown in the Slack message
@@ -2191,7 +2140,7 @@ paths:
                 - msg
         required: true
       responses:
-        '201':
+        "201":
           description: Message successfully sent to Slack.
           content:
             application/json:
@@ -2201,10 +2150,8 @@ paths:
                 properties:
                   channel:
                     type: string
-                    description: >-
-                      Slack channel to post message into. Prefix channel name
-                      with #.
-                    example: '#reload-notification'
+                    description: "Slack channel to post message into. Prefix channel name with #."
+                    example: "#reload-notification"
                   from_user:
                     type: string
                     description: Name of sending user, as shown in the Slack message
@@ -2217,7 +2164,7 @@ paths:
                     type: string
                     description: Emoji to shown next to Slack message
                     example: thumbsup
-        '400':
+        "400":
           description: Required parameter missing.
           content:
             application/json:
@@ -2235,7 +2182,7 @@ paths:
                     type: string
                   time:
                     type: string
-        '500':
+        "500":
           description: Internal error.
           content:
             application/json:
