@@ -48,6 +48,8 @@ Butler:
         duration: 10d
     storeNewRelic:
       enable: false
+      destinationAccount:
+        - ...
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
       # As of this writing the options for the New Relic metrics API are
@@ -79,9 +81,10 @@ Butler:
   # These can also be specified via command line parameters when starting Butler. 
   # Command line options takes precedence over settings in this config file.
   thirdPartyToolsCredentials:
-    newRelic: 
-      insertApiKey: ...
-      accountId: ...
+    newRelic:         # Array of New Relic accounts/insert keys. Any data sent to New Relic will be sent to both accounts. 
+      - accountName: ...
+        insertApiKey: ...
+        accountId: ...
 
   # Store script logs of failed reloads on disk.
   # The script logs will be stored in daily directories under the specified main directory below
@@ -128,7 +131,7 @@ Butler:
       enable: false
       webhookURL: ...
       # channel: sense-task-failure     # Slack channel to which task failure notifications are sent
-      channel: synsam     # Slack channel to which task failure notifications are sent
+      channel: ...     # Slack channel to which task failure notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense PROD reload failed: "{{taskName}}"'      # Only needed if message type = basic
       rateLimit: 60                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
@@ -274,6 +277,13 @@ Butler:
           appNameRegEx:
     newRelic:
       enable: false
+      destinationAccount:
+        event:
+          # - First NR account
+          # - Second NR account
+        log:
+          # - First NR account
+          # - Second NR account
       # New Relic uses different API URLs for different kinds of data (metrics, events, logs, ...)
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
@@ -290,29 +300,47 @@ Butler:
       reloadTaskFailure:
         destination:
           event: 
-            enable: true
+            enable: false
+            sendToAccount:              # Which reload task failures are sent to New Relic as events
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task failures are sent as events
+                customPropertyName: 'Butler_FailedTask_Event_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as events)
+                account: 
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: event-specific-attribute 1  # Example
-                  value: abc 123                    # Example
+                # - name: event-specific-attribute 1
+                #   value: abc 123
               dynamic:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
-            enable: true
+            enable: false
             tailScriptLogLines: 20
+            sendToAccount:              # Which reload task failures are sent to New Relic as log entries
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task failures are sent as log entries
+                customPropertyName: 'Butler_FailedTask_Log_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as events)
+                account: 
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: log-specific-attribute 1    # Example
-                  value: def 123                    # Example
+                # - name: log-specific-attribute 1
+                #   value: def 123
               dynamic:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
         sharedSettings:
           rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
           header:                   # Custom http headers
-            - name: X-My-Header     # Example
-              value: Header value 1 # Example
+            # - name: X-My-Header     # Example
+            #   value: Header value 1 # Example
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
               - name: service       # Example
@@ -322,7 +350,16 @@ Butler:
       reloadTaskAborted:
         destination:
           event: 
-            enable: true
+            enable: false
+            sendToAccount:              # Which reload task aborts are sent to New Relic as events
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task aborts are sent as events
+                customPropertyName: 'Butler_AbortedTask_Event_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute 2  # Example
@@ -331,8 +368,17 @@ Butler:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
-            enable: true
+            enable: false
             tailScriptLogLines: 20
+            sendToAccount:              # Which reload task aborts are sent to New Relic as log entries
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task aborts are sent as log entries
+                customPropertyName: 'Butler_AbortedTask_Log_NewRelicAccount'
+              always:
+                enable: false          # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute 2    # Example
