@@ -33,6 +33,12 @@ function compareTaskDetails(a, b) {
     return 0;
 }
 
+function delay(milliseconds) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, milliseconds);
+    });
+}
+
 function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     return new Promise((resolve, reject) => {
         try {
@@ -158,71 +164,76 @@ function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                     globals.logger.debug(
                         `GETSCRIPTLOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`
                     );
-                    qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`).then((result2) => {
-                        // Step 3
-                        // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
-                        const httpsAgent = new https.Agent({
-                            rejectUnauthorized: globals.config.get('Butler.configQRS.rejectUnauthorized'),
-                            cert: globals.configQRS.cert,
-                            key: globals.configQRS.key,
-                        });
-
-                        const axiosConfig = {
-                            url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
-                            method: 'get',
-                            baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
-                            headers: {
-                                'x-qlik-xrfkey': 'abcdefghijklmnop',
-                                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-                            },
-                            timeout: 10000,
-                            responseType: 'text',
-                            httpsAgent,
-                            //   passphrase: "YYY"
-                        };
-
-                        axios
-                            .request(axiosConfig)
-                            .then((result3) => {
-                                const scriptLogFull = result3.data.split('\r\n');
-
-                                let scriptLogHead = '';
-                                let scriptLogTail = '';
-
-                                if (headLineCount > 0) {
-                                    scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
-                                }
-
-                                if (tailLineCount > 0) {
-                                    scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
-                                }
-
-                                globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
-                                globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
-
-                                globals.logger.verbose('SCRIPTLOG: Done getting script log');
-
-                                resolve({
-                                    executingNodeName: taskInfo.executingNodeName,
-                                    executionDetails: taskInfo.executionDetailsSorted,
-                                    executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
-                                    executionDuration: taskInfo.executionDuration,
-                                    executionStartTime: taskInfo.executionStartTime,
-                                    executionStopTime: taskInfo.executionStopTime,
-                                    executionStatusNum: taskInfo.executionStatusNum,
-                                    executionStatusText: taskInfo.executionStatusText,
-                                    scriptLogFull,
-                                    scriptLogSize: taskInfo.scriptLogSize,
-                                    scriptLogHead,
-                                    scriptLogHeadCount: headLineCount,
-                                    scriptLogTail,
-                                    scriptLogTailCount: tailLineCount,
-                                });
-                            })
-                            .catch((err) => {
-                                globals.logger.error(`SCRIPTLOG ERROR: ${err}`);
+                    qrsInstance
+                        .Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`)
+                        .then(async (result2) => {
+                            // Step 3
+                            // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
+                            const httpsAgent = new https.Agent({
+                                rejectUnauthorized: globals.config.get('Butler.configQRS.rejectUnauthorized'),
+                                cert: globals.configQRS.cert,
+                                key: globals.configQRS.key,
                             });
-                    });
+
+                            const axiosConfig = {
+                                url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
+                                method: 'get',
+                                baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
+                                headers: {
+                                    'x-qlik-xrfkey': 'abcdefghijklmnop',
+                                    'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+                                },
+                                timeout: 10000,
+                                responseType: 'text',
+                                httpsAgent,
+                                //   passphrase: "YYY"
+                            };
+
+                            axios
+                                .request(axiosConfig)
+                                .then((result3) => {
+                                    const scriptLogFull = result3.data.split('\r\n');
+
+                                    let scriptLogHead = '';
+                                    let scriptLogTail = '';
+
+                                    if (headLineCount > 0) {
+                                        scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+                                    }
+
+                                    if (tailLineCount > 0) {
+                                        scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
+                                    }
+
+                                    globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
+                                    globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
+
+                                    globals.logger.verbose('SCRIPTLOG: Done getting script log');
+
+                                    resolve({
+                                        executingNodeName: taskInfo.executingNodeName,
+                                        executionDetails: taskInfo.executionDetailsSorted,
+                                        executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
+                                        executionDuration: taskInfo.executionDuration,
+                                        executionStartTime: taskInfo.executionStartTime,
+                                        executionStopTime: taskInfo.executionStopTime,
+                                        executionStatusNum: taskInfo.executionStatusNum,
+                                        executionStatusText: taskInfo.executionStatusText,
+                                        scriptLogFull,
+                                        scriptLogSize: taskInfo.scriptLogSize,
+                                        scriptLogHead,
+                                        scriptLogHeadCount: headLineCount,
+                                        scriptLogTail,
+                                        scriptLogTailCount: tailLineCount,
+                                    });
+                                })
+                                .catch((err) => {
+                                    globals.logger.error(`SCRIPTLOG ERROR: ${err}`);
+                                    if (err.response.data) {
+                                        globals.logger.error(`SCRIPTLOG ERROR: ${err.response.data}`);
+                                    }
+                                });
+                        });
                 } else {
                     // No script log is available
                     resolve({
