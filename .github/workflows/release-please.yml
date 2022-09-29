@@ -61,7 +61,7 @@ jobs:
           pwd
           ls -la
           cd src
-          node butler.js -c ./config/config-gen-api-docs.yaml & 
+          node butler.js -c ./config/config-gen-api-docs.yaml --no-qs-connection & 
           sleep 10
           curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
           curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml

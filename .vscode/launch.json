@@ -18,6 +18,7 @@
       "args": [
         // "--configfile",
         // "./config/production.yaml",
+        // "--no-qs-connection"
       ],
       "outFiles": ["${workspaceFolder}/**/*.js"]
     }
