@@ -1,8 +1,26 @@
 const axios = require('axios');
+const QrsInteract = require('qrs-interact');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../../globals');
 const scriptLog = require('../scriptlog');
+
+function getQRSConfig() {
+    const cfg = {
+        hostname: globals.config.get('Butler.configQRS.host'),
+        portNumber: 4242,
+        certificates: {
+            certFile: globals.configQRS.certPaths.certPath,
+            keyFile: globals.configQRS.certPaths.keyPath,
+        },
+    };
+
+    cfg.headers = {
+        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+    };
+
+    return cfg;
+}
 
 let rateLimiterFailedReloadsEvent;
 let rateLimiterFailedReloadsLog;
@@ -315,45 +333,40 @@ function getReloadAbortedLogConfig() {
     }
 }
 
-async function sendNewRelicEvent(incidentConfig, reloadParams) {
+async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final payload
-        const payload = Object.assign(incidentConfig.attributes, reloadParams);
-        payload.eventType = incidentConfig.eventType;
+        const payload = [];
+        payload.push(Object.assign(incidentConfig.attributes, reloadParams));
+        payload[0].eventType = incidentConfig.eventType;
 
         // Convert timestamp in log to milliseconds
-        let tsTmp;
-        if (reloadParams.qs_logTimeStamp.includes(',')) {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-            tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
-        } else if (reloadParams.qs_logTimeStamp.includes('.')) {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
-            tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
-        } else {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        }
-
-        payload.timestamp = tsTmp;
-
-        // Remove log timestamp field from payload as it is no longer needed
-        delete payload.logTimeStamp;
+        // let tsTmp;
+        // if (reloadParams.qs_logTimeStamp.includes(',')) {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
+        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
+        // } else if (reloadParams.qs_logTimeStamp.includes('.')) {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
+        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
+        // } else {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
+        // }
+        // payload[0].timestamp = tsTmp;
 
         const { headers } = incidentConfig;
 
-        //
-        // Send data to all New Relic accounts that are enabled for this metric/event
-        //
-        // Get New Relic accounts
+        // Get array of all NR accounts defined in the config file
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
+        // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax
-        for (const accountName of globals.config.Butler.incidentTool.newRelic.destinationAccount.event) {
-            globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic config=${JSON.stringify(accountName)}`);
+        for (const accountName of destNewRelicAccounts) {
+            globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic account name=${JSON.stringify(accountName)}`);
 
             // Is there any config available for the current account?
             const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
             if (newRelicConfig.length === 0) {
-                globals.logger.error(`NEWRELIC EVENT: New Relic config "${accountName}" does not exist in the Butler config file.`);
+                globals.logger.error(`NEWRELIC EVENT: New Relic account name "${accountName}" does not exist in the Butler config file.`);
             } else {
                 headers['Api-Key'] = newRelicConfig[0].insertApiKey;
                 const newRelicAccountId = newRelicConfig[0].accountId;
@@ -378,7 +391,6 @@ async function sendNewRelicEvent(incidentConfig, reloadParams) {
                 if (res.status === 200 || res.status === 202) {
                     // Posting done without error
                     globals.logger.verbose(`NEWRELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
-                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
                 } else {
                     globals.logger.error(
                         `NEWRELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
@@ -391,7 +403,7 @@ async function sendNewRelicEvent(incidentConfig, reloadParams) {
     }
 }
 
-async function sendNewRelicLog(incidentConfig, reloadParams) {
+async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final URL
         const logApiUrl = incidentConfig.url;
@@ -424,20 +436,20 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
         payload[0].common.attributes.logtype = incidentConfig.logType;
 
         // Convert timestamp in log to milliseconds
-        let tsTmp;
-        if (reloadParams.qs_logTimeStamp.includes(',')) {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-            tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
-        } else if (reloadParams.qs_logTimeStamp.includes('.')) {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
-            tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
-        } else {
-            tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        }
+        // let tsTmp;
+        // if (reloadParams.qs_logTimeStamp.includes(',')) {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
+        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
+        // } else if (reloadParams.qs_logTimeStamp.includes('.')) {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
+        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
+        // } else {
+        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
+        // }
 
         // Set main log message
         const logMessage = {
-            timestamp: tsTmp,
+            // timestamp: tsTmp,
             message: `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`,
         };
         payload[0].logs.push(logMessage);
@@ -447,20 +459,18 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
 
         const { headers } = incidentConfig;
 
-        //
-        // Send data to all New Relic accounts that are enabled for this metric/event
-        //
-        // Get New Relic accounts
+        // Get array of all NR accounts defined in the config file
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
+        // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax
-        for (const accountName of globals.config.Butler.incidentTool.newRelic.destinationAccount.log) {
+        for (const accountName of destNewRelicAccounts) {
             globals.logger.debug(`NEWRELIC LOG: Current loop New Relic config=${JSON.stringify(accountName)}`);
 
             // Is there any config available for the current account?
             const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
             if (newRelicConfig.length === 0) {
-                globals.logger.error(`NEWRELIC LOG: New Relic config "${accountName}" does not exist in the Butler config file.`);
+                globals.logger.error(`NEWRELIC LOG: New Relic account name "${accountName}" does not exist in the Butler config file.`);
             } else {
                 headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
@@ -482,7 +492,6 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
                 if (res.status === 200 || res.status === 202) {
                     // Posting done without error
                     globals.logger.verbose(`NEWRELIC LOG: Sent log New Relic account ${newRelicConfig[0].accountId}`);
-                    // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
                 } else {
                     globals.logger.error(
                         `NEWRELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
@@ -495,7 +504,7 @@ async function sendNewRelicLog(incidentConfig, reloadParams) {
     }
 }
 
-function sendReloadTaskFailureEvent(reloadParams) {
+async function sendReloadTaskFailureEvent(reloadParams) {
     const params = reloadParams;
 
     rateLimiterFailedReloadsEvent
@@ -541,7 +550,76 @@ function sendReloadTaskFailureEvent(reloadParams) {
                 }
                 delete params.qs_appTags;
 
-                sendNewRelicEvent(incidentConfig, params);
+                // Set up Sense repository service configuration
+                const cfg = getQRSConfig();
+                const qrsInstance = new QrsInteract(cfg);
+
+                // Array that will hold all NR accounts the event should be sent to
+                const tmpDestNewRelicAccounts = [];
+
+                // Send all events to specific NR account(s)
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account') !==
+                        null &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account')
+                        .length > 0
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account'
+                    )) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Send event to NR accounts specified by reload task custom property
+                if (
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable'
+                    ) ||
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                    )
+                ) {
+                    // Get values of custom property
+                    try {
+                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
+
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const cp of result1.body[0].customProperties) {
+                            if (
+                                cp.definition.name ===
+                                globals.config.get(
+                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                )
+                            ) {
+                                tmpDestNewRelicAccounts.push(cp.value);
+                            }
+                        }
+                    } catch (err) {
+                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                    }
+                }
+
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.destinationAccount.event') &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.event') !== null &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.event').length > 0
+                ) {
+                    // Looks like the config file format may be pre 8.5.0.
+                    // Send to all NR accounts defined in the config file.
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.Butler.incidentTool.newRelic.destinationAccount.event) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Remove duplicates
+                const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
+
+                sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
@@ -556,7 +634,7 @@ function sendReloadTaskFailureEvent(reloadParams) {
         });
 }
 
-function sendReloadTaskFailureLog(reloadParams) {
+async function sendReloadTaskFailureLog(reloadParams) {
     const params = reloadParams;
 
     rateLimiterFailedReloadsLog
@@ -583,7 +661,6 @@ function sendReloadTaskFailureLog(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const item of params.qs_taskTags) {
-                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
                         params[`qs_taskTag_${item}`] = 'true';
                     }
                 }
@@ -596,13 +673,81 @@ function sendReloadTaskFailureLog(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const item of params.qs_appTags) {
-                        // params[`qs_taskTag_${item.replace(/ /g, '_')}`] = 'true';
                         params[`qs_appTag_${item}`] = 'true';
                     }
                 }
                 delete params.qs_appTags;
 
-                sendNewRelicLog(incidentConfig, params);
+                // Set up Sense repository service configuration
+                const cfg = getQRSConfig();
+                const qrsInstance = new QrsInteract(cfg);
+
+                // Array that will hold all NR accounts the log entry should be sent to
+                const tmpDestNewRelicAccounts = [];
+
+                // Send log entry to specific NR account(s)
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account') !==
+                        null &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account')
+                        .length > 0
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account'
+                    )) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Send log entry to NR accounts specified by reload task custom property
+                if (
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.enable'
+                    ) ||
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                    )
+                ) {
+                    // Get values of custom property
+                    try {
+                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
+
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const cp of result1.body[0].customProperties) {
+                            if (
+                                cp.definition.name ===
+                                globals.config.get(
+                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                )
+                            ) {
+                                tmpDestNewRelicAccounts.push(cp.value);
+                            }
+                        }
+                    } catch (err) {
+                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                    }
+                }
+
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.destinationAccount.log') &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.log') !== null &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.log').length > 0
+                ) {
+                    // Looks like the config file format may be pre 8.5.0.
+                    // Send to all NR accounts defined in the config file.
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.Butler.incidentTool.newRelic.destinationAccount.log) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Remove duplicates
+                const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
+
+                sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
@@ -625,7 +770,7 @@ function sendReloadTaskAbortedEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload aborted event to New Relic for task "${params.taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload aborted event to New Relic for task "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -663,7 +808,76 @@ function sendReloadTaskAbortedEvent(reloadParams) {
                 }
                 delete params.qs_appTags;
 
-                sendNewRelicEvent(incidentConfig, params);
+                // Set up Sense repository service configuration
+                const cfg = getQRSConfig();
+                const qrsInstance = new QrsInteract(cfg);
+
+                // Array that will hold all NR accounts the event should be sent to
+                const tmpDestNewRelicAccounts = [];
+
+                // Send all events to specific NR account(s)
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account') !==
+                        null &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account')
+                        .length > 0
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account'
+                    )) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Send event to NR accounts specified by reload task custom property
+                if (
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.enable'
+                    ) ||
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                    )
+                ) {
+                    // Get values of custom property
+                    try {
+                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
+
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const cp of result1.body[0].customProperties) {
+                            if (
+                                cp.definition.name ===
+                                globals.config.get(
+                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                )
+                            ) {
+                                tmpDestNewRelicAccounts.push(cp.value);
+                            }
+                        }
+                    } catch (err) {
+                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                    }
+                }
+
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.destinationAccount.event') &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.event') !== null &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.event').length > 0
+                ) {
+                    // Looks like the config file format may be pre 8.5.0.
+                    // Send to all NR accounts defined in the config file.
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.Butler.incidentTool.newRelic.destinationAccount.event) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Remove duplicates
+                const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
+
+                sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
@@ -724,7 +938,76 @@ function sendReloadTaskAbortedLog(reloadParams) {
                 }
                 delete params.qs_appTags;
 
-                sendNewRelicLog(incidentConfig, params);
+                // Set up Sense repository service configuration
+                const cfg = getQRSConfig();
+                const qrsInstance = new QrsInteract(cfg);
+
+                // Array that will hold all NR accounts the log entry should be sent to
+                const tmpDestNewRelicAccounts = [];
+
+                // Send log entry to specific NR account(s)
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.enable') &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account') !==
+                        null &&
+                    globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account')
+                        .length > 0
+                ) {
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account'
+                    )) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Send log entry to NR accounts specified by reload task custom property
+                if (
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.enable'
+                    ) ||
+                    globals.config.has(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                    )
+                ) {
+                    // Get values of custom property
+                    try {
+                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
+
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const cp of result1.body[0].customProperties) {
+                            if (
+                                cp.definition.name ===
+                                globals.config.get(
+                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                )
+                            ) {
+                                tmpDestNewRelicAccounts.push(cp.value);
+                            }
+                        }
+                    } catch (err) {
+                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                    }
+                }
+
+                if (
+                    globals.config.has('Butler.incidentTool.newRelic.destinationAccount.log') &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.log') !== null &&
+                    globals.config.get('Butler.incidentTool.newRelic.destinationAccount.log').length > 0
+                ) {
+                    // Looks like the config file format may be pre 8.5.0.
+                    // Send to all NR accounts defined in the config file.
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const acct of globals.config.Butler.incidentTool.newRelic.destinationAccount.log) {
+                        tmpDestNewRelicAccounts.push(acct);
+                    }
+                }
+
+                // Remove duplicates
+                const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
+
+                sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
                 globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
