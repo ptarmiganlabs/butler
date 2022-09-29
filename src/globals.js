@@ -6,11 +6,12 @@ const si = require('systeminformation');
 const os = require('os');
 const crypto = require('crypto');
 const isUncPath = require('is-unc-path');
+const winston = require('winston');
 
 // Add dependencies
 const { Command, Option } = require('commander');
+const { configFileNewRelicAssert } = require('./lib/assert/assert_config_file');
 
-const winston = require('winston');
 require('winston-daily-rotate-file');
 
 // Variable holding info about all defined schedules
@@ -215,6 +216,9 @@ if (config.has('Butler.restServerApiDocGenerate') === false || config.get('Butle
 } else {
     logger.debug('CONFIG: API doc mode=on');
 }
+
+// Verify select parts/values in config file
+configFileNewRelicAssert(config, configQRS, logger);
 
 // MS Teams notification objects
 let teamsTaskFailureObj;
