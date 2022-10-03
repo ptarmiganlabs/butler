@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.5.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.0...butler-v8.5.1) (2022-10-03)
+
+
+### Bug Fixes
+
+* New Relic CLI options now work again ([b762109](https://github.com/ptarmiganlabs/butler/commit/b762109234b5d3c3e09f5417c58f3e76dc2afb55)), closes [#560](https://github.com/ptarmiganlabs/butler/issues/560)
+
+
+### Miscellaneous
+
+* **deps:** update dependency jest to v29.1.2 ([4038bbc](https://github.com/ptarmiganlabs/butler/commit/4038bbcefe151234cd9ba9105325eff97b9f3677))
+* **deps:** update dependency snyk to v1.1020.0 ([0b2a99d](https://github.com/ptarmiganlabs/butler/commit/0b2a99d7911b63947e9c2e342fb211040c2e6c59))
+
 ## [8.5.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.4.2...butler-v8.5.0) (2022-09-29)
 
 
