@@ -99,6 +99,31 @@ if (isPkg && configFileOption === undefined) {
 // eslint-disable-next-line import/order
 const config = require('config');
 
+// Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
+// There must be the same number of each specified!
+// If so, replace any info from the config file with data from command line options
+if (
+    options?.newRelicAccountName?.length > 0 &&
+    options?.newRelicApiKey?.length > 0 &&
+    options?.newRelicAccountId?.length > 0 &&
+    options?.newRelicAccountName?.length === options?.newRelicApiKey?.length &&
+    options?.newRelicApiKey?.length === options?.newRelicAccountId?.length
+) {
+    config.Butler.thirdPartyToolsCredentials.newRelic = [];
+
+    // eslint-disable-next-line no-plusplus
+    for (let index = 0; index < options.newRelicApiKey.length; index++) {
+        const accountName = options.newRelicAccountName[index];
+        const accountId = options.newRelicAccountId[index];
+        const insertApiKey = options.newRelicApiKey[index];
+
+        config.Butler.thirdPartyToolsCredentials.newRelic.push({ accountName, accountId, insertApiKey });
+    }
+} else if (options?.newRelicAccountName?.length > 0 || options?.newRelicApiKey?.length > 0 || options?.newRelicAccountId?.length > 0) {
+    logger.error('Incorrect command line parameters: Number of New Relic account names/IDs/API keys must match.');
+    process.exit(1);
+}
+
 // Is there a log level file specified on the command line?
 if (options.loglevel && options.loglevel.length > 0) {
     config.Butler.logLevel = options.loglevel;
@@ -145,30 +170,6 @@ const logger = winston.createLogger({
 
 // Function to get current logging level
 const getLoggingLevel = () => logTransports.find((transport) => transport.name === 'console').level;
-
-// Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
-// There must be the same number of each specified!
-// If so, replace any info from the config file with data from command line options
-if (
-    options?.newRelicAccountName?.length > 0 &&
-    options?.newRelicApiKey?.length > 0 &&
-    options?.newRelicAccountId?.length > 0 &&
-    options?.newRelicAccountName?.length === options?.newRelicApiKey?.length &&
-    options?.newRelicApiKey?.length === options?.newRelicAccountId?.length
-) {
-    config.Butler.thirdPartyToolsCredentials.newRelic = [];
-
-    for (let index = 0; index < options.newRelicApiKey.length; index++) {
-        const accountName = options.newRelicAccountName[index];
-        const accountId = options.newRelicAccountId[index];
-        const insertApiKey = options.newRelicApiKey[index];
-
-        config.Butler.thirdPartyToolsCredentials.newRelic.push({ accountName, accountId, insertApiKey });
-    }
-} else if (options?.newRelicAccountName?.length > 0 || options?.newRelicApiKey?.length > 0 || options?.newRelicAccountId?.length > 0) {
-    logger.error('Incorrect command line parameters: Number of New Relic account names/IDs/API keys must match.');
-    process.exit(1);
-}
 
 // Are we running as standalone app or not?
 logger.verbose(`Running as standalone app: ${isPkg}`);
