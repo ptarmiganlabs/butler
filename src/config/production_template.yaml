@@ -273,10 +273,10 @@ Butler:
     newRelic:
       enable: false
       destinationAccount:
-        event:
+        event:                    # All failed/aborted reload tasks are sent as events to these New Relic accounts
           - First NR account
           - Second NR account
-        log:
+        log:                      # All failed/aborted reload tasks are sent as log entries to these New Relic accounts
           - First NR account
           - Second NR account
       # New Relic uses different API URLs for different kinds of data (metrics, events, logs, ...)
@@ -295,7 +295,16 @@ Butler:
       reloadTaskFailure:
         destination:
           event: 
-            enable: true
+            enable: false
+            sendToAccount:              # Which reload task failures are sent to New Relic as events
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task failures are sent as events
+                customPropertyName: 'Butler_FailedTask_Event_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as events)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute 1  # Example
@@ -304,8 +313,17 @@ Butler:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
-            enable: true
+            enable: false
             tailScriptLogLines: 20
+            sendToAccount:              # Which reload task failures are sent to New Relic as log entries
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task failures are sent as log entries
+                customPropertyName: 'Butler_FailedTask_Log_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as logs)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute 1    # Example
@@ -327,7 +345,16 @@ Butler:
       reloadTaskAborted:
         destination:
           event: 
-            enable: true
+            enable: false
+            sendToAccount:              # Which reload task aborts are sent to New Relic as events
+              byCustomProperty:
+                enable: false            # Control using a task custom property which reload task aborts are sent as events
+                customPropertyName: 'Butler_AbortedTask_Event_NewRelicAccount'
+              always:
+                enable: false            # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute 2  # Example
@@ -336,8 +363,17 @@ Butler:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
           log:
-            enable: true
+            enable: false
             tailScriptLogLines: 20
+            sendToAccount:              # Which reload task aborts are sent to New Relic as log entries
+              byCustomProperty:
+                enable: true            # Control using a task custom property which reload task aborts are sent as log entries
+                customPropertyName: 'Butler_AbortedTask_Log_NewRelicAccount'
+              always:
+                enable: false          # Controls which New Relic accounts ALL aborted reload tasks are sent to (as logs)
+                account: 
+                  - First NR account
+                  - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute 2    # Example
