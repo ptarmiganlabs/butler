@@ -17,7 +17,13 @@
       },
       "args": [
         // "--configfile",
-        // "./config/production.yaml",
+        // "config/production.yaml",
+        // "--new-relic-account-name",
+        // "'First NR account'",
+        // "--new-relic-account-id",
+        // "ACCOUNTID",
+        // "--new-relic-api-key",
+        // "APIKEY",
         // "--no-qs-connection"
       ],
       "outFiles": ["${workspaceFolder}/**/*.js"]
