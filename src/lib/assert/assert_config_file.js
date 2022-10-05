@@ -67,7 +67,7 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     }
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -132,7 +132,7 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     }
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -195,7 +195,7 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     }
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -260,7 +260,7 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     }
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
