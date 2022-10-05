@@ -52,22 +52,38 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
-                    // Test each custom property choice value for existence in Butler config file
-                    const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
+                    // If there are no choiceValues that's a problem..
+                    if (
+                        result1.body[0].choiceValues === undefined ||
+                        result1.body[0].choiceValues === null ||
+                        result1.body[0].choiceValues.length === 0
+                    ) {
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                        );
+                    } else {
+                        // Test each custom property choice value for existence in Butler config file
+                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const value of result1.body[0].choiceValues) {
-                        if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                            logger.warn(
-                                `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                                )}' not found in Butler's config file`
-                            );
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const value of result1.body[0].choiceValues) {
+                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
+                                logger.warn(
+                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
+                                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                    )}' not found in Butler's config file`
+                                );
+                            }
                         }
                     }
+                })
+                .catch((err) => {
+                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -117,22 +133,38 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
-                    // Test each custom property choice value for existence in Butler config file
-                    const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
+                    // If there are no choiceValues that's a problem..
+                    if (
+                        result1.body[0].choiceValues === undefined ||
+                        result1.body[0].choiceValues === null ||
+                        result1.body[0].choiceValues.length === 0
+                    ) {
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                        );
+                    } else {
+                        // Test each custom property choice value for existence in Butler config file
+                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const value of result1.body[0].choiceValues) {
-                        if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                            logger.warn(
-                                `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                                )}' not found in Butler's config file`
-                            );
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const value of result1.body[0].choiceValues) {
+                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
+                                logger.warn(
+                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
+                                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                    )}' not found in Butler's config file`
+                                );
+                            }
                         }
                     }
+                })
+                .catch((err) => {
+                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -180,22 +212,38 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
-                    // Test each custom property choice value for existence in Butler config file
-                    const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
+                    // If there are no choiceValues that's a problem..
+                    if (
+                        result1.body[0].choiceValues === undefined ||
+                        result1.body[0].choiceValues === null ||
+                        result1.body[0].choiceValues.length === 0
+                    ) {
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                        );
+                    } else {
+                        // Test each custom property choice value for existence in Butler config file
+                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const value of result1.body[0].choiceValues) {
-                        if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                            logger.warn(
-                                `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                                )}' not found in Butler's config file`
-                            );
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const value of result1.body[0].choiceValues) {
+                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
+                                logger.warn(
+                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
+                                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                    )}' not found in Butler's config file`
+                                );
+                            }
                         }
                     }
+                })
+                .catch((err) => {
+                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -245,22 +293,38 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
-                    // Test each custom property choice value for existence in Butler config file
-                    const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
+                    // If there are no choiceValues that's a problem..
+                    if (
+                        result1.body[0].choiceValues === undefined ||
+                        result1.body[0].choiceValues === null ||
+                        result1.body[0].choiceValues.length === 0
+                    ) {
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                        );
+                    } else {
+                        // Test each custom property choice value for existence in Butler config file
+                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const value of result1.body[0].choiceValues) {
-                        if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                            logger.warn(
-                                `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                                )}' not found in Butler's config file`
-                            );
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const value of result1.body[0].choiceValues) {
+                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
+                                logger.warn(
+                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
+                                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                    )}' not found in Butler's config file`
+                                );
+                            }
                         }
                     }
+                })
+                .catch((err) => {
+                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
                 });
         } catch (err) {
-            logger.error(`SCRIPTLOG: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if

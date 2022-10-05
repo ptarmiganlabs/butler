@@ -120,7 +120,8 @@ if (
         config.Butler.thirdPartyToolsCredentials.newRelic.push({ accountName, accountId, insertApiKey });
     }
 } else if (options?.newRelicAccountName?.length > 0 || options?.newRelicApiKey?.length > 0 || options?.newRelicAccountId?.length > 0) {
-    logger.error('Incorrect command line parameters: Number of New Relic account names/IDs/API keys must match.');
+    // eslint-disable-next-line no-console
+    console.log('\n\nIncorrect command line parameters: Number of New Relic account names/IDs/API keys must match. Exiting.');
     process.exit(1);
 }
 
