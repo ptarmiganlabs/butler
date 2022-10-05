@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.5.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.1...butler-v8.5.2) (2022-10-05)
+
+
+### Bug Fixes
+
+* Handle startup error messages without... errors ([1c3429c](https://github.com/ptarmiganlabs/butler/commit/1c3429c3759d4820bb57c399dece428e02e494bf)), closes [#567](https://github.com/ptarmiganlabs/butler/issues/567)
+* Improved startup checks of custom properties handling New Relic destinations ([9a1177b](https://github.com/ptarmiganlabs/butler/commit/9a1177b99b816166fb8eded6fa0e8b2e2503c17a)), closes [#565](https://github.com/ptarmiganlabs/butler/issues/565)
+* Incorrect error messages in config assert module ([f4e2ef8](https://github.com/ptarmiganlabs/butler/commit/f4e2ef8ced0dc3765c9c9eb35c4e6320d4366019)), closes [#566](https://github.com/ptarmiganlabs/butler/issues/566)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([0224327](https://github.com/ptarmiganlabs/butler/commit/022432756d219178335987bf60812263fa03bb32))
+
 ## [8.5.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.0...butler-v8.5.1) (2022-10-03)
 
 
