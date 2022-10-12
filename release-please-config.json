@@ -1,6 +1,4 @@
 {
-  "last-release-sha": "3c85cf2c3b44cc99ae32c11c4048f80bcc75be4b",
-  "release-as": "8.5.2",
   "release-type": "node",
   "draft": true,
   "changelog-sections": [
