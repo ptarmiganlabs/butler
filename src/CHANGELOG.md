@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.6.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.3...butler-v8.6.0) (2022-10-27)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies to stay safe & secure ([c7a8c74](https://github.com/ptarmiganlabs/butler/commit/c7a8c74150f4c4769402798191ca71e61b41857e))
+
 ## [8.5.3](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.2...butler-v8.5.3) (2022-10-12)
 
 
