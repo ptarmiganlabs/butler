@@ -27,7 +27,7 @@
         "fastify": "^4.10.2",
         "fastify-healthcheck": "^4.2.0",
         "fastify-plugin": "^4.3.0",
-        "fs-extra": "^10.1.0",
+        "fs-extra": "^11.1.0",
         "handlebars": "^4.7.7",
         "http-errors": "^2.0.0",
         "influx": "^5.9.3",
@@ -58,7 +58,7 @@
     "devDependencies": {
         "jest": "^29.3.1",
         "prettier": "^2.8.0",
-        "snyk": "^1.1065.0"
+        "snyk": "^1.1066.0"
     },
     "homepage": "https://github.com/ptarmiganlabs/butler",
     "author": "Göran Sander",
