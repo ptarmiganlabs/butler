@@ -6,6 +6,7 @@ const path = require('path');
 const Fastify = require('fastify');
 const AutoLoad = require('@fastify/autoload');
 const FastifySwagger = require('@fastify/swagger');
+const FastifySwaggerUi = require('@fastify/swagger-ui');
 const FastifyReplyFrom = require('@fastify/reply-from');
 const FastifyHealthcheck = require('fastify-healthcheck');
 const FastifyRateLimit = require('@fastify/rate-limit');
@@ -137,31 +138,9 @@ async function build(opts = {}) {
     await restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
     await restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
 
-    // let apiDocPath = '';
-    // if (process.pkg) {
-    //     globals.logger.debug(`CONFIG: Running as standalone app.`);
-    //     // apiDocPath = path.resolve(`${process.execPath}/docs/api_doc/butler-api.yaml`);
-    //     apiDocPath = path.join(__dirname, '../docs/api_doc/butler-api.yaml');
-    // } else {
-    //     globals.logger.debug(`CONFIG: Not standalone app.`);
-    //     apiDocPath = path.join(process.cwd(), '../docs/api_doc/butler-api.yaml');
-    // }
-    // globals.logger.debug(`CONFIG: Reading static API doc file from ${apiDocPath}`);
-
-    // restServer.register(FastifySwagger, {
-    //     mode: 'static',
-    //     specification: {
-    //         path: apiDocPath,
-    //     },
-    //     routePrefix: '/documentation',
-    //     hideUntagged: false,
-    //     exposeRoute: true,
-    // });
-
     await restServer.register(FastifySwagger, {
-        routePrefix: '/documentation',
+        mode: 'dynamic',
         openapi: {
-            mode: 'dynamic',
             info: {
                 title: 'Butler API documentation',
                 description:
@@ -182,30 +161,15 @@ async function build(opts = {}) {
             // consumes: ['application/json'],
             produces: ['application/json'],
         },
+    });
 
-        // swagger: {
-        //     mode: 'dynamic',
-        //     info: {
-        //         title: 'Butler API documentation',
-        //         description:
-        //             'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.\nButler offers both a REST API and things like failed reload notifications etc.\n\nThis page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
-        //         version: globals.appVersion,
-        //     },
-        //     externalDocs: {
-        //         url: 'https://github.com/ptarmiganlabs',
-        //         description: 'Butler family of tools on GitHub',
-        //     },
-        //     host: `${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get('Butler.restServerConfig.serverPort')}`,
-        //     schemes: ['http'],
-        //     // consumes: ['application/json'],
-        //     produces: ['application/json'],
-        // },
+    await restServer.register(FastifySwaggerUi, {
+        routePrefix: '/documentation',
         uiConfig: {
+            docExpansion: 'list',
             deepLinking: true,
-            operationsSorter: 'alpha', // can also be 'alpha' or a function
+            operationsSorter: 'alpha', // can be 'alpha' or a function
         },
-        hideUntagged: false,
-        exposeRoute: true,
     });
 
     // Loads all plugins defined in routes

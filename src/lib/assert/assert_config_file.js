@@ -63,6 +63,12 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                                 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                             )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
                         );
+                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                        );
+                        process.exit(1);
                     } else {
                         // Test each custom property choice value for existence in Butler config file
                         const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
@@ -144,6 +150,12 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                                 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                             )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
                         );
+                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                        );
+                        process.exit(1);
                     } else {
                         // Test each custom property choice value for existence in Butler config file
                         const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
@@ -223,6 +235,12 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                                 'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                             )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
                         );
+                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                        logger.warn(
+                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                        );
+                        process.exit(1);
                     } else {
                         // Test each custom property choice value for existence in Butler config file
                         const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
@@ -304,6 +322,12 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                                 'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                             )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
                         );
+                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                        );
+                        process.exit(1);
                     } else {
                         // Test each custom property choice value for existence in Butler config file
                         const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
