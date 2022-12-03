@@ -52,6 +52,16 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
+                    // If the custom property doesn't exist that's a problem..
+                    if (result1.body.length === 0) {
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                            )})' does not exist in Qlik Sense. Aborting.`
+                        );
+                        process.exit(1);
+                    }
+
                     // If there are no choiceValues that's a problem..
                     if (
                         result1.body[0].choiceValues === undefined ||
@@ -139,6 +149,16 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
+                    // If the custom property doesn't exist that's a problem..
+                    if (result1.body.length === 0) {
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                            )})' does not exist in Qlik Sense. Aborting.`
+                        );
+                        process.exit(1);
+                    }
+
                     // If there are no choiceValues that's a problem..
                     if (
                         result1.body[0].choiceValues === undefined ||
@@ -223,6 +243,16 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 )
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+                    // If the custom property doesn't exist that's a problem..
+                    if (result1.body.length === 0) {
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                            )})' does not exist in Qlik Sense. Aborting.`
+                        );
+                        process.exit(1);
+                    }
 
                     // If there are no choiceValues that's a problem..
                     if (
@@ -310,6 +340,16 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 )
                 .then((result1) => {
                     // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+                    // If the custom property doesn't exist that's a problem..
+                    if (result1.body.length === 0) {
+                        logger.error(
+                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
+                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                            )})' does not exist in Qlik Sense. Aborting.`
+                        );
+                        process.exit(1);
+                    }
 
                     // If there are no choiceValues that's a problem..
                     if (
