@@ -92,9 +92,11 @@ async function postButlerUptimeToNewRelic(fields) {
             'Content-Type': 'application/json; charset=utf-8',
         };
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const header of globals.config.get('Butler.uptimeMonitor.storeNewRelic.header')) {
-            headers[header.name] = header.value;
+        if (globals.config.get('Butler.uptimeMonitor.storeNewRelic.header') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const header of globals.config.get('Butler.uptimeMonitor.storeNewRelic.header')) {
+                headers[header.name] = header.value;
+            }
         }
 
         //
