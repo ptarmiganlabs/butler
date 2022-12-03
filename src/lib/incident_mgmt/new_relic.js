@@ -578,7 +578,7 @@ async function sendReloadTaskFailureEvent(reloadParams) {
                 if (
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable'
-                    ) ||
+                    ) &&
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                     )
@@ -706,7 +706,7 @@ async function sendReloadTaskFailureLog(reloadParams) {
                 if (
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.enable'
-                    ) ||
+                    ) &&
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                     )
@@ -836,7 +836,7 @@ function sendReloadTaskAbortedEvent(reloadParams) {
                 if (
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.enable'
-                    ) ||
+                    ) &&
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                     )
@@ -966,7 +966,7 @@ function sendReloadTaskAbortedLog(reloadParams) {
                 if (
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.enable'
-                    ) ||
+                    ) &&
                     globals.config.has(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                     )
