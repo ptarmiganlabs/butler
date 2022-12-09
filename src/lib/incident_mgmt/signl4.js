@@ -131,7 +131,7 @@ function sendReloadTaskFailureNotification(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED ALERT SIGNL4: Rate limiting ok: Sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`
+                    `TASK FAILED ALERT SIGNL4: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED ALERT SIGNL4: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -162,7 +162,7 @@ function sendReloadTaskAbortedNotification(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SIGNL4ABORTED: Rate limiting ok: Sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`
+                    `SIGNL4ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`SIGNL4ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 

@@ -311,7 +311,7 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED ALERT SLACK: Rate limiting ok: Sending reload failure notification Slack for task "${reloadParams.taskName}"`
+                    `TASK FAILED ALERT SLACK: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -438,7 +438,7 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORTED ALERT SLACK: Rate limiting ok: Sending reload aborted notification Slack for task "${reloadParams.taskName}"`
+                    `TASK ABORTED ALERT SLACK: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORTED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
