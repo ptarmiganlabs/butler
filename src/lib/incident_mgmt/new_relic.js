@@ -512,7 +512,7 @@ async function sendReloadTaskFailureEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure event to New Relic for task "${params.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task event. Task name: "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -642,7 +642,7 @@ async function sendReloadTaskFailureLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting ok: Sending reload failure log entry to New Relic for task "${params.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task log entry. Task name: "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -770,7 +770,7 @@ function sendReloadTaskAbortedEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload aborted event to New Relic for task "${params.qs_taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task event. Task name: "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -900,7 +900,7 @@ function sendReloadTaskAbortedLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting ok: Sending reload abort log entry to New Relic for task "${params.qs_taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task log entry. Task name: "${params.qs_taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 

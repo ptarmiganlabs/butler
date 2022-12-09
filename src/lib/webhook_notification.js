@@ -193,7 +193,7 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOKOUTFAILED: Rate limiting ok: Sending reload failure notification outgoing webhook for task "${reloadParams.taskName}"`
+                    `WEBHOOKOUTFAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -222,7 +222,7 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOKOUTABORTED: Rate limiting ok: Sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
+                    `WEBHOOKOUTABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`WEBHOOKOUTABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 

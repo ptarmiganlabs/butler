@@ -284,7 +284,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED ALERT TEAMS: Rate limiting ok: Sending reload failure notification Teams for task "${reloadParams.taskName}"`
+                    `TASK FAILED ALERT TEAMS: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -410,7 +410,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORTED ALERT TEAMS: Rate limiting ok: Sending reload aborted notification Teams for task "${reloadParams.taskName}"`
+                    `TASK ABORTED ALERT TEAMS: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
                 globals.logger.verbose(`TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 

@@ -493,7 +493,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `TASK FAILED ALERT EMAIL: Rate limiting ok: Sending reload failure notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                        `TASK FAILED ALERT EMAIL: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`
                     );
                     globals.logger.debug(`TASK FAILED ALERT EMAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -714,7 +714,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `TASK ABORTED ALERT EMAIL: Rate limiting ok: Sending reload aborted notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                        `TASK ABORTED ALERT EMAIL: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`
                     );
                     globals.logger.debug(`TASK ABORTED ALERT EMAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
