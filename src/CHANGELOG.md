@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.6.1](https://github.com/ptarmiganlabs/butler/compare/butler-v8.6.0...butler-v8.6.1) (2022-12-09)
+
+
+### Bug Fixes
+
+* Allow empty New Relic settings in config file's uptime section ([1de18e7](https://github.com/ptarmiganlabs/butler/commit/1de18e7bec819f3d124f77a1051269d067486d86)), closes [#562](https://github.com/ptarmiganlabs/butler/issues/562)
+* Allow uptime reporting to New Relic without custom http headers ([f455a38](https://github.com/ptarmiganlabs/butler/commit/f455a38d23b93fc6cd70b716d8a8eb3227cdf4cb)), closes [#587](https://github.com/ptarmiganlabs/butler/issues/587)
+* Better log messages when rate limiting for reload notifications passes ([0ee04fb](https://github.com/ptarmiganlabs/butler/commit/0ee04fb40b1a52b415203c42e9eee2a95068cef1)), closes [#571](https://github.com/ptarmiganlabs/butler/issues/571)
+* Config asset errors when starting Butler without any New Relic accounts specified ([178b908](https://github.com/ptarmiganlabs/butler/commit/178b9088bdac035073ab299856e9cb7b852a0d35)), closes [#598](https://github.com/ptarmiganlabs/butler/issues/598)
+* Improve warning when custom property names in config file don't exist in Sense ([a53cbe8](https://github.com/ptarmiganlabs/butler/commit/a53cbe8d581b14571d61508112dc0e0915cb17e7)), closes [#586](https://github.com/ptarmiganlabs/butler/issues/586)
+* Only send to New Relic if event/log is enabled AND custom property name specified. ([9fc81d0](https://github.com/ptarmiganlabs/butler/commit/9fc81d05c90a862cd477d90d25109b57e968bebc)), closes [#596](https://github.com/ptarmiganlabs/butler/issues/596)
+* Upgrade Swagger docs to latest version ([2cf84b9](https://github.com/ptarmiganlabs/butler/commit/2cf84b93336f612aba5421442b431e9e1e5e2991)), closes [#599](https://github.com/ptarmiganlabs/butler/issues/599)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([5bc3dd4](https://github.com/ptarmiganlabs/butler/commit/5bc3dd43a87ce4597d1f59a7c20479c24774d7f4))
+* **deps:** Update fs-extra major release ([57bcb9a](https://github.com/ptarmiganlabs/butler/commit/57bcb9abb427e346f7cc6ccaadd555420e9a2d6a))
+* **deps:** Upgrade Axios to 1.2.0 (major upgrade) ([1a4111b](https://github.com/ptarmiganlabs/butler/commit/1a4111ba18b4ed86029df08052115dd324dff03e))
+* Revert back to Axios 0.27.2 as later versions are incompatible with tool used to create binaries. ([9d222df](https://github.com/ptarmiganlabs/butler/commit/9d222dffd58279b2cc75b12623ed3cdfecca188b))
+
 ## [8.6.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.5.3...butler-v8.6.0) (2022-10-27)
 
 
