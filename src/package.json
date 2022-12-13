@@ -43,7 +43,7 @@
         "mqtt": "^4.3.7",
         "ms-teams-webhook": "^1.0.4",
         "nodemailer": "^6.8.0",
-        "nodemailer-express-handlebars": "^5.0.0",
+        "nodemailer-express-handlebars": "^6.0.0",
         "os": "^0.1.2",
         "promise": "^8.3.0",
         "qrs-interact": "^6.3.1",
