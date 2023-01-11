@@ -32,12 +32,10 @@ paths:
                 type: array
                 items:
                   type: string
-                example:
-                  &a1
-                  - activeUserCount
-                  - activeUsers
-                  - apiListEnbledEndpoints
-              example: *a1
+              example:
+                - activeUserCount
+                - activeUsers
+                - apiListEnbledEndpoints
   /v4/base62tobase16:
     get:
       summary: Converts strings from base62 to base16.
@@ -45,7 +43,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: 6DMW88LpSok9Z7P7hUK0wv7bF
           example: 6DMW88LpSok9Z7P7hUK0wv7bF
           in: query
           name: base62
@@ -66,11 +63,9 @@ paths:
                   base16:
                     type: string
                     description: Resulting base16 encoded string.
-                example:
-                  &a2
-                  base62: 6DMW88LpSok9Z7P7hUK0wv7bF
-                  base16: 3199af08bfeeaf5d420f27ed9c01e74370077
-              example: *a2
+              example:
+                base62: 6DMW88LpSok9Z7P7hUK0wv7bF
+                base16: 3199af08bfeeaf5d420f27ed9c01e74370077
         "400":
           description: Required parameter missing.
           content:
@@ -114,7 +109,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: 3199af08bfeeaf5d420f27ed9c01e74370077
           example: 3199af08bfeeaf5d420f27ed9c01e74370077
           in: query
           name: base16
@@ -135,11 +129,9 @@ paths:
                   base16:
                     type: string
                     description: Resulting base62 encoded string.
-                example:
-                  &a3
-                  base16: 3199af08bfeeaf5d420f27ed9c01e74370077
-                  base62: 6DMW88LpSok9Z7P7hUK0wv7bF
-              example: *a3
+              example:
+                base16: 3199af08bfeeaf5d420f27ed9c01e74370077
+                base62: 6DMW88LpSok9Z7P7hUK0wv7bF
         "400":
           description: Required parameter missing.
           content:
@@ -233,25 +225,29 @@ paths:
                 fromFile:
                   type: string
                   description: Name of source file.
-                  example: subfolder/file1.qvd
+                  examples:
+                    - subfolder/file1.qvd
                 toFile:
                   type: string
                   description: Name of destination file. Can be different from source file name,
                     if needed.
-                  example: archive/file1_20200925.qvd
+                  examples:
+                    - archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
                   description: Controls whether destination file should be overwritten if it
                     already exists. Note that the copy operation will silently
                     fail if you set this to false and the destination exists.
                     Defaults to false.
-                  example: false
+                  examples:
+                    - false
                 preserveTimestamp:
                   type: boolean
                   description: When true, the timestamp of the source file(s) will be preserved on
                     the destination file(s). When false, timestamp behaviour is
                     OS-dependent. Defaults to false.
-                  example: false
+                  examples:
+                    - false
       responses:
         "201":
           description: File copied.
@@ -264,25 +260,29 @@ paths:
                   fromFile:
                     type: string
                     description: Name of source file.
-                    example: subfolder/file1.qvd
+                    examples:
+                      - subfolder/file1.qvd
                   toFile:
                     type: string
                     description: Name of destination file. Can be different from source file name,
                       if needed.
-                    example: archive/file1_20200925.qvd
+                    examples:
+                      - archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
                     description: Controls whether destination file should be overwritten if it
                       already exists. Note that the copy operation will silently
                       fail if you set this to false and the destination exists.
                       Defaults to false.
-                    example: false
+                    examples:
+                      - false
                   preserveTimestamp:
                     type: boolean
                     description: When true, the timestamp of the source file(s) will be preserved on
                       the destination file(s). When false, timestamp behaviour
                       is OS-dependent. Defaults to false.
-                    example: false
+                    examples:
+                      - false
         "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
@@ -358,17 +358,20 @@ paths:
                 fromFile:
                   type: string
                   description: Name of source file.
-                  example: subfolder/file1.qvd
+                  examples:
+                    - subfolder/file1.qvd
                 toFile:
                   type: string
                   description: Name of destination file. Can be different from source file name,
                     if needed.
-                  example: archive/file1_20200925.qvd
+                  examples:
+                    - archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
                   description: Controls whether destination file should be overwritten if it
                     already exists. Defaults to false.
-                  example: false
+                  examples:
+                    - false
       responses:
         "201":
           description: File moved.
@@ -381,17 +384,20 @@ paths:
                   fromFile:
                     type: string
                     description: Name of source file.
-                    example: subfolder/file1.qvd
+                    examples:
+                      - subfolder/file1.qvd
                   toFile:
                     type: string
                     description: Name of destination file. Can be different from source file name,
                       if needed.
-                    example: archive/file1_20200925.qvd
+                    examples:
+                      - archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
                     description: Controls whether destination file should be overwritten if it
                       already exists. Defaults to false.
-                    example: false
+                    examples:
+                      - false
         "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
@@ -465,7 +471,8 @@ paths:
                   description: Name of file to be deleted. Use forward/backward slashes in paths
                     as needed, depending on whether Butler runs on
                     Windows/non-Windows platform.
-                  example: data/qvdstore/sales/file1.qvd
+                  examples:
+                    - data/qvdstore/sales/file1.qvd
       responses:
         "204":
           description: File deleted.
@@ -544,7 +551,8 @@ paths:
                 directory:
                   type: string
                   description: Directory that should be created.
-                  example: subfolder/2020-10
+                  examples:
+                    - subfolder/2020-10
       responses:
         "201":
           description: Directory created.
@@ -557,7 +565,8 @@ paths:
                   directory:
                     type: string
                     description: Directory that was created.
-                    example: subfolder/2020-10
+                    examples:
+                      - subfolder/2020-10
         "400":
           description: Required parameter missing.
           content:
@@ -611,7 +620,8 @@ paths:
                   type: string
                   description: Path to directory that should be created. Can be a relative or
                     absolute path.
-                  example: /Users/joe/data/qvds/2020
+                  examples:
+                    - /Users/joe/data/qvds/2020
       responses:
         "201":
           description: Directory created.
@@ -624,7 +634,8 @@ paths:
                   directory:
                     type: string
                     description: Directory that was created.
-                    example: /Users/joe/data/qvds/2020
+                    examples:
+                      - /Users/joe/data/qvds/2020
         "400":
           description: Required parameter missing.
           content:
@@ -674,12 +685,10 @@ paths:
                 type: array
                 items:
                   type: string
-                example:
-                  &a4
-                  - Weekly sales app
-                  - Sales ETL step 1
-                  - Sales ETL step 2
-              example: *a4
+              example:
+                - Weekly sales app
+                - Sales ETL step 1
+                - Sales ETL step 2
         "500":
           description: Internal error.
           content:
@@ -704,14 +713,12 @@ paths:
       parameters:
         - schema:
             type: string
-            example: Last extract timestamp
           example: Last extract timestamp
           in: query
           name: key
           required: true
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -728,15 +735,18 @@ paths:
                   namespace:
                     type: string
                     description: Namespace name.
-                    example: Sales ETL step 2
+                    examples:
+                      - Sales ETL step 2
                   key:
                     type: string
                     description: Key name.
-                    example: Last extract timestamp
+                    examples:
+                      - Last extract timestamp
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    example: 2020-09-29 17:14:56
+                    examples:
+                      - 2020-09-29 17:14:56
         "400":
           description: '"Namespace or key not found" or "Required parameter missing".'
           content:
@@ -791,20 +801,22 @@ paths:
                 key:
                   type: string
                   description: Key to use
-                  example: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
+                  examples:
+                    - ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
                 value:
                   type: string
                   description: Value to set
-                  example: "12345.789"
+                  examples:
+                    - "12345.789"
                 ttl:
                   type: number
                   description: Time to live = how long (milliseconds) the key-value pair should
                     exist before being automatically deleted
-                  example: 10000
+                  examples:
+                    - 10000
       parameters:
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -822,20 +834,24 @@ paths:
                   namespace:
                     type: string
                     description: Name of namespace.
-                    example: Sales ETL step 2
+                    examples:
+                      - Sales ETL step 2
                   key:
                     type: string
                     description: Key name.
-                    example: Last extract timestamp
+                    examples:
+                      - Last extract timestamp
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    example: 2020-09-29 17:14:56
+                    examples:
+                      - 2020-09-29 17:14:56
                   ttl:
                     type: number
                     description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise
                       in milliseconds.
-                    example: 60000
+                    examples:
+                      - 60000
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -877,7 +893,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -891,7 +906,7 @@ paths:
               schema:
                 description: Namespace successfully deleted.
                 type: string
-                example: ""
+              example: ""
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -935,14 +950,12 @@ paths:
       parameters:
         - schema:
             type: string
-            example: Last extract timestamp
           example: Last extract timestamp
           in: query
           name: key
           required: true
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -968,15 +981,18 @@ paths:
                       namespace:
                         type: string
                         description: Namespace name.
-                        example: Sales ETL step 2
+                        examples:
+                          - Sales ETL step 2
                       key:
                         type: string
                         description: Key name.
-                        example: Last extract timestamp
+                        examples:
+                          - Last extract timestamp
                       value:
                         type: string
                         description: Value stored in the key-value pair.
-                        example: 2020-09-29 17:14:56
+                        examples:
+                          - 2020-09-29 17:14:56
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -1019,7 +1035,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -1027,7 +1042,6 @@ paths:
           description: Name of namespace.
         - schema:
             type: string
-            example: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
           example: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
           in: path
           name: key
@@ -1041,7 +1055,7 @@ paths:
               schema:
                 description: Key-value pair successfully deleted.
                 type: string
-                example: ""
+              example: ""
         "400":
           description: '"Namespace or key not found" or "Required parameter missing".'
           content:
@@ -1084,7 +1098,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: Sales ETL step 2
           example: Sales ETL step 2
           in: path
           name: namespace
@@ -1103,16 +1116,17 @@ paths:
                   namespace:
                     type: string
                     description: ""
-                    example: Sales ETL step 2
+                    examples:
+                      - Sales ETL step 2
                   keys:
                     type: array
                     items:
                       type: object
                       key:
                         type: string
-                    example:
-                      - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
-                      - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
+                    examples:
+                      - - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
+                        - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -1161,13 +1175,15 @@ paths:
                 topic:
                   type: string
                   description: Topic to which message should be published.
-                  example: qliksense/new_data_notification/sales
+                  examples:
+                    - qliksense/new_data_notification/sales
                 message:
                   type: string
                   description: The message is a generic text string and can thus contain anything
                     that can be represented in a string, including JSON,
                     key-value pairs, plain text etc.
-                  example: dt=20201028
+                  examples:
+                    - dt=20201028
               required:
                 - topic
                 - message
@@ -1237,8 +1253,9 @@ paths:
                   type: string
                   description: "Event type. Can be a combination of alphanumeric characters, _
                     underscores, and : colons."
+                  examples:
+                    - relead-failed
                   maxLength: 254
-                  example: relead-failed
                 timestamp:
                   type: number
                   description: The event's start time in Unix time. Uses UTC time zone. This field
@@ -1248,7 +1265,8 @@ paths:
                     than 48 hours ago or newer than 24 hours from the time they
                     are reported are dropped by New Relic. If left empty Butler
                     will use the current time as timestamp.
-                  example: 1642164296053
+                  examples:
+                    - 1642164296053
                 attributes:
                   type: array
                   description: Dimensions/attributs that will be associated with the event.
@@ -1257,12 +1275,14 @@ paths:
                     properties:
                       name:
                         type: string
+                        examples:
+                          - host.name
                         maxLength: 254
-                        example: host.name
                       value:
                         type: string
+                        examples:
+                          - dev.server.com
                         maxLength: 4096
-                        example: dev.server.com
               required:
                 - eventType
         required: true
@@ -1277,10 +1297,12 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    example: "202"
+                    examples:
+                      - "202"
                   newRelicResultText:
                     type: string
-                    example: Data accepted.
+                    examples:
+                      - Data accepted.
         "400":
           description: Required parameter missing.
           content:
@@ -1330,18 +1352,21 @@ paths:
                 name:
                   type: string
                   description: Metric name.
+                  examples:
+                    - memory.heap
                   maxLength: 254
-                  example: memory.heap
                 type:
                   type: string
                   description: Metric type.
+                  examples:
+                    - gauge
                   enum:
                     - gauge
-                  example: gauge
                 value:
                   type: number
                   description: Value of the metric.
-                  example: 2.3
+                  examples:
+                    - 2.3
                 timestamp:
                   type: number
                   description: The metric's start time in Unix time. Uses UTC time zone. This
@@ -1351,7 +1376,8 @@ paths:
                     than 48 hours ago or newer than 24 hours from the time they
                     are reported are dropped by New Relic. If left empty Butler
                     will use the current time as timestamp.
-                  example: 1642164296053
+                  examples:
+                    - 1642164296053
                 interval:
                   type: number
                   description: The length of the time window (millisec). Required for count and
@@ -1364,11 +1390,13 @@ paths:
                     properties:
                       name:
                         type: string
+                        examples:
+                          - host.name
                         maxLength: 254
-                        example: host.name
                       value:
                         type: string
-                        example: dev.server.com
+                        examples:
+                          - dev.server.com
               required:
                 - name
                 - type
@@ -1385,10 +1413,12 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    example: "202"
+                    examples:
+                      - "202"
                   newRelicResultText:
                     type: string
-                    example: Data accepted.
+                    examples:
+                      - Data accepted.
         "400":
           description: Required parameter missing.
           content:
@@ -1442,29 +1472,29 @@ paths:
                   type: boolean
                   description: Should a full (=false) or partial (=true) reload be done? If not
                     specified a full reload will be done.
-                  example: true
+                  examples:
+                    - true
                 startQSEoWTaskOnSuccess:
                   type: array
                   description: Array of task IDs that should be started when the app has
                     successfully reloaded.
                   items:
                     type: string
-                  example:
-                    - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
-                    - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
+                  examples:
+                    - - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
+                      - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
                 startQSEoWTaskOnFailure:
                   type: array
                   description: Array of task IDs that should be started if the app fails
                     reloading.
                   items:
                     type: string
-                  example:
-                    - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
-                    - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
+                  examples:
+                    - - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
+                      - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
       parameters:
         - schema:
             type: string
-            example: 210832b5-6174-4572-bd19-3e61eda675ef
           example: 210832b5-6174-4572-bd19-3e61eda675ef
           in: path
           name: appId
@@ -1482,7 +1512,8 @@ paths:
                   appId:
                     type: string
                     description: ID of reloaded app
-                    example: 210832b5-6174-4572-bd19-3e61eda675ef
+                    examples:
+                      - 210832b5-6174-4572-bd19-3e61eda675ef
         "400":
           description: Required parameter missing.
           content:
@@ -1526,7 +1557,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: 210832b5-6174-4572-bd19-3e61eda675ef
           example: 210832b5-6174-4572-bd19-3e61eda675ef
           in: path
           name: appId
@@ -1540,23 +1570,21 @@ paths:
               schema:
                 description: App dump successful. App metadata returned as JSON.
                 type: object
-                example:
-                  &a5
-                  properties: {}
-                  loadScript: ""
-                  sheets: []
-                  stories: []
-                  masterobjects: []
-                  appprops: []
-                  dataconnections: []
-                  dimensions: []
-                  bookmarks: []
-                  embeddedmedia: []
-                  snapshots: []
-                  fields: []
-                  variables: []
-                  measures: []
-              example: *a5
+              example:
+                properties: {}
+                loadScript: ""
+                sheets: []
+                stories: []
+                masterobjects: []
+                appprops: []
+                dataconnections: []
+                dimensions: []
+                bookmarks: []
+                embeddedmedia: []
+                snapshots: []
+                fields: []
+                variables: []
+                measures: []
         "400":
           description: Required parameter missing.
           content:
@@ -1618,7 +1646,6 @@ paths:
       parameters:
         - schema:
             type: string
-            example: 210832b5-6174-4572-bd19-3e61eda675ef
           example: 210832b5-6174-4572-bd19-3e61eda675ef
           in: path
           name: appId
@@ -1632,23 +1659,21 @@ paths:
               schema:
                 description: App dump successful. App metadata returned as JSON.
                 type: object
-                example:
-                  &a6
-                  properties: {}
-                  loadScript: ""
-                  sheets: []
-                  stories: []
-                  masterobjects: []
-                  appprops: []
-                  dataconnections: []
-                  dimensions: []
-                  bookmarks: []
-                  embeddedmedia: []
-                  snapshots: []
-                  fields: []
-                  variables: []
-                  measures: []
-              example: *a6
+              example:
+                properties: {}
+                loadScript: ""
+                sheets: []
+                stories: []
+                masterobjects: []
+                appprops: []
+                dataconnections: []
+                dimensions: []
+                bookmarks: []
+                embeddedmedia: []
+                snapshots: []
+                fields: []
+                variables: []
+                measures: []
         "400":
           description: Required parameter missing.
           content:
@@ -1721,11 +1746,13 @@ paths:
                     id:
                       type: string
                       description: App ID
-                      example: 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
+                      examples:
+                        - 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
                     name:
                       type: string
                       description: App name
-                      example: 2021 sales targets
+                      examples:
+                        - 2021 sales targets
         "500":
           description: Internal error.
           content:
@@ -1762,11 +1789,13 @@ paths:
                     id:
                       type: string
                       description: App ID
-                      example: 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
+                      examples:
+                        - 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
                     name:
                       type: string
                       description: App name
-                      example: 2021 sales targets
+                      examples:
+                        - 2021 sales targets
         "500":
           description: Internal error.
           content:
@@ -1822,37 +1851,35 @@ paths:
                 properties:
                   type:
                     type: string
+                    examples:
+                      - keyvaluestore
                     enum:
                       - keyvaluestore
                       - starttaskid
                       - starttasktag
                       - starttaskcustomproperty
-                    example: keyvaluestore
                   payload:
                     type: object
-              example:
-                &a7
-                - type: starttaskid
-                  payload:
-                    taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
-                - type: starttasktag
-                  payload:
-                    tag: startTask1
-                - type: starttaskcustomproperty
-                  payload:
-                    customPropertyName: taskGroup
-                    customPropertyValue: tasks2
-                - type: keyvaluestore
-                  payload:
-                    namespace: MyFineNamespace
-                    key: AnImportantKey
-                    value: TheValue
-                    ttl: 10000
-            example: *a7
+            example:
+              - type: starttaskid
+                payload:
+                  taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
+              - type: starttasktag
+                payload:
+                  tag: startTask1
+              - type: starttaskcustomproperty
+                payload:
+                  customPropertyName: taskGroup
+                  customPropertyValue: tasks2
+              - type: keyvaluestore
+                payload:
+                  namespace: MyFineNamespace
+                  key: AnImportantKey
+                  value: TheValue
+                  ttl: 10000
       parameters:
         - schema:
             type: boolean
-            example: true
           example: true
           in: query
           name: allTaskIdsMustExist
@@ -1872,7 +1899,6 @@ paths:
             Note: Tasks started by specifying tags and/or custom properties are not affected by this.
         - schema:
             type: string
-            example: 210832b5-6174-4572-bd19-3e61eda675ef
           example: 210832b5-6174-4572-bd19-3e61eda675ef
           in: path
           name: taskId
@@ -1889,28 +1915,26 @@ paths:
               schema:
                 description: Task successfully started.
                 type: object
-                example:
-                  &a8
-                  tasksId:
-                    started:
-                      - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
-                        taskName: Reload task of App1
-                    invalid:
-                      - taskId: abc
-                    denied:
-                      - taskId: a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e
-                  tasksTag:
+              example:
+                tasksId:
+                  started:
                     - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
                       taskName: Reload task of App1
-                  tasksTagDenied:
-                    - tag: startTask_invalid1
-                  tasksCP:
-                    - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
-                      taskName: Reload task of App1
-                  tasksCPDenied:
-                    - name: taskGroup
-                      value: cp_value_denied1
-              example: *a8
+                  invalid:
+                    - taskId: abc
+                  denied:
+                    - taskId: a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e
+                tasksTag:
+                  - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
+                    taskName: Reload task of App1
+                tasksTagDenied:
+                  - tag: startTask_invalid1
+                tasksCP:
+                  - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
+                    taskName: Reload task of App1
+                tasksCPDenied:
+                  - name: taskGroup
+                    value: cp_value_denied1
         "400":
           description: Required parameter missing.
           content:
@@ -1983,37 +2007,35 @@ paths:
                 properties:
                   type:
                     type: string
+                    examples:
+                      - keyvaluestore
                     enum:
                       - keyvaluestore
                       - starttaskid
                       - starttasktag
                       - starttaskcustomproperty
-                    example: keyvaluestore
                   payload:
                     type: object
-              example:
-                &a9
-                - type: starttaskid
-                  payload:
-                    taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
-                - type: starttasktag
-                  payload:
-                    tag: startTask1
-                - type: starttaskcustomproperty
-                  payload:
-                    customPropertyName: taskGroup
-                    customPropertyValue: tasks2
-                - type: keyvaluestore
-                  payload:
-                    namespace: MyFineNamespace
-                    key: AnImportantKey
-                    value: TheValue
-                    ttl: 10000
-            example: *a9
+            example:
+              - type: starttaskid
+                payload:
+                  taskId: 7552d9fc-d1bb-4975-9a38-18357de531ea
+              - type: starttasktag
+                payload:
+                  tag: startTask1
+              - type: starttaskcustomproperty
+                payload:
+                  customPropertyName: taskGroup
+                  customPropertyValue: tasks2
+              - type: keyvaluestore
+                payload:
+                  namespace: MyFineNamespace
+                  key: AnImportantKey
+                  value: TheValue
+                  ttl: 10000
       parameters:
         - schema:
             type: boolean
-            example: true
           example: true
           in: query
           name: allTaskIdsMustExist
@@ -2033,7 +2055,6 @@ paths:
             Note: Tasks started by specifying tags and/or custom properties are not affected by this.
         - schema:
             type: string
-            example: 210832b5-6174-4572-bd19-3e61eda675ef
           example: 210832b5-6174-4572-bd19-3e61eda675ef
           in: path
           name: taskId
@@ -2050,28 +2071,26 @@ paths:
               schema:
                 description: Task successfully started.
                 type: object
-                example:
-                  &a10
-                  tasksId:
-                    started:
-                      - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
-                        taskName: Reload task of App1
-                    invalid:
-                      - taskId: abc
-                    denied:
-                      - taskId: a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e
-                  tasksTag:
+              example:
+                tasksId:
+                  started:
                     - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
                       taskName: Reload task of App1
-                  tasksTagDenied:
-                    - tag: startTask_invalid1
-                  tasksCP:
-                    - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
-                      taskName: Reload task of App1
-                  tasksCPDenied:
-                    - name: taskGroup
-                      value: cp_value_denied1
-              example: *a10
+                  invalid:
+                    - taskId: abc
+                  denied:
+                    - taskId: a1a11a11-b1c0-4879-88fc-c7cdd9c1cf3e
+                tasksTag:
+                  - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
+                    taskName: Reload task of App1
+                tasksTagDenied:
+                  - tag: startTask_invalid1
+                tasksCP:
+                  - taskId: e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
+                    taskName: Reload task of App1
+                tasksCPDenied:
+                  - name: taskGroup
+                    value: cp_value_denied1
         "400":
           description: Required parameter missing.
           content:
@@ -2121,19 +2140,23 @@ paths:
                 channel:
                   type: string
                   description: "Slack channel to post message into. Prefix channel name with #."
-                  example: "#reload-notification"
+                  examples:
+                    - "#reload-notification"
                 from_user:
                   type: string
                   description: Name of sending user, as shown in the Slack message
-                  example: Butler the Bot
+                  examples:
+                    - Butler the Bot
                 msg:
                   type: string
                   description: Text going into the Slack message
-                  example: This is a message from Qlik Sense
+                  examples:
+                    - This is a message from Qlik Sense
                 emoji:
                   type: string
                   description: Emoji to shown next to Slack message
-                  example: thumbsup
+                  examples:
+                    - thumbsup
               required:
                 - channel
                 - from_user
@@ -2151,19 +2174,23 @@ paths:
                   channel:
                     type: string
                     description: "Slack channel to post message into. Prefix channel name with #."
-                    example: "#reload-notification"
+                    examples:
+                      - "#reload-notification"
                   from_user:
                     type: string
                     description: Name of sending user, as shown in the Slack message
-                    example: Butler the Bot
+                    examples:
+                      - Butler the Bot
                   msg:
                     type: string
                     description: Text going into the Slack message
-                    example: This is a message from Qlik Sense
+                    examples:
+                      - This is a message from Qlik Sense
                   emoji:
                     type: string
                     description: Emoji to shown next to Slack message
-                    example: thumbsup
+                    examples:
+                      - thumbsup
         "400":
           description: Required parameter missing.
           content:
