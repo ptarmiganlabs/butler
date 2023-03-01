@@ -24,7 +24,7 @@
         "eslint-config-prettier": "^8.6.0",
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-prettier": "^4.2.1",
-        "express-handlebars": "^6.0.6",
+        "express-handlebars": "^7.0.0",
         "fastify": "^4.11.0",
         "fastify-healthcheck": "^4.4.0",
         "fastify-plugin": "^4.4.0",
