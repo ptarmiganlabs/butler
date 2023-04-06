@@ -99,7 +99,7 @@ async function setupServiceMonitorTimer(config, logger) {
                 hostInfo = await globals.initHostInfo();
             }
 
-            if (hostInfo.os.platform === 'win32' || hostInfo.os.platform === 'win64') {
+            if (hostInfo.si.os.platform === 'Windows') {
                 if (!config.has('Butler.serviceMonitor.service') || config.get('Butler.serviceMonitor.service').length === 0) {
                     logger.warn(`SERVICE MONITOR: Missing or empty section in config file: Butler.serviceMonitor.service`);
                 } else {
@@ -117,7 +117,9 @@ async function setupServiceMonitorTimer(config, logger) {
                     checkServiceStatus(config, logger);
                 }
             } else {
-                logger.warn(`Not running on Windows, service monitoring will not work. Current platform is: ${hostInfo.os.platform}`);
+                logger.warn(
+                    `Not running on Windows, service monitoring will not work. Current platform is: ${hostInfo.si.os.platform}, distro: ${hostInfo.si.os.distro}, release: ${hostInfo.si.os.release}`
+                );
             }
         }
     } catch (err) {
