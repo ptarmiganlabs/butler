@@ -5,6 +5,7 @@ const globals = require('../globals');
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
+let rateLimiterMemoryServiceMonitor;
 
 if (globals.config.has('Butler.webhookNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
@@ -25,6 +26,18 @@ if (globals.config.has('Butler.webhookNotification.reloadTaskAborted.rateLimit')
     });
 } else {
     rateLimiterMemoryAbortedReloads = new RateLimiterMemory({
+        points: 1,
+        duration: 300,
+    });
+}
+
+if (globals.config.has('Butler.serviceMonitor.alertDestination.webhook.rateLimit')) {
+    rateLimiterMemoryServiceMonitor = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.serviceMonitor.alertDestination.webhook.rateLimit'),
+    });
+} else {
+    rateLimiterMemoryServiceMonitor = new RateLimiterMemory({
         points: 1,
         duration: 300,
     });
@@ -76,6 +89,31 @@ function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
         };
     } catch (err) {
         globals.logger.error(`WEBHOOKOUTABORTED: ${err}`);
+        return false;
+    }
+}
+
+function getOutgoingWebhookServiceMonitorConfig() {
+    try {
+        // First make sure outgoing webhooks are enabled in the config file and that we have needed parameters
+        if (
+            !globals.config.has('Butler.serviceMonitor.alertDestination.webhook.webhooks') ||
+            !globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable')
+        ) {
+            // Not enough info in config file
+            globals.logger.error('SERVICE MONITOR WEBHOOK: Service monitor outgoing webhook config info missing in Butler config file');
+            return false;
+        }
+
+        return {
+            event: 'Windows service monitor',
+            rateLimit: globals.config.has('Butler.serviceMonitor.alertDestination.webhook.rateLimit')
+                ? globals.config.get('Butler.serviceMonitor.alertDestination.webhook.rateLimit')
+                : '',
+            webhooks: globals.config.get('Butler.serviceMonitor.alertDestination.webhook.webhooks'),
+        };
+    } catch (err) {
+        globals.logger.error(`SERVICE MONITOR WEBHOOK: ${err}`);
         return false;
     }
 }
@@ -187,6 +225,97 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
     }
 }
 
+async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
+    try {
+        // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const webhook of webhookConfig.webhooks) {
+            globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Processing webhook ${JSON.stringify(webhook)}`);
+
+            // Only process the webhook if all required info is available
+            let lowercaseMethod = null;
+            let url = null;
+            let axiosRequest = null;
+
+            try {
+                // 1. Make sure the webhook URL is a valid URL.
+                // If the URL is not valid an error will be thrown
+                url = new URL(webhook.webhookURL);
+
+                // 2. Make sure the HTTP method is one of the supported ones
+                lowercaseMethod = webhook.httpMethod.toLowerCase();
+                if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
+                    throw `Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`;
+                }
+            } catch (err) {
+                globals.logger.error(
+                    `SERVICE MONITOR SEND WEBHOOK: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
+                );
+                throw err;
+            }
+
+            globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+            if (lowercaseMethod === 'get') {
+                // Build parameter string for GET call
+                const params = new URLSearchParams();
+                params.append('event', webhookConfig.event);
+                params.append('servicestatus', serviceParams.serviceStatus);
+                params.append('servicename', serviceParams.serviceName);
+                params.append('servicedisplayname', serviceParams.serviceDetails.displayName);
+                params.append('servicestarttype', serviceParams.serviceDetails.startType);
+
+                url.search = params.toString();
+
+                globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Final GET webhook URL: ${url.toString()}`);
+
+                axiosRequest = {
+                    url: url.toString(),
+                    method: 'get',
+                    timeout: 10000,
+                };
+            } else if (lowercaseMethod === 'put') {
+                // Build body for PUT call
+                axiosRequest = {
+                    url: url.toString(),
+                    method: 'put',
+                    timeout: 10000,
+                    data: {
+                        event: webhookConfig.event,
+                        serviceStatus: serviceParams.serviceStatus,
+                        servicename: serviceParams.serviceName,
+                        serviceDisplayName: serviceParams.serviceDetails.displayName,
+                        serviceStartType: serviceParams.serviceDetails.startType,
+                    },
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            } else if (lowercaseMethod === 'post') {
+                // Build body for POST call
+                axiosRequest = {
+                    url: url.toString(),
+                    method: 'post',
+                    timeout: 10000,
+                    data: {
+                        event: webhookConfig.event,
+                        serviceStatus: serviceParams.serviceStatus,
+                        servicename: serviceParams.serviceName,
+                        serviceDisplayName: serviceParams.serviceDetails.displayName,
+                        serviceStartType: serviceParams.serviceDetails.startType,
+                    },
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            const response = await axios.request(axiosRequest);
+            globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Webhook response: ${response}`);
+        }
+    } catch (err) {
+        globals.logger.error(`SERVICE MONITOR SEND WEBHOOK: ${JSON.stringify(err, null, 2)}`);
+    }
+}
+
 function sendReloadTaskFailureNotificationWebhook(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -207,6 +336,7 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
             } catch (err) {
                 globals.logger.error(`WEBHOOKOUTFAILED: ${err}`);
             }
+            return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
@@ -236,6 +366,7 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
             } catch (err) {
                 globals.logger.error(`WEBHOOKOUTABORTED: ${err}`);
             }
+            return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
@@ -245,7 +376,43 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         });
 }
 
+function sendServiceMonitorWebhook(svc) {
+    rateLimiterMemoryServiceMonitor
+        .consume(`${svc.host}|${svc.serviceName}`, 1)
+        .then(async (rateLimiterRes) => {
+            try {
+                globals.logger.info(
+                    `WEBHOOKOUTFAILED: Rate limiting check passed for service monitor notification. Service name: "${svc.serviceName}"`
+                );
+                globals.logger.verbose(`WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+
+                // Make sure we have all required settings
+                const webhookConfig = getOutgoingWebhookServiceMonitorConfig();
+                if (webhookConfig === false) {
+                    return 1;
+                }
+
+                sendOutgoingWebhookServiceMonitor(webhookConfig, {
+                    host: svc.host,
+                    serviceName: svc.serviceName,
+                    serviceStatus: svc.serviceStatus,
+                    serviceDetails: svc.serviceDetails,
+                });
+            } catch (err) {
+                globals.logger.error(`WEBHOOKOUTFAILED: ${err}`);
+            }
+            return 0;
+        })
+        .catch((rateLimiterRes) => {
+            globals.logger.verbose(
+                `WEBHOOKOUTFAILED: Rate limiting failed. Not sending service monitor notification via outgoing webhook for service "${svc.serviceName}"`
+            );
+            globals.logger.verbose(`WEBHOOKOUTFAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+        });
+}
+
 module.exports = {
     sendReloadTaskFailureNotificationWebhook,
     sendReloadTaskAbortedNotificationWebhook,
+    sendServiceMonitorWebhook,
 };

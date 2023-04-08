@@ -1,11 +1,52 @@
 const { exec } = require('child_process');
 
+/**
+ * Get all names of services installed
+ * @param {string} host Host from which to get services
+ */
+function all(host = null) {
+    // If host is not specified, use services on localhost
+
+    // Create promise
+    return new Promise((resolve, reject) => {
+        let command = '';
+        if (host === null) {
+            // Run command for get states of all services on local machine
+            command = 'sc.exe query state= all';
+        } else {
+            // A host other that local machine is specfied
+            command = `sc.exe \\\\${host} query state= all`;
+        }
+
+        exec(command, (err, stdout) => {
+            // On error, reject and exit
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            // Get all lines on standard output, take only
+            // lines with "SERVICE_NAME" and remove extra parts
+            const lines = stdout
+                .toString()
+                .split('\r\n')
+                .filter((line) => line.indexOf('SERVICE_NAME') !== -1)
+                .map((line) => line.replace('SERVICE_NAME: ', ''));
+
+            // Resolve with array of service names
+            resolve(lines);
+        });
+    });
+}
 
 /**
  * Check if provided service name exists
  * @param {string} serviceName Name of service
+ * @param {string} host Host on which service is running
  */
-function exists(serviceName) {
+function exists(serviceName, host = null) {
+    // If host is not specified, use services on localhost
+
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
@@ -15,12 +56,12 @@ function exists(serviceName) {
         }
 
         // Get all services
-        all().then(
+        all(host).then(
             // On success, check
             (allServices) => {
                 // Find provided name
                 for (let i = 0; i < allServices.length; i++) {
-                    if (allServices[i] == serviceName) {
+                    if (allServices[i] === serviceName) {
                         resolve(true);
                     }
                 }
@@ -36,10 +77,11 @@ function exists(serviceName) {
 }
 
 /**
- * Get status of provided service on local machine
+ * Get status of provided service
  * @param {string} serviceName Name of service
+ * @param {string} host Host on which service is running
  */
-function status(serviceName) {
+function status(serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
@@ -49,16 +91,25 @@ function status(serviceName) {
         }
 
         // Check existence
-        exists(serviceName).then(
+        exists(serviceName, host).then(
             // Existence check completed
             (alreadyExists) => {
                 // If exists, reject
                 if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
+                    return reject(new Error(`Service with name '${serviceName}' does not exists`));
+                }
+
+                let command = '';
+                if (host === null) {
+                    // Run command for get states of all services on local machine
+                    command = `sc.exe query "${serviceName}"`;
+                } else {
+                    // A host other that local machine is specfied
+                    command = `sc.exe \\\\${host} query "${serviceName}"`;
                 }
 
                 // Run command for create service with provided data
-                exec(`sc.exe query "${serviceName}"`, (err, stdout) => {
+                exec(command, (err, stdout) => {
                     // On error, reject and exit
                     if (err) {
                         return reject(err);
@@ -86,10 +137,11 @@ function status(serviceName) {
 }
 
 /**
- * Get the details of provided service on local machine
+ * Get the details of provided service
  * @param {string} serviceName Name of service
+ * @param {string} host Host on which service is running
  */
-function details(serviceName) {
+function details(serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
@@ -99,16 +151,25 @@ function details(serviceName) {
         }
 
         // Run check for service existance
-        exists(serviceName).then(
+        exists(serviceName, host).then(
             // Existance check completed
             (alreadyExists) => {
                 // If exists, reject
                 if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
+                    return reject(new Error(`Service with name '${serviceName}' does not exists`));
+                }
+
+                let command = '';
+                if (host === null) {
+                    // Run command for get states of all services on local machine
+                    command = `sc.exe qc "${serviceName}"`;
+                } else {
+                    // A host other that local machine is specfied
+                    command = `sc.exe \\\\${host} qc "${serviceName}"`;
                 }
 
                 // Run command to get service details with provided data
-                exec(`sc.exe qc "${serviceName}"`, (err, stdout) => {
+                exec(command, (err, stdout) => {
                     let i = 0;
                     const startTypeRegex = new RegExp(/\d/);
                     const dependenciesRegex = new RegExp(/(?<=\s*DEPENDENCIES)(\s*:.*\r\n)*/);
@@ -165,306 +226,10 @@ function details(serviceName) {
     });
 }
 
-/**
- * Set start type of service provided to value provided
- * @param {string} serviceName Name of service
- * @param {string} startType Name of start up type
- */
-function startup(serviceName, startType) {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // With invalid service name, reject
-        if (!serviceName) {
-            reject(new Error('Service name is invalid'));
-            return;
-        }
-
-        // Check existence
-        exists(serviceName).then(
-            // Existence check completed
-            (alreadyExists) => {
-                let st = '';
-
-                switch (startType) {
-                    case 'Automatic':
-                        st = 'auto';
-                        break;
-                    case 'Disabled':
-                        st = 'disabled';
-                        break;
-                    case 'Manual':
-                        st = 'demand';
-                        break;
-                    default:
-                        st = 'demand';
-                        break;
-                }
-
-                // If exists, reject
-                if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
-                }
-
-                // Run command for create service with provided data
-                exec(`sc.exe config "${serviceName}" start= ${st}`, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        return reject(err);
-                    }
-
-                    if (stdout.indexOf('SUCCESS') !== -1) {
-                        return resolve(true);
-                    }
-                    return resolve(false);
-                });
-            },
-
-            // Reject on error
-            (err) => reject(err)
-        );
-    });
-}
-
-/**
- * Stops provided service on local machine
- * @param {string} serviceName Name of service
- */
-function stop(serviceName) {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // With invalid service name, reject
-        if (!serviceName) {
-            reject(new Error('Service name is invalid'));
-            return;
-        }
-
-        // Check existence
-        exists(serviceName).then(
-            // Existence check completed
-            (alreadyExists) => {
-                // If exists, reject
-                if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
-                }
-
-                // Run command for create service with provided data
-                exec(`sc.exe stop "${serviceName}"`, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        return reject(new Error(stdout));
-                    }
-
-                    // Get all lines on standard output, take only
-                    // lines with "SUCCESS" and remove extra parts
-                    const lines = stdout
-                        .toString()
-                        .split('\r\n')
-                        .filter((line) => line.indexOf('SUCCESS') !== -1);
-
-                    // With at least one line with success, true, otherwise, false
-                    return resolve(!!lines);
-                });
-            },
-
-            // Reject on error
-            (err) => reject(err)
-        );
-    });
-}
-
-/**
- * Starts provided service on local machine
- * @param {string} serviceName Name of service
- */
-function start(serviceName) {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // With invalid service name, reject
-        if (!serviceName) {
-            reject(new Error('Service name is invalid'));
-            return;
-        }
-
-        // Check existence
-        exists(serviceName).then(
-            // Existence check completed
-            (alreadyExists) => {
-                // If exists, reject
-                if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
-                }
-
-                // Run command for create service with provided data
-                exec(`sc.exe start "${serviceName}"`, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        return reject(new Error(stdout));
-                    }
-
-                    // Get all lines on standard output, take only
-                    // lines with "SUCCESS" and remove extra parts
-                    const lines = stdout
-                        .toString()
-                        .split('\r\n')
-                        .filter((line) => line.indexOf('SUCCESS') !== -1);
-
-                    // With at least one line with success, true, otherwise, false
-                    return resolve(!!lines);
-                });
-            },
-
-            // Reject on error
-            (err) => reject(err)
-        );
-    });
-}
-
-/**
- * Uninstalls provided service from local machine
- * @param {string} serviceName Name of service
- */
-function uninstall(serviceName) {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // With invalid service name, reject
-        if (!serviceName) {
-            reject(new Error('Service name is invalid'));
-            return;
-        }
-
-        // Check existence
-        exists(serviceName).then(
-            // Existence check completed
-            (alreadyExists) => {
-                // If exists, reject
-                if (!alreadyExists) {
-                    return reject(`Service with name '${serviceName}' does not exists`);
-                }
-
-                // Run command for create service with provided data
-                exec(`sc.exe delete "${serviceName}"`, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        return reject(new Error(stdout));
-                    }
-
-                    // Get all lines on standard output, take only
-                    // lines with "SUCCESS" and remove extra parts
-                    const lines = stdout
-                        .toString()
-                        .split('\r\n')
-                        .filter((line) => line.indexOf('SUCCESS') !== -1);
-
-                    // With at least one line with success, true, otherwise, false
-                    return resolve(!!lines);
-                });
-            },
-
-            // Reject on error
-            (err) => reject(err)
-        );
-    });
-}
-
-/**
- * Install provided service on local machine
- * @param {string} serviceName Name of service
- * @param {string} displayName Name of service displayed on service manager
- * @param {string} exeFilePath Executable file full path
- */
-function install(serviceName, displayName, exeFilePath) {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // With invalid service name, reject
-        if (!serviceName) {
-            reject(new Error('Service name is invalid'));
-            return;
-        }
-
-        // With invalid exeFilePath, reject
-        if (!exeFilePath) {
-            reject(new Error('Executable file path is invalid'));
-            return;
-        }
-
-        // With missing display name, set service name
-        if (!displayName) {
-            displayName = `Service '${serviceName}'`;
-        }
-
-        // Check existence
-        exists(serviceName).then(
-            // Existence check completed
-            (alreadyExists) => {
-                // If exists, reject
-                if (alreadyExists) {
-                    return reject(`Service with name '${serviceName}' already exists`);
-                }
-
-                // Run command for create service with provided data
-                exec(`sc.exe create "${serviceName}" ` + `displayname="${displayName}" ` + `binpath="${exeFilePath}"`, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        return reject(new Error(stdout));
-                    }
-
-                    // Get all lines on standard output, take only
-                    // lines with "SUCCESS" and remove extra parts
-                    const lines = stdout
-                        .toString()
-                        .split('\r\n')
-                        .filter((line) => line.indexOf('SUCCESS') !== -1);
-
-                    // With at least one line with success, true, otherwise, false
-                    return resolve(!!lines);
-                });
-            },
-
-            // Reject on error
-            (err) => reject(err)
-        );
-    });
-}
-
-
-
-/**
- * Get all names of services installed on local machine
- */
-function all() {
-    // Create promise
-    return new Promise((resolve, reject) => {
-        // Run command for get states of all services on local machine
-        exec('sc.exe query state= all', (err, stdout) => {
-            // On error, reject and exit
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            // Get all lines on standard output, take only
-            // lines with "SERVICE_NAME" and remove extra parts
-            const lines = stdout
-                .toString()
-                .split('\r\n')
-                .filter((line) => line.indexOf('SERVICE_NAME') !== -1)
-                .map((line) => line.replace('SERVICE_NAME: ', ''));
-
-            // Resolve with array of service names
-            resolve(lines);
-        });
-    });
-}
-
 // Module schema
 module.exports = {
     all,
     details,
     exists,
-    install,
-    uninstall,
-    stop,
-    start,
-    startup,
     status,
 };

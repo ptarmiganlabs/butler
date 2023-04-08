@@ -1,0 +1,33 @@
+{
+    "blocks": [{
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "❌ Windows service {{serviceStatus}}: '{{serviceDisplayName}}'"
+            }
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "fields": [{
+                    "type": "mrkdwn",
+                    "text": "*Name:*\n{{serviceName}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Display name:*\n{{{serviceDisplayName}}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Startup mode:*\n{{serviceStartType}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Status:*\n{{serviceStatus}}"
+                }
+            ]
+        }
+    ]
+}

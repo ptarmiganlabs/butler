@@ -337,6 +337,16 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
     try {
         // Build final payload
         const payload = [];
+
+        // payload.push({
+        //     serviceName: reloadParams.serviceName,
+        //     serviceStatus: reloadParams.serviceStatus,
+        //     serviceDisplayName: reloadParams.serviceDetails.displayName,
+        //     serviceStartType: reloadParams.serviceDetails.startType,
+        //     eventType: incidentConfig.eventType,
+        //     ...incidentConfig.attributes,
+        // });
+
         payload.push(Object.assign(incidentConfig.attributes, reloadParams));
         payload[0].eventType = incidentConfig.eventType;
 
@@ -414,23 +424,39 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
         // Set New Relic attributes/dimensions, both shared and log-specific ones
         payload[0].common.attributes = Object.assign(incidentConfig.attributes, reloadParams);
 
-        // Get script logs
-        const scriptLogData = await scriptLog.getScriptLog(
-            reloadParams.qs_taskId,
-            0,
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines')
-        );
-        globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+        // Only add script logs if we're sending reload task failures or aborts to New Relic
+        if (incidentConfig?.logType === 'qs_reloadTaskAbortedLog' || incidentConfig?.logType === 'qs_reloadTaskFailedLog') {
+            // Get script logs
+            const scriptLogData = await scriptLog.getScriptLog(
+                reloadParams.qs_taskId,
+                0,
+                globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines')
+            );
+            globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
-        // Use script log data to enrich log entry sent to New Relic
-        payload[0].common.attributes.qs_executingNodeName = scriptLogData.executingNodeName;
-        payload[0].common.attributes.qs_executionStartTime = scriptLogData.executionStartTime;
-        payload[0].common.attributes.qs_executionStopTime = scriptLogData.executionStopTime;
-        payload[0].common.attributes.qs_executionDuration = scriptLogData.executionDuration;
-        payload[0].common.attributes.qs_executionStatusNum = scriptLogData.executionStatusNum;
-        payload[0].common.attributes.qs_exeuctionStatusText = scriptLogData.executionStatusText;
-        payload[0].common.attributes.qs_scriptLogSize = scriptLogData.scriptLogSize;
-        payload[0].common.attributes.qs_scriptLogTailCount = scriptLogData.scriptLogTailCount;
+            // Use script log data to enrich log entry sent to New Relic
+            payload[0].common.attributes.qs_executingNodeName = scriptLogData.executingNodeName;
+            payload[0].common.attributes.qs_executionStartTime = scriptLogData.executionStartTime;
+            payload[0].common.attributes.qs_executionStopTime = scriptLogData.executionStopTime;
+            payload[0].common.attributes.qs_executionDuration = scriptLogData.executionDuration;
+            payload[0].common.attributes.qs_executionStatusNum = scriptLogData.executionStatusNum;
+            payload[0].common.attributes.qs_exeuctionStatusText = scriptLogData.executionStatusText;
+            payload[0].common.attributes.qs_scriptLogSize = scriptLogData.scriptLogSize;
+            payload[0].common.attributes.qs_scriptLogTailCount = scriptLogData.scriptLogTailCount;
+
+            // Set main log message
+            const logMessage = {
+                // timestamp: tsTmp,
+                message: `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`,
+            };
+            payload[0].logs.push(logMessage);
+        } else if (incidentConfig?.logType === 'qs_serviceStateLog') {
+            // Set main log message
+            const logMessage = {
+                message: '',
+            };
+            payload[0].logs.push(logMessage);
+        }
 
         // New Relic event type. Required field
         payload[0].common.attributes.logtype = incidentConfig.logType;
@@ -446,13 +472,6 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
         // } else {
         //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
         // }
-
-        // Set main log message
-        const logMessage = {
-            // timestamp: tsTmp,
-            message: `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`,
-        };
-        payload[0].logs.push(logMessage);
 
         // Remove log timestamp field from payload as it is no longer needed
         delete payload.logTimeStamp;
@@ -1027,4 +1046,6 @@ module.exports = {
     sendReloadTaskFailureLog,
     sendReloadTaskAbortedEvent,
     sendReloadTaskAbortedLog,
+    sendNewRelicEvent,
+    sendNewRelicLog,
 };

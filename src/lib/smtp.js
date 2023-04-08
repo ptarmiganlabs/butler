@@ -12,6 +12,7 @@ const qrsUtil = require('../qrs_util');
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
+let rateLimiterMemoryServiceMonitor;
 
 if (globals.config.has('Butler.emailNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
@@ -29,6 +30,15 @@ if (globals.config.has('Butler.emailNotification.reloadTaskAborted.rateLimit')) 
     });
 } else {
     rateLimiterMemoryAbortedReloads = new RateLimiterMemory({ points: 1, duration: 300 });
+}
+
+if (globals.config.has('Butler.emailNotification.serviceStopped.rateLimit')) {
+    rateLimiterMemoryServiceMonitor = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.emailNotification.serviceStopped.rateLimit'),
+    });
+} else {
+    rateLimiterMemoryServiceMonitor = new RateLimiterMemory({ points: 1, duration: 300 });
 }
 
 function isSmtpConfigOk() {
@@ -133,6 +143,39 @@ function isEmailReloadAbortedNotificationConfigOk() {
         if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
             globals.logger.error("SMTP: Reload aborted email notifications are disabled in config file - won't send email");
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        globals.logger.error(`SMTP: ${err}`);
+        return false;
+    }
+}
+
+function isEmailServiceMonitorNotificationConfig() {
+    try {
+        // First make sure email sending is enabled in the config file
+        if (
+            !globals.config.has('Butler.serviceMonitor.enable') ||
+            !globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.priority') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.subject') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.bodyFileDirectory') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.htmlTemplateFile') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.fromAdress') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.recipients')
+        ) {
+            // Not enough info in config file
+            globals.logger.error('SMTP: service monitor email config info missing in Butler config file');
+            return false;
+        }
+        if (
+            !globals.config.get('Butler.serviceMonitor.enable') ||
+            !globals.config.get('Butler.serviceMonitor.alertDestination.email.enable')
+        ) {
+            // SMTP is disabled
+            globals.logger.error("SMTP: Service monitor email notifications are disabled in config file - won't send email");
             return false;
         }
 
@@ -745,8 +788,79 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 }
 
+async function sendServiceMonitorNotificationEmail(serviceParams) {
+    const globalSendList = globals.config.get('Butler.emailNotification.serviceStopped.recipients');
+
+    let mainSendList = [];
+
+    if (globalSendList.length > 0) {
+        mainSendList = mainSendList.concat(globalSendList);
+    }
+
+    // Make sure send list does not contain any duplicate email addresses
+    const mainSendListUnique = [...new Set(mainSendList)];
+
+    if (isSmtpConfigOk() === false) {
+        return 1;
+    }
+
+    if (isEmailServiceMonitorNotificationConfig() === false) {
+        return 1;
+    }
+
+    // These are the template fields that can be used in email subject and body
+    const templateContext = {
+        host: serviceParams.host,
+        serviceStatus: serviceParams.serviceStatus,
+        serviceName: serviceParams.serviceName,
+        serviceDisplayName: serviceParams.serviceDetails.displayName,
+        serviceStartType: serviceParams.serviceDetails.startType,
+        serviceExePath: serviceParams.serviceDetails.exePath,
+    };
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const recipientEmailAddress of mainSendListUnique) {
+        rateLimiterMemoryServiceMonitor
+            .consume(`${serviceParams.host}|${serviceParams.serviceName}|${recipientEmailAddress}`, 1)
+            // eslint-disable-next-line no-loop-func
+            .then(async (rateLimiterRes) => {
+                try {
+                    globals.logger.info(
+                        `SERVICE MONITOR EMAIL: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`
+                    );
+                    globals.logger.debug(`SERVICE MONITOR EMAIL: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+
+                    // Only send email if there is at least one recipient
+                    if (recipientEmailAddress.length > 0) {
+                        sendEmail(
+                            globals.config.get('Butler.emailNotification.serviceStopped.fromAdress'),
+                            [recipientEmailAddress],
+                            globals.config.get('Butler.emailNotification.serviceStopped.priority'),
+                            globals.config.get('Butler.emailNotification.serviceStopped.subject'),
+                            globals.config.get('Butler.emailNotification.serviceStopped.bodyFileDirectory'),
+                            globals.config.get('Butler.emailNotification.serviceStopped.htmlTemplateFile'),
+                            templateContext
+                        );
+                    } else {
+                        globals.logger.warn(`SERVICE MONITOR EMAIL: No recipients to send alert email to.`);
+                    }
+                } catch (err) {
+                    globals.logger.error(`SERVICE MONITOR EMAIL: ${err}`);
+                }
+            })
+            // eslint-disable-next-line no-loop-func
+            .catch((err) => {
+                globals.logger.warn(
+                    `SERVICE MONITOR EMAIL: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`
+                );
+                globals.logger.debug(`SERVICE MONITOR EMAIL: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+            });
+    }
+}
+
 module.exports = {
     sendReloadTaskFailureNotificationEmail,
     sendReloadTaskAbortedNotificationEmail,
+    sendServiceMonitorNotificationEmail,
     sendEmailBasic,
 };
