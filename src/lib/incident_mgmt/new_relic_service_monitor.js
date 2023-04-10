@@ -236,6 +236,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
                 sendNewRelicLog(
                     serviceStateConfig,
                     {
+                        serviceHost: params.serviceHost,
                         serviceName: params.serviceName,
                         serviceStatus: params.serviceStatus,
                         serviceDisplayName: params.serviceDetails.displayName,

@@ -13,6 +13,14 @@
             "type": "section",
             "fields": [{
                     "type": "mrkdwn",
+                    "text": "*Host:*\n{{host}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Status:*\n{{serviceStatus}}"
+                },
+                {
+                    "type": "mrkdwn",
                     "text": "*Name:*\n{{serviceName}}"
                 },
                 {
@@ -22,12 +30,9 @@
                 {
                     "type": "mrkdwn",
                     "text": "*Startup mode:*\n{{serviceStartType}}"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*Status:*\n{{serviceStatus}}"
                 }
             ]
         }
     ]
 }
+6
