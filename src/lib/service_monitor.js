@@ -1,4 +1,5 @@
 const later = require('@breejs/later');
+const { createMachine } = require('@xstate/fsm');
 
 const svcTools = require('./winsvc');
 const globals = require('../globals');
@@ -7,7 +8,6 @@ const webhookOut = require('./webhook_notification');
 const slack = require('./slack_notification');
 const teams = require('./msteams_notification');
 const smtp = require('./smtp');
-//const { forIn } = require('lodash');
 
 const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     logger.verbose(`Sending service stopped alert to New Relic: "${svc.serviceName}"`);
@@ -256,6 +256,9 @@ async function setupServiceMonitorTimer(config, logger) {
                     } else {
                         logger.info(`SERVICE MONITOR: Setting up service monitor for services:`);
 
+                        // One state machines for each service
+                        const serviceStateMachine = [];
+
                         const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
                         // eslint-disable-next-line no-restricted-syntax
@@ -266,6 +269,44 @@ async function setupServiceMonitorTimer(config, logger) {
                             // eslint-disable-next-line no-restricted-syntax
                             for (const serviceName of serviceNamesToCheck) {
                                 logger.info(`SERVICE MONITOR: ---          ${serviceName}`);
+
+                                // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
+                                const windowsServiceMachine = createMachine({
+                                    id: 'windowsService',
+                                    initial: 'stopped',
+                                    states: {
+                                        stopped: {
+                                            on: {
+                                                START: 'running',
+                                            },
+                                        },
+                                        running: {
+                                            on: {
+                                                STOP: 'stopped',
+                                                PAUSE: 'paused',
+                                            },
+                                        },
+                                        paused: {
+                                            on: {
+                                                START: 'started',
+                                                STOP: 'stopped',
+                                            },
+                                        },
+                                    },
+                                });
+
+                                const windowsServiceStateMachineService = windowsServiceMachine
+                                    .interpret(windowsServiceMachine)
+                                    .onTransition((state) => {
+                                        console.log(JSON.stringify(state, null, 2));
+                                    })
+                                    .start();
+
+                                serviceStateMachine.push({
+                                    host,
+                                    serviceName,
+                                    service: windowsServiceStateMachineService,
+                                });
                             }
                         }
                         const sched = later.parse.text(config.get('Butler.serviceMonitor.frequency'));
