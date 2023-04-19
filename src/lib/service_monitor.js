@@ -1,5 +1,5 @@
 const later = require('@breejs/later');
-const { createMachine } = require('@xstate/fsm');
+const { createMachine, interpret } = require('xstate');
 
 const svcTools = require('./winsvc');
 const globals = require('../globals');
@@ -8,6 +8,9 @@ const webhookOut = require('./webhook_notification');
 const slack = require('./slack_notification');
 const teams = require('./msteams_notification');
 const smtp = require('./smtp');
+
+// One state machines for each service
+const serviceStateMachine = [];
 
 const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     logger.verbose(`Sending service stopped alert to New Relic: "${svc.serviceName}"`);
@@ -122,79 +125,90 @@ const checkServiceStatus = async (config, logger) => {
                 config.has('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.stopped.enable') &&
                 config.get('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.stopped.enable') === true
             ) {
-                logger.warn(`Service "${serviceDetails.displayName}" is stopped!`);
+                logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
 
-                // Send message to enabled destinations
+                // Update state machine
+                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
+                logger.verbose(
+                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.service.state.value}`
+                );
+                const sendResult = smService.service.send('STOP');
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
+                if (sendResult.changed) {
+                    logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" has stopped!`);
 
-                // New Relic
-                if (
-                    config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
-                    config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
-                ) {
-                    serviceMonitorNewRelicSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
-                }
+                    // Send message to enabled destinations
 
-                // MQTT
-                if (
-                    config.has('Butler.mqttConfig.enable') &&
-                    config.get('Butler.mqttConfig.enable') === true &&
-                    config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
-                    config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
-                ) {
-                    serviceMonitorMqttSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
-                }
+                    // New Relic
+                    if (
+                        config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
+                        config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
+                    ) {
+                        serviceMonitorNewRelicSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                    }
 
-                // Outgoing webhooks
-                if (
-                    globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
-                    globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
-                ) {
-                    webhookOut.sendServiceMonitorWebhook({ serviceName, serviceStatus, serviceDetails, host: host.host });
-                }
+                    // MQTT
+                    if (
+                        config.has('Butler.mqttConfig.enable') &&
+                        config.get('Butler.mqttConfig.enable') === true &&
+                        config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
+                        config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
+                    ) {
+                        serviceMonitorMqttSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                    }
 
-                // Post to Slack
-                if (
-                    globals.config.has('Butler.slackNotification.enable') &&
-                    globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') &&
-                    globals.config.get('Butler.slackNotification.enable') === true &&
-                    globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
-                ) {
-                    slack.sendServiceMonitorNotificationSlack({
-                        host: host.host,
-                        serviceName,
-                        serviceStatus,
-                        serviceDetails,
-                    });
-                }
+                    // Outgoing webhooks
+                    if (
+                        globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
+                    ) {
+                        webhookOut.sendServiceMonitorWebhook({ serviceName, serviceStatus, serviceDetails, host: host.host });
+                    }
 
-                // Post to Teams
-                if (
-                    globals.config.has('Butler.teamsNotification.enable') &&
-                    globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
-                    globals.config.get('Butler.teamsNotification.enable') === true &&
-                    globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
-                ) {
-                    teams.sendServiceMonitorNotificationTeams({
-                        host: host.host,
-                        serviceName,
-                        serviceStatus,
-                        serviceDetails,
-                    });
-                }
+                    // Post to Slack
+                    if (
+                        globals.config.has('Butler.slackNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') &&
+                        globals.config.get('Butler.slackNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
+                    ) {
+                        slack.sendServiceMonitorNotificationSlack({
+                            host: host.host,
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                        });
+                    }
 
-                // Send email
-                if (
-                    globals.config.has('Butler.emailNotification.enable') &&
-                    globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') &&
-                    globals.config.get('Butler.emailNotification.enable') === true &&
-                    globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
-                ) {
-                    smtp.sendServiceMonitorNotificationEmail({
-                        host: host.host,
-                        serviceName,
-                        serviceStatus,
-                        serviceDetails,
-                    });
+                    // Post to Teams
+                    if (
+                        globals.config.has('Butler.teamsNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
+                        globals.config.get('Butler.teamsNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+                    ) {
+                        teams.sendServiceMonitorNotificationTeams({
+                            host: host.host,
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                        });
+                    }
+
+                    // Send email
+                    if (
+                        globals.config.has('Butler.emailNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') &&
+                        globals.config.get('Butler.emailNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
+                    ) {
+                        smtp.sendServiceMonitorNotificationEmail({
+                            host: host.host,
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                        });
+                    }
                 }
             } else if (
                 serviceStatus === 'RUNNING' &&
@@ -203,24 +217,36 @@ const checkServiceStatus = async (config, logger) => {
             ) {
                 logger.verbose(`Service "${serviceName}" is running`);
 
-                // Send message to enabled destinations
+                // Update state machine
+                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
 
-                // New Relic
-                if (
-                    config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
-                    config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
-                ) {
-                    serviceMonitorNewRelicSend1(config, logger, serviceName, serviceStatus, serviceDetails);
-                }
+                logger.verbose(
+                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.service.state.value}`
+                );
+                const sendResult = smService.service.send('START');
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
 
-                // MQTT
-                if (
-                    config.has('Butler.mqttConfig.enable') &&
-                    config.get('Butler.mqttConfig.enable') === true &&
-                    config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
-                    config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
-                ) {
-                    serviceMonitorMqttSend1(config, logger, serviceName, serviceStatus, serviceDetails);
+                if (sendResult.changed) {
+                    logger.info(`Service "${serviceDetails.displayName}" on host "${host.host}" has started.`);
+                    // Send message to enabled destinations
+
+                    // New Relic
+                    if (
+                        config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
+                        config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
+                    ) {
+                        serviceMonitorNewRelicSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                    }
+
+                    // MQTT
+                    if (
+                        config.has('Butler.mqttConfig.enable') &&
+                        config.get('Butler.mqttConfig.enable') === true &&
+                        config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
+                        config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
+                    ) {
+                        serviceMonitorMqttSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                    }
                 }
             }
 
@@ -256,9 +282,6 @@ async function setupServiceMonitorTimer(config, logger) {
                     } else {
                         logger.info(`SERVICE MONITOR: Setting up service monitor for services:`);
 
-                        // One state machines for each service
-                        const serviceStateMachine = [];
-
                         const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
                         // eslint-disable-next-line no-restricted-syntax
@@ -273,39 +296,35 @@ async function setupServiceMonitorTimer(config, logger) {
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
                                     id: 'windowsService',
-                                    initial: 'stopped',
+                                    initial: 'paused',
                                     states: {
                                         stopped: {
                                             on: {
-                                                START: 'running',
+                                                START: { target: 'running' },
                                             },
                                         },
                                         running: {
                                             on: {
-                                                STOP: 'stopped',
-                                                PAUSE: 'paused',
+                                                STOP: { target: 'stopped' },
+                                                PAUSE: { target: 'paused' },
                                             },
                                         },
                                         paused: {
                                             on: {
-                                                START: 'started',
-                                                STOP: 'stopped',
+                                                START: { target: 'running' },
+                                                STOP: { target: 'stopped' },
                                             },
                                         },
                                     },
                                 });
 
-                                const windowsServiceStateMachineService = windowsServiceMachine
-                                    .interpret(windowsServiceMachine)
-                                    .onTransition((state) => {
-                                        console.log(JSON.stringify(state, null, 2));
-                                    })
-                                    .start();
+                                const service = interpret(windowsServiceMachine).start();
 
                                 serviceStateMachine.push({
+                                    id: `${host.host}|${serviceName}`,
                                     host,
                                     serviceName,
-                                    service: windowsServiceStateMachineService,
+                                    service,
                                 });
                             }
                         }
