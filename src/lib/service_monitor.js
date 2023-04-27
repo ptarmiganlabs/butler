@@ -13,7 +13,7 @@ const smtp = require('./smtp');
 const serviceStateMachine = [];
 
 const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
-    logger.verbose(`Sending service stopped alert to New Relic: "${svc.serviceName}"`);
+    logger.verbose(`Sending service status "${svc.serviceStatus}" to New Relic: "${svc.serviceName}"`);
 
     newRelic.sendServiceMonitorEvent({
         serviceHost: svc.host,
@@ -31,18 +31,72 @@ const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
 };
 
 const serviceMonitorMqttSend1 = (config, logger, svc) => {
+    if (svc.serviceStatus === 'STOPPED') {
+        if (
+            !config.has('Butler.mqttConfig.serviceStoppedTopic') ||
+            config.get('Butler.mqttConfig.serviceStoppedTopic') === null ||
+            config.get('Butler.mqttConfig.serviceStoppedTopic').length === 0
+        ) {
+            logger.verbose(
+                `"${svc.serviceName}" Windows service on host "${svc.host}" stopped. No MQTT topic defined in config entry "Butler.mqttConfig.serviceStoppedTopic"`
+            );
+        } else {
+            logger.verbose(`Sending service stopped alert to MQTT for service "${svc.serviceName}" on host "${svc.host}"`);
+            globals.mqttClient.publish(
+                `${config.get('Butler.mqttConfig.serviceStoppedTopic')}/${svc.host}/${svc.serviceName}`,
+                JSON.stringify({
+                    serviceHost: svc.host,
+                    serviceName: svc.serviceName,
+                    serviceDisplayName: svc.serviceDetails.displayName,
+                    serviceDependencies: svc.serviceDetails.dependencies,
+                    serviceStartType: svc.serviceDetails.startType,
+                    serviceExePath: svc.serviceDetails.exePath,
+                    serviceStatus: svc.serviceStatus,
+                    servicePrevStatus: svc.prevState,
+                    serviceStatusChanged: svc.stateChanged,
+                })
+            );
+        }
+    } else if (svc.serviceStatus === 'RUNNING') {
+        if (
+            !config.has('Butler.mqttConfig.serviceRunningTopic') ||
+            config.get('Butler.mqttConfig.serviceRunningTopic') === null ||
+            config.get('Butler.mqttConfig.serviceRunningTopic').length === 0
+        ) {
+            logger.verbose(
+                `"${svc.serviceName}" Windows service on host "${svc.host}" is running. No MQTT topic defined in config entry "Butler.mqttConfig.serviceRunningTopic"`
+            );
+        } else {
+            logger.verbose(`Sending service running message to MQTT for service "${svc.serviceName}" on host "${svc.host}"`);
+            globals.mqttClient.publish(
+                `${config.get('Butler.mqttConfig.serviceRunningTopic')}/${svc.host}/${svc.serviceName}`,
+                JSON.stringify({
+                    serviceHost: svc.host,
+                    serviceName: svc.serviceName,
+                    serviceDisplayName: svc.serviceDetails.displayName,
+                    serviceDependencies: svc.serviceDetails.dependencies,
+                    serviceStartType: svc.serviceDetails.startType,
+                    serviceExePath: svc.serviceDetails.exePath,
+                    serviceStatus: svc.serviceStatus,
+                    servicePrevStatus: svc.prevState,
+                    serviceStatusChanged: svc.stateChanged,
+                })
+            );
+        }
+    }
+};
+
+const serviceMonitorMqttSend2 = (config, logger, svc) => {
     if (
-        !config.has('Butler.mqttConfig.serviceStoppedTopic') ||
-        config.get('Butler.mqttConfig.serviceStoppedTopic') === null ||
-        config.get('Butler.mqttConfig.serviceStoppedTopic').length === 0
+        !config.has('Butler.mqttConfig.serviceStatusTopic') ||
+        config.get('Butler.mqttConfig.serviceStatusTopic') === null ||
+        config.get('Butler.mqttConfig.serviceStatusTopic').length === 0
     ) {
-        logger.verbose(
-            `"${svc.serviceName}" Windows service stopped. No MQTT topic defined in config entry "Butler.mqttConfig.serviceStoppedTopic"`
-        );
+        logger.verbose(`"${svc.serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
     } else {
-        logger.verbose(`Sending service stopped alert to MQTT: "${svc.serviceName}"`);
+        logger.verbose(`Sending service status to MQTT: service="${svc.serviceName}", status="${svc.serviceStatus}"`);
         globals.mqttClient.publish(
-            config.get('Butler.mqttConfig.serviceStoppedTopic'),
+            `${config.get('Butler.mqttConfig.serviceStatusTopic')}/${svc.host}/${svc.serviceName}`,
             JSON.stringify({
                 serviceHost: svc.host,
                 serviceName: svc.serviceName,
@@ -51,29 +105,6 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
                 serviceStartType: svc.serviceDetails.startType,
                 serviceExePath: svc.serviceDetails.exePath,
                 serviceStatus: svc.serviceStatus,
-            })
-        );
-    }
-};
-
-const serviceMonitorMqttSend2 = (config, logger, serviceName, serviceStatus, serviceDetails) => {
-    if (
-        !config.has('Butler.mqttConfig.serviceStatusTopic') ||
-        config.get('Butler.mqttConfig.serviceStatusTopic') === null ||
-        config.get('Butler.mqttConfig.serviceStatusTopic').length === 0
-    ) {
-        logger.verbose(`"${serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
-    } else {
-        logger.verbose(`Sending service status to MQTT: service="${serviceName}", status="${serviceStatus}"`);
-        globals.mqttClient.publish(
-            config.get('Butler.mqttConfig.serviceStatusTopic'),
-            JSON.stringify({
-                serviceName,
-                serviceDisplayName: serviceDetails.displayName,
-                serviceDependencies: serviceDetails.dependencies,
-                serviceStartType: serviceDetails.startType,
-                serviceExePath: serviceDetails.exePath,
-                serviceStatus,
             })
         );
     }
@@ -129,11 +160,12 @@ const checkServiceStatus = async (config, logger) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
-                logger.verbose(
-                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.service.state.value}`
-                );
+                const prevState = smService.service.state.value;
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
+
                 const sendResult = smService.service.send('STOP');
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
+
                 if (sendResult.changed) {
                     logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" has stopped!`);
 
@@ -144,7 +176,15 @@ const checkServiceStatus = async (config, logger) => {
                         config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
-                        serviceMonitorNewRelicSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                        serviceMonitorNewRelicSend1(config, logger, {
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
                     }
 
                     // MQTT
@@ -154,7 +194,15 @@ const checkServiceStatus = async (config, logger) => {
                         config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
-                        serviceMonitorMqttSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                        serviceMonitorMqttSend1(config, logger, {
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
                     }
 
                     // Outgoing webhooks
@@ -162,7 +210,15 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
                     ) {
-                        webhookOut.sendServiceMonitorWebhook({ serviceName, serviceStatus, serviceDetails, host: host.host });
+                        webhookOut.sendServiceMonitorWebhook({
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
                     }
 
                     // Post to Slack
@@ -173,10 +229,13 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
                         slack.sendServiceMonitorNotificationSlack({
-                            host: host.host,
                             serviceName,
                             serviceStatus,
                             serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
                         });
                     }
 
@@ -188,10 +247,13 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
                         teams.sendServiceMonitorNotificationTeams({
-                            host: host.host,
                             serviceName,
                             serviceStatus,
                             serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
                         });
                     }
 
@@ -203,10 +265,13 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
                         smtp.sendServiceMonitorNotificationEmail({
-                            host: host.host,
                             serviceName,
                             serviceStatus,
                             serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
                         });
                     }
                 }
@@ -219,10 +284,12 @@ const checkServiceStatus = async (config, logger) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
+                const prevState = smService.service.state.value;
 
                 logger.verbose(
                     `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.service.state.value}`
                 );
+
                 const sendResult = smService.service.send('START');
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
 
@@ -235,7 +302,15 @@ const checkServiceStatus = async (config, logger) => {
                         config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
-                        serviceMonitorNewRelicSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                        serviceMonitorNewRelicSend1(config, logger, {
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
                     }
 
                     // MQTT
@@ -245,7 +320,33 @@ const checkServiceStatus = async (config, logger) => {
                         config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
-                        serviceMonitorMqttSend1(config, logger, { serviceName, serviceStatus, serviceDetails, host: host.host });
+                        serviceMonitorMqttSend1(config, logger, {
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
+                    }
+
+                    // Post to Slack
+                    if (
+                        globals.config.has('Butler.slackNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') &&
+                        globals.config.get('Butler.slackNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
+                    ) {
+                        slack.sendServiceMonitorNotificationSlack({
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
                     }
                 }
             }
@@ -258,7 +359,12 @@ const checkServiceStatus = async (config, logger) => {
                 config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                 config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
             ) {
-                serviceMonitorMqttSend2(config, logger, serviceName, serviceStatus, serviceDetails);
+                serviceMonitorMqttSend2(config, logger, {
+                    serviceName,
+                    serviceStatus,
+                    serviceDetails,
+                    host: host.host,
+                });
             }
         });
     });

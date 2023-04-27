@@ -212,13 +212,15 @@ function getSlackReloadAbortedNotificationConfigOk() {
     }
 }
 
-function getSlackServiceMonitorNotificationConfig() {
+function getSlackServiceMonitorNotificationConfig(serviceStatus) {
     try {
         // First make sure Slack sending is enabled in the config file and that we have needed parameters
         if (
             !globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') ||
             !globals.config.has('Butler.slackNotification.serviceStopped.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.serviceStopped.messageType')
+            !globals.config.has('Butler.slackNotification.serviceStarted.messageType') ||
+            !globals.config.has('Butler.slackNotification.serviceStarted.webhookURL') ||
+            !globals.config.has('Butler.slackNotification.serviceStarted.messageType')
         ) {
             // Not enough info in config file
             globals.logger.error('SERVICE MONITOR SLACK: Service monitor Slack config info missing in Butler config file');
@@ -246,42 +248,100 @@ function getSlackServiceMonitorNotificationConfig() {
             return false;
         }
 
+        if (
+            globals.config.get('Butler.slackNotification.serviceStarted.messageType') !== 'basic' &&
+            globals.config.get('Butler.slackNotification.serviceStarted.messageType') !== 'formatted'
+        ) {
+            // Invalid Slack message type
+            globals.logger.error(
+                `SERVICE MONITOR SLACK: Invalid Slack message type: ${globals.config.get(
+                    'Butler.slackNotification.serviceStarted.messageType'
+                )}`
+            );
+            return false;
+        }
+
         if (globals.config.get('Butler.slackNotification.serviceStopped.messageType') === 'basic') {
-            // Basic formatting. Make sure requried parameters are present
+            // Basic formatting. Make sure required parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStopped.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR SLACK: No message text in config file.');
+                globals.logger.error('SERVICE MONITOR SLACK: No service stopped basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.slackNotification.serviceStopped.messageType') === 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStopped.templateFile')) {
-                globals.logger.error('SERVICE MONITOR SLACK: Message template file not specified in config file.');
+                globals.logger.error('SERVICE MONITOR SLACK: Service stopped message template file not specified in config file.');
                 return false;
             }
         }
 
-        return {
-            webhookUrl: globals.config.get('Butler.slackNotification.serviceStopped.webhookURL'),
-            messageType: globals.config.get('Butler.slackNotification.serviceStopped.messageType'),
-            templateFile: globals.config.get('Butler.slackNotification.serviceStopped.templateFile'),
+        if (globals.config.get('Butler.slackNotification.serviceStarted.messageType') === 'basic') {
+            // Basic formatting. Make sure required parameters are present
+            if (!globals.config.has('Butler.slackNotification.serviceStarted.basicMsgTemplate')) {
+                // No message text in config file.
+                globals.logger.error('SERVICE MONITOR SLACK: No service started basic message text in config file.');
+                return false;
+            }
+        } else if (globals.config.get('Butler.slackNotification.serviceStarted.messageType') === 'formatted') {
+            // Extended formatting using Slack blocks. Make sure requried parameters are present
+            if (!globals.config.has('Butler.slackNotification.serviceStarted.templateFile')) {
+                globals.logger.error('SERVICE MONITOR SLACK: Service started message template file not specified in config file.');
+                return false;
+            }
+        }
 
-            fromUser: globals.config.has('Butler.slackNotification.serviceStopped.fromUser')
-                ? globals.config.get('Butler.slackNotification.serviceStopped.fromUser')
-                : '',
-            iconEmoji: globals.config.has('Butler.slackNotification.serviceStopped.iconEmoji')
-                ? globals.config.get('Butler.slackNotification.serviceStopped.iconEmoji')
-                : '',
-            rateLimit: globals.config.has('Butler.slackNotification.serviceStopped.rateLimit')
-                ? globals.config.get('Butler.slackNotification.serviceStopped.rateLimit')
-                : '',
-            basicMsgTemplate: globals.config.has('Butler.slackNotification.serviceStopped.basicMsgTemplate')
-                ? globals.config.get('Butler.slackNotification.serviceStopped.basicMsgTemplate')
-                : '',
-            channel: globals.config.has('Butler.slackNotification.serviceStopped.channel')
-                ? globals.config.get('Butler.slackNotification.serviceStopped.channel')
-                : '',
-        };
+        let result = {};
+
+        if (serviceStatus === 'RUNNING') {
+            result = {
+                webhookUrl: globals.config.get('Butler.slackNotification.serviceStarted.webhookURL'),
+                messageType: globals.config.get('Butler.slackNotification.serviceStarted.messageType'),
+                templateFile: globals.config.get('Butler.slackNotification.serviceStarted.templateFile'),
+
+                fromUser: globals.config.has('Butler.slackNotification.serviceStarted.fromUser')
+                    ? globals.config.get('Butler.slackNotification.serviceStarted.fromUser')
+                    : '',
+                iconEmoji: globals.config.has('Butler.slackNotification.serviceStarted.iconEmoji')
+                    ? globals.config.get('Butler.slackNotification.serviceStarted.iconEmoji')
+                    : '',
+                rateLimit: globals.config.has('Butler.slackNotification.serviceStarted.rateLimit')
+                    ? globals.config.get('Butler.slackNotification.serviceStarted.rateLimit')
+                    : '',
+                basicMsgTemplate: globals.config.has('Butler.slackNotification.serviceStarted.basicMsgTemplate')
+                    ? globals.config.get('Butler.slackNotification.serviceStarted.basicMsgTemplate')
+                    : '',
+                channel: globals.config.has('Butler.slackNotification.serviceStarted.channel')
+                    ? globals.config.get('Butler.slackNotification.serviceStarted.channel')
+                    : '',
+            };
+        }
+
+        if (serviceStatus === 'STOPPED') {
+            result = {
+                webhookUrl: globals.config.get('Butler.slackNotification.serviceStopped.webhookURL'),
+                messageType: globals.config.get('Butler.slackNotification.serviceStopped.messageType'),
+                templateFile: globals.config.get('Butler.slackNotification.serviceStopped.templateFile'),
+
+                fromUser: globals.config.has('Butler.slackNotification.serviceStopped.fromUser')
+                    ? globals.config.get('Butler.slackNotification.serviceStopped.fromUser')
+                    : '',
+                iconEmoji: globals.config.has('Butler.slackNotification.serviceStopped.iconEmoji')
+                    ? globals.config.get('Butler.slackNotification.serviceStopped.iconEmoji')
+                    : '',
+                rateLimit: globals.config.has('Butler.slackNotification.serviceStopped.rateLimit')
+                    ? globals.config.get('Butler.slackNotification.serviceStopped.rateLimit')
+                    : '',
+                basicMsgTemplate: globals.config.has('Butler.slackNotification.serviceStopped.basicMsgTemplate')
+                    ? globals.config.get('Butler.slackNotification.serviceStopped.basicMsgTemplate')
+                    : '',
+                channel: globals.config.has('Butler.slackNotification.serviceStopped.channel')
+                    ? globals.config.get('Butler.slackNotification.serviceStopped.channel')
+                    : '',
+            };
+        }
+
+        return result;
     } catch (err) {
         globals.logger.error(`SERVICE MONITOR SLACK: ${err}`);
         return false;
@@ -662,7 +722,7 @@ function sendServiceMonitorNotificationSlack(serviceParams) {
                 globals.logger.verbose(`SERVICE MONITOR SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
-                const slackConfig = getSlackServiceMonitorNotificationConfig();
+                const slackConfig = getSlackServiceMonitorNotificationConfig(serviceParams.serviceStatus);
                 if (slackConfig === false) {
                     return 1;
                 }
@@ -671,13 +731,18 @@ function sendServiceMonitorNotificationSlack(serviceParams) {
                 const templateContext = {
                     host: serviceParams.host,
                     serviceStatus: serviceParams.serviceStatus,
+                    servicePrevStatus: serviceParams.prevState,
                     serviceName: serviceParams.serviceName,
                     serviceDisplayName: serviceParams.serviceDetails.displayName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
                 };
 
-                sendSlack(slackConfig, templateContext, 'serviceStopped');
+                if (serviceParams.serviceStatus === 'STOPPED') {
+                    sendSlack(slackConfig, templateContext, 'serviceStopped');
+                } else if (serviceParams.serviceStatus === 'RUNNING') {
+                    sendSlack(slackConfig, templateContext, 'serviceStarted');
+                }
             } catch (err) {
                 globals.logger.error(`SERVICE MONITOR SLACK: ${err}`);
             }

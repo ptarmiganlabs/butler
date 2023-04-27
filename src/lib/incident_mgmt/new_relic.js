@@ -451,10 +451,17 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             };
             payload[0].logs.push(logMessage);
         } else if (incidentConfig?.logType === 'qs_serviceStateLog') {
-            // Set main log message
-            const logMessage = {
-                message: '',
-            };
+            // Set log message
+            let logMessage;
+            if (reloadParams.serviceStatus === 'STOPPED' || reloadParams.serviceStatus === 'RUNNING') {
+                logMessage = {
+                    message: `Windows service "${reloadParams.serviceDisplayName}" on host "${reloadParams.serviceHost}" is ${reloadParams.serviceStatus}.`,
+                };
+            } else {
+                logMessage = {
+                    message: `Windows service "${reloadParams.serviceDisplayName}" on host "${reloadParams.serviceHost}" in in state "${reloadParams.serviceStatus}".`,
+                };
+            }
             payload[0].logs.push(logMessage);
         }
 

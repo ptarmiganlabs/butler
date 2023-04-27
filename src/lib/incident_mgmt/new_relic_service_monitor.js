@@ -1,4 +1,3 @@
-const axios = require('axios');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../../globals');
