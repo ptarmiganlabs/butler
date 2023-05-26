@@ -195,13 +195,15 @@ function getTeamsReloadAbortedNotificationConfigOk() {
     }
 }
 
-function getTeamsServiceMonitorNotificationConfig() {
+function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
     try {
         // First make sure Teams sending is enabled in the config file and that we have needed parameters
         if (
             !globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') ||
             !globals.config.has('Butler.teamsNotification.serviceStopped.webhookURL') ||
-            !globals.config.has('Butler.teamsNotification.serviceStopped.messageType')
+            !globals.config.has('Butler.teamsNotification.serviceStopped.messageType') ||
+            !globals.config.has('Butler.teamsNotification.serviceStarted.webhookURL') ||
+            !globals.config.has('Butler.teamsNotification.serviceStarted.messageType')
         ) {
             // Not enough info in config file
             globals.logger.error('SERVICE MONITOR TEAMS: Reload aborted Teams config info missing in Butler config file');
@@ -229,36 +231,88 @@ function getTeamsServiceMonitorNotificationConfig() {
             return false;
         }
 
+        if (
+            globals.config.get('Butler.teamsNotification.serviceStarted.messageType') !== 'basic' &&
+            globals.config.get('Butler.teamsNotification.serviceStarted.messageType') !== 'formatted'
+        ) {
+            // Invalid Teams message type
+            globals.logger.error(
+                `SERVICE MONITOR TEAMS: Invalid Teams message type: ${globals.config.get(
+                    'Butler.teamsNotification.serviceStopped.messageType'
+                )}`
+            );
+            return false;
+        }
+
         if (globals.config.get('Butler.teamsNotification.serviceStopped.messageType') === 'basic') {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStopped.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR TEAMS: No message text in config file.');
+                globals.logger.error('SERVICE MONITOR TEAMS: No service stopped basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.teamsNotification.serviceStopped.messageType') === 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStopped.templateFile')) {
-                globals.logger.error('SERVICE MONITOR TEAMS: Message template file not specified in config file.');
+                globals.logger.error('SERVICE MONITOR TEAMS: Service stopped message template file not specified in config file.');
                 return false;
             }
         }
 
-        return {
-            webhookUrl: globals.config.get('Butler.teamsNotification.serviceStopped.webhookURL'),
-            messageType: globals.config.get('Butler.teamsNotification.serviceStopped.messageType'),
-            templateFile: globals.config.get('Butler.teamsNotification.serviceStopped.templateFile'),
+        if (globals.config.get('Butler.teamsNotification.serviceStarted.messageType') === 'basic') {
+            // Basic formatting. Make sure requried parameters are present
+            if (!globals.config.has('Butler.teamsNotification.serviceStarted.basicMsgTemplate')) {
+                // No message text in config file.
+                globals.logger.error('SERVICE MONITOR TEAMS: No service started basic message text in config file.');
+                return false;
+            }
+        } else if (globals.config.get('Butler.teamsNotification.serviceStarted.messageType') === 'formatted') {
+            // Extended formatting using Teams blocks. Make sure requried parameters are present
+            if (!globals.config.has('Butler.teamsNotification.serviceStarted.templateFile')) {
+                globals.logger.error('SERVICE MONITOR TEAMS: Service started message template file not specified in config file.');
+                return false;
+            }
+        }
 
-            rateLimit: globals.config.has('Butler.teamsNotification.serviceStopped.rateLimit')
-                ? globals.config.get('Butler.teamsNotification.serviceStopped.rateLimit')
-                : '',
-            basicMsgTemplate: globals.config.has('Butler.teamsNotification.serviceStopped.basicMsgTemplate')
-                ? globals.config.get('Butler.teamsNotification.serviceStopped.basicMsgTemplate')
-                : '',
-            channel: globals.config.has('Butler.teamsNotification.serviceStopped.channel')
-                ? globals.config.get('Butler.teamsNotification.serviceStopped.channel')
-                : '',
-        };
+        let result = {};
+
+        if (serviceStatus === 'RUNNING') {
+            result = {
+                webhookUrl: globals.config.get('Butler.teamsNotification.serviceStarted.webhookURL'),
+                messageType: globals.config.get('Butler.teamsNotification.serviceStarted.messageType'),
+                templateFile: globals.config.get('Butler.teamsNotification.serviceStarted.templateFile'),
+
+                rateLimit: globals.config.has('Butler.teamsNotification.serviceStarted.rateLimit')
+                    ? globals.config.get('Butler.teamsNotification.serviceStarted.rateLimit')
+                    : '',
+                basicMsgTemplate: globals.config.has('Butler.teamsNotification.serviceStarted.basicMsgTemplate')
+                    ? globals.config.get('Butler.teamsNotification.serviceStarted.basicMsgTemplate')
+                    : '',
+                channel: globals.config.has('Butler.teamsNotification.serviceStarted.channel')
+                    ? globals.config.get('Butler.teamsNotification.serviceStarted.channel')
+                    : '',
+            };
+        }
+
+        if (serviceStatus === 'STOPPED') {
+            result = {
+                webhookUrl: globals.config.get('Butler.teamsNotification.serviceStopped.webhookURL'),
+                messageType: globals.config.get('Butler.teamsNotification.serviceStopped.messageType'),
+                templateFile: globals.config.get('Butler.teamsNotification.serviceStopped.templateFile'),
+
+                rateLimit: globals.config.has('Butler.teamsNotification.serviceStopped.rateLimit')
+                    ? globals.config.get('Butler.teamsNotification.serviceStopped.rateLimit')
+                    : '',
+                basicMsgTemplate: globals.config.has('Butler.teamsNotification.serviceStopped.basicMsgTemplate')
+                    ? globals.config.get('Butler.teamsNotification.serviceStopped.basicMsgTemplate')
+                    : '',
+                channel: globals.config.has('Butler.teamsNotification.serviceStopped.channel')
+                    ? globals.config.get('Butler.teamsNotification.serviceStopped.channel')
+                    : '',
+            };
+        }
+
+        return result;
     } catch (err) {
         globals.logger.error(`SERVICE MONITOR TEAMS: ${err}`);
         return false;
@@ -628,7 +682,7 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
                 globals.logger.verbose(`SERVICE MONITOR TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
-                const teamsConfig = getTeamsServiceMonitorNotificationConfig();
+                const teamsConfig = getTeamsServiceMonitorNotificationConfig(serviceParams.serviceStatus);
                 if (teamsConfig === false) {
                     return 1;
                 }
@@ -637,13 +691,18 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
                 const templateContext = {
                     host: serviceParams.host,
                     serviceStatus: serviceParams.serviceStatus,
+                    servicePrevStatus: serviceParams.prevState,
                     serviceName: serviceParams.serviceName,
                     serviceDisplayName: serviceParams.serviceDetails.displayName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
                 };
 
-                sendTeams(globals.teamsServiceMonitorObj, teamsConfig, templateContext, 'serviceStopped');
+                if (serviceParams.serviceStatus === 'STOPPED') {
+                    sendTeams(globals.teamsServiceStoppedMonitorObj, teamsConfig, templateContext, 'serviceStopped');
+                } else if (serviceParams.serviceStatus === 'RUNNING') {
+                    sendTeams(globals.teamsServiceStartedMonitorObj, teamsConfig, templateContext, 'serviceStarted');
+                }
             } catch (err) {
                 globals.logger.error(`SERVICE MONITOR TEAMS: ${err}`);
             }
