@@ -789,17 +789,6 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 }
 
 async function sendServiceMonitorNotificationEmail(serviceParams) {
-    const globalSendList = globals.config.get('Butler.emailNotification.serviceStopped.recipients');
-
-    let mainSendList = [];
-
-    if (globalSendList.length > 0) {
-        mainSendList = mainSendList.concat(globalSendList);
-    }
-
-    // Make sure send list does not contain any duplicate email addresses
-    const mainSendListUnique = [...new Set(mainSendList)];
-
     if (isSmtpConfigOk() === false) {
         return 1;
     }
@@ -812,11 +801,28 @@ async function sendServiceMonitorNotificationEmail(serviceParams) {
     const templateContext = {
         host: serviceParams.host,
         serviceStatus: serviceParams.serviceStatus,
+        servicePrevStatus: serviceParams.prevState,
         serviceName: serviceParams.serviceName,
         serviceDisplayName: serviceParams.serviceDetails.displayName,
         serviceStartType: serviceParams.serviceDetails.startType,
         serviceExePath: serviceParams.serviceDetails.exePath,
     };
+
+    let globalSendList;
+    if (serviceParams.serviceStatus === 'STOPPED') {
+        globalSendList = globals.config.get('Butler.emailNotification.serviceStopped.recipients');
+    } else if (serviceParams.serviceStatus === 'RUNNING') {
+        globalSendList = globals.config.get('Butler.emailNotification.serviceStarted.recipients');
+    }
+
+    let mainSendList = [];
+
+    if (globalSendList.length > 0) {
+        mainSendList = mainSendList.concat(globalSendList);
+    }
+
+    // Make sure send list does not contain any duplicate email addresses
+    const mainSendListUnique = [...new Set(mainSendList)];
 
     // eslint-disable-next-line no-restricted-syntax
     for (const recipientEmailAddress of mainSendListUnique) {
@@ -832,15 +838,27 @@ async function sendServiceMonitorNotificationEmail(serviceParams) {
 
                     // Only send email if there is at least one recipient
                     if (recipientEmailAddress.length > 0) {
-                        sendEmail(
-                            globals.config.get('Butler.emailNotification.serviceStopped.fromAdress'),
-                            [recipientEmailAddress],
-                            globals.config.get('Butler.emailNotification.serviceStopped.priority'),
-                            globals.config.get('Butler.emailNotification.serviceStopped.subject'),
-                            globals.config.get('Butler.emailNotification.serviceStopped.bodyFileDirectory'),
-                            globals.config.get('Butler.emailNotification.serviceStopped.htmlTemplateFile'),
-                            templateContext
-                        );
+                        if (serviceParams.serviceStatus === 'STOPPED') {
+                            sendEmail(
+                                globals.config.get('Butler.emailNotification.serviceStopped.fromAdress'),
+                                [recipientEmailAddress],
+                                globals.config.get('Butler.emailNotification.serviceStopped.priority'),
+                                globals.config.get('Butler.emailNotification.serviceStopped.subject'),
+                                globals.config.get('Butler.emailNotification.serviceStopped.bodyFileDirectory'),
+                                globals.config.get('Butler.emailNotification.serviceStopped.htmlTemplateFile'),
+                                templateContext
+                            );
+                        } else if (serviceParams.serviceStatus === 'RUNNING') {
+                            sendEmail(
+                                globals.config.get('Butler.emailNotification.serviceStarted.fromAdress'),
+                                [recipientEmailAddress],
+                                globals.config.get('Butler.emailNotification.serviceStarted.priority'),
+                                globals.config.get('Butler.emailNotification.serviceStarted.subject'),
+                                globals.config.get('Butler.emailNotification.serviceStarted.bodyFileDirectory'),
+                                globals.config.get('Butler.emailNotification.serviceStarted.htmlTemplateFile'),
+                                templateContext
+                            );
+                        }
                     } else {
                         globals.logger.warn(`SERVICE MONITOR EMAIL: No recipients to send alert email to.`);
                     }
