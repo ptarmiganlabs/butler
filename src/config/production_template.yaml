@@ -125,6 +125,19 @@ Butler:
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/teams/template/directory/aborted-reload.handlebars
+    serviceStopped:
+      webhookURL: <web hook URL from MS Teams>
+      messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+      basicMsgTemplate: 'Windows service stopped: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
+      rateLimit: 30                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
+      templateFile: /path/to/teams/template/directory/service-stopped.handlebars
+    serviceStarted:
+      webhookURL: <web hook URL from MS Teams>
+      messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+      basicMsgTemplate: 'Windows service started: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
+      rateLimit: 30                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
+      templateFile: /path/to/teams/template/directory/service-started.handlebars
+
 
   # Settings for notifications and messages sent to Slack
   slackNotification:
@@ -153,6 +166,24 @@ Butler:
       headScriptLogLines: 10
       tailScriptLogLines: 10
       templateFile: /path/to/slack/template/directory/aborted-reload.handlebars
+      fromUser: Qlik Sense
+      iconEmoji: ':ghost:'
+    serviceStopped:
+      webhookURL: <web hook URL from Slack>
+      channel: qliksense-service-alert  # Slack channel to which Windows service stopped notifications are sent
+      messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+      basicMsgTemplate: 'Windows service stopped: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
+      rateLimit: 30                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
+      templateFile: /path/to/slack/template/directory/service-stopped.handlebars
+      fromUser: Qlik Sense
+      iconEmoji: ':ghost:'
+    serviceStarted:
+      webhookURL: <web hook URL from Slack>
+      channel: qliksense-service-alert  # Slack channel to which Windows service stopped notifications are sent
+      messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+      basicMsgTemplate: 'Windows service started: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
+      rateLimit: 30                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
+      templateFile: /path/to/slack/template/directory/service-started.handlebars
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
 
@@ -194,7 +225,7 @@ Butler:
       tailScriptLogLines: 15                          # Number of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'  # Email subject. Can use template fields
-      bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
+      bodyFileDirectory: path/to/email_templates      # Directory where email body template files are stored
       htmlTemplateFile: aborted-reload                # Name of email body template file to use
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:                                     # Array of email addresses to which the notification email will be sent
@@ -234,10 +265,30 @@ Butler:
       tailScriptLogLines: 15                          # Number of lines from end of script to include in email
       priority: high                                  # high/normal/low
       subject: 'Qlik Sense reload failed: "{{taskName}}"'   # Email subject. Can use template fields
-      bodyFileDirectory: config/email_templates       # Directory where email body template files are stored
+      bodyFileDirectory: path/to/email_templates      # Directory where email body template files are stored
       htmlTemplateFile: failed-reload                 # Name of email body template file to use
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:                                       # Array of email addresses to which the notification email will be sent
+        - <Email address 1>
+        - <Email address 2>
+    serviceStopped:
+      rateLimit: 30                   # Min seconds between emails for a given service. Defaults to 5 minutes.
+      priority: high                  # high/normal/low
+      subject: '❌ Windows service stopped on host {{host}}: "{{serviceDisplayName}}"'
+      bodyFileDirectory: path/to/email_templates/email_templates
+      htmlTemplateFile: service-stopped
+      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      recipients:
+        - <Email address 1>
+        - <Email address 2>
+    serviceStarted:
+      rateLimit: 30                   # Min seconds between emails for a given service. Defaults to 5 minutes.
+      priority: high                  # high/normal/low
+      subject: '✅ Windows service started on host {{host}}: "{{serviceDisplayName}}"'
+      bodyFileDirectory: path/to/email_templates/email_templates
+      htmlTemplateFile: service-started
+      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      recipients:
         - <Email address 1>
         - <Email address 2>
     smtp:                                             # Email server settings. See https://nodemailer.com/smtp/ for details on the meaning of these fields.
@@ -273,10 +324,10 @@ Butler:
     newRelic:
       enable: false
       destinationAccount:
-        event:                    # All failed/aborted reload tasks are sent as events to these New Relic accounts
+        event:                    # Failed/aborted reload tasks are sent as events to these New Relic accounts
           - First NR account
           - Second NR account
-        log:                      # All failed/aborted reload tasks are sent as log entries to these New Relic accounts
+        log:                      # Failed/aborted reload tasks are sent as log entries to these New Relic accounts
           - First NR account
           - Second NR account
       # New Relic uses different API URLs for different kinds of data (metrics, events, logs, ...)
@@ -420,6 +471,18 @@ Butler:
         - description: 'This outgoing webhook is used to...'  # Informational only
           webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
           httpMethod: GET                                     # GET/POST/PUT
+    serviceMonitor:
+      rateLimit: 15               # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      webhooks:
+        - description: 'This outgoing webhook is used to...'
+          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
+          httpMethod: POST                                    # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        - description: 'This outgoing webhook is used to...'
+          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
+          httpMethod: PUT                                     # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        - description: 'This outgoing webhook is used to...'
+          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
+          httpMethod: GET                                     # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -444,6 +507,9 @@ Butler:
     taskFailureServerStatusTopic: qliksense/butler/task_failure_server
     taskAbortedTopic: qliksense/task_aborted
     taskAbortedFullTopic: qliksense/task_aborted_full
+    serviceRunningTopic: qliksense/service_running
+    serviceStoppedTopic: qliksense/service_stopped
+    serviceStatusTopic: qliksense/service_status
 
   udpServerConfig:
     enable: false                                     # Should the UDP server responsible for receving task failure/aborted events be started?
@@ -579,6 +645,36 @@ Butler:
           value: tasks1
         - name: taskGroup
           value: tasks2
+
+  # Monitor Windows services.
+  # This feature only works when Butler is running on Windows Server or desktop.
+  # On other OSs service monitoring will be automatically disabled.
+  serviceMonitor:
+    enable: true                    # Main on/off switch for service monitoring
+    frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html
+    monitor:
+      - host: <hostname or IP> emo     # Host name of Windows computer where services are running
+        services:                   # List of services to monitor
+          - postgresql-x64-12       # Posgress/repository db
+          - QlikSenseEngineService
+          - QlikSensePrintingService
+          - QlikSenseProxyService
+          - QlikSenseRepositoryService
+          - QlikSenseSchedulerService
+          - QlikSenseServiceDispatcher
+    alertDestination:               # Control to thich destinations service related alerts are sent
+      newRelic:                     # Send service alerts to New Relic
+        enable: true
+      email:                        # Send service alerts as emails
+        enable: true                
+      mqtt:                         # Send service alerts as MQTT messages
+        enable: true
+      teams:                        # Send service alerts as MS Teams messages
+        enable: true
+      slack:                        # Send service alerts as Slack messages
+        enable: true
+      webhook:                      # Send service alerts as outbound webhooks/http calls
+        enable: true
 
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:
