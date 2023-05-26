@@ -338,31 +338,16 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
         // Build final payload
         const payload = [];
 
-        // payload.push({
-        //     serviceName: reloadParams.serviceName,
-        //     serviceStatus: reloadParams.serviceStatus,
-        //     serviceDisplayName: reloadParams.serviceDetails.displayName,
-        //     serviceStartType: reloadParams.serviceDetails.startType,
-        //     eventType: incidentConfig.eventType,
-        //     ...incidentConfig.attributes,
-        // });
+        if (incidentConfig?.eventType === 'qs_reloadTaskAbortedEvent' || incidentConfig?.logType === 'qs_reloadTaskFailedLog') {
+            payload.push(Object.assign(incidentConfig.attributes, reloadParams));
+        } else if (incidentConfig?.eventType === 'qs_serviceStateEvent') {
+            payload.push(incidentConfig.attributes);
+        }
 
-        payload.push(Object.assign(incidentConfig.attributes, reloadParams));
+        // New Relic event type. Required field in call to New Relic API
         payload[0].eventType = incidentConfig.eventType;
 
-        // Convert timestamp in log to milliseconds
-        // let tsTmp;
-        // if (reloadParams.qs_logTimeStamp.includes(',')) {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
-        // } else if (reloadParams.qs_logTimeStamp.includes('.')) {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
-        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
-        // } else {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        // }
-        // payload[0].timestamp = tsTmp;
-
+        // Get custom http headers
         const { headers } = incidentConfig;
 
         // Get array of all NR accounts defined in the config file
@@ -421,11 +406,11 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
         // Build final payload
         const payload = [{ common: {}, logs: [] }];
 
-        // Set New Relic attributes/dimensions, both shared and log-specific ones
-        payload[0].common.attributes = Object.assign(incidentConfig.attributes, reloadParams);
-
         // Only add script logs if we're sending reload task failures or aborts to New Relic
         if (incidentConfig?.logType === 'qs_reloadTaskAbortedLog' || incidentConfig?.logType === 'qs_reloadTaskFailedLog') {
+            // Set New Relic attributes/dimensions, both shared and log-specific ones
+            payload[0].common.attributes = Object.assign(incidentConfig.attributes, reloadParams);
+
             // Get script logs
             const scriptLogData = await scriptLog.getScriptLog(
                 reloadParams.qs_taskId,
@@ -451,6 +436,9 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             };
             payload[0].logs.push(logMessage);
         } else if (incidentConfig?.logType === 'qs_serviceStateLog') {
+            // Set attributes
+            payload[0].common.attributes = incidentConfig.attributes;
+
             // Set log message
             let logMessage;
             if (reloadParams.serviceStatus === 'STOPPED' || reloadParams.serviceStatus === 'RUNNING') {
@@ -459,30 +447,19 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
                 };
             } else {
                 logMessage = {
-                    message: `Windows service "${reloadParams.serviceDisplayName}" on host "${reloadParams.serviceHost}" in in state "${reloadParams.serviceStatus}".`,
+                    message: `Windows service "${reloadParams.serviceDisplayName}" on host "${reloadParams.serviceHost}" is in state "${reloadParams.serviceStatus}".`,
                 };
             }
             payload[0].logs.push(logMessage);
         }
 
-        // New Relic event type. Required field
+        // New Relic log type. Required field in call to New Relic API
         payload[0].common.attributes.logtype = incidentConfig.logType;
-
-        // Convert timestamp in log to milliseconds
-        // let tsTmp;
-        // if (reloadParams.qs_logTimeStamp.includes(',')) {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split(',')[1], 10);
-        // } else if (reloadParams.qs_logTimeStamp.includes('.')) {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split('.')[0]).getTime();
-        //     tsTmp += parseInt(reloadParams.qs_logTimeStamp.split('.')[1], 10);
-        // } else {
-        //     tsTmp = new Date(reloadParams.qs_logTimeStamp.split(',')[0]).getTime();
-        // }
 
         // Remove log timestamp field from payload as it is no longer needed
         delete payload.logTimeStamp;
 
+        // Get custom http headers
         const { headers } = incidentConfig;
 
         // Get array of all NR accounts defined in the config file

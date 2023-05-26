@@ -153,8 +153,8 @@ const checkServiceStatus = async (config, logger) => {
             const serviceDetails = await svcTools.details(serviceName);
             if (
                 serviceStatus === 'STOPPED' &&
-                config.has('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.stopped.enable') &&
-                config.get('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.stopped.enable') === true
+                config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
+                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true
             ) {
                 logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
 
@@ -277,8 +277,8 @@ const checkServiceStatus = async (config, logger) => {
                 }
             } else if (
                 serviceStatus === 'RUNNING' &&
-                config.has('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.running.enable') &&
-                config.get('Butler.serviceMonitor.alertDestination.newRelic.monitorServiceState.running.enable') === true
+                config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') &&
+                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true
             ) {
                 logger.verbose(`Service "${serviceName}" is running`);
 
@@ -331,6 +331,22 @@ const checkServiceStatus = async (config, logger) => {
                         });
                     }
 
+                    // Outgoing webhooks
+                    if (
+                        globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
+                    ) {
+                        webhookOut.sendServiceMonitorWebhook({
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
+                    }
+
                     // Post to Slack
                     if (
                         globals.config.has('Butler.slackNotification.enable') &&
@@ -339,6 +355,42 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
                         slack.sendServiceMonitorNotificationSlack({
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
+                    }
+
+                    // Post to Teams
+                    if (
+                        globals.config.has('Butler.teamsNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
+                        globals.config.get('Butler.teamsNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+                    ) {
+                        teams.sendServiceMonitorNotificationTeams({
+                            serviceName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                            prevState: prevState.toUpperCase(),
+                            currState: sendResult.value.toUpperCase(),
+                            stateChanged: sendResult.changed,
+                        });
+                    }
+
+                    // Send email
+                    if (
+                        globals.config.has('Butler.emailNotification.enable') &&
+                        globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') &&
+                        globals.config.get('Butler.emailNotification.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
+                    ) {
+                        smtp.sendServiceMonitorNotificationEmail({
                             serviceName,
                             serviceStatus,
                             serviceDetails,
@@ -386,7 +438,7 @@ async function setupServiceMonitorTimer(config, logger) {
                     if (!config.has('Butler.serviceMonitor.monitor') || config.get('Butler.serviceMonitor.monitor').length === 0) {
                         logger.warn(`SERVICE MONITOR: Missing or empty section in config file: Butler.serviceMonitor.service`);
                     } else {
-                        logger.info(`SERVICE MONITOR: Setting up service monitor for services:`);
+                        logger.info(`SERVICE MONITOR: Setting up monitor for Windows services:`);
 
                         const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
