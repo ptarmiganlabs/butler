@@ -6,6 +6,7 @@ const dgram = require('dgram');
 const globals = require('./globals');
 const serviceMonitor = require('./lib/service_monitor');
 
+// The build function creates a new instance of the App class and returns it.
 const build = require('./app');
 const udp = require('./udp');
 

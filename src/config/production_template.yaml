@@ -653,7 +653,7 @@ Butler:
     enable: true                    # Main on/off switch for service monitoring
     frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html
     monitor:
-      - host: <hostname or IP> emo     # Host name of Windows computer where services are running
+      - host: <hostname or IP>      # Host name of Windows computer where services are running
         services:                   # List of services to monitor
           - postgresql-x64-12       # Posgress/repository db
           - QlikSenseEngineService
