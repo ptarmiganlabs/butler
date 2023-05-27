@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.7.0](https://github.com/ptarmiganlabs/butler/compare/butler-v8.6.2...butler-v8.7.0) (2023-05-27)
+
+
+### Features
+
+* Add monitoring of Windows services ([da6dfcc](https://github.com/ptarmiganlabs/butler/commit/da6dfcc8ff0e883cde3026db5c24db4b4549d47e)), closes [#637](https://github.com/ptarmiganlabs/butler/issues/637)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yargs to v17.7.2 ([79dd198](https://github.com/ptarmiganlabs/butler/commit/79dd1988ada10b64ac6466b3fbd8ce7736b36a3d))
+
+
+### Miscellaneous
+
+* **deps:** Update dependecies to stay safe and secure ([f7656af](https://github.com/ptarmiganlabs/butler/commit/f7656af18821444b91444040de3312b293ddd951))
+* **deps:** Update dependencies ([c293727](https://github.com/ptarmiganlabs/butler/commit/c2937276a36e87b5b4ad4cf367729953d743fc58))
+* **deps:** update dependency prettier to v2.8.7 ([883fb4c](https://github.com/ptarmiganlabs/butler/commit/883fb4c0dc90be8e3cccea64553b8e04c196c582))
+* **deps:** update node.js to v20 ([526439e](https://github.com/ptarmiganlabs/butler/commit/526439e53c806b89a714dfc67c21495db3834f14))
+* Fix temp error in release process ([0f15633](https://github.com/ptarmiganlabs/butler/commit/0f156330a17da48cdbc4215e39e823fe410359c4))
+
 ## [8.6.2](https://github.com/ptarmiganlabs/butler/compare/butler-v8.6.1...butler-v8.6.2) (2023-01-11)
 
 
