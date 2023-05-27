@@ -88,6 +88,12 @@ if (options.configfile && options.configfile.length > 0) {
         console.log('Error: Specified config file does not exist');
         process.exit(1);
     }
+} else {
+    // Get value of env variable NODE_ENV
+    const env = process.env.NODE_ENV;
+
+    // Get path to config file
+    configFileExpanded = upath.resolve(__dirname, `./config/${env}.yaml`);
 }
 
 // Are we running as standalone app or not?
@@ -586,6 +592,7 @@ async function initHostInfo() {
 module.exports = {
     config,
     configEngine,
+    configFileExpanded,
     configQRS,
     teamsTaskFailureObj,
     teamsTaskAbortedObj,

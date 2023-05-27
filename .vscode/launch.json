@@ -16,8 +16,8 @@
         "NODE_ENV": "production"
       },
       "args": [
-        // "--configfile",
-        // "config/production.yaml",
+        "--configfile",
+        "config/production.yaml",
         // "--new-relic-account-name",
         // "'First NR account'",
         // "--new-relic-account-id",

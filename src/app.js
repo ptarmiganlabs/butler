@@ -86,6 +86,10 @@ async function build(opts = {}) {
         globals.logger.info(`Cores          : ${globals.hostInfo.si.cpu.cores}`);
         globals.logger.info(`Docker arch.   : ${globals.hostInfo.si.cpu.hypervizor}`);
         globals.logger.info(`Total memory   : ${globals.hostInfo.si.memory.total}`);
+        globals.logger.info('');
+        // Add log line with name of config file
+        globals.logger.info(`Config file    : ${globals.configFileExpanded}`);
+        globals.logger.info(`API rate limit : ${globals.options.apiRateLimit}`);
         globals.logger.info('--------------------------------------');
 
         // Log info about what Qlik Sense certificates are being used
