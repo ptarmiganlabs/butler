@@ -453,6 +453,7 @@ async function setupServiceMonitorTimer(config, logger) {
 
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
+                                    predictableActionArguments: true,
                                     id: 'windowsService',
                                     initial: 'paused',
                                     states: {
