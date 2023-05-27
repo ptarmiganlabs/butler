@@ -49,7 +49,7 @@ jobs:
 
       - name: What is current Node version
         run: |
-          cs src
+          cd src
           node -v
 
       - name: Install dependencies
