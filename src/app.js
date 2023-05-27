@@ -21,6 +21,10 @@ const configUtil = require('./lib/config_util');
 const { sendTestEmail } = require('./lib/testemail');
 
 async function build(opts = {}) {
+    // Create two Fastify servers. One server is a REST server and the other is a reverse proxy server.
+    // The REST server is used to provide REST endpoints that can be used by the UI.
+    // The reverse proxy server is used to proxy requests to the backend servers.
+    // The dockerHealthCheckServer is used to provide a health check endpoint for the Docker container.
     const restServer = Fastify({ logger: true });
     const proxyRestServer = Fastify({ logger: true });
     const dockerHealthCheckServer = Fastify({ logger: false });
@@ -28,6 +32,7 @@ async function build(opts = {}) {
     // Set up connection to Influxdb (if enabled)
     globals.initInfluxDB();
 
+    // Start the uptime monitor if it is enabled in the config
     if (
         (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
         (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
@@ -101,11 +106,12 @@ async function build(opts = {}) {
             }
         }
 
-        // Set up anon telemetry reports, if enabled
+        // Check if the user has opted in to sending anonymous telemetry
         if (
             globals.config.has('Butler.anonTelemetry') === false ||
             (globals.config.has('Butler.anonTelemetry') === true && globals.config.get('Butler.anonTelemetry') === true)
         ) {
+            // Set up the timer to send anonymous telemetry
             telemetry.setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
         }
@@ -120,17 +126,37 @@ async function build(opts = {}) {
                     'Butler.restServerConfig.serverHost'
                 )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
             );
-            globals.logger.info('--> Note re API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.');
+            globals.logger.info(
+                '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
+            );
             globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
 
-    // Register rate limited for API
-    await restServer.register(FastifyRateLimit, {
-        max: 100,
-        timeWindow: '1 minute',
+    // Register rate limit for API
+    // 0 means no rate limit
+    if (globals.options.apiRateLimit > 0) {
+        // This code registers the FastifyRateLimit plugin.
+        // The plugin limits the number of API requests that
+        // can be made from a given IP address within a given
+        // time window.
+
+        await restServer.register(FastifyRateLimit, {
+            max: globals.options.apiRateLimit,
+            timeWindow: '1 minute',
+        });
+    }
+
+    // Add custom error handler for 429 errors (rate limit exceeded)
+    restServer.setErrorHandler((error, request, reply) => {
+        if (error.statusCode === 429) {
+            globals.logger.warn(
+                `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`
+            );
+        }
+        reply.send(error);
     });
 
     // This loads all plugins defined in plugins.
@@ -198,11 +224,12 @@ async function build(opts = {}) {
         http: true,
     });
 
+    // Handle requests from the proxy server.
     proxyRestServer.get('/*', (request, reply) => {
         const { url } = request.raw;
         reply.from(url, {
             rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                Object.assign(headers, { remoteIP: originalReq.ip });
                 return headers;
             },
         });
@@ -212,7 +239,7 @@ async function build(opts = {}) {
         const { url } = request.raw;
         reply.from(url, {
             rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                Object.assign(headers, { remoteIP: originalReq.ip });
                 return headers;
             },
         });
@@ -222,7 +249,7 @@ async function build(opts = {}) {
         const { url } = request.raw;
         reply.from(url, {
             rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                Object.assign(headers, { remoteIP: originalReq.ip });
                 return headers;
             },
         });
@@ -237,7 +264,7 @@ async function build(opts = {}) {
             reply.request.raw.method = method;
             reply.from(url, {
                 rewriteRequestHeaders: (originalReq, headers) => {
-                    Object.assign(headers, { remoteIP: originalReq.client.remoteAddress });
+                    Object.assign(headers, { remoteIP: originalReq.ip });
                     return headers;
                 },
             });
