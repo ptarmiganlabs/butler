@@ -54,7 +54,8 @@ program
         '--test-email-from-address <address>',
         'send test email from this address. Only relevant when SMTP server allows from address to be set.'
     )
-    .option('--no-qs-connection', "don't connect to Qlik Sense server at all. Run in isolated mode");
+    .option('--no-qs-connection', "don't connect to Qlik Sense server at all. Run in isolated mode")
+    .option('--api-rate-limit', 'set the API rate limit, per minute. Default is 100 calls/minute. Set to 0 to disable rate limiting.', 100);
 
 // Parse command line params
 program.parse(process.argv);
