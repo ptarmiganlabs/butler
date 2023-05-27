@@ -47,9 +47,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: What is current Node version
+        run: |
+          cs src
+          node -v
+
       - name: Install dependencies
         run: |
           cd src
+          node -v
           npm install
 
       - name: Install tool for creating stand-alone API html docs file
