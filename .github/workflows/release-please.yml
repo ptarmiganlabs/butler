@@ -70,7 +70,6 @@ jobs:
       #     node butler.js -c ./config/config-gen-api-docs.yaml --no-qs-connection & 
       #     sleep 20
       #     echo "...1"
-      #     curl localhost:8081/documentation/json
       #     echo "...2"
       #     curl localhost:8081/documentation/yaml
       #     echo "...3"
