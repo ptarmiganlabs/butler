@@ -2,14 +2,14 @@ openapi: 3.0.3
 info:
   title: Butler API documentation
   description: >-
-    Butler is a microservice that provides add-on features to Qlik
-    Sense Enterprise on Windows.
+    Butler is a microservice that provides add-on features to Qlik Sense
+    Enterprise on Windows.
 
     Butler offers both a REST API and things like failed reload notifications etc.
 
 
     This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com
-  version: 8.6.2
+  version: 8.7.0
 components:
   schemas: {}
 paths:
@@ -17,8 +17,8 @@ paths:
     get:
       summary: Get an array of all enabled API endpoints.
       description: >-
-        Get an array of all enabled API endpoints, using the key names from
-        the Butler config file.
+        Get an array of all enabled API endpoints, using the key names from the
+        Butler config file.
 
 
         Note: Endpoints are enabled/disabled in the Butler main configuration file.
@@ -209,8 +209,7 @@ paths:
     put:
       summary: Copy file(s) between well defined, approved locations.
       description: >-
-        Copying of files is only posttible between pre-approved
-        directories.
+        Copying of files is only posttible between pre-approved directories.
 
         Defining approved source and destination directories is done in Butler's config file.
 
@@ -1818,9 +1817,9 @@ paths:
     put:
       summary: Start a Qlik Sense task.
       description: >-
-        An optional array of zero or more objects can be passed in the
-        message body. It is used to pass additional info related to the reload
-        task being started.
+        An optional array of zero or more objects can be passed in the message
+        body. It is used to pass additional info related to the reload task
+        being started.
 
 
         Currently supported values in this array are:
@@ -1974,9 +1973,9 @@ paths:
     post:
       summary: Start a Qlik Sense task.
       description: >-
-        An optional array of zero or more objects can be passed in the
-        message body. It is used to pass additional info related to the reload
-        task being started.
+        An optional array of zero or more objects can be passed in the message
+        body. It is used to pass additional info related to the reload task
+        being started.
 
 
         Currently supported values in this array are:
