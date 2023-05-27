@@ -65,6 +65,8 @@ jobs:
           sleep 20
           curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
           curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml
+          ll ../docs/api_doc
+          cat ../docs/api_doc/butler-api.yaml
           npx @redocly/cli build-docs ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
           pkill -f 'node butler.js'
           git config --global user.name 'GitHub action'
