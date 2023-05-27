@@ -54,7 +54,7 @@ jobs:
 
       - name: Install tool for creating stand-alone API html docs file
         run: |
-          npm i @redocly/cli@latest
+          npm i -g @redocly/cli@latest
 
       - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
         run: |
