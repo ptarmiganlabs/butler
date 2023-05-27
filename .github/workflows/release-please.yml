@@ -54,7 +54,7 @@ jobs:
 
       - name: Install tool for creating stand-alone API html docs file
         run: |
-          npm install redoc-cli --global
+          npm i @redocly/cli@latest
 
       - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
         run: |
@@ -62,10 +62,10 @@ jobs:
           ls -la
           cd src
           node butler.js -c ./config/config-gen-api-docs.yaml --no-qs-connection & 
-          sleep 10
+          sleep 20
           curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
           curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml
-          redoc-cli build ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
+          npx @redocly/cli build-docs ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
           pkill -f 'node butler.js'
           git config --global user.name 'GitHub action'
           git config --global user.email 'mountaindude@users.noreply.github.com'
