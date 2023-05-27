@@ -4,6 +4,7 @@ const fp = require('fastify-plugin');
 // to export the decorators to the outer scope
 
 module.exports = fp(async (fastify, opts) => {
+    // eslint-disable-next-line arrow-body-style
     fastify.decorate('someSupport', () => {
         return 'hugs';
     });

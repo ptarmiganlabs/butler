@@ -4,6 +4,7 @@ const dgram = require('dgram');
 
 // Load code from sub modules
 const globals = require('./globals');
+const serviceMonitor = require('./lib/service_monitor');
 
 const build = require('./app');
 const udp = require('./udp');
@@ -119,6 +120,11 @@ const start = async () => {
         }
     } catch (err) {
         globals.logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
+    }
+
+    // Set up service monitoring, if enabled in the config file
+    if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
+        serviceMonitor.setupServiceMonitorTimer(globals.config, globals.logger);
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks

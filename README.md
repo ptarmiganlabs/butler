@@ -11,6 +11,7 @@ Adapt to your needs - please also consider sharing enhancements with the wider c
 <p align="center">
 <a href="https://github.com/ptarmiganlabs/butler"><img src="https://img.shields.io/badge/Source---" alt="Source"></a>
 <a href="https://github.com/ptarmiganlabs/butler/actions/workflows/docker-image-build.yml"><img src="https://github.com/ptarmiganlabs/butler/actions/workflows/docker-image-build.yml/badge.svg" alt="Continuous Integration"></a>
+<a href="https://www.repostatus.org/#active"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." /></a>
 <a href="https://codeclimate.com/github/ptarmiganlabs/butler/maintainability"><img src="https://api.codeclimate.com/v1/badges/cb33990248ffbaaf7526/maintainability" /></a>
 <a href="https://github.com/ptarmiganlabs/butler/releases"><img src="https://img.shields.io/github/downloads/ptarmiganlabs/butler/total.svg?label=downloads%20since%20April%202022" /></a><br>
 <img src="https://hits.dwyl.com/ptarmiganlabs/butler.svg" />

@@ -1,0 +1,78 @@
+<h1>Windows service {{serviceStatus}}: '{{serviceDisplayName}}'</h1>
+<p>
+
+  <style type="text/css">
+    .tg {
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+
+    .tg td {
+      border-color: black;
+      border-style: solid;
+      border-width: 1px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+      padding: 10px 5px;
+      word-break: normal;
+    }
+
+    .tg .tg-nalo {
+      background-color: #efefef;
+      border-color: inherit;
+      color: #000000;
+      font-family: "Courier New", Courier, monospace !important;
+      ;
+      font-weight: bold;
+      text-align: left;
+      vertical-align: top
+    }
+
+    .tg .tg-ipfp {
+      background-color: #efefef;
+      border-color: inherit;
+      color: #000000;
+      font-family: "Courier New", Courier, monospace !important;
+      ;
+      text-align: left;
+      vertical-align: top
+    }
+  </style>
+
+<table class="tg">
+  <tbody>
+
+    {{! Template comments like this one will not show up in the generated HTML email code}}
+    {{! Please refer to https://handlebarsjs.com/guide/#simple-expressions for info on Handlebars templating syntax }}
+
+    <tr>
+      <td class="tg-nalo">Host</th>
+      <td class="tg-ipfp">{{host}}</th>
+    </tr>
+    <tr>
+      <td class="tg-nalo">Service name</th>
+      <td class="tg-ipfp">{{serviceName}}</th>
+    </tr>
+    <tr>
+      <td class="tg-nalo">Service display name</td>
+      <td class="tg-ipfp">{{serviceDisplayName}}</td>
+    </tr>
+    <tr>
+      <td class="tg-nalo">Service status</td>
+      <td class="tg-ipfp">{{serviceStatus}}</th>
+    </tr>
+    <tr>
+      <td class="tg-nalo">Previous service status</td>
+      <td class="tg-ipfp">{{servicePrevStatus}}</th>
+    </tr>
+    <tr>
+      <td class="tg-nalo">Service startup mode</td>
+      <td class="tg-ipfp">{{serviceStartType}}</th>
+    </tr>
+    <tr>
+      <td class="tg-nalo">EXE path</td>
+      <td class="tg-ipfp">{{serviceExePath}}</td>
+    </tr>
+  </tbody>
+</table>

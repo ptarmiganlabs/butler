@@ -229,6 +229,8 @@ if (options.qsConnection) {
 let teamsTaskFailureObj;
 let teamsTaskAbortedObj;
 let teamsUserSessionObj;
+let teamsServiceStoppedMonitorObj;
+let teamsServiceStartedMonitorObj;
 
 // ------------------------------------
 // MS Teams reload task failed
@@ -255,6 +257,23 @@ if (
 
     // Create MS Teams object
     teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
+}
+
+// MS Teams service started/stopped
+if (
+    config.has('Butler.teamsNotification.enable') &&
+    config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
+    config.get('Butler.teamsNotification.enable') === true &&
+    config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+) {
+    // Create MS Teams objects
+    // Service stopped
+    let webhookUrl = config.get('Butler.teamsNotification.serviceStopped.webhookURL');
+    teamsServiceStoppedMonitorObj = new IncomingWebhook(webhookUrl);
+
+    // Service started
+    webhookUrl = config.get('Butler.teamsNotification.serviceStarted.webhookURL');
+    teamsServiceStartedMonitorObj = new IncomingWebhook(webhookUrl);
 }
 
 // ------------------------------------
@@ -570,6 +589,8 @@ module.exports = {
     teamsTaskFailureObj,
     teamsTaskAbortedObj,
     teamsUserSessionObj,
+    teamsServiceStoppedMonitorObj,
+    teamsServiceStartedMonitorObj,
     udpServerTaskFailureSocket,
     udpHost,
     udpPortTaskFailure,

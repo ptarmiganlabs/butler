@@ -1,0 +1,29 @@
+{
+    "@type": "MessageCard", 
+    "@context": "https://schema.org/extensions",
+    "themeColor": "0076D7",
+    "summary": "Windows service is stopped",
+    "sections": [{
+        "activityTitle": "# ❌ Windows service {{serviceStatus}}: '{{serviceDisplayName}}'",
+        "facts": [{
+            "name": "Host",
+            "value": "{{host}}"
+        },{
+            "name": "Name",
+            "value": "{{serviceName}}"
+        },{
+            "name": "Display name",
+            "value": "{{serviceDisplayName}}"
+        },{
+            "name": "Status",
+            "value": "{{serviceStatus}}"
+        },{
+            "name": "Previous status",
+            "value": "{{servicePrevStatus}}"
+        },{
+            "name": "Startup mode",
+            "value": "{{serviceStartType}}"
+        }],
+        "markdown": true
+    }]
+}
