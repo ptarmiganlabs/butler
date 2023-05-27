@@ -55,7 +55,7 @@
         "systeminformation": "^5.17.13",
         "upath": "^2.0.1",
         "uuid": "^9.0.0",
-        "winston": "^3.8.2",
+        "winston": "^3.9.0",
         "winston-daily-rotate-file": "^4.7.1",
         "ws": "^8.13.0",
         "xstate": "^4.37.2"
