@@ -389,10 +389,12 @@ const influx = new Influx.InfluxDB({
         {
             measurement: 'win_service_state',
             fields: {
-                state: Influx.FieldType.INTEGER,
-                startup_mode: Influx.FieldType.INTEGER,
+                state_num: Influx.FieldType.INTEGER,
+                state_text: Influx.FieldType.STRING,
+                startup_mode_num: Influx.FieldType.INTEGER,
+                startup_mode_text: Influx.FieldType.STRING,
             },
-            tags: ['butler_instance', 'host', 'service_name', 'service_display_name'],
+            tags: ['butler_instance', 'host', 'service_name', 'display_name'],
         },
     ],
 });

@@ -37,20 +37,21 @@ function postButlerMemoryUsageToInfluxdb(memory) {
 function postWindowsServiceStatusToInfluxDB(serviceStatus) {
     // Create lookup table for Windows service state to numeric value, starting with 1 for stopped
     const serviceStateLookup = {
-        stopped: 1,
-        start_pending: 2,
-        stop_pending: 3,
-        running: 4,
-        continue_pending: 5,
-        pause_pending: 6,
-        paused: 7,
+        STOPPED: 1,
+        START_PENDING: 2,
+        STOP_PENDING: 3,
+        RUNNING: 4,
+        CONTINUE_PENDING: 5,
+        PAUSE_PENDING: 6,
+        PAUSED: 7,
     };
 
     // Create lookup table for Windows service startup mode to numeric value, starting with 0
     const serviceStartupModeLookup = {
-        automatic: 0,
-        manual: 1,
-        disabled: 2,
+        Automatic: 0,
+        'Automatic (delayed start)': 1,
+        Manual: 2,
+        Disabled: 3,
     };
 
     let datapoint = [
@@ -63,8 +64,14 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
                 display_name: serviceStatus.serviceDetails.displayName,
             },
             fields: {
-                state: serviceStateLookup[serviceStatus.serviceStatus],
-                startup_mode: serviceStartupModeLookup[serviceStatus.serviceDetails.startupMode],
+                state_num:
+                    serviceStateLookup[serviceStatus.serviceStatus] !== undefined ? serviceStateLookup[serviceStatus.serviceStatus] : -1,
+                state_text: serviceStatus.serviceStatus,
+                startup_mode_num:
+                    serviceStartupModeLookup[serviceStatus.serviceDetails.startType] !== undefined
+                        ? serviceStartupModeLookup[serviceStatus.serviceDetails.startType]
+                        : -1,
+                startup_mode_text: serviceStatus.serviceDetails.startType,
             },
         },
     ];

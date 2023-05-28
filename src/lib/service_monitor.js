@@ -425,10 +425,10 @@ const checkServiceStatus = async (config, logger) => {
                 globals.config.has('Butler.emailNotification.enable') &&
                 globals.config.has('Butler.serviceMonitor.alertDestination.influxDb.enable') &&
                 globals.config.get('Butler.emailNotification.enable') === true &&
-                globals.config.get('Butler.serviceMonitor.alertDestination.InfluxDb.enable') === true
+                globals.config.get('Butler.serviceMonitor.alertDestination.influxDb.enable') === true
             ) {
-                const instanceTag = globals.config.has('Butler.influxDbConfig.instanceTag')
-                    ? globals.config.get('Butler.influxDbConfig.instanceTag')
+                const instanceTag = globals.config.has('Butler.influxDb.instanceTag')
+                    ? globals.config.get('Butler.influxDb.instanceTag')
                     : '';
 
                 influxDb.postWindowsServiceStatusToInfluxDB({
