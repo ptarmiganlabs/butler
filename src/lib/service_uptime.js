@@ -66,11 +66,13 @@ function serviceUptimeStart() {
         );
 
         // Store to Influxdb if enabled
-        const butlerMemoryInfluxTag = globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
-            ? globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.instanceTag')
+        const butlerMemoryInfluxTag = globals.config.has('Butler.influxDb.instanceTag')
+            ? globals.config.get('Butler.influxDb.instanceTag')
             : '';
 
         if (
+            globals.config.has('Butler.influxDb.enable') &&
+            globals.config.get('Butler.influxDb.enable') === true &&
             globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
             globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true
         ) {
@@ -83,7 +85,7 @@ function serviceUptimeStart() {
             });
         }
 
-        // Do generic http POST if enabled
+        // Post uptime to New Relic if enabled
         if (
             globals.config.has('Butler.uptimeMonitor.storeNewRelic.enable') &&
             globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable') === true
