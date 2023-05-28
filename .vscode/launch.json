@@ -18,6 +18,7 @@
       "args": [
         "--configfile",
         "config/production.yaml",
+        // "config/config-gen-api-docs.yaml",
         // "--new-relic-account-name",
         // "'First NR account'",
         // "--new-relic-account-id",
