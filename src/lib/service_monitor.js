@@ -8,6 +8,7 @@ const webhookOut = require('./webhook_notification');
 const slack = require('./slack_notification');
 const teams = require('./msteams_notification');
 const smtp = require('./smtp');
+const influxDb = require('./post_to_influxdb');
 
 // One state machines for each service
 const serviceStateMachine = [];
@@ -418,6 +419,26 @@ const checkServiceStatus = async (config, logger) => {
                     host: host.host,
                 });
             }
+
+            // InfluDB
+            if (
+                globals.config.has('Butler.emailNotification.enable') &&
+                globals.config.has('Butler.serviceMonitor.alertDestination.influxDb.enable') &&
+                globals.config.get('Butler.emailNotification.enable') === true &&
+                globals.config.get('Butler.serviceMonitor.alertDestination.InfluxDb.enable') === true
+            ) {
+                const instanceTag = globals.config.has('Butler.influxDbConfig.instanceTag')
+                    ? globals.config.get('Butler.influxDbConfig.instanceTag')
+                    : '';
+
+                influxDb.postWindowsServiceStatusToInfluxDB({
+                    instanceTag,
+                    serviceName,
+                    serviceStatus,
+                    serviceDetails,
+                    host: host.host,
+                });
+            }
         });
     });
 };
@@ -508,6 +529,9 @@ async function setupServiceMonitorTimer(config, logger) {
         }
     } catch (err) {
         logger.error(`SERVICE MONITOR: ${err}`);
+        if (err.stack) {
+            logger.error(`SERVICE MONITOR: ${err.stack}`);
+        }
     }
 }
 

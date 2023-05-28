@@ -363,28 +363,18 @@ if (config.has('Butler.restServerEndpointsEnable')) {
 logger.info(`Enabled API endpoints: ${JSON.stringify(endpointsEnabled, null, 2)}`);
 
 // Set up InfluxDB
-logger.info(`CONFIG: Influxdb enabled: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.enable')}`);
-logger.info(`CONFIG: Influxdb host IP: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostIP')}`);
-logger.info(`CONFIG: Influxdb host port: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort')}`);
-logger.info(`CONFIG: Influxdb db name: ${config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName')}`);
+logger.info(`CONFIG: Influxdb enabled: ${config.get('Butler.influxDb.enable')}`);
+logger.info(`CONFIG: Influxdb host IP: ${config.get('Butler.influxDb.hostIP')}`);
+logger.info(`CONFIG: Influxdb host port: ${config.get('Butler.influxDb.hostPort')}`);
+logger.info(`CONFIG: Influxdb db name: ${config.get('Butler.influxDb.dbName')}`);
 
 // Set up Influxdb client
 const influx = new Influx.InfluxDB({
-    host: config.get('Butler.uptimeMonitor.storeInInfluxdb.hostIP'),
-    port: `${
-        config.has('Butler.uptimeMonitor.storeInInfluxdb.hostPort') ? config.get('Butler.uptimeMonitor.storeInInfluxdb.hostPort') : '8086'
-    }`,
-    database: config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName'),
-    username: `${
-        config.get('Butler.uptimeMonitor.storeInInfluxdb.auth.enable')
-            ? config.get('Butler.uptimeMonitor.storeInInfluxdb.auth.username')
-            : ''
-    }`,
-    password: `${
-        config.get('Butler.uptimeMonitor.storeInInfluxdb.auth.enable')
-            ? config.get('Butler.uptimeMonitor.storeInInfluxdb.auth.password')
-            : ''
-    }`,
+    host: config.get('Butler.influxDb.hostIP'),
+    port: `${config.has('Butler.influxDb.hostPort') ? config.get('Butler.influxDb.hostPort') : '8086'}`,
+    database: config.get('Butler.influxDb.dbName'),
+    username: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.username') : ''}`,
+    password: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.password') : ''}`,
     schema: [
         {
             measurement: 'butler_memory_usage',
@@ -396,12 +386,20 @@ const influx = new Influx.InfluxDB({
             },
             tags: ['butler_instance'],
         },
+        {
+            measurement: 'win_service_state',
+            fields: {
+                state: Influx.FieldType.INTEGER,
+                startup_mode: Influx.FieldType.INTEGER,
+            },
+            tags: ['butler_instance', 'host', 'service_name', 'service_display_name'],
+        },
     ],
 });
 
 function initInfluxDB() {
-    const dbName = config.get('Butler.uptimeMonitor.storeInInfluxdb.dbName');
-    const enableInfluxdb = config.get('Butler.uptimeMonitor.storeInInfluxdb.enable');
+    const dbName = config.get('Butler.influxDb.dbName');
+    const enableInfluxdb = config.get('Butler.influxDb.enable');
 
     if (enableInfluxdb) {
         influx
@@ -413,7 +411,7 @@ function initInfluxDB() {
                         .then(() => {
                             logger.info(`CONFIG: Created new InfluxDB database: ${dbName}`);
 
-                            const newPolicy = config.get('Butler.uptimeMonitor.storeInInfluxdb.retentionPolicy');
+                            const newPolicy = config.get('Butler.influxDb.retentionPolicy');
 
                             // Create new default retention policy
                             influx

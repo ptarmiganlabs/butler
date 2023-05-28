@@ -33,19 +33,6 @@ Butler:
     logLevel: verbose               # Starting at what log level should uptime messages be shown?
     storeInInfluxdb: 
       enable: false                 # Should Butler memory usage be logged to InfluxDB?
-      hostIP: <IP or host name>     # Where is InfluxDB server located?
-      hostPort: 8086                # InfluxDB port
-      auth:
-        enable: false               # Does InfluxDB require login?
-        username: user_joe      
-        password: joesecret
-      dbName: butler                # Name of database in InfluxDB to which Butler's data is written
-      instanceTag: DEV              # Tag that can be used to differentiate data from multiple Butler instances
-      # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
-      # Any data older than retention policy threshold will be purged from InfluxDB.
-      retentionPolicy:
-        name: 10d
-        duration: 10d
     storeNewRelic:
       enable: false
       destinationAccount:
@@ -89,6 +76,23 @@ Butler:
       - accountName: Second NR account
         insertApiKey: <API key 2 (with insert permissions) from New Relic> 
         accountId: <New Relic account ID 2>
+
+  # InfluxDB settings
+  influxDb:
+    enable: true                  # Master switch for InfluxDB integration. If false, no data will be sent to InfluxDB.
+    hostIP: <IP or host name>     # Where is InfluxDB server located?
+    hostPort: 8086                # InfluxDB port
+    auth:
+      enable: false               # Does InfluxDB require login?
+      username: user_joe      
+      password: joesecret
+    dbName: butler                # Name of database in InfluxDB to which Butler's data is written
+    instanceTag: DEV              # Tag that can be used to differentiate data from multiple Butler instances
+    # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
+    # Any data older than retention policy threshold will be purged from InfluxDB.
+    retentionPolicy:
+      name: 10d
+      duration: 10d
 
   # Store script logs of failed reloads on disk.
   # The script logs will be stored in daily directories under the specified main directory below
@@ -663,6 +667,8 @@ Butler:
           - QlikSenseSchedulerService
           - QlikSenseServiceDispatcher
     alertDestination:               # Control to thich destinations service related alerts are sent
+      influxDb:                     # Send service alerts to InfluxDB
+        enable: true
       newRelic:                     # Send service alerts to New Relic
         enable: true
       email:                        # Send service alerts as emails
