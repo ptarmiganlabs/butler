@@ -73,22 +73,22 @@ Butler:
         insertApiKey: ...
         accountId: ...
 
-# Settingd for InfluxDB
-influxDb:
-  enable: false
-  hostIP: ...
-  hostPort: 8086
-  auth:
+  # Settingd for InfluxDB
+  influxDb:
     enable: false
-    username: ...
-    password: ...
-  dbName: ...
-  instanceTag: ...              # Tag that can be used to differentiate data from multiple Butler instances
-  # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
-  # Any data older than retention policy threshold will be purged from InfluxDB.
-  retentionPolicy:
-    name: 10d
-    duration: 10d
+    hostIP: ...
+    hostPort: 8086
+    auth:
+      enable: false
+      username: ...
+      password: ...
+    dbName: ...
+    instanceTag: ...              # Tag that can be used to differentiate data from multiple Butler instances
+    # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
+    # Any data older than retention policy threshold will be purged from InfluxDB.
+    retentionPolicy:
+      name: 10d
+      duration: 10d
 
   # Store script logs of failed reloads on disk.
   # The script logs will be stored in daily directories under the specified main directory below
@@ -579,11 +579,14 @@ influxDb:
   # How? First you have /Users/goran/butler-test-dir1//abc which cleans up to /Users/goran/butler-test-dir1/abc, 
   # then up one level (..).
   fileCopyApprovedDirectories:
+    - ...
 
   # List of directories between which file moves via the REST API can be done.
   fileMoveApprovedDirectories:
+    - ...
 
   fileDeleteApprovedDirectories:
+    - ...
 
   # If set to true, Butler will be started with a focus on creating an API documentation file
   # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.
