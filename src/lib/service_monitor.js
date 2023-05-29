@@ -19,6 +19,8 @@ const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     newRelic.sendServiceMonitorEvent({
         serviceHost: svc.host,
         serviceName: svc.serviceName,
+        serviceFriendlyName: svc.serviceFriendlyName,
+        serviceDisplayName: svc.serviceDetails.displayName,
         serviceStatus: svc.serviceStatus,
         serviceDetails: svc.serviceDetails,
     });
@@ -26,6 +28,8 @@ const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     newRelic.sendServiceMonitorLog({
         serviceHost: svc.host,
         serviceName: svc.serviceName,
+        serviceFriendlyName: svc.serviceFriendlyName,
+        serviceDisplayName: svc.serviceDetails.displayName,
         serviceStatus: svc.serviceStatus,
         serviceDetails: svc.serviceDetails,
     });
@@ -48,6 +52,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
                 JSON.stringify({
                     serviceHost: svc.host,
                     serviceName: svc.serviceName,
+                    serviceFriendlyName: svc.serviceFriendlyName,
                     serviceDisplayName: svc.serviceDetails.displayName,
                     serviceDependencies: svc.serviceDetails.dependencies,
                     serviceStartType: svc.serviceDetails.startType,
@@ -75,6 +80,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
                     serviceHost: svc.host,
                     serviceName: svc.serviceName,
                     serviceDisplayName: svc.serviceDetails.displayName,
+                    serviceFriendlyName: svc.serviceFriendlyName,
                     serviceDependencies: svc.serviceDetails.dependencies,
                     serviceStartType: svc.serviceDetails.startType,
                     serviceExePath: svc.serviceDetails.exePath,
@@ -102,6 +108,7 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
                 serviceHost: svc.host,
                 serviceName: svc.serviceName,
                 serviceDisplayName: svc.serviceDetails.displayName,
+                serviceFriendlyName: svc.serviceFriendlyName,
                 serviceDependencies: svc.serviceDetails.dependencies,
                 serviceStartType: svc.serviceDetails.startType,
                 serviceExePath: svc.serviceDetails.exePath,

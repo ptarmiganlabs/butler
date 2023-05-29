@@ -425,6 +425,8 @@ function sendServiceMonitorWebhook(svc) {
                 sendOutgoingWebhookServiceMonitor(webhookConfig, {
                     host: svc.host,
                     serviceName: svc.serviceName,
+                    serviceDisplayName: svc.serviceDetails.displayName,
+                    serviceFriendlyName: svc.serviceFriendlyName,
                     serviceStatus: svc.serviceStatus,
                     serviceDetails: svc.serviceDetails,
                     prevState: svc.prevState,
