@@ -3,6 +3,9 @@ Butler:
   # General notes: 
   # - File and directory paths in this sample config file use Linux/Mac syntax, i.e. using forward slashes.
   #   Windows paths work just as well, just make sure to quote them with single or double quotes.
+  # - All entries in the config file are mandatory in the send that they must be present.
+  #   However, if a feature is not used the corresponding config entries can contain 
+  #   any value (for example the provided default ones).
 
   # Logging configuration
   logLevel: info          # Log level. Possible log levels are silly, debug, verbose, info, warn, error
