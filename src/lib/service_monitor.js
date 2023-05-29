@@ -121,17 +121,17 @@ const verifyServicesExist = async (config, logger) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const host of hostsToCheck) {
         logger.verbose(`Checking status of Windows services on host ${host.host}`);
-        const serviceNamesToCheck = host.services;
+        const servicesToCheck = host.services;
 
         // eslint-disable-next-line no-restricted-syntax
-        for (const serviceName of serviceNamesToCheck) {
+        for (const service of servicesToCheck) {
             // eslint-disable-next-line no-await-in-loop
-            const serviceExists = await svcTools.exists(serviceName, host.host);
+            const serviceExists = await svcTools.exists(service.name, host.host);
             if (serviceExists) {
                 result = true;
             }
 
-            logger.verbose(`Windows service ${serviceName} on host ${host.host} exists: ${serviceExists}`);
+            logger.verbose(`Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists: ${serviceExists}`);
         }
     }
 
@@ -143,15 +143,15 @@ const checkServiceStatus = async (config, logger) => {
 
     hostsToCheck.forEach(async (host) => {
         logger.verbose(`Checking status of Windows services on host ${host.host}`);
-        const serviceNamesToCheck = host.services;
+        const servicesToCheck = host.services;
 
-        serviceNamesToCheck.forEach(async (serviceName) => {
-            logger.verbose(`Checking status of Windows service ${serviceName} on host ${host.host}`);
+        servicesToCheck.forEach(async (service) => {
+            logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
-            const serviceStatus = await svcTools.status(serviceName);
+            const serviceStatus = await svcTools.status(service.name);
 
             // Get details about this service
-            const serviceDetails = await svcTools.details(serviceName);
+            const serviceDetails = await svcTools.details(service.name);
             if (
                 serviceStatus === 'STOPPED' &&
                 config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
@@ -160,7 +160,7 @@ const checkServiceStatus = async (config, logger) => {
                 logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
 
                 // Update state machine
-                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
+                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
                 const prevState = smService.service.state.value;
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
@@ -178,7 +178,8 @@ const checkServiceStatus = async (config, logger) => {
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
                         serviceMonitorNewRelicSend1(config, logger, {
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -196,7 +197,8 @@ const checkServiceStatus = async (config, logger) => {
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
                         serviceMonitorMqttSend1(config, logger, {
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -212,7 +214,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
                     ) {
                         webhookOut.sendServiceMonitorWebhook({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -230,7 +233,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
                         slack.sendServiceMonitorNotificationSlack({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -248,7 +252,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
                         teams.sendServiceMonitorNotificationTeams({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -266,7 +271,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
                         smtp.sendServiceMonitorNotificationEmail({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -281,10 +287,10 @@ const checkServiceStatus = async (config, logger) => {
                 config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') &&
                 config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true
             ) {
-                logger.verbose(`Service "${serviceName}" is running`);
+                logger.verbose(`Service "${service.name}" is running`);
 
                 // Update state machine
-                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${serviceName}`);
+                const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
                 const prevState = smService.service.state.value;
 
                 logger.verbose(
@@ -304,7 +310,8 @@ const checkServiceStatus = async (config, logger) => {
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
                         serviceMonitorNewRelicSend1(config, logger, {
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -322,7 +329,8 @@ const checkServiceStatus = async (config, logger) => {
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
                         serviceMonitorMqttSend1(config, logger, {
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -338,7 +346,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
                     ) {
                         webhookOut.sendServiceMonitorWebhook({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -356,7 +365,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
                         slack.sendServiceMonitorNotificationSlack({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -374,7 +384,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
                         teams.sendServiceMonitorNotificationTeams({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -392,7 +403,8 @@ const checkServiceStatus = async (config, logger) => {
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
                         smtp.sendServiceMonitorNotificationEmail({
-                            serviceName,
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
                             serviceStatus,
                             serviceDetails,
                             host: host.host,
@@ -413,7 +425,8 @@ const checkServiceStatus = async (config, logger) => {
                 config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
             ) {
                 serviceMonitorMqttSend2(config, logger, {
-                    serviceName,
+                    serviceName: service.name,
+                    serviceFriendlyName: service.friendlyName,
                     serviceStatus,
                     serviceDetails,
                     host: host.host,
@@ -433,7 +446,8 @@ const checkServiceStatus = async (config, logger) => {
 
                 influxDb.postWindowsServiceStatusToInfluxDB({
                     instanceTag,
-                    serviceName,
+                    serviceName: service.name,
+                    serviceFriendlyName: service.friendlyName,
                     serviceStatus,
                     serviceDetails,
                     host: host.host,
@@ -466,11 +480,11 @@ async function setupServiceMonitorTimer(config, logger) {
                         // eslint-disable-next-line no-restricted-syntax
                         for (const host of hostsToCheck) {
                             logger.info(`SERVICE MONITOR: --- Host: ${host.host}`);
-                            const serviceNamesToCheck = host.services;
+                            const servicesToCheck = host.services;
 
                             // eslint-disable-next-line no-restricted-syntax
-                            for (const serviceName of serviceNamesToCheck) {
-                                logger.info(`SERVICE MONITOR: ---          ${serviceName}`);
+                            for (const service of servicesToCheck) {
+                                logger.info(`SERVICE MONITOR: ---          ${service.name}`);
 
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
@@ -498,13 +512,13 @@ async function setupServiceMonitorTimer(config, logger) {
                                     },
                                 });
 
-                                const service = interpret(windowsServiceMachine).start();
+                                const svc = interpret(windowsServiceMachine).start();
 
                                 serviceStateMachine.push({
-                                    id: `${host.host}|${serviceName}`,
+                                    id: `${host.host}|${service.name}`,
                                     host,
-                                    serviceName,
-                                    service,
+                                    serviceName: service.name,
+                                    svc,
                                 });
                             }
                         }

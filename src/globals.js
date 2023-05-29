@@ -402,7 +402,7 @@ if (config.get('Butler.influxDb.enable')) {
                     startup_mode_num: Influx.FieldType.INTEGER,
                     startup_mode_text: Influx.FieldType.STRING,
                 },
-                tags: ['butler_instance', 'host', 'service_name', 'display_name'],
+                tags: ['butler_instance', 'host', 'service_name', 'display_name', 'friendly_name'],
             },
         ],
     });
