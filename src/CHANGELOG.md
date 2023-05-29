@@ -41,6 +41,51 @@
 * **master:** release butler 8.7.0 ([3bfae07](https://github.com/ptarmiganlabs/butler/commit/3bfae073f3274e7f3de457c37b871593109c2f91))
 * **master:** release butler 8.7.0 ([e0bfaee](https://github.com/ptarmiganlabs/butler/commit/e0bfaee0b6281f249732e1dc5ac994f3ad75d599))
 * **master:** release butler 8.7.0 ([b09155e](https://github.com/ptarmiganlabs/butler/commit/b09155e9fba1623a7c3b74ea784a974098132597))
+* **master:** release butler 9.0.0 ([266b19c](https://github.com/ptarmiganlabs/butler/commit/266b19cca2a44d05fbe1a63f16678dce66a89377))
+* **master:** release butler 9.0.0 ([59e8523](https://github.com/ptarmiganlabs/butler/commit/59e8523ed4a2950c16b1817aa32fd8d8b62d6465))
+* **master:** release butler 9.0.0 ([9ba4208](https://github.com/ptarmiganlabs/butler/commit/9ba4208e4a4f76802f610bf55fdf4093b1d4a22d))
+
+## [9.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v9.0.0...butler-v9.0.0) (2023-05-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move InfluxDB settings to their own section in config file
+
+### Features
+
+* Add InfluxDB as destination for Windows service status monitoring ([d2e4d25](https://github.com/ptarmiganlabs/butler/commit/d2e4d256bf7ca1148495832ede95fae06068b0ab))
+* Add monitoring of Windows services ([da6dfcc](https://github.com/ptarmiganlabs/butler/commit/da6dfcc8ff0e883cde3026db5c24db4b4549d47e)), closes [#637](https://github.com/ptarmiganlabs/butler/issues/637)
+* log at startup current API rate limit ([2fd7055](https://github.com/ptarmiganlabs/butler/commit/2fd70550cde69e1ee69d43529b04f8423ddbdb1d))
+* log at startup which config file is used ([2fd7055](https://github.com/ptarmiganlabs/butler/commit/2fd70550cde69e1ee69d43529b04f8423ddbdb1d))
+* Log warnings when API rate limits exceeded ([c15c45d](https://github.com/ptarmiganlabs/butler/commit/c15c45d662b9ab73a3fd0ab1023b5d630aff88f8))
+* Move InfluxDB settings to their own section in config file ([d2e4d25](https://github.com/ptarmiganlabs/butler/commit/d2e4d256bf7ca1148495832ede95fae06068b0ab)), closes [#670](https://github.com/ptarmiganlabs/butler/issues/670)
+* New command line option for setting API rate limit ([2b08c5e](https://github.com/ptarmiganlabs/butler/commit/2b08c5ed207004a2425951f61fe41541fb88736c)), closes [#659](https://github.com/ptarmiganlabs/butler/issues/659)
+* Verify structure of config file on Butler startup ([69e35ff](https://github.com/ptarmiganlabs/butler/commit/69e35ff960f6296f0f3e9c02f50c05bfc0c17a42)), closes [#675](https://github.com/ptarmiganlabs/butler/issues/675)
+
+
+### Bug Fixes
+
+* Add missing fields to template config file ([157f715](https://github.com/ptarmiganlabs/butler/commit/157f715b27d8640428506944c52c1bd05d1cdb77))
+* **deps:** update dependency yargs to v17.7.2 ([79dd198](https://github.com/ptarmiganlabs/butler/commit/79dd1988ada10b64ac6466b3fbd8ce7736b36a3d))
+* Only initiate InfluxDB connection if it's actually enabled in config file ([ba35605](https://github.com/ptarmiganlabs/butler/commit/ba3560559881cd62daf6f590ba7cde9e3f1a116e)), closes [#678](https://github.com/ptarmiganlabs/butler/issues/678)
+* Only set up REST server if it's actually enabled in the config file ([7746cee](https://github.com/ptarmiganlabs/butler/commit/7746ceea5281342745864e241a58688385d04b55)), closes [#679](https://github.com/ptarmiganlabs/butler/issues/679)
+
+
+### Miscellaneous
+
+* **deps:** Update dependecies to stay safe and secure ([f7656af](https://github.com/ptarmiganlabs/butler/commit/f7656af18821444b91444040de3312b293ddd951))
+* **deps:** Update dependencies ([c293727](https://github.com/ptarmiganlabs/butler/commit/c2937276a36e87b5b4ad4cf367729953d743fc58))
+* **deps:** update dependency prettier to v2.8.7 ([883fb4c](https://github.com/ptarmiganlabs/butler/commit/883fb4c0dc90be8e3cccea64553b8e04c196c582))
+* **deps:** update node.js to v20 ([526439e](https://github.com/ptarmiganlabs/butler/commit/526439e53c806b89a714dfc67c21495db3834f14))
+* Fix temp error in release process ([0f15633](https://github.com/ptarmiganlabs/butler/commit/0f156330a17da48cdbc4215e39e823fe410359c4))
+* **master:** release butler 8.7.0 ([f5ba926](https://github.com/ptarmiganlabs/butler/commit/f5ba92653cb5cfbfa3d9449df56793909ae5b9dd))
+* **master:** release butler 8.7.0 ([2889d86](https://github.com/ptarmiganlabs/butler/commit/2889d864b7d1b6813a278d757c0abc36bd3b24a1))
+* **master:** release butler 8.7.0 ([d5a9f62](https://github.com/ptarmiganlabs/butler/commit/d5a9f62a878dee7411e6cf7d7d2f67ad49a7b776))
+* **master:** release butler 8.7.0 ([ca32bd2](https://github.com/ptarmiganlabs/butler/commit/ca32bd2e4cde41da2824d0278d6abaa7aedd7c3a))
+* **master:** release butler 8.7.0 ([3bfae07](https://github.com/ptarmiganlabs/butler/commit/3bfae073f3274e7f3de457c37b871593109c2f91))
+* **master:** release butler 8.7.0 ([e0bfaee](https://github.com/ptarmiganlabs/butler/commit/e0bfaee0b6281f249732e1dc5ac994f3ad75d599))
+* **master:** release butler 8.7.0 ([b09155e](https://github.com/ptarmiganlabs/butler/commit/b09155e9fba1623a7c3b74ea784a974098132597))
 * **master:** release butler 9.0.0 ([59e8523](https://github.com/ptarmiganlabs/butler/commit/59e8523ed4a2950c16b1817aa32fd8d8b62d6465))
 * **master:** release butler 9.0.0 ([9ba4208](https://github.com/ptarmiganlabs/butler/commit/9ba4208e4a4f76802f610bf55fdf4093b1d4a22d))
 
