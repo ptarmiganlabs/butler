@@ -626,6 +626,8 @@ Butler:
   restServerEndpointsConfig:
     newRelic:
       postNewRelicMetric:          # Setings used by post metric to New Relic API endpoint
+        destinationAccount:
+          - ...
         # Note that the URL path should *not* be included in the url setting below!
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net
@@ -639,6 +641,8 @@ Butler:
             - name: env
               value: prod
       postNewRelicEvent:            # Setings used by post event to New Relic API endpoint
+        destinationAccount:
+          - ...
         # Note that the URL path should *not* be included in the url setting below!
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net
