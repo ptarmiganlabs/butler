@@ -1569,6 +1569,23 @@ const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.rateLimit')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.rateLimit"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static"'
+        );
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.event.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.destination.event.enable"');
         configFileCorrect = false;
