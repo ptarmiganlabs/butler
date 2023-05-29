@@ -79,7 +79,7 @@ Butler:
 
   # InfluxDB settings
   influxDb:
-    enable: true                  # Master switch for InfluxDB integration. If false, no data will be sent to InfluxDB.
+    enable: false                  # Master switch for InfluxDB integration. If false, no data will be sent to InfluxDB.
     hostIP: <IP or host name>     # Where is InfluxDB server located?
     hostPort: 8086                # InfluxDB port
     auth:
@@ -447,6 +447,52 @@ Butler:
                 value: butler       # Example
               - name: environment   # Example
                 value: prod         # Example
+      serviceMonitor:
+        destination:
+          event: 
+            enable: false
+            sendToAccount:                # Windows service events are sent to these New Relic accounts
+              - First NR account
+              - Second NR account
+            attribute: 
+              static:                     # Static attributes/dimensions to attach to events sent to New Relic.
+                - name: event-specific-attribute
+                  value: abc 123
+              dynamic:
+                serviceHost: true         # Should host where service is running be sent to New Relic as attribute?
+                serviceName: true         # Should service name be sent to New Relic as attribute?
+                serviceDisplayName: true  # Should service display name be sent to New Relic as attribute?
+                serviceState: true        # Should service state be sent to New Relic as attribute?
+          log:
+            enable: false
+            sendToAccount:                # Windows service log entries are sent to these New Relic accounts
+              - First NR account
+              - Second NR account
+            attribute: 
+              static:                     # Static attributes/dimensions to attach to events sent to New Relic.
+                - name: log-specific-attribute
+                  value: def 456
+              dynamic:
+                serviceHost: true         # Should host where service is running be sent to New Relic as attribute?
+                serviceName: true         # Should service name be sent to New Relic as attribute?
+                serviceDisplayName: true  # Should service display name be sent to New Relic as attribute?
+                serviceState: true        # Should service state be sent to New Relic as attribute?
+        monitorServiceState:              # Control whih service states are sent to New Relic
+          running:
+            enable: true
+          stopped:
+            enable: true
+        sharedSettings:
+          rateLimit: 5                    # Min seconds between events/logs sent to New Relic for a given host+service. Defaults to 5 minutes.
+          header:                         # Custom http headers
+            - name: X-My-Header           # Example
+              value: Header value 2       # Example
+          attribute: 
+            static:                       # Static attributes/dimensions to attach to events sent to New Relic.
+              - name: service             # Example
+                value: butler             # Example
+              - name: environment         # Example
+                value: prod               # Example
 
   # Settings for notifications and messages sent using outgoing webhooks
   webhookNotification:
@@ -654,7 +700,7 @@ Butler:
   # This feature only works when Butler is running on Windows Server or desktop.
   # On other OSs service monitoring will be automatically disabled.
   serviceMonitor:
-    enable: true                    # Main on/off switch for service monitoring
+    enable: false                    # Main on/off switch for service monitoring
     frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html
     monitor:
       - host: <hostname or IP>      # Host name of Windows computer where services are running
@@ -693,7 +739,6 @@ Butler:
     # clientCertCA: /nodeapp/config/certificate/root.pem
 
   configEngine:
-    # engineVersion: 12.170.2        # Qlik Associative Engine version to use with Enigma.js. Ver 12.170.2 works with Feb 2019
     engineVersion: 12.612.0         # Qlik Associative Engine version to use with Enigma.js. Works with Feb 2020 and others
     host: <FQDN or IP of Sense server where Sense Engine is running>
     port: <Port to connect to, usually 4747>
@@ -707,12 +752,11 @@ Butler:
     authentication: certificates
     host: <FQDN or IP of Sense server where QRS is running>
     useSSL: true
-    port: 4242
+    port: <Port to connect to, usually 4242>
     headerKey: X-Qlik-User                                      # Header used to identify what user connection to QRS is made as
     headerValue: UserDirectory=Internal; UserId=sa_repository   # What user connection to QRS is made as
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
   configDirectories:
-    # enableirectoryCreation: false
     qvdPath: <Path to folder under which QVDs are stored>

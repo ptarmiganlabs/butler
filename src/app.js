@@ -139,143 +139,148 @@ async function build(opts = {}) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
     }
 
-    // Register rate limit for API
-    // 0 means no rate limit
-    if (globals.options.apiRateLimit > 0) {
-        // This code registers the FastifyRateLimit plugin.
-        // The plugin limits the number of API requests that
-        // can be made from a given IP address within a given
-        // time window.
+    // Set up REST server, if enabled
+    if (globals.config.get('Butler.restServerConfig.enable') === true) {
+        // Register rate limit for API
+        // 0 means no rate limit
+        if (globals.options.apiRateLimit > 0) {
+            // This code registers the FastifyRateLimit plugin.
+            // The plugin limits the number of API requests that
+            // can be made from a given IP address within a given
+            // time window.
 
-        await restServer.register(FastifyRateLimit, {
-            max: globals.options.apiRateLimit,
-            timeWindow: '1 minute',
-        });
-    }
-
-    // Add custom error handler for 429 errors (rate limit exceeded)
-    restServer.setErrorHandler((error, request, reply) => {
-        if (error.statusCode === 429) {
-            globals.logger.warn(
-                `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`
-            );
+            await restServer.register(FastifyRateLimit, {
+                max: globals.options.apiRateLimit,
+                timeWindow: '1 minute',
+            });
         }
-        reply.send(error);
-    });
 
-    // This loads all plugins defined in plugins.
-    // Those should be support plugins that are reused through your application
-    await restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
+        // Add custom error handler for 429 errors (rate limit exceeded)
+        restServer.setErrorHandler((error, request, reply) => {
+            if (error.statusCode === 429) {
+                globals.logger.warn(
+                    `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`
+                );
+            }
+            reply.send(error);
+        });
 
-    await restServer.register(FastifySwagger, {
-        mode: 'dynamic',
-        openapi: {
-            info: {
-                title: 'Butler API documentation',
-                description:
-                    'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.\nButler offers both a REST API and things like failed reload notifications etc.\n\nThis page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
-                version: globals.appVersion,
-            },
-            externalDocs: {
-                url: 'https://github.com/ptarmiganlabs',
-                description: 'Butler family of tools on GitHub',
-            },
-            servers: [
-                {
-                    url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                        'Butler.restServerConfig.serverPort'
-                    )}`,
+        // This loads all plugins defined in plugins.
+        // Those should be support plugins that are reused through your application
+        await restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
+
+        await restServer.register(FastifySwagger, {
+            mode: 'dynamic',
+            openapi: {
+                info: {
+                    title: 'Butler API documentation',
+                    description:
+                        'Butler is a microservice that provides add-on features to Qlik Sense Enterprise on Windows.\nButler offers both a REST API and things like failed reload notifications etc.\n\nThis page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com',
+                    version: globals.appVersion,
                 },
-            ],
-            // consumes: ['application/json'],
-            produces: ['application/json'],
-        },
-    });
-
-    await restServer.register(FastifySwaggerUi, {
-        routePrefix: '/documentation',
-        uiConfig: {
-            docExpansion: 'list',
-            deepLinking: true,
-            operationsSorter: 'alpha', // can be 'alpha' or a function
-        },
-    });
-
-    // Loads all plugins defined in routes
-    await restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
-    await restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
-
-    // ---------------------------------------------------
-    // Configure X-HTTP-Method-Override handling
-    await proxyRestServer.register(FastifyReplyFrom, {
-        // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
-        base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-            'Butler.restServerConfig.backgroundServerPort'
-        )}`,
-        http: true,
-    });
-
-    // Handle requests from the proxy server.
-    proxyRestServer.get('/*', (request, reply) => {
-        const { url } = request.raw;
-        reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.ip });
-                return headers;
+                externalDocs: {
+                    url: 'https://github.com/ptarmiganlabs',
+                    description: 'Butler family of tools on GitHub',
+                },
+                servers: [
+                    {
+                        url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+                            'Butler.restServerConfig.serverPort'
+                        )}`,
+                    },
+                ],
+                // consumes: ['application/json'],
+                produces: ['application/json'],
             },
         });
-    });
 
-    proxyRestServer.put('/*', (request, reply) => {
-        const { url } = request.raw;
-        reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.ip });
-                return headers;
+        await restServer.register(FastifySwaggerUi, {
+            routePrefix: '/documentation',
+            uiConfig: {
+                docExpansion: 'list',
+                deepLinking: true,
+                operationsSorter: 'alpha', // can be 'alpha' or a function
             },
         });
-    });
 
-    proxyRestServer.delete('/*', (request, reply) => {
-        const { url } = request.raw;
-        reply.from(url, {
-            rewriteRequestHeaders: (originalReq, headers) => {
-                Object.assign(headers, { remoteIP: originalReq.ip });
-                return headers;
-            },
+        // Loads all plugins defined in routes
+        await restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
+        await restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
+
+        // ---------------------------------------------------
+        // Configure X-HTTP-Method-Override handling
+        await proxyRestServer.register(FastifyReplyFrom, {
+            // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
+            base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
+                'Butler.restServerConfig.backgroundServerPort'
+            )}`,
+            http: true,
         });
-    });
 
-    proxyRestServer.post('/*', (request, reply) => {
-        try {
+        // Handle requests from the proxy server.
+        proxyRestServer.get('/*', (request, reply) => {
             const { url } = request.raw;
-            const { 'x-http-method-override': method = 'POST' } = request.headers;
-
-            // eslint-disable-next-line no-param-reassign
-            reply.request.raw.method = method;
             reply.from(url, {
                 rewriteRequestHeaders: (originalReq, headers) => {
                     Object.assign(headers, { remoteIP: originalReq.ip });
                     return headers;
                 },
             });
-        } catch (err) {
-            globals.logger.error(`Error in POST handler: ${err}`);
-        }
-    });
+        });
+
+        proxyRestServer.put('/*', (request, reply) => {
+            const { url } = request.raw;
+            reply.from(url, {
+                rewriteRequestHeaders: (originalReq, headers) => {
+                    Object.assign(headers, { remoteIP: originalReq.ip });
+                    return headers;
+                },
+            });
+        });
+
+        proxyRestServer.delete('/*', (request, reply) => {
+            const { url } = request.raw;
+            reply.from(url, {
+                rewriteRequestHeaders: (originalReq, headers) => {
+                    Object.assign(headers, { remoteIP: originalReq.ip });
+                    return headers;
+                },
+            });
+        });
+
+        proxyRestServer.post('/*', (request, reply) => {
+            try {
+                const { url } = request.raw;
+                const { 'x-http-method-override': method = 'POST' } = request.headers;
+
+                // eslint-disable-next-line no-param-reassign
+                reply.request.raw.method = method;
+                reply.from(url, {
+                    rewriteRequestHeaders: (originalReq, headers) => {
+                        Object.assign(headers, { remoteIP: originalReq.ip });
+                        return headers;
+                    },
+                });
+            } catch (err) {
+                globals.logger.error(`Error in POST handler: ${err}`);
+            }
+        });
+    } else {
+        globals.logger.info('MAIN: Will not set up REST server as it is disabled in the config file.');
+    }
 
     // ---------------------------------------------------
     // Set up MQTT
