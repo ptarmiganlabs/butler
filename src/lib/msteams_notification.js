@@ -694,6 +694,7 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
                     servicePrevStatus: serviceParams.prevState,
                     serviceName: serviceParams.serviceName,
                     serviceDisplayName: serviceParams.serviceDetails.displayName,
+                    serviceFriendlyName: serviceParams.serviceFriendlyName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
                 };
