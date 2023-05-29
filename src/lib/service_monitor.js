@@ -161,10 +161,10 @@ const checkServiceStatus = async (config, logger) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
-                const prevState = smService.service.state.value;
+                const prevState = smService.stateSvc.state.value;
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
-                const sendResult = smService.service.send('STOP');
+                const sendResult = smService.stateSvc.send('STOP');
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
 
                 if (sendResult.changed) {
@@ -291,13 +291,13 @@ const checkServiceStatus = async (config, logger) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
-                const prevState = smService.service.state.value;
+                const prevState = smService.stateSvc.state.value;
 
                 logger.verbose(
-                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.service.state.value}`
+                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.stateSvc.state.value}`
                 );
 
-                const sendResult = smService.service.send('START');
+                const sendResult = smService.stateSvc.send('START');
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
 
                 if (sendResult.changed) {
@@ -518,7 +518,7 @@ async function setupServiceMonitorTimer(config, logger) {
                                     id: `${host.host}|${service.name}`,
                                     host,
                                     serviceName: service.name,
-                                    svc,
+                                    stateSvc: svc,
                                 });
                             }
                         }

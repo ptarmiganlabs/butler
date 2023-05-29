@@ -62,7 +62,7 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
                 host: serviceStatus.host,
                 service_name: serviceStatus.serviceName,
                 display_name: serviceStatus.serviceDetails.displayName,
-                friendly_name: serviceStatus.friendlyName,
+                friendly_name: serviceStatus.serviceFriendlyName,
             },
             fields: {
                 state_num:
