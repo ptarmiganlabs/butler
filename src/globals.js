@@ -375,35 +375,38 @@ logger.info(`CONFIG: Influxdb host port: ${config.get('Butler.influxDb.hostPort'
 logger.info(`CONFIG: Influxdb db name: ${config.get('Butler.influxDb.dbName')}`);
 
 // Set up Influxdb client
-const influx = new Influx.InfluxDB({
-    host: config.get('Butler.influxDb.hostIP'),
-    port: `${config.has('Butler.influxDb.hostPort') ? config.get('Butler.influxDb.hostPort') : '8086'}`,
-    database: config.get('Butler.influxDb.dbName'),
-    username: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.username') : ''}`,
-    password: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.password') : ''}`,
-    schema: [
-        {
-            measurement: 'butler_memory_usage',
-            fields: {
-                heap_used: Influx.FieldType.FLOAT,
-                heap_total: Influx.FieldType.FLOAT,
-                external: Influx.FieldType.FLOAT,
-                process_memory: Influx.FieldType.FLOAT,
+let influx = null;
+if (config.get('Butler.influxDb.enable')) {
+    influx = new Influx.InfluxDB({
+        host: config.get('Butler.influxDb.hostIP'),
+        port: `${config.has('Butler.influxDb.hostPort') ? config.get('Butler.influxDb.hostPort') : '8086'}`,
+        database: config.get('Butler.influxDb.dbName'),
+        username: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.username') : ''}`,
+        password: `${config.get('Butler.influxDb.auth.enable') ? config.get('Butler.influxDb.auth.password') : ''}`,
+        schema: [
+            {
+                measurement: 'butler_memory_usage',
+                fields: {
+                    heap_used: Influx.FieldType.FLOAT,
+                    heap_total: Influx.FieldType.FLOAT,
+                    external: Influx.FieldType.FLOAT,
+                    process_memory: Influx.FieldType.FLOAT,
+                },
+                tags: ['butler_instance'],
             },
-            tags: ['butler_instance'],
-        },
-        {
-            measurement: 'win_service_state',
-            fields: {
-                state_num: Influx.FieldType.INTEGER,
-                state_text: Influx.FieldType.STRING,
-                startup_mode_num: Influx.FieldType.INTEGER,
-                startup_mode_text: Influx.FieldType.STRING,
+            {
+                measurement: 'win_service_state',
+                fields: {
+                    state_num: Influx.FieldType.INTEGER,
+                    state_text: Influx.FieldType.STRING,
+                    startup_mode_num: Influx.FieldType.INTEGER,
+                    startup_mode_text: Influx.FieldType.STRING,
+                },
+                tags: ['butler_instance', 'host', 'service_name', 'display_name'],
             },
-            tags: ['butler_instance', 'host', 'service_name', 'display_name'],
-        },
-    ],
-});
+        ],
+    });
+}
 
 function initInfluxDB() {
     const dbName = config.get('Butler.influxDb.dbName');
@@ -446,6 +449,8 @@ function initInfluxDB() {
             .catch((err) => {
                 logger.error(`CONFIG: Error getting list of InfuxDB databases! ${err.stack}`);
             });
+    } else {
+        logger.info('CONFIG: InfluxDB disabled, not connecting to InfluxDB');
     }
 }
 
