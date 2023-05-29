@@ -759,5 +759,4 @@ Butler:
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
   configDirectories:
-    # enableirectoryCreation: false
     qvdPath: <Path to folder under which QVDs are stored>
