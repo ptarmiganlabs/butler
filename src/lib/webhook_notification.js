@@ -282,6 +282,7 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                 // Build parameter string for GET call
                 const params = new URLSearchParams();
                 params.append('event', webhookConfig.event);
+                params.append('host', serviceParams.host);
                 params.append('servicestatus', serviceParams.serviceStatus);
                 params.append('servicename', serviceParams.serviceName);
                 params.append('servicedisplayname', serviceParams.serviceDetails.displayName);
@@ -307,8 +308,9 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                     timeout: 10000,
                     data: {
                         event: webhookConfig.event,
+                        host: serviceParams.host,
                         serviceStatus: serviceParams.serviceStatus,
-                        servicename: serviceParams.serviceName,
+                        serviceName: serviceParams.serviceName,
                         serviceDisplayName: serviceParams.serviceDetails.displayName,
                         serviceStartType: serviceParams.serviceDetails.startType,
                         prevState: serviceParams.prevState,
@@ -325,8 +327,9 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                     timeout: 10000,
                     data: {
                         event: webhookConfig.event,
+                        host: serviceParams.host,
                         serviceStatus: serviceParams.serviceStatus,
-                        servicename: serviceParams.serviceName,
+                        serviceName: serviceParams.serviceName,
                         serviceDisplayName: serviceParams.serviceDetails.displayName,
                         serviceStartType: serviceParams.serviceDetails.startType,
                         prevState: serviceParams.prevState,
