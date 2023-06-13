@@ -67,6 +67,14 @@ function getServiceStateEventConfig() {
             }
         }
 
+        // Add event specific static attributes
+        if (globals.config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static') !== null) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of globals.config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static')) {
+                attributes[item.name] = item.value;
+            }
+        }
+
         const cfg = {
             eventType: 'qs_serviceStateEvent',
             url:
