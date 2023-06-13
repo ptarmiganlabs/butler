@@ -86,12 +86,13 @@ jobs:
           git push
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
+        # uses: snyk/actions/node@master
+        uses: snyk/actions/node@0.4.0
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --file=./src/package.json --sarif-file-output=snyk.sarif
+          args: --file=./src/package.json --sarif-file-output=snyk.sarif --severity-threshold=high
           # command: test
           
       - name: Upload Snyk result to GitHub Code Scanning
