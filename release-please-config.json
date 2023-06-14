@@ -26,6 +26,11 @@
       "type": "docs",
       "section": "Documentation",
       "hidden": false
+    },
+    {
+      "type": "build",
+      "section": "Miscellaneous",
+      "hidden": false
     }
   ],
   "packages": {
