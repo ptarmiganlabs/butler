@@ -770,4 +770,3 @@ Butler:
 
   configDirectories:
     qvdPath: <Path to folder under which QVDs are stored>
-
