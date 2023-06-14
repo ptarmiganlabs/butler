@@ -86,8 +86,8 @@ jobs:
           git push
 
       - name: Run Snyk to check for vulnerabilities
-        # uses: snyk/actions/node@master
-        uses: snyk/actions/node@0.4.0
+        uses: snyk/actions/node@master
+        # uses: snyk/actions/node@0.4.0
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
