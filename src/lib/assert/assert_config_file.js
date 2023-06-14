@@ -530,7 +530,7 @@ const configFileStructureAssert = async (config, logger) => {
     }
 
     if (!config.has('Butler.influxDb.enable')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.inflictDb.enable"');
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.enable"');
         configFileCorrect = false;
     }
 
