@@ -407,7 +407,7 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
         }
 
         if (msg !== null) {
-            const res = await teamsWebhookObj.send(JSON.stringify(msg));
+            const res = await teamsWebhookObj.send(msg);
             if (res !== undefined) {
                 globals.logger.debug(`TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
