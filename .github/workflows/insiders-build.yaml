@@ -136,6 +136,7 @@ jobs:
       - name: Install tool for creating stand-alone executables
         run: |
           npm install pkg --location=global
+          npm install --save-exact esbuild
 
       - name: Install dependencies
         run: |
