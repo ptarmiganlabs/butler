@@ -1876,6 +1876,7 @@ paths:
                   key: AnImportantKey
                   value: TheValue
                   ttl: 10000
+        description: Optional object with extra info.
       parameters:
         - schema:
             type: boolean
@@ -2032,6 +2033,7 @@ paths:
                   key: AnImportantKey
                   value: TheValue
                   ttl: 10000
+        description: Optional object with extra info.
       parameters:
         - schema:
             type: boolean
