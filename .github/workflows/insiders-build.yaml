@@ -1,0 +1,194 @@
+name: insiders-build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+jobs:
+  insiders-build:
+    strategy:
+      matrix:
+        os: [winsrv-2016, mac-build1, ubuntu-latest]
+        include:
+          - os: winsrv-2016
+            build: |
+              ./node_modules/.bin/esbuild src/bundle.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+              pkg --output "./${env:DIST_FILE_NAME}.exe" -t node18-win-x64 ./build.cjs --config package.json --compress GZip
+
+              dir
+
+              # Sign the executable
+              New-Item -ItemType directory -Path certificate
+              Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
+              certutil -decode certificate\certificate.txt certificate\certificate.pfx
+              Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
+              certutil -decode certificate\intermediate.txt certificate\intermediate.crt
+
+              $processOptions = @{
+                FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                Wait = $true
+                ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
+                WorkingDirectory = "."
+                NoNewWindow = $true
+              }
+              Start-Process @processOptions
+
+              Remove-Item -Recurse -Force certificate
+
+              # # Create release binary
+              # mkdir release-binaries-win
+              # Copy-Item -Path ".\${env:DIST_FILE_NAME}.exe" -Destination "release-binaries-win\"
+
+              # dir
+              # dir release-binaries-win
+
+              # Create insider's build zip
+              $compress = @{
+                Path = "./${env:DIST_FILE_NAME}.exe"
+                CompressionLevel = "Fastest"
+                DestinationPath = "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              }
+              Compress-Archive @compress
+              # dir
+            # artifact_release_name: release-binaries-win
+            # artifact_release_path: release-binaries-win/*
+            artifact_insider: butler--win-x64--${{ github.sha }}.zip
+          - os: mac-build1
+            build: |
+              ./node_modules/.bin/esbuild src/bundle.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+              pkg --output "./${DIST_FILE_NAME}" -t node18-macos-x64 ./build.cjs --config package.json --compress GZip
+
+              chmod +x "${DIST_FILE_NAME}"
+              security delete-keychain build.keychain || true
+
+              pwd
+              ls -la
+
+              # Turn our base64-encoded certificate back to a regular .p12 file
+              
+              echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+              # We need to create a new keychain, otherwise using the certificate will prompt
+              # with a UI dialog asking for the certificate password, which we can't
+              # use in a headless CI environment
+              
+              security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+              security list-keychains -d user -s build.keychain
+              security default-keychain -d user -s build.keychain
+              security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+              security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+              security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+          
+              codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
+
+
+              # Notarize
+              # Store the notarization credentials so that we can prevent a UI password dialog from blocking the CI
+
+              echo "Create keychain profile"
+              xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
+
+              # We can't notarize an app bundle directly, but we need to compress it as an archive.
+              # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+              # notarization service
+
+
+              # Notarize insider binary
+              echo "Creating temp notarization archive for insider build"
+              ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}--macos-x64--${{ github.sha }}.zip"
+
+              # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+              # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+              # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+              # you're curious
+              echo "Notarize insider app"
+              xcrun notarytool submit "./${DIST_FILE_NAME}--macos-x64--${{ github.sha }}.zip" --keychain-profile "notarytool-profile" --wait
+
+              # Delete build keychain
+              security delete-keychain build.keychain
+            # artifact_release_name: release-binaries-macos
+            # artifact_release_path: release-binaries-macos/*
+            artifact_insider: butler--macos-x64--${{ github.sha }}.zip
+          - os: ubuntu-latest
+            build: |
+              ./node_modules/.bin/esbuild src/bundle.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+              pkg --output "./${DIST_FILE_NAME}" -t node18-linux-x64 ./build.cjs --config package.json --compress GZip
+
+              chmod +x ${DIST_FILE_NAME}
+
+              # Compress insider's build
+              tar -czf "${DIST_FILE_NAME}--linux-x64--${{ github.sha }}.tgz" "${DIST_FILE_NAME}"
+              ls -la
+
+            # artifact_release_name: release-binaries-linux
+            # artifact_release_path: release-binaries-linux/*
+            artifact_insider: butler--linux-x64--${{ github.sha }}.tgz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Install tool for creating stand-alone executables
+        run: |
+          npm install pkg --location=global
+
+      - name: Install dependencies
+        run: |
+          pwd 
+          npm ci
+
+      - name: Run Snyk to check for vulnerabilities
+        if: |
+          github.repository_owner == 'ptarmiganlabs' &&
+          matrix.os == 'ubuntu-latest'
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=./package.json --sarif-file-output=snyk.sarif
+          # command: test
+          
+      - name: Upload Snyk result to GitHub Code Scanning
+        if: |
+          github.repository_owner == 'ptarmiganlabs' &&
+          matrix.os == 'ubuntu-latest'
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
+
+      - name: Create binaries
+        env:
+          DIST_FILE_NAME: butler     
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
+          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+          PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+          PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+          PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+          CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
+          CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
+          CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
+        run: |
+          pwd
+          ${{ matrix.build }}
+
+      # - name: Upload release artifacts to GitHub
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ matrix.artifact_release_name }}
+      #     path: ${{ matrix.artifact_release_path }}
+
+      - name: Upload insider build artifacts to GitHub
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.artifact_insider }}
+          path: ${{ matrix.artifact_insider }}
+  

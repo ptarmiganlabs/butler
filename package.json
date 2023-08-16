@@ -2,6 +2,46 @@
     "name": "butler",
     "version": "9.0.0",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
+    "scripts": {
+        "test": "jest",
+        "test2": "node_modules/jshint/bin/jshint butler.js",
+        "format1": "npm run format",
+        "format": "npm run format:prettier",
+        "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write",
+        "start": "fastify start -l info app.js",
+        "dev": "fastify start -w -l info -P app.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ptarmiganlabs/butler.git"
+    },
+    "keywords": [
+        "butler",
+        "senseops",
+        "devops",
+        "qliksense",
+        "qlik sense",
+        "alerts",
+        "alerting",
+        "incident response",
+        "scheduler",
+        "task chaining"
+    ],
+    "author": "Göran Sander",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ptarmiganlabs/butler/issues"
+    },
+    "homepage": "https://github.com/ptarmiganlabs/butler",
+    "files": [
+        "butler.js"
+    ],
+    "main": "butler.js",
+
+    "directories": {
+        "lib": "lib",
+        "test": "test"
+    },
     "dependencies": {
         "@breejs/later": "^4.1.0",
         "@fastify/autoload": "^5.7.1",
@@ -64,45 +104,6 @@
         "jest": "^29.5.0",
         "prettier": "^2.8.8",
         "snyk": "^1.1179.0"
-    },
-    "homepage": "https://github.com/ptarmiganlabs/butler",
-    "author": "Göran Sander",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ptarmiganlabs/butler.git"
-    },
-    "keywords": [
-        "butler",
-        "senseops",
-        "devops",
-        "qliksense",
-        "qlik sense",
-        "alerts",
-        "alerting",
-        "incident response",
-        "scheduler",
-        "task chaining"
-    ],
-    "bugs": {
-        "url": "https://github.com/ptarmiganlabs/butler/issues"
-    },
-    "license": "MIT",
-    "files": [
-        "butler.js"
-    ],
-    "main": "butler.js",
-    "scripts": {
-        "test": "jest",
-        "test2": "node_modules/jshint/bin/jshint butler.js",
-        "format1": "npm run format",
-        "format": "npm run format:prettier",
-        "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write",
-        "start": "fastify start -l info app.js",
-        "dev": "fastify start -w -l info -P app.js"
-    },
-    "directories": {
-        "lib": "lib",
-        "test": "test"
     },
     "pkg": {
         "scripts": [
