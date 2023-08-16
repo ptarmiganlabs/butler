@@ -31,7 +31,7 @@ function checkFileExistsSync(filepath) {
 }
 
 // Get app version from package.json file
-const appVersion = require('./package.json').version;
+const appVersion = require('../package.json').version;
 
 // Command line parameters
 const program = new Command();

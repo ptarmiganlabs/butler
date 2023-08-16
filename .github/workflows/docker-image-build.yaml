@@ -4,7 +4,7 @@
 # Inspiration
 # https://github.com/actions/starter-workflows/blob/main/ci/docker-publish.yml
 
-name: Build Docker image CI
+name: Docker image
 
 on:
   workflow_dispatch:
@@ -24,18 +24,18 @@ jobs:
       packages: write
 
     steps:
-      - name: Send job status to MQTT (starting job)
-        uses: potaesm/github-actions-mqtt-request@1.0.0
-        if: always()
-        env:
-          JOB_CONCLUSION: ${{ job.status }}
-          NODE_VERSION: ${{ matrix.node }}
-        with:
-          url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
-          topic: control/github_actions_action_runner
-          payload: '{ "type":"ci-test", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}", "nodeVersion": "${{ env.NODE_VERSION }}","status": "in_progress","conclusion":"${{ env.JOB_CONCLUSION }}" }'
-          username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
-          connectTimeout: 30000
+      # - name: Send job status to MQTT (starting job)
+      #   uses: potaesm/github-actions-mqtt-request@1.0.0
+      #   if: always()
+      #   env:
+      #     JOB_CONCLUSION: ${{ job.status }}
+      #     NODE_VERSION: ${{ matrix.node }}
+      #   with:
+      #     url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
+      #     topic: control/github_actions_action_runner
+      #     payload: '{ "type":"ci-test", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}", "nodeVersion": "${{ env.NODE_VERSION }}","status": "in_progress","conclusion":"${{ env.JOB_CONCLUSION }}" }'
+      #     username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
+      #     connectTimeout: 30000
 
       - name: Show input values
         run: |
@@ -71,10 +71,17 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
+      # Docker tag has format: refs/tags/v1.2.3
+      # We need to extract the tag semver from the full tag      
+      # Store the tag in GITHUB_ENV environment variable
       - name: Create clean tag for Docker
         run: |
           export TAGTMP1=${{ github.ref }}
-          echo "TAG=$(echo "${TAGTMP1##*-}")" >> $GITHUB_ENV
+          export TAG=${TAGTMP1##*/}
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          # export TAGTMP2=${TAGTMP1##*/}
+          # export TAG=${TAGTMP2##*-}
+          # echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Dump GitHub context
         if: always()
@@ -165,14 +172,14 @@ jobs:
       #     \"conclusion\":\"success\" 
       #   }"
       # }
-      - name: Send job status to MQTT when done
-        uses: potaesm/github-actions-mqtt-request@1.0.0
-        if: always()
-        env:
-          JOB_STATUS: ${{ job.status }}
-        with:
-          url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
-          topic: control/github_actions_action_runner
-          payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
-          username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
-          connectTimeout: 30000
+      # - name: Send job status to MQTT when done
+      #   uses: potaesm/github-actions-mqtt-request@1.0.0
+      #   if: always()
+      #   env:
+      #     JOB_STATUS: ${{ job.status }}
+      #   with:
+      #     url: ${{ secrets.PUBLIC_MQTT_BROKER_URL }}
+      #     topic: control/github_actions_action_runner
+      #     payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
+      #     username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
+      #     connectTimeout: 30000

@@ -13,7 +13,7 @@ COPY package.json .
 RUN npm install
 
 # Copy app's source files
-COPY . .
+COPY ./src .
 
 # Create and use non-root user 
 RUN groupadd -r nodejs \
