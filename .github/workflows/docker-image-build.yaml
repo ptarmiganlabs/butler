@@ -146,7 +146,7 @@ jobs:
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
         with:
-          context: ./src
+          context: .
           platforms: |
             linux/amd64
             linux/arm64
