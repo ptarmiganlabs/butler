@@ -24,7 +24,7 @@ src/release/*
 .cache_ggshield
 
 # Logs
-*/log
+log
 logs
 *.log
 npm-debug.log*

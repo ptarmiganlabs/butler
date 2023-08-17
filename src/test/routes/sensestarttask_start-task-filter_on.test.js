@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
-const axios = require('axios');
 const path = require('path');
+const axios = require('axios');
 
-process.env.NODE_CONFIG_DIR = path.resolve('./config/');
+process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
 // Use config file where start task filtering is turned ON
 process.env.NODE_ENV = 'production';
 const config = require('config');
@@ -33,11 +33,11 @@ let taskKVValue1;
 let taskKVTtl1;
 
 beforeAll(async () => {
-    taskId_valid1 = 'e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e';
-    taskId_valid2 = '7552d9fc-d1bb-4975-9a38-18357de531ea';
-    taskId_valid3 = 'fb0f317d-da91-4b86-aafa-0174ae1e8c8f';
+    taskId_valid1 = '25732e8f-a96f-44c0-ba81-7407a2ef4c8a';
+    taskId_valid2 = '62a91752-0340-4db4-ab1f-4df4e671ea60';
+    taskId_valid3 = '61775211-8284-439e-b338-9a73e1e79e08';
     taskId_invalid1 = 'abc';
-    taskId_notallowed1 = '8b4fe424-d90c-493f-a61d-0ce91cd485c9';
+    taskId_notallowed1 = '16cd2478-6cf2-4133-8fc7-7e9b97a92337';
     taskTag1 = 'startTask1';
     taskTag2 = 'startTask2';
     taskTag_invalid1 = 'startTask_invalid1';

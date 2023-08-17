@@ -1,7 +1,7 @@
-const axios = require('axios');
 const path = require('path');
+const axios = require('axios');
 
-process.env.NODE_CONFIG_DIR = path.resolve('./config/');
+process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
 process.env.NODE_ENV = 'production';
 const config = require('config');
 
@@ -11,6 +11,9 @@ const instance = axios.create({
 });
 
 let result;
+
+// Get app version from package.json
+const appVersion = require('../../../package.json').version;
 
 /**
  * D1
@@ -33,7 +36,7 @@ describe('D1: GET /v4/butlerping', () => {
         expect(result.data.response).toEqual('Butler reporting for duty');
 
         expect(result.data.butlerVersion).toBeTruthy();
-        // eslint-disable-next-line global-require
-        expect(result.data.butlerVersion).toEqual(require('../../package.json').version);
+        // eslint-disable-next-line global-require, import/no-unresolved
+        expect(result.data.butlerVersion).toEqual(appVersion);
     });
 });

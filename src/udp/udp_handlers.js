@@ -7,7 +7,7 @@ const webhookOut = require('../lib/webhook_notification');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
 const newRelic = require('../lib/incident_mgmt/new_relic');
-const { failedTaskStoreLogOnDisk } = require('../lib/scriptlog');
+const { failedTaskStoreLogOnDisk, getScriptLog } = require('../lib/scriptlog');
 const { getTaskTags } = require('../qrs_util/task_tag_util');
 const { getAppTags } = require('../qrs_util/app_tag_util');
 
@@ -16,6 +16,20 @@ const schedulerAborted = async (msg) => {
     globals.logger.verbose(
         `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
     );
+
+    // Get script log for failed reloads.
+    // Only done if Slack, Teams, email or New Relic alerts are enabled
+    let scriptLog;
+    if (
+        (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
+        (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
+        (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
+        (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
+    ) {
+        scriptLog = await getScriptLog(msg[5], 1, 1);
+
+        globals.logger.verbose(`Script log for aborted reload retrieved`);
+    }
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
@@ -98,6 +112,7 @@ const schedulerAborted = async (msg) => {
             qs_logMessage: msg[10],
             qs_appTags: appTags,
             qs_taskTags: taskTags,
+            scriptLog,
         });
     }
 
@@ -121,6 +136,7 @@ const schedulerAborted = async (msg) => {
             logMessage: msg[10],
             qs_appTags: appTags,
             qs_taskTags: taskTags,
+            scriptLog,
         });
     }
 
@@ -144,6 +160,7 @@ const schedulerAborted = async (msg) => {
             logMessage: msg[10],
             qs_appTags: appTags,
             qs_taskTags: taskTags,
+            scriptLog,
         });
     }
 
@@ -167,6 +184,7 @@ const schedulerAborted = async (msg) => {
             logMessage: msg[10],
             qs_appTags: appTags,
             qs_taskTags: taskTags,
+            scriptLog,
         });
     }
 
@@ -229,6 +247,24 @@ const schedulerAborted = async (msg) => {
 
 // Handler for failed scheduler initiated reloads
 const schedulerFailed = async (msg, legacyFlag) => {
+    // Get script log for failed reloads.
+    // Only done if Slack, Teams, email or New Relic alerts are enabled
+    let scriptLog;
+    if (
+        (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
+        (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
+        (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
+        (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
+    ) {
+        if (legacyFlag) {
+            scriptLog = await getScriptLog(msg[4], 0, 0);
+            globals.logger.verbose(`Script log for failed reload retrieved (legacy)`);
+        } else {
+            scriptLog = await getScriptLog(msg[5], 0, 0);
+            globals.logger.verbose(`Script log for failed reload retrieved (new)`);
+        }
+    }
+
     if (legacyFlag) {
         // First field in message (msg[0]) is host name
 
@@ -311,6 +347,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 qs_logLevel: msg[7],
                 qs_executionId: msg[8],
                 qs_logMessage: msg[9],
+                scriptLog,
             });
         }
 
@@ -332,6 +369,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logLevel: msg[7],
                 executionId: msg[8],
                 logMessage: msg[9],
+                scriptLog,
             });
         }
 
@@ -353,6 +391,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logLevel: msg[7],
                 executionId: msg[8],
                 logMessage: msg[9],
+                scriptLog,
             });
         }
 
@@ -374,6 +413,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logLevel: msg[7],
                 executionId: msg[8],
                 logMessage: msg[9],
+                scriptLog,
             });
         }
 
@@ -469,6 +509,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
+                scriptLog,
             });
         }
 
@@ -538,6 +579,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 qs_logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
+                scriptLog,
             });
         }
 
@@ -561,6 +603,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
+                scriptLog,
             });
         }
 
@@ -584,6 +627,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
+                scriptLog,
             });
         }
 
@@ -607,6 +651,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
+                scriptLog,
             });
         }
 

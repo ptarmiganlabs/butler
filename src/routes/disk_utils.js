@@ -1,7 +1,7 @@
 const httpErrors = require('http-errors');
 const fs = require('fs-extra');
 const upath = require('upath');
-const mkdirp = require('mkdirp');
+const { mkdirp } = require('mkdirp');
 const isUncPath = require('is-unc-path');
 
 // Load global variables and functions

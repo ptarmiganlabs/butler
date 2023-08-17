@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
 /* eslint-disable camelcase */
 const fs = require('fs/promises');
-const axios = require('axios');
 const upath = require('upath');
+const axios = require('axios');
 
-process.env.NODE_CONFIG_DIR = upath.resolve('./config/');
+process.env.NODE_CONFIG_DIR = upath.resolve('./src/config/');
 process.env.NODE_ENV = 'production';
 const config = require('config');
 
@@ -310,6 +311,7 @@ describe('E7: POST /v4/createdir', () => {
             await fs.rm(p, { recursive: true });
         } catch {
             //
+            console.log('Error deleting test directory. Does not exist? (1)');
         }
 
         try {
@@ -318,6 +320,7 @@ describe('E7: POST /v4/createdir', () => {
             });
         } catch (err) {
             result = err.response;
+            console.log('Error creating test directory');
         }
 
         // Wait for a bit
@@ -334,6 +337,7 @@ describe('E7: POST /v4/createdir', () => {
             await fs.rm(p, { recursive: true });
         } catch {
             //
+            console.log('Error deleting test directory. Does not exist? (2)');
         }
 
         // console.log(file1Stat);

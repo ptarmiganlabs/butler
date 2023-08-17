@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
-const axios = require('axios');
 const path = require('path');
+const axios = require('axios');
 
-process.env.NODE_CONFIG_DIR = path.resolve('./config/');
+process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
 process.env.NODE_ENV = 'production';
 const config = require('config');
 
