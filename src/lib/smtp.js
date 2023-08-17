@@ -7,7 +7,6 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 const emailValidator = require('email-validator');
 
 const globals = require('../globals');
-const scriptLog = require('./scriptlog');
 const qrsUtil = require('../qrs_util');
 
 let rateLimiterMemoryFailedReloads;
@@ -491,11 +490,17 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     }
 
     // Get script logs, if enabled in the config file
-    const scriptLogData = await scriptLog.getScriptLog(
-        reloadParams.taskId,
-        globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines'),
-        globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines')
-    );
+    const scriptLogData = reloadParams.scriptLog;
+
+    // Reduce script log lines to only the ones we want to send to Slack
+    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
+    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
+
+    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');;
+    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+        .join('\r\n');
+
     globals.logger.debug(`TASK FAILED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.
@@ -712,11 +717,17 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 
     // Get script logs, if enabled in the config file
-    const scriptLogData = await scriptLog.getScriptLog(
-        reloadParams.taskId,
-        globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines'),
-        globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines')
-    );
+    const scriptLogData = reloadParams.scriptLog;
+
+    // Reduce script log lines to only the ones we want to send to Slack
+    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
+    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
+
+    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');;
+    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+        .join('\r\n');
+
     globals.logger.debug(`TASK ABORTED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.

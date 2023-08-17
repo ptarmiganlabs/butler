@@ -1,10 +1,10 @@
+const os = require('os');
+const crypto = require('crypto');
 const fs = require('fs-extra');
 const upath = require('upath');
 const Influx = require('influx');
 const { IncomingWebhook } = require('ms-teams-webhook');
 const si = require('systeminformation');
-const os = require('os');
-const crypto = require('crypto');
 const isUncPath = require('is-unc-path');
 const winston = require('winston');
 
@@ -538,8 +538,6 @@ async function loadApprovedDirectories() {
                 fileDeleteDirectories.push(deleteDir);
             });
         }
-
-        return;
     } catch (err) {
         logger.error(`CONFIG: Getting approved directories: ${err}`);
     }

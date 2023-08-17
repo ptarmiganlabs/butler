@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable camelcase */
 const fs = require('fs/promises');
 const upath = require('upath');

@@ -5,7 +5,6 @@ const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../globals');
-const scriptLog = require('./scriptlog');
 const slackApi = require('./slack_api');
 
 let rateLimiterMemoryFailedReloads;
@@ -374,6 +373,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
         const msg = slackConfig;
 
         if (slackConfig.messageType === 'basic') {
+            // Compile template
             compiledTemplate = handlebars.compile(slackConfig.basicMsgTemplate);
             renderedText = compiledTemplate(templateContext);
 
@@ -419,7 +419,10 @@ async function sendSlack(slackConfig, templateContext, msgType) {
         } else if (slackConfig.messageType === 'formatted') {
             try {
                 if (fs.existsSync(slackConfig.templateFile) === true) {
+                    // Read template file
                     const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
+
+                    // Compile template
                     compiledTemplate = handlebars.compile(template);
 
                     if (msgType === 'reload') {
@@ -432,6 +435,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
                     }
 
+                    // Render Slack message using template. Do not convert to &lt; and &gt; as Slack will not render the message correctly
                     slackMsg = compiledTemplate(templateContext);
 
                     globals.logger.debug(`SLACKNOTIF: Rendered message:\n${slackMsg}`);
@@ -472,17 +476,25 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 }
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = await scriptLog.getScriptLog(
-                    reloadParams.taskId,
-                    globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines'),
-                    globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines')
-                );
+                const scriptLogData = reloadParams.scriptLog;
+
+                // Reduce script log lines to only the ones we want to send to Slack
+                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines');
+                scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines');
+
+                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                    .join('\r\n');
+
                 globals.logger.debug(`TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
                 // These are the template fields that can be used in Slack body
+                // Regular expression for converting escapöing single quote
+
                 const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
@@ -518,6 +530,19 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
                 };
+
+                // Replace all single and dpouble quotes in scriptLogHead and scriptLogTail with escaped dittos
+                // This is needed to avoid breaking the Slack message JSON
+                const regExpSingle = /'/gm;
+                const regExpDouble = /"/gm;
+                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "\'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "\'").replace(regExpDouble, "\\'");
+
+                // Replace all single and double quotes in executionDetailsConcatenated with escaped ditto
+                // This is needed to avoid breaking the Slack message JSON
+                templateContext.executionDetailsConcatenated = templateContext.executionDetailsConcatenated
+                    .replace(regExpSingle, "\\'")
+                    .replace(regExpDouble, "\\'");
 
                 // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
                 // https://api.slack.com/reference/block-kit/blocks#section_fields
@@ -600,11 +625,17 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 }
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = await scriptLog.getScriptLog(
-                    reloadParams.taskId,
-                    globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines'),
-                    globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines')
-                );
+                const scriptLogData = reloadParams.scriptLog;
+
+                // Reduce script log lines to only the ones we want to send to Slack
+                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines');
+                scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines');
+
+                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                    .join('\r\n');
+
                 globals.logger.debug(`TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.

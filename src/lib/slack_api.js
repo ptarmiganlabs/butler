@@ -18,6 +18,7 @@ async function slackSend(slackConfig, logger) {
         if (slackConfig.messageType === 'basic') {
             Object.assign(body, slackConfig.text);
         } else if (slackConfig.messageType === 'formatted') {
+            // Parse the JSON string into an object
             Object.assign(body, JSON.parse(slackConfig.text));
         } else if (slackConfig.messageType === 'restmsg') {
             Object.assign(body, slackConfig.text);

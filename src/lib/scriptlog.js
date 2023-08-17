@@ -267,7 +267,7 @@ async function failedTaskStoreLogOnDisk(reloadParams) {
         const reloadLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.logDirectory');
 
         // Get misc script log info
-        const scriptLog = await getScriptLog(reloadParams.taskId, 1, 1);
+        const { scriptLog } = reloadParams;
 
         // Create directory for script log, if needed
         const logDate = reloadParams.logTimeStamp.slice(0, 10);

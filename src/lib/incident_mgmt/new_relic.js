@@ -3,7 +3,6 @@ const QrsInteract = require('qrs-interact');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../../globals');
-const scriptLog = require('../scriptlog');
 
 function getQRSConfig() {
     const cfg = {
@@ -412,11 +411,19 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             payload[0].common.attributes = Object.assign(incidentConfig.attributes, reloadParams);
 
             // Get script logs
-            const scriptLogData = await scriptLog.getScriptLog(
-                reloadParams.qs_taskId,
-                0,
-                globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines')
+            const scriptLogData = reloadParams.scriptLog;
+
+            // Reduce script log lines to only the ones we want to send to New Relic
+            scriptLogData.scriptLogHeadCount = 0;
+            scriptLogData.scriptLogTailCount = globals.config.get(
+                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines'
             );
+
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+
             globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
             // Use script log data to enrich log entry sent to New Relic
