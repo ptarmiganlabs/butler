@@ -105,13 +105,15 @@
         "snyk": "^1.1179.0"
     },
     "pkg": {
-        "scripts": [
-            "node_modules/enigma.js/**/*.json"
-        ],
         "assets": [
+            "node_modules/axios/**/*",
             "node_modules/fsevents/fsevents.node",
             "../docs/api_doc/butler-api.yaml",
             "node_modules/@fastify/swagger"
+        ],
+        "scripts": [
+            "node_modules/enigma.js/**/*.json",
+            "node_modules/js-yaml/**/*.js"
         ]
     }
 }
