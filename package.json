@@ -88,6 +88,7 @@
         "nodemailer-express-handlebars": "^6.1.0",
         "npm": "^9.7.1",
         "os": "^0.1.2",
+        "posthog-node": "^3.1.1",
         "promise": "^8.3.0",
         "qrs-interact": "^6.3.1",
         "rate-limiter-flexible": "^2.4.1",
