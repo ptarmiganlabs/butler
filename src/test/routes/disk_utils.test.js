@@ -310,6 +310,7 @@ describe('E7: POST /v4/createdir', () => {
             await fs.rm(p, { recursive: true });
         } catch {
             //
+            console.log('Error deleting test directory. Does not exist? (1)');
         }
 
         try {
@@ -318,6 +319,7 @@ describe('E7: POST /v4/createdir', () => {
             });
         } catch (err) {
             result = err.response;
+            console.log('Error creating test directory');
         }
 
         // Wait for a bit
@@ -334,6 +336,7 @@ describe('E7: POST /v4/createdir', () => {
             await fs.rm(p, { recursive: true });
         } catch {
             //
+            console.log('Error deleting test directory. Does not exist? (2)');
         }
 
         // console.log(file1Stat);
