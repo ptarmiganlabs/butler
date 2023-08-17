@@ -1,5 +1,41 @@
 # Changelog
 
+## [9.1.0](https://github.com/ptarmiganlabs/butler/compare/v9.0.0...v9.1.0) (2023-08-17)
+
+
+### Features
+
+* Only get script log once from Sense server ([f193538](https://github.com/ptarmiganlabs/butler/commit/f19353809e44f17fcce5be3eca1ff5cc0c2925c6)), closes [#741](https://github.com/ptarmiganlabs/butler/issues/741)
+* **telemetry:** Change to using PostHog for telemetry collection ([4da339a](https://github.com/ptarmiganlabs/butler/commit/4da339ae3f7d9ce7d3e9fc24ddd442fc19157c7d)), closes [#744](https://github.com/ptarmiganlabs/butler/issues/744)
+
+
+### Bug Fixes
+
+* Automatic dependencies scanning ([1d8201d](https://github.com/ptarmiganlabs/butler/commit/1d8201dcd0bf469e3690687f27260de61cbc739a))
+* **deps:** update dependency @fastify/swagger to v8.9.0 ([b0f5440](https://github.com/ptarmiganlabs/butler/commit/b0f54400a3505b188fe6e5a5a4b6ac45b843f09f))
+
+
+### Miscellaneous
+
+* **deps:** mkdirp v3 update ([7a0f00d](https://github.com/ptarmiganlabs/butler/commit/7a0f00df4880f136b9d80e7714ef1ebf11dac0ab))
+* **deps:** Update @fastify/swagger ([07ed66a](https://github.com/ptarmiganlabs/butler/commit/07ed66a1c4d70cec785a3e91ee8c450f395ce62c))
+* **deps:** Update dependencies ([c393a9d](https://github.com/ptarmiganlabs/butler/commit/c393a9dfcdf44398fb9a287d5db394ce3245a5df))
+* **deps:** Upgrade ms-teams-webhook dependency ([6e7814a](https://github.com/ptarmiganlabs/butler/commit/6e7814a602e06c7244c256a76d0a15db5738fc58)), closes [#725](https://github.com/ptarmiganlabs/butler/issues/725)
+* **deps:** Upgrade to Axios 1.4 ([ef7034b](https://github.com/ptarmiganlabs/butler/commit/ef7034b96181dc2f433c21f552203d756c6da008))
+* Incorrect JS file name ([de88f61](https://github.com/ptarmiganlabs/butler/commit/de88f61020e59a46feb082d72c3ce60b612a7f20))
+* Install esbuild pre binary build ([1516778](https://github.com/ptarmiganlabs/butler/commit/1516778ff7e058f501018cc2eeea3be9b29b13ff))
+
+
+### Refactoring
+
+* Reorganize source code ([e4febe6](https://github.com/ptarmiganlabs/butler/commit/e4febe684b61fd281020d7759e7d7624514d51f2))
+* **tests:** Update test cases ([c9710b2](https://github.com/ptarmiganlabs/butler/commit/c9710b2820fff3582734c6392cb030ee6b29865f))
+
+
+### Documentation
+
+* Fix badges ([d1e1405](https://github.com/ptarmiganlabs/butler/commit/d1e140584a32279f6415d2811c201124f8353e13))
+
 ## [9.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v9.0.0...butler-v9.0.0) (2023-06-13)
 
 
