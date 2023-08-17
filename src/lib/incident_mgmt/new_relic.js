@@ -337,7 +337,11 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
         // Build final payload
         const payload = [];
 
-        if (incidentConfig?.eventType === 'qs_reloadTaskAbortedEvent' || incidentConfig?.logType === 'qs_reloadTaskFailedLog') {
+        if (
+            incidentConfig?.eventType === 'qs_reloadTaskAbortedEvent' ||
+            incidentConfig?.eventType === 'qs_reloadTaskFailedEvent' ||
+            incidentConfig?.logType === 'qs_reloadTaskFailedLog'
+        ) {
             payload.push(Object.assign(incidentConfig.attributes, reloadParams));
         } else if (incidentConfig?.eventType === 'qs_serviceStateEvent') {
             payload.push(incidentConfig.attributes);
@@ -393,7 +397,13 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
             }
         }
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC 1 message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC 1 stack: ${err.stack}`);
+        }
     }
 }
 
@@ -510,7 +520,7 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             }
         }
     } catch (err) {
-        globals.logger.error(`NEWRELIC: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
     }
 }
 
