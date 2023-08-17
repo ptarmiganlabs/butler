@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.1.1](https://github.com/ptarmiganlabs/butler/compare/v9.1.0...v9.1.1) (2023-08-17)
+
+
+### Bug Fixes
+
+* **docker:** Docker image build fixed ([d230e14](https://github.com/ptarmiganlabs/butler/commit/d230e14085f297194ed8c3053293654d3c2931bd))
+* **new-relic:** Send task failed event to New Relic ([154a921](https://github.com/ptarmiganlabs/butler/commit/154a921f8e8d406744a7f9aa46416dec6bd20b68)), closes [#750](https://github.com/ptarmiganlabs/butler/issues/750)
+
+
+### Miscellaneous
+
+* Revert back to auto version numbering ([886b4f6](https://github.com/ptarmiganlabs/butler/commit/886b4f694c5151ce7f5eba4577847499594c436a))
+
 ## [9.1.0](https://github.com/ptarmiganlabs/butler/compare/v9.1.0...v9.1.0) (2023-08-17)
 
 
