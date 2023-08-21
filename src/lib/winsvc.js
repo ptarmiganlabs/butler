@@ -60,10 +60,12 @@ function exists(serviceName, host = null) {
             // On success, check
             (allServices) => {
                 // Find provided name
-                for (let i = 0; i < allServices.length; i++) {
+                for (let i = 0; i < allServices.length; ) {
                     if (allServices[i] === serviceName) {
                         resolve(true);
                     }
+
+                    i += 1;
                 }
 
                 // Not found, resolve false

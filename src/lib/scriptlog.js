@@ -33,6 +33,7 @@ function compareTaskDetails(a, b) {
     return 0;
 }
 
+// eslint-disable-next-line no-unused-vars
 function delay(milliseconds) {
     return new Promise((resolve) => {
         setTimeout(resolve, milliseconds);
