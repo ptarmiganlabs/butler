@@ -8,8 +8,8 @@
         "format1": "npm run format",
         "format": "npm run format:prettier",
         "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write",
-        "start": "fastify start -l info app.js",
-        "dev": "fastify start -w -l info -P app.js"
+        "butler": "node src/butler.js",
+        "lint": "npx eslint src/**/*.js"    
     },
     "repository": {
         "type": "git",
