@@ -209,7 +209,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             return false;
         }
 
-        if (!globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable')) {
+        if (!globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable')) {
             // Teams notifications are disabled
             globals.logger.error(
                 "SERVICE MONITOR TEAMS: Service monitor Teams notifications are disabled in config file - won't send Teams message"
@@ -436,7 +436,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Slack
+                // Reduce script log lines to only the ones we want to send to Teams
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
 
@@ -569,7 +569,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Slack
+                // Reduce script log lines to only the ones we want to send to Teams
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
 
