@@ -1,6 +1,5 @@
 // Load global variables and functions
 const globals = require('../globals');
-const QrsInteract = require('qrs-interact');
 const smtp = require('../lib/smtp');
 const slack = require('../lib/slack_notification');
 const webhookOut = require('../lib/webhook_notification');

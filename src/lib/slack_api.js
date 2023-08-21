@@ -26,7 +26,6 @@ async function slackSend(slackConfig, logger) {
 
         const res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
         logger.debug(`SLACKSEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
-        return res;
     } catch (err) {
         logger.error(`SLACKSEND: ${err}"`);
     }
