@@ -430,9 +430,13 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             );
 
             scriptLogData.scriptLogHead = '';
-            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                .join('\r\n');
+            if (scriptLogData?.scriptLogFull?.length > 0) {
+                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                    .join('\r\n');
+            } else {
+                scriptLogData.scriptLogTail = '';
+            }
 
             globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -520,7 +524,14 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             }
         }
     } catch (err) {
-        globals.logger.error(`NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC 2 message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC 2 stack: ${err.stack}`);
+        }
+
     }
 }
 
