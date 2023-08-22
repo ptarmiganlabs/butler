@@ -4,6 +4,7 @@ const handlebars = require('handlebars');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../globals');
+const { getAppOwner } = require('../qrs_util/get_app_owner');
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -433,6 +434,9 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     return 1;
                 }
 
+                // Get app owner
+                const appOwner = await getAppOwner(reloadParams.appId);
+
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
@@ -491,6 +495,10 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    appOwnerName: appOwner.userName,
+                    appOwnerUserId: appOwner.userId,
+                    appOwnerUserDirectory: appOwner.directory,
+                    appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
                 // Check if script log is longer than 3000 characters. Truncate if so.
@@ -572,6 +580,9 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     return 1;
                 }
 
+                // Get app owner
+                const appOwner = await getAppOwner(reloadParams.appId);
+
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
@@ -629,6 +640,10 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    appOwnerName: appOwner.userName,
+                    appOwnerUserId: appOwner.userId,
+                    appOwnerUserDirectory: appOwner.directory,
+                    appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
                 // Check if script log is longer than 3000 characters. Truncate if so.

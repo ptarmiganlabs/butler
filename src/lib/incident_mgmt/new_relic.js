@@ -132,7 +132,19 @@ function getReloadFailedEventConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC RELOADFAILEDEVENT: ${err}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT: ${JSON.stringify(err, null, 2)}`);
+        }
+
         return false;
     }
 }
@@ -196,7 +208,19 @@ function getReloadFailedLogConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC RELOADFAILEDLOG: ${err}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDLOG message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDLOG stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC RELOADFAILEDLOG: ${JSON.stringify(err, null, 2)}`);
+        }
+
         return false;
     }
 }
@@ -263,7 +287,19 @@ function getReloadAbortedEventConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC RELOADABORTEDEVENT: ${err}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT: ${JSON.stringify(err, null, 2)}`);
+        }
+
         return false;
     }
 }
@@ -327,7 +363,19 @@ function getReloadAbortedLogConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`NEWRELIC RELOADABORTEDLOG: ${err}`);
+        if (err.message) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDLOG message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDLOG stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC RELOADABORTEDLOG: ${JSON.stringify(err, null, 2)}`);
+        }
+
         return false;
     }
 }
@@ -403,6 +451,11 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
 
         if (err.stack) {
             globals.logger.error(`NEWRELIC 1 stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
         }
     }
 }
@@ -532,6 +585,10 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
             globals.logger.error(`NEWRELIC 2 stack: ${err.stack}`);
         }
 
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+        }
     }
 }
 
@@ -653,7 +710,19 @@ async function sendReloadTaskFailureEvent(reloadParams) {
                 sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
+                if (err.message) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 1 message: ${err.message}`);
+                }
+
+                if (err.stack) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 1 stack: ${err.stack}`);
+                }
+
+                // If neither message nor stack is available, just log the error object
+                if (!err.message && !err.stack) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
+                }
+
                 return null;
             }
         })
@@ -781,7 +850,19 @@ async function sendReloadTaskFailureLog(reloadParams) {
                 sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                globals.logger.error(`TASK FAILED NEWRELIC: ${err}`);
+                if (err.message) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 2 message: ${err.message}`);
+                }
+
+                if (err.stack) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 2 stack: ${err.stack}`);
+                }
+
+                // If neither message nor stack is available, just log the error object
+                if (!err.message && !err.stack) {
+                    globals.logger.error(`TASK FAILED NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+                }
+
                 return null;
             }
         })
@@ -911,7 +992,19 @@ function sendReloadTaskAbortedEvent(reloadParams) {
                 sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
+                if (err.message) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 1 message: ${err.message}`);
+                }
+
+                if (err.stack) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 1 stack: ${err.stack}`);
+                }
+
+                // If neither message nor stack is available, just log the error object
+                if (!err.message && !err.stack) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
+                }
+
                 return null;
             }
         })
@@ -1041,7 +1134,19 @@ function sendReloadTaskAbortedLog(reloadParams) {
                 sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                globals.logger.error(`TASK ABORT NEWRELIC: ${err}`);
+                if (err.message) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 2 message: ${err.message}`);
+                }
+
+                if (err.stack) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 2 stack: ${err.stack}`);
+                }
+
+                // If neither message nor stack is available, just log the error object
+                if (!err.message && !err.stack) {
+                    globals.logger.error(`TASK ABORT NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+                }
+
                 return null;
             }
         })

@@ -2,6 +2,7 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 const axios = require('axios');
 
 const globals = require('../globals');
+const { getAppOwner } = require('../qrs_util/get_app_owner');
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -143,6 +144,9 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
 
+        // Get app owner
+        const appOwner = await getAppOwner(reloadParams.appId);
+
         // eslint-disable-next-line no-restricted-syntax
         for (const webhook of webhookConfig.webhooks) {
             globals.logger.debug(`WEBHOOKOUT: Processing webhook ${JSON.stringify(webhook)}`);
@@ -179,6 +183,10 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                 params.append('taskId', reloadParams.taskId);
                 params.append('appName', reloadParams.appName);
                 params.append('appId', reloadParams.appId);
+                params.append('appOwnerName', appOwner.userName);
+                params.append('appOwnerUserDirectory', appOwner.directory);
+                params.append('appOwnerUserId', appOwner.userId);
+                params.append('appOwnerEmail', appOwner.emails?.length > 0 ? appOwner.emails[0] : '');
                 params.append('logTimeStamp', reloadParams.logTimeStamp);
                 params.append('logLevel', reloadParams.logLevel);
                 params.append('executionId', reloadParams.executionId);
@@ -207,6 +215,10 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                         taskId: reloadParams.taskId,
                         appName: reloadParams.appName,
                         appId: reloadParams.appId,
+                        appOwnerName: appOwner.userName,
+                        appOwnerUserDirectory: appOwner.directory,
+                        appOwnerUserId: appOwner.userId,
+                        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                         logTimeStamp: reloadParams.logTimeStamp,
                         logLevel: reloadParams.logLevel,
                         executionId: reloadParams.executionId,
@@ -228,6 +240,10 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                         taskId: reloadParams.taskId,
                         appName: reloadParams.appName,
                         appId: reloadParams.appId,
+                        appOwnerName: appOwner.userName,
+                        appOwnerUserDirectory: appOwner.directory,
+                        appOwnerUserId: appOwner.userId,
+                        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                         logTimeStamp: reloadParams.logTimeStamp,
                         logLevel: reloadParams.logLevel,
                         executionId: reloadParams.executionId,
@@ -242,7 +258,18 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
             globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
         }
     } catch (err) {
-        globals.logger.error(`WEBHOOKOUT: ${JSON.stringify(err, null, 2)}`);
+        if (err.message) {
+            globals.logger.error(`WEBHOOKOUT 1 message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`WEBHOOKOUT 1 stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`WEBHOOKOUT 1: ${JSON.stringify(err, null, 2)}`);
+        }
     }
 }
 
@@ -345,7 +372,18 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
             globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Webhook response: ${response}`);
         }
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR SEND WEBHOOK: ${JSON.stringify(err, null, 2)}`);
+        if (err.message) {
+            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1 message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1 stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1: ${JSON.stringify(err, null, 2)}`);
+        }
     }
 }
 
