@@ -130,6 +130,9 @@ function status(serviceName, host = null) {
                     // Get state name
                     return resolve(stateName);
                 });
+
+                // We should never arrive here, but if we do return null
+                return null;
             },
 
             // Reject on error
@@ -173,16 +176,17 @@ function details(serviceName, host = null) {
                 // Run command to get service details with provided data
                 exec(command, (err, stdout) => {
                     let i = 0;
-                    const startTypeRegex = new RegExp(/\d/);
-                    const dependenciesRegex = new RegExp(/(?<=\s*DEPENDENCIES)(\s*:.*\r\n)*/);
+                    const startTypeRegex = /\d/;
+                    const dependenciesRegex = /(?<=\s*DEPENDENCIES)(\s*:.*\r\n)*/;
 
                     const deps = dependenciesRegex.exec(stdout)[0].toString().split('\r\n');
 
-                    for (i = 0; i < deps.length; ++i) {
+                    for (i = 0; i < deps.length; ) {
                         deps[i] = deps[i].replace(/\s*: /, '');
                         if (deps[i] === '') {
                             deps.splice(i, 1);
                         }
+                        i += 1;
                     }
 
                     // On error, reject and exit
@@ -220,6 +224,9 @@ function details(serviceName, host = null) {
                         dependencies: deps,
                     });
                 });
+
+                // We should never arrive here, but if we do return null
+                return null;
             },
 
             // Reject on error
