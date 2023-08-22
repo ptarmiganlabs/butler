@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.2.0](https://github.com/ptarmiganlabs/butler/compare/v9.1.2...v9.2.0) (2023-08-22)
+
+
+### Features
+
+* **reload-alerts:** Make app owner info available in reload failed alerts ([1912d3e](https://github.com/ptarmiganlabs/butler/commit/1912d3e0c515ede34bebfc1d0ec048a17054ee79)), closes [#728](https://github.com/ptarmiganlabs/butler/issues/728)
+
 ## [9.1.2](https://github.com/ptarmiganlabs/butler/compare/v9.1.1...v9.1.2) (2023-08-22)
 
 
