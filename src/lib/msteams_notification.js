@@ -440,10 +440,16 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
 
-                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                if (scriptLogData?.scriptLogFull?.length > 0) {
+                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                        .join('\r\n');
+                } else {
+                    scriptLogData.scriptLogHead = '';
+                    scriptLogData.scriptLogTail = '';
+                }
 
                 globals.logger.debug(`TASK FAILED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -573,10 +579,15 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
 
-                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                if (scriptLogData?.scriptLogFull?.length > 0) {
+                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                        .join('\r\n');
+                } else {
+                    scriptLogData.scriptLogHead = '';
+                    scriptLogData.scriptLogTail = '';
+                }
 
                 globals.logger.debug(`TASK ABORTED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 

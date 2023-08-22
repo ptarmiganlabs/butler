@@ -1,5 +1,5 @@
 # Build Docker image for Amd64
-FROM node:20-bullseye-slim
+FROM node:19-bullseye-slim
 
 # Add metadata about the image
 LABEL maintainer="Göran Sander mountaindude@ptarmiganlabs.com"
@@ -13,7 +13,7 @@ COPY package.json .
 RUN npm install
 
 # Copy app's source files
-COPY ./src .
+COPY . .
 
 # Create and use non-root user 
 RUN groupadd -r nodejs \
@@ -22,7 +22,7 @@ RUN groupadd -r nodejs \
 USER nodejs
 
 # Set up Docker healthcheck
-HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "docker-healthcheck.js"]
+HEALTHCHECK --interval=12s --timeout=12s --start-period=30s CMD ["node", "src/docker-healthcheck.js"]
 
-CMD ["node", "butler.js"]
+CMD ["node", "src/butler.js"]
 

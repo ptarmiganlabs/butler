@@ -10,50 +10,48 @@ const globals = require('../globals');
  * @param {*} cpValue
  * @returns
  */
-function isCustomPropertyValueSet(taskId, cpName, cpValue) {
-    return new Promise(async (resolve, reject) => {
-        globals.logger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
+async function isCustomPropertyValueSet(taskId, cpName, cpValue) {
+    globals.logger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
 
+    try {
+        const qrsInstance = new QrsInteract({
+            hostname: globals.configQRS.host,
+            portNumber: globals.configQRS.port,
+            headers: {
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            },
+            certificates: {
+                certFile: path.resolve(globals.configQRS.certPaths.certPath),
+                keyFile: path.resolve(globals.configQRS.certPaths.keyPath),
+            },
+        });
+
+        // Get info about the task
         try {
-            const qrsInstance = new QrsInteract({
-                hostname: globals.configQRS.host,
-                portNumber: globals.configQRS.port,
-                headers: {
-                    'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-                },
-                certificates: {
-                    certFile: path.resolve(globals.configQRS.certPaths.certPath),
-                    keyFile: path.resolve(globals.configQRS.certPaths.keyPath),
-                },
-            });
+            globals.logger.debug(
+                `ISCPVALUESET: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
+            );
 
-            // Get info about the task
-            try {
-                globals.logger.debug(
-                    `ISCPVALUESET: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
-                );
+            const result = await qrsInstance.Get(
+                `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
+            );
+            globals.logger.debug(`ISCPVALUESET: Got response: ${result.statusCode} for CP ${cpName}`);
 
-                const result = await qrsInstance.Get(
-                    `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
-                );
-                globals.logger.debug(`ISCPVALUESET: Got response: ${result.statusCode} for CP ${cpName}`);
-
-                if (result.body.length === 1) {
-                    // Yes, the CP/value exists for this task
-                    resolve(true);
-                } else {
-                    // Value not set for the CP
-                    resolve(false);
-                }
-            } catch (err) {
-                globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err.message}`);
-                resolve(false);
+            if (result.body.length === 1) {
+                // Yes, the CP/value exists for this task
+                return true;
             }
+
+            // Value not set for the CP
+            return false;
         } catch (err) {
-            globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err}`);
-            reject();
+            globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err.message}`);
+            return false;
         }
-    });
+    } catch (err) {
+        globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err}`);
+        return false;
+    }
 }
 
 /**
@@ -62,57 +60,51 @@ function isCustomPropertyValueSet(taskId, cpName, cpValue) {
  * @param {*} cpName
  * @returns
  */
-function getTaskCustomPropertyValues(taskId, cpName) {
-    return new Promise(async (resolve, reject) => {
-        globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
+async function getTaskCustomPropertyValues(taskId, cpName) {
+    globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
+    try {
+        const qrsInstance = new QrsInteract({
+            hostname: globals.configQRS.host,
+            portNumber: globals.configQRS.port,
+            headers: {
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            },
+            certificates: {
+                certFile: path.resolve(globals.configQRS.certPaths.certPath),
+                keyFile: path.resolve(globals.configQRS.certPaths.keyPath),
+            },
+        });
+
+        // Get info about the task
         try {
-            const qrsInstance = new QrsInteract({
-                hostname: globals.configQRS.host,
-                portNumber: globals.configQRS.port,
-                headers: {
-                    'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-                },
-                certificates: {
-                    certFile: path.resolve(globals.configQRS.certPaths.certPath),
-                    keyFile: path.resolve(globals.configQRS.certPaths.keyPath),
-                },
-            });
+            globals.logger.debug(`GETTASKCPVALUE: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}'`);
 
-            // Get info about the task
-            try {
-                globals.logger.debug(
-                    `GETTASKCPVALUE: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}'`
-                );
+            const result = await qrsInstance.Get(`task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}'`);
+            globals.logger.debug(`GETTASKCPVALUE: Got response: ${result.statusCode} for CP ${cpName}`);
 
-                const result = await qrsInstance.Get(
-                    `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}'`
-                );
-                globals.logger.debug(`GETTASKCPVALUE: Got response: ${result.statusCode} for CP ${cpName}`);
+            if (result.body.length === 1) {
+                // Yes, the CP exists for this task. Return all values present for this CP
 
-                if (result.body.length === 1) {
-                    // Yes, the CP exists for this task. Return all values present for this CP
+                // Get array of all values for this CP, for this task
+                const cpValues1 = result.body[0].customProperties.filter((cp) => cp.definition.name === cpName);
 
-                    // Get array of all values for this CP, for this task
-                    const cpValues1 = result.body[0].customProperties.filter((cp) => cp.definition.name === cpName);
+                // Get array of all CP values
+                const cpValues2 = cpValues1.map((item) => item.value);
 
-                    // Get array of all CP values
-                    const cpValues2 = cpValues1.map((item) => item.value);
-
-                    resolve(cpValues2);
-                } else {
-                    // The task and/or the CP does not exist
-                    resolve([]);
-                }
-            } catch (err) {
-                globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err.message}`);
-                resolve([]);
+                return cpValues2;
             }
+
+            // The task and/or the CP does not exist
+            return [];
         } catch (err) {
-            globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err}`);
-            reject();
+            globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err.message}`);
+            return [];
         }
-    });
+    } catch (err) {
+        globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err}`);
+        return false;
+    }
 }
 
 module.exports = {

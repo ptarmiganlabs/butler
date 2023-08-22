@@ -482,10 +482,16 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines');
 
-                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                if (scriptLogData?.scriptLogFull?.length > 0) {
+                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                        .join('\r\n');
+                } else {
+                    scriptLogData.scriptLogHead = '';
+                    scriptLogData.scriptLogTail = '';
+                }
 
                 globals.logger.debug(`TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -535,8 +541,8 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 // This is needed to avoid breaking the Slack message JSON
                 const regExpSingle = /'/gm;
                 const regExpDouble = /"/gm;
-                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "\'").replace(regExpDouble, "\\'");
-                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "\'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
 
                 // Replace all single and double quotes in executionDetailsConcatenated with escaped ditto
                 // This is needed to avoid breaking the Slack message JSON
@@ -631,10 +637,16 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines');
                 scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines');
 
-                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                if (scriptLogData?.scriptLogFull?.length > 0) {
+                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                        .join('\r\n');
+                } else {
+                    scriptLogData.scriptLogHead = '';
+                    scriptLogData.scriptLogTail = '';
+                }
 
                 globals.logger.debug(`TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 

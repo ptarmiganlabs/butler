@@ -17,6 +17,7 @@ function serviceUptimeStart() {
     // eslint-disable-next-line no-extend-native
     Number.prototype.toTime = function (isSec) {
         const ms = isSec ? this * 1e3 : this;
+        // eslint-disable-next-line no-bitwise
         const lm = ~(4 * !!isSec);
         /* limit fraction */
         const fmt = new Date(ms).toISOString().slice(11, lm);

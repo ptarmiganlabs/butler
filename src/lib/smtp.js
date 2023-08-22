@@ -377,7 +377,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         emailAlertCpTaskSpecificEmailAddressName
     );
 
-    if (taskSpecificAlertEmailAddresses.length > 0) {
+    if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
             `TASK FAILED ALERT EMAIL: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`
         );
@@ -390,7 +390,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // 2.1 Yes: Add system-wide list of recipients to send list
         globals.logger.verbose(`TASK FAILED ALERT EMAIL: Send alert emails for all tasks`);
 
-        if (globalSendList.length > 0) {
+        if (globalSendList?.length > 0) {
             globals.logger.debug(
                 `TASK FAILED ALERT EMAIL: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
             );
@@ -412,7 +412,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 `TASK FAILED ALERT EMAIL: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
-            if (globalSendList.length > 0) {
+            if (globalSendList?.length > 0) {
                 mainSendList = mainSendList.concat(globalSendList);
             }
         } else {
@@ -441,35 +441,47 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 // Is app owner on include list, i.e. list of app owners that should get notification emails?
                 // 3.1.2 No : Add list of specified app owners' email addresses to app owner send list
                 const includeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user');
-                const matchUsers = includeUsers.filter((user) => user.directory === appOwner.directory && user.userId === appOwner.userId);
-                if (matchUsers.length > 0) {
+                const matchUsers = includeUsers?.filter((user) => user.directory === appOwner.directory && user.userId === appOwner.userId);
+                if (matchUsers?.length > 0) {
                     // App owner is in list of included users. Add to app owner send list.
                     appOwnerSendList.push({
                         email: appOwner.emails,
                         directory: appOwner.directory,
                         userId: appOwner.userId,
                     });
+                } else {
+                    // No app owners on include list. Warn about this.
+                    globals.logger.warn(
+                        `TASK FAILED ALERT EMAIL: No app owners on include list for failed task. No app owners will receive notification emails.`
+                    );
                 }
             }
 
             // Now evaluate the app owner exclude list
             // 3.2 Is there an app owner exclude list?
             const excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
-            const matchExcludedUsers = excludeUsers.filter(
+            const matchExcludedUsers = excludeUsers?.filter(
                 (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
             );
-            if (matchExcludedUsers.length > 0) {
+            if (matchExcludedUsers?.length > 0) {
                 // App owner is in list of app owners that should NOT receive notification emails
                 // Remove app owner email address from app owner send list (if it's already there)
                 // 3.2.1 Yes: Remove entries on the exclude list from app owner send list
-                appOwnerSendList = appOwnerSendList.filter(
+                appOwnerSendList = appOwnerSendList?.filter(
                     (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId
                 );
             }
             // 3.3 Add app owner send list to main send list
-            const appOwnerSendListEmails = appOwnerSendList.map((item) => item.email);
-            if (appOwnerSendListEmails.length > 0) {
-                mainSendList = mainSendList.concat(appOwnerSendListEmails[0]);
+            const appOwnerSendListEmails = appOwnerSendList?.map((item) => item.email);
+            if (appOwnerSendListEmails?.length > 0) {
+                mainSendList = mainSendList?.concat(appOwnerSendListEmails[0]);
+            }
+
+            // Does the main sendlist contain any email addresses? Warn if not
+            if (mainSendList?.length === 0) {
+                globals.logger.warn(
+                    `TASK FAILED ALERT EMAIL: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                );
             }
         } else {
             globals.logger.warn(
@@ -492,14 +504,20 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send to Slack
+    // Reduce script log lines to only the ones we want to send in email
     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
     scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
 
-    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-        .join('\r\n');
+    if (scriptLogData?.scriptLogFull?.length > 0) {
+        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+            .join('\r\n');
+    } else {
+        scriptLogData.scriptLogHead = '';
+        scriptLogData.scriptLogTail = '';
+    }
 
     globals.logger.debug(`TASK FAILED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -614,7 +632,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         emailAlertCpTaskSpecificEmailAddressName
     );
 
-    if (taskSpecificAlertEmailAddresses.length > 0) {
+    if (taskSpecificAlertEmailAddresses?.length > 0) {
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
     }
 
@@ -623,7 +641,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         // 2.1 Yes: Add system-wide list of recipients to send list
         globals.logger.verbose(`TASK ABORTED ALERT EMAIL: Send alert emails for all tasks`);
 
-        if (globalSendList.length > 0) {
+        if (globalSendList?.length > 0) {
             mainSendList = mainSendList.concat(globalSendList);
         }
     } else {
@@ -639,7 +657,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
         if (sendAlert === true) {
             // 2.2.1 Yes: Add system-wide list of recipients to send list
-            if (globalSendList.length > 0) {
+            if (globalSendList?.length > 0) {
                 mainSendList = mainSendList.concat(globalSendList);
             }
         } else {
@@ -668,8 +686,8 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                 // Is app owner on include list, i.e. list of app owners that should get notification emails?
                 // 3.1.2 No : Add list of specified app owners' email addresses to app owner send list
                 const includeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user');
-                const matchUsers = includeUsers.filter((user) => user.directory === appOwner.directory && user.userId === appOwner.userId);
-                if (matchUsers.length > 0) {
+                const matchUsers = includeUsers?.filter((user) => user.directory === appOwner.directory && user.userId === appOwner.userId);
+                if (matchUsers?.length > 0) {
                     // App owner is in list of included users. Add to app owner send list.
                     appOwnerSendList.push({
                         email: appOwner.emails,
@@ -682,21 +700,28 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             // Now evaluate the app owner exclude list
             // 3.2 Is there an app owner exclude list?
             const excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
-            const matchExcludedUsers = excludeUsers.filter(
+            const matchExcludedUsers = excludeUsers?.filter(
                 (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
             );
-            if (matchExcludedUsers.length > 0) {
+            if (matchExcludedUsers?.length > 0) {
                 // App owner is in list of app owners that should NOT receive notification emails
                 // Remove app owner email address from app owner send list (if it's already there)
                 // 3.2.1 Yes: Remove entries on the exclude list from app owner send list
-                appOwnerSendList = appOwnerSendList.filter(
+                appOwnerSendList = appOwnerSendList?.filter(
                     (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId
                 );
             }
             // 3.3 Add app owner send list to main send list
-            const appOwnerSendListEmails = appOwnerSendList.map((item) => item.email);
-            if (appOwnerSendListEmails.length > 0) {
-                mainSendList = mainSendList.concat(appOwnerSendListEmails[0]);
+            const appOwnerSendListEmails = appOwnerSendList?.map((item) => item.email);
+            if (appOwnerSendListEmails?.length > 0) {
+                mainSendList = mainSendList?.concat(appOwnerSendListEmails[0]);
+            }
+
+            // Does the main sendlist contain any email addresses? Warn if not
+            if (mainSendList?.length === 0) {
+                globals.logger.warn(
+                    `TASK ABORTED ALERT EMAIL: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                );
             }
         } else {
             globals.logger.warn(
@@ -719,14 +744,20 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send to Slack
+    // Reduce script log lines to only the ones we want to send in email
     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
     scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
 
-    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-        .join('\r\n');
+    if (scriptLogData?.scriptLogFull?.length > 0) {
+        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+            .join('\r\n');
+    } else {
+        scriptLogData.scriptLogHead = '';
+        scriptLogData.scriptLogTail = '';
+    }
 
     globals.logger.debug(`TASK ABORTED ALERT EMAIL: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
@@ -829,8 +860,11 @@ async function sendServiceMonitorNotificationEmail(serviceParams) {
 
     let mainSendList = [];
 
-    if (globalSendList.length > 0) {
+    if (globalSendList?.length > 0) {
         mainSendList = mainSendList.concat(globalSendList);
+    } else {
+        // Warn there are no recipients to send email to
+        globals.logger.warn(`SERVICE MONITOR EMAIL: No recipients to send alert email to.`);
     }
 
     // Make sure send list does not contain any duplicate email addresses
