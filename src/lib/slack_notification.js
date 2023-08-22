@@ -6,6 +6,7 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 
 const globals = require('../globals');
 const slackApi = require('./slack_api');
+const { getAppOwner } = require('../qrs_util/get_app_owner');
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -475,6 +476,9 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     return 1;
                 }
 
+                // Get app owner
+                const appOwner = await getAppOwner(reloadParams.appId);
+
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
@@ -535,6 +539,10 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    appOwnerName: appOwner.userName,
+                    appOwnerUserId: appOwner.userId,
+                    appOwnerUserDirectory: appOwner.directory,
+                    appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
                 // Replace all single and dpouble quotes in scriptLogHead and scriptLogTail with escaped dittos
@@ -630,6 +638,9 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     return 1;
                 }
 
+                // Get app owner
+                const appOwner = await getAppOwner(reloadParams.appId);
+
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
@@ -688,6 +699,10 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    appOwnerName: appOwner.userName,
+                    appOwnerUserId: appOwner.userId,
+                    appOwnerUserDirectory: appOwner.directory,
+                    appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
                 // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API

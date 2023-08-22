@@ -420,12 +420,14 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         }
     }
 
+    // Get app owner
+    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
+
     // If enabled in config file: Add app owners (excluding those that don't have an email address!) to list of recipients
     // 3 Should app owners get alerts?
     if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') === true) {
         // App owners (at least some of them - maybe all) should get notification email
         // 3.1 Yes: Should all app owners get alerts?
-        const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
         let appOwnerSendList = [];
 
         // If the current app's owner doesn't have an email address there is nothing to do
@@ -549,6 +551,10 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
         qlikSenseQMC: senseUrls.qmcUrl,
         qlikSenseHub: senseUrls.hubUrl,
+        appOwnerName: appOwner.userName,
+        appOwnerUserId: appOwner.userId,
+        appOwnerUserDirectory: appOwner.directory,
+        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
     };
 
     // eslint-disable-next-line no-restricted-syntax
@@ -665,12 +671,14 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         }
     }
 
+    // Get app owner
+    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
+
     // If enabled in config file: Add app owners (excluding those that don't have an email address!) to list of recipients
     // 3 Should app owners get alerts?
     if (globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') === true) {
         // App owners (at least some of them - maybe all) should get notification email
         // 3.1 Yes: Should all app owners get alerts?
-        const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
         let appOwnerSendList = [];
 
         // If the current app's owner doesn't have an email address there is nothing to do
@@ -789,6 +797,10 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
         qlikSenseQMC: senseUrls.qmcUrl,
         qlikSenseHub: senseUrls.hubUrl,
+        appOwnerName: appOwner.userName,
+        appOwnerUserId: appOwner.userId,
+        appOwnerUserDirectory: appOwner.directory,
+        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
     };
 
     // eslint-disable-next-line no-restricted-syntax
