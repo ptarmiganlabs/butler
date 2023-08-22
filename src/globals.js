@@ -157,7 +157,30 @@ logTransports.push(
     })
 );
 
-const execPath = isPkg ? upath.dirname(process.execPath) : __dirname;
+// const execPath = isPkg ? upath.dirname(process.execPath) : __dirname;
+const execPath = isPkg ? upath.dirname(process.execPath) : process.cwd();
+
+if (config.Butler.logLevel === 'verbose' || config.Butler.logLevel === 'debug' || config.Butler.logLevel === 'silly') {
+    // We don't have a logging object yet, so use plain console.log
+
+    // Are we in a packaged app?
+    if (isPkg) {
+        // eslint-disable-next-line no-console
+        console.log(`Running in packaged app. Executable path: ${execPath}`);
+    } else {
+        // eslint-disable-next-line no-console
+        console.log(`Running in non-packaged environment. Executable path: ${execPath}`);
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(`Log file directory: ${upath.join(execPath, config.get('Butler.logDirectory'))}`);
+
+    // eslint-disable-next-line no-console
+    console.log(`upath.dirname(process.execPath): ${upath.dirname(process.execPath)}`);
+
+    // eslint-disable-next-line no-console
+    console.log(`process.cwd(): ${process.cwd()}`);
+}
 
 if (config.get('Butler.fileLogging')) {
     logTransports.push(
