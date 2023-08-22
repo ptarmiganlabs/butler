@@ -723,7 +723,6 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     `TASK ABORTED ALERT EMAIL: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`
                 );
             }
-
         } else {
             globals.logger.warn(
                 `TASK ABORTED ALERT EMAIL: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
