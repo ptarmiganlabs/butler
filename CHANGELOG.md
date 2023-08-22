@@ -1,5 +1,31 @@
 # Changelog
 
+## [9.1.2](https://github.com/ptarmiganlabs/butler/compare/v9.1.1...v9.1.2) (2023-08-22)
+
+
+### Bug Fixes
+
+* **alerts:** Empty alert recipient lists no longer cause errors ([34421ce](https://github.com/ptarmiganlabs/butler/commit/34421cec7d60c1a1569c5a896ac634f3189370c7)), closes [#640](https://github.com/ptarmiganlabs/butler/issues/640)
+* **docker:** Fix broken Docker image ([85f016e](https://github.com/ptarmiganlabs/butler/commit/85f016ec6ed8fbfa4163d5d6b4dfbe8417bab2a6)), closes [#764](https://github.com/ptarmiganlabs/butler/issues/764)
+* Enable Teams notif for Win service monitor now works ([a0761cb](https://github.com/ptarmiganlabs/butler/commit/a0761cb155ff96192e586f07dfec590fa81e41bd)), closes [#758](https://github.com/ptarmiganlabs/butler/issues/758)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies to stay safe and secure ([2165579](https://github.com/ptarmiganlabs/butler/commit/2165579f1fe172589ab339b9859aa0e98a608b13))
+
+
+### Refactoring
+
+* Add linting command to package.json ([b8332f8](https://github.com/ptarmiganlabs/butler/commit/b8332f8fc5109f7c45a03a0bedc2694acda0f3f1)), closes [#760](https://github.com/ptarmiganlabs/butler/issues/760)
+* Fix code linting issues ([b6312ac](https://github.com/ptarmiganlabs/butler/commit/b6312ac94092a10ec5ef8d722b342424e6cb6c32)), closes [#762](https://github.com/ptarmiganlabs/butler/issues/762)
+* Fix simpler code structure/linting issues ([c24c446](https://github.com/ptarmiganlabs/butler/commit/c24c446f2e9e71bf782339c3cf5b796e02944b00)), closes [#761](https://github.com/ptarmiganlabs/butler/issues/761)
+
+
+### Documentation
+
+* **reload-alert:** PDF explaining concept of reload alerts ([dd1efdd](https://github.com/ptarmiganlabs/butler/commit/dd1efdd9429be96b4992777a3f3677dd9eec6d03))
+
 ## [9.1.1](https://github.com/ptarmiganlabs/butler/compare/v9.1.0...v9.1.1) (2023-08-17)
 
 
