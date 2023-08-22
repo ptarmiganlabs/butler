@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "9.1.1",
+    "version": "9.1.2",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "scripts": {
         "test": "jest",
@@ -9,7 +9,7 @@
         "format": "npm run format:prettier",
         "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js}\" --write",
         "butler": "node src/butler.js",
-        "lint": "npx eslint src/**/*.js"    
+        "lint": "npx eslint src/**/*.js"
     },
     "repository": {
         "type": "git",
