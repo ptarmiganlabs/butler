@@ -91,7 +91,7 @@
         "posthog-node": "^3.1.2",
         "promise": "^8.3.0",
         "qrs-interact": "^6.3.1",
-        "rate-limiter-flexible": "^2.4.1",
+        "rate-limiter-flexible": "^3.0.0",
         "serializeapp": "^3.0.0",
         "systeminformation": "^5.18.3",
         "upath": "^2.0.1",
