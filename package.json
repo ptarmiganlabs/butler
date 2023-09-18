@@ -104,7 +104,7 @@
     "devDependencies": {
         "jest": "^29.6.3",
         "prettier": "^3.0.2",
-        "snyk": "^1.1205.0"
+        "snyk": "^1.1221.0"
     },
     "pkg": {
         "assets": [
