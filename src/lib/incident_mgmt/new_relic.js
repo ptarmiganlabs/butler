@@ -404,6 +404,9 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
         // Get array of all NR accounts defined in the config file
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined
+        globals.logger.verbose(`NEWRELIC EVENT: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+
         // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax
         for (const accountName of destNewRelicAccounts) {
@@ -538,6 +541,9 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
 
         // Get array of all NR accounts defined in the config file
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
+
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined
+        globals.logger.verbose(`NEWRELIC LOG: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
 
         // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax

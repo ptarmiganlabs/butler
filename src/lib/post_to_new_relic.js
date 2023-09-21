@@ -106,8 +106,12 @@ async function postButlerUptimeToNewRelic(fields) {
         const nrAccounts = globals.config.get('Butler.thirdPartyToolsCredentials.newRelic');
         globals.logger.debug(`UPTIME NEW RELIC: Complete New Relic config=${JSON.stringify(nrAccounts)}`);
 
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined
+        globals.logger.verbose(`UPTIME NEW RELIC: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+
         // Are there any NR destinations defined for uptime metrics?
         const nrDestAccounts = globals.config.get('Butler.uptimeMonitor.storeNewRelic.destinationAccount');
+        globals.logger.verbose(`UPTIME NEW RELIC: Destination account names for uptime data: ${JSON.stringify(nrDestAccounts, null, 2)}`);
 
         if (nrDestAccounts) {
             // eslint-disable-next-line no-restricted-syntax

@@ -84,6 +84,9 @@ async function handlerPostNewRelicMetric(request, reply) {
         // Get New Relic accounts
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined
+        globals.logger.verbose(`NEWRELIC METRIC: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+
         // eslint-disable-next-line no-restricted-syntax
         for (const accountName of globals.config.Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount) {
             globals.logger.debug(`NEWRELIC METRIC: Current loop New Relic config=${JSON.stringify(accountName)}`);
