@@ -208,6 +208,15 @@ const getLoggingLevel = () => logTransports.find((transport) => transport.name =
 // Are we running as standalone app or not?
 logger.verbose(`Running as standalone app: ${isPkg}`);
 
+// Verbose: Show what New Relic account names/API keys/account IDs have been defined (on command line or in config file)
+logger.verbose(
+    `New Relic account names/API keys/account IDs (via command line or config file): ${JSON.stringify(
+        config.Butler.thirdPartyToolsCredentials.newRelic,
+        null,
+        2
+    )}`
+);
+
 // Verify correct structure of config file
 configFileStructureAssert(config, logger);
 

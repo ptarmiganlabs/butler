@@ -223,6 +223,13 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
                 // Remove duplicates
                 const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
 
+                // Verbose: What New Relic destination accounts will the information be sent to?
+                globals.logger.verbose(
+                    `SERVICE MONITOR NEWRELIC: Sending service state event to New Relic for service "${
+                        params.serviceName
+                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`
+                );
+
                 sendNewRelicEvent(
                     serviceStateConfig,
                     {
@@ -310,6 +317,13 @@ async function sendServiceMonitorLog(serviceStatusParams) {
 
                 // Remove duplicates
                 const destNewRelicAccounts = [...new Set(tmpDestNewRelicAccounts)];
+
+                // Verbose: What New Relic destination accounts will the information be sent to?
+                globals.logger.verbose(
+                    `SERVICE MONITOR NEWRELIC: Sending service state log to New Relic for service "${
+                        params.serviceName
+                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`
+                );
 
                 sendNewRelicLog(
                     serviceStateConfig,

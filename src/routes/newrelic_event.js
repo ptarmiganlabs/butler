@@ -79,6 +79,9 @@ async function handlerPostNewRelicEvent(request, reply) {
         // Get New Relic accounts
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined
+        globals.logger.verbose(`NEWRELIC EVENT: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+
         // eslint-disable-next-line no-restricted-syntax
         for (const accountName of globals.config.Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount) {
             globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic config=${JSON.stringify(accountName)}`);
