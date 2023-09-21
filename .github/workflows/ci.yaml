@@ -58,7 +58,7 @@ jobs:
           echo "sha             : ${{ steps.release.outputs['sha'] }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
   
       - name: Install dependencies
         run: |
@@ -120,7 +120,7 @@ jobs:
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -226,7 +226,7 @@ jobs:
           Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -310,7 +310,7 @@ jobs:
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
