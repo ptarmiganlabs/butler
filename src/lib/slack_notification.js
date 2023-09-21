@@ -429,8 +429,8 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMSNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMSNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(`SLACKNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                        globals.logger.debug(`SLACKNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
