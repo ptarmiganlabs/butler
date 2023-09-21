@@ -86,7 +86,6 @@
         "ms-teams-webhook": "^2.0.2",
         "nodemailer": "^6.9.5",
         "nodemailer-express-handlebars": "^6.1.0",
-        "npm": "^9.7.1",
         "os": "^0.1.2",
         "posthog-node": "^3.1.2",
         "promise": "^8.3.0",
