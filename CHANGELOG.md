@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.2.1](https://github.com/ptarmiganlabs/butler/compare/v9.2.0...v9.2.1) (2023-09-21)
+
+
+### Bug Fixes
+
+* Add verbose logging showing which NR accounts are used ([907b9ae](https://github.com/ptarmiganlabs/butler/commit/907b9aeb3c135a03c34ba592d45192a2c3c98b2b))
+* Typos in Slack/Teams notifrication log messages ([e28b715](https://github.com/ptarmiganlabs/butler/commit/e28b7157a9378ee82af61772a165b80abf4d902b)), closes [#794](https://github.com/ptarmiganlabs/butler/issues/794)
+
+
+### Miscellaneous
+
+* **deps:** Removed npm as dependency ([84961ef](https://github.com/ptarmiganlabs/butler/commit/84961efdbdb26f14e3f363cb0c2bf992b3c8a988))
+* **deps:** update actions/checkout action to v4 ([412ff92](https://github.com/ptarmiganlabs/butler/commit/412ff92f2f0bfb5df76359c8f6bab2fb2de37fb0))
+* **deps:** update crazy-max/ghaction-virustotal action to v4 ([cd705e8](https://github.com/ptarmiganlabs/butler/commit/cd705e82139f10133769d981837c5b03de216c3b))
+* **deps:** Update dependencies to stay safe and secure ([bbc242c](https://github.com/ptarmiganlabs/butler/commit/bbc242c4060e878fcb4c2b1eda84db28195fc858))
+* **deps:** update docker/build-push-action action to v5 ([f48f378](https://github.com/ptarmiganlabs/butler/commit/f48f378a96fd5b9082fa1b6b879f7afe05744e56))
+* **deps:** update docker/login-action action to v3 ([725c0e2](https://github.com/ptarmiganlabs/butler/commit/725c0e2958c36e9145d35a45a5c92d2601d8bc05))
+* **deps:** update docker/metadata-action action to v5 ([c66bd35](https://github.com/ptarmiganlabs/butler/commit/c66bd35e3df6a3bd304e7aa02a92807013c8789e))
+* **deps:** update docker/setup-buildx-action action to v3 ([7fac129](https://github.com/ptarmiganlabs/butler/commit/7fac129b695f8f7b089b9e99c85df49f3873ccbe))
+* **deps:** update docker/setup-qemu-action action to v3 ([1a87ceb](https://github.com/ptarmiganlabs/butler/commit/1a87cebe15fd50d030826f6bec5b117ae03e439c))
+
 ## [9.2.0](https://github.com/ptarmiganlabs/butler/compare/v9.1.2...v9.2.0) (2023-08-22)
 
 
