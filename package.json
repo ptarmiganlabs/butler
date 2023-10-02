@@ -50,7 +50,7 @@
         "@fastify/static": "^6.11.2",
         "@fastify/swagger": "^8.10.1",
         "@fastify/swagger-ui": "^1.9.0",
-        "@keyvhq/core": "^2.0.0",
+        "@keyvhq/core": "^2.1.0",
         "@xstate/fsm": "^2.0.1",
         "any-base": "^1.1.0",
         "axios": "^1.5.0",
