@@ -8,6 +8,8 @@ process.env.NODE_CONFIG_DIR = upath.resolve('./src/config/');
 process.env.NODE_ENV = 'production';
 const config = require('config');
 
+const { isDirectoryChildOf } = require('../../lib/disk_utils');
+
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
     timeout: 15000,
@@ -357,4 +359,154 @@ describe('E7: POST /v4/createdir', () => {
         expect(result.data.directory).toBeTruthy();
         expect(result.data.directory).toEqual(p);
     });
+});
+
+/**
+ * E8
+ * Ensure that isDirectoryChildOf works as expected
+ */
+const dirParent1 = './testDir1';
+const dirParent2 = './testDir1/testDir2';
+const dirParent3 = './testDir1/testDir2/';
+
+const dirChild1 = './testDir1';
+const dirChild2 = './testDir1/testDir2';
+const dirChild3 = './testDir1/testDir2/';
+const dirChild4 = './testDir1/testDir2/testDir3';
+const dirChild5 = './testDir1/testDir2/testDir3/testDir4';
+const dirChild6 = './testDir1/testDir2/testDir3/testDir4/';
+
+describe('E8: isDirectoryChildOf', () => {
+    test(`"${dirChild1}" is a child of "${dirParent1}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild1, dirParent1);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild2}" is a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild2, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild3}" is a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild3, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild3}" is a child of "${dirParent3}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild3, dirParent3);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild2}" is a child of "${dirParent3}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild2, dirParent3);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild4}" is a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild4, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild5}" is a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild5, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    test(`"${dirChild6}" is a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild6, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(true);
+    }, 5000);
+
+    // Test failure cases where child directory is not a child of parent
+    test(`"${dirChild1}" is not a child of "${dirParent2}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild1, dirParent2);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(false);
+    }, 5000);
+
+    test(`"${dirChild4}" is not a child of "${dirParent1}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild4, dirParent1);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(false);
+    }, 5000);
+
+    test(`"${dirChild5}" is not a child of "${dirParent1}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild5, dirParent1);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(false);
+    }, 5000);
+
+    test(`"${dirChild6}" is not a child of "${dirParent1}"`, async () => {
+        try {
+            result = isDirectoryChildOf(dirChild6, dirParent1);
+        } catch (err) {
+            result = err.response;
+            console.log('Error testing isDirectoryChildOf');
+        }
+
+        expect(result).toBe(false);
+    }, 5000);
 });
