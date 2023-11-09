@@ -9,7 +9,7 @@ const isDirectoryChildOf = (child, parent) => {
 
     const parentTokens = parent.split('/').filter((i) => i.length);
 
-    return parentTokens.every((t, i) => child.split('/').filter((i) => i.length)[i] === t);
+    return parentTokens.every((t, i) => child.split('/').filter((j) => j.length)[i] === t);
 };
 
 module.exports = {
