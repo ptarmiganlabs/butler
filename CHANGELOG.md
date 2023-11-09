@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.2.2](https://github.com/ptarmiganlabs/butler/compare/v9.2.1...v9.2.2) (2023-11-09)
+
+
+### Bug Fixes
+
+* **disk-util:** All subdirs under approved dirs are also approved ([0ecc402](https://github.com/ptarmiganlabs/butler/commit/0ecc402c8ef56a85a88b08883f0e2330bda79949)), closes [#831](https://github.com/ptarmiganlabs/butler/issues/831)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies to stay safe and secure ([e7859b9](https://github.com/ptarmiganlabs/butler/commit/e7859b962f768e60b9dcb7e8d6e40da236b5e42a))
+* Improved test cases for file operations ([e48329c](https://github.com/ptarmiganlabs/butler/commit/e48329ce9ec90b1b37c2d9dc1632e4d0e5c02612)), closes [#831](https://github.com/ptarmiganlabs/butler/issues/831)
+
 ## [9.2.1](https://github.com/ptarmiganlabs/butler/compare/v9.2.0...v9.2.1) (2023-09-21)
 
 
