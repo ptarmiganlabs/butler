@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}/src/butler.js",
-      "runtimeVersion": "18",
+      "runtimeVersion": "20",
       "cwd": "${workspaceFolder}/src",
       "env": {
         "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
