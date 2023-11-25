@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.2.3](https://github.com/ptarmiganlabs/butler/compare/v9.2.3...v9.2.3) (2023-11-25)
+
+
+### Miscellaneous
+
+* Bump setup-node to v4 ([fc8a27c](https://github.com/ptarmiganlabs/butler/commit/fc8a27c0ac1fcbc7238ca05cb8d5be6636cd9298))
+* **deps:** Update dependencies ([b04d387](https://github.com/ptarmiganlabs/butler/commit/b04d387eeb93a2adc9e7427802c419ef3447ac76))
+* **master:** release 9.2.3 ([6cca713](https://github.com/ptarmiganlabs/butler/commit/6cca7132cf4977bcc40959fe2c87f0e272154215))
+* Switch to using Node v20 ([0890f79](https://github.com/ptarmiganlabs/butler/commit/0890f79e7742714deae8b7b42344ed9628322c6c))
+
+
+### Documentation
+
+* Better default config file values for InfluxDB ([9a547d2](https://github.com/ptarmiganlabs/butler/commit/9a547d2670e27bbd64764dbe34c1c93da27eb921))
+
 ## [9.2.3](https://github.com/ptarmiganlabs/butler/compare/v9.2.2...v9.2.3) (2023-11-25)
 
 
