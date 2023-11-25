@@ -25,8 +25,8 @@ jobs:
         with:
           # command: manifest
           # bootstrap-sha: ad2255c9c24f68d0adb5255159fa5a849ab880e4
-          # last-release-sha: b6266be9857c88405364c8af54fbfbed83bb9f66
-          # release-as: 9.1.0
+          last-release-sha: 67de02d19cc8ca3c7354b57c90265aad5d565f1a
+          release-as: 9.2.3
           release-type: node
           package-name: butler
           default-branch: master
