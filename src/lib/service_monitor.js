@@ -119,7 +119,7 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
 };
 
 const verifyServicesExist = async (config, logger) => {
-    // Return false if one or more services does not exist or cannot be reached.
+    // Return false if one or more services do not exist or cannot be reached.
     // Return true if all services are reachable.
     let result = false;
 

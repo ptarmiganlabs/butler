@@ -13,7 +13,6 @@ const FastifyRateLimit = require('@fastify/rate-limit');
 
 const globals = require('./globals');
 const heartbeat = require('./lib/heartbeat');
-const mqtt = require('./mqtt');
 const scheduler = require('./lib/scheduler');
 const serviceUptime = require('./lib/service_uptime');
 const telemetry = require('./lib/telemetry');
@@ -280,12 +279,6 @@ async function build(opts = {}) {
         });
     } else {
         globals.logger.info('MAIN: Will not set up REST server as it is disabled in the config file.');
-    }
-
-    // ---------------------------------------------------
-    // Set up MQTT
-    if (globals.config.get('Butler.mqttConfig.enable')) {
-        mqtt.mqtt.mqttInitHandlers();
     }
 
     // Load already defined schedules

@@ -323,7 +323,8 @@ if (
 
 // ------------------------------------
 // Create MQTT client object and connect to MQTT broker, if MQTT is enabled
-let mqttClient = null;
+// let mqttClient = null;
+
 // try {
 //     if (
 //         config.has('Butler.mqttConfig.enable') &&
@@ -354,6 +355,12 @@ let mqttClient = null;
 //     }
 // } catch (err) {
 //     logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
+// }
+
+// ---------------------------------------------------
+// Set up MQTT
+// if (config.get('Butler.mqttConfig.enable')) {
+//     mqttInitHandlers();
 // }
 
 // ------------------------------------
@@ -643,7 +650,7 @@ module.exports = {
     udpServerTaskFailureSocket,
     udpHost,
     udpPortTaskFailure,
-    mqttClient,
+    // mqttClient,
     qvdFolder,
     logger,
     logTransports,
@@ -662,4 +669,5 @@ module.exports = {
     isPkg,
     checkFileExistsSync,
     options,
+    execPath,
 };

@@ -213,7 +213,15 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.mqttConfig.enable') === true &&
         globals.config.has('Butler.mqttConfig.taskAbortedTopic')
     ) {
-        globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
+        if (globals?.mqttClient?.connected) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
+        } else {
+            globals.logger.warn(
+                `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                    'Butler.mqttConfig.taskAbortedTopic'
+                )}`
+            );
+        }
     }
 
     // Publish stringified MQTT message containing full, stringified JSON when a task has been aborted, if MQTT is enabled
@@ -443,7 +451,15 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.mqttConfig.enable') === true &&
             globals.config.has('Butler.mqttConfig.taskFailureTopic')
         ) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
+            if (globals?.mqttClient?.connected) {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
+            } else {
+                globals.logger.warn(
+                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        'Butler.mqttConfig.taskAbortedTopic'
+                    )}`
+                );
+            }
         }
 
         // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
@@ -680,7 +696,15 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.mqttConfig.enable') === true &&
             globals.config.has('Butler.mqttConfig.taskFailureTopic')
         ) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
+            if (globals?.mqttClient?.connected) {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
+            } else {
+                globals.logger.warn(
+                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        'Butler.mqttConfig.taskAbortedTopic'
+                    )}`
+                );
+            }
         }
 
         // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
@@ -725,7 +749,15 @@ module.exports.udpInitTaskErrorServer = () => {
 
         // Publish MQTT message that UDP server has started
         if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+            if (globals?.mqttClient?.connected) {            
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+            } else {
+                globals.logger.warn(
+                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        'Butler.mqttConfig.taskAbortedTopic'
+                    )}`
+                );
+            }
         }
     });
 
@@ -737,7 +769,15 @@ module.exports.udpInitTaskErrorServer = () => {
 
         // Publish MQTT message that UDP server has reported an error
         if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
+            if (globals?.mqttClient?.connected) {
+                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
+            } else {
+                globals.logger.warn(
+                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        'Butler.mqttConfig.taskAbortedTopic'
+                    )}`
+                );
+            }
         }
     });
 
