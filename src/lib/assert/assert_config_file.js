@@ -1771,6 +1771,31 @@ const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.mqttConfig.azureEventGrid')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.mqttConfig.azureEventGrid.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.mqttConfig.azureEventGrid.clientId')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid.clientId"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.mqttConfig.azureEventGrid.clientCertFile')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid.clientCertFile"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.mqttConfig.azureEventGrid.clientKeyFile')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid.clientKeyFile"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.mqttConfig.taskFailureSendFull')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.taskFailureSendFull"');
         configFileCorrect = false;
