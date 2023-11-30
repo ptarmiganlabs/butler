@@ -548,8 +548,11 @@ Butler:
     enable: false
     brokerHost: ...
     brokerPort: 1883
-    # azureIotHub:
-    #   url: ssl://myiothub.
+    azureEventGrid:
+      enable: false              # If set to true, Butler will connect to an Azure Event Grid MQTT Broker, using brokerHost and brokerPort above 
+      clientId: <client ID>
+      clientCertFile: <path to client certificate file>
+      clientKeyFile: <path to client key file>
     taskFailureSendFull: true
     taskAbortedSendFull: true
     subscriptionRootTopic: qliksense/#                                  # Topic that Butler will subscribe to
