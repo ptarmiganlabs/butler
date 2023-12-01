@@ -322,48 +322,6 @@ if (
 }
 
 // ------------------------------------
-// Create MQTT client object and connect to MQTT broker, if MQTT is enabled
-// let mqttClient = null;
-
-// try {
-//     if (
-//         config.has('Butler.mqttConfig.enable') &&
-//         config.has('Butler.mqttConfig.brokerHost') &&
-//         config.has('Butler.mqttConfig.brokerPort') &&
-//         config.get('Butler.mqttConfig.enable')
-//     ) {
-//         const mqttOptions = {
-//             host: config.get('Butler.mqttConfig.brokerHost'),
-//             port: config.get('Butler.mqttConfig.brokerPort'),
-//         };
-
-//         mqttClient = mqtt.connect(mqttOptions);
-//         /*
-//             Following might be needed for conecting to older Mosquitto versions
-//             var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
-//                 protocolId: 'MQIsdp',
-//                 protocolVersion: 3
-//             });
-//             */
-//         if (!mqttClient.connected) {
-//             logger.verbose(
-//                 `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
-//             );
-//         }
-//     } else {
-//         logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
-//     }
-// } catch (err) {
-//     logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
-// }
-
-// ---------------------------------------------------
-// Set up MQTT
-// if (config.get('Butler.mqttConfig.enable')) {
-//     mqttInitHandlers();
-// }
-
-// ------------------------------------
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
@@ -594,13 +552,51 @@ async function initHostInfo() {
 
         const defaultNetworkInterface = siNetworkDefault;
 
+        // Get info about all available network interfaces
         const networkInterface = siNetwork.filter((item) => item.iface === defaultNetworkInterface);
 
-        const idSrc = networkInterface[0].mac + networkInterface[0].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
-        const salt = networkInterface[0].mac;
-        const hash = crypto.createHmac('sha256', salt);
-        hash.update(idSrc);
-        const id = hash.digest('hex');
+        // Loop through all network interfaces, find the first one with a MAC address
+        // and use that to generate a unique ID for this Butler instance
+        let id = '';
+        for (let i = 0; i < networkInterface.length; i++) {
+            if (networkInterface[i].mac !== '') {
+                const idSrc = networkInterface[i].mac + networkInterface[i].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
+                const salt = networkInterface[i].mac;
+                const hash = crypto.createHmac('sha256', salt);
+                hash.update(idSrc);
+                id = hash.digest('hex');
+                break;
+            }
+        }
+
+        // If no MAC address was found, use either of
+        // - siOS.serial
+        // - siMem.total
+        // - siOS.release
+        // - siCPU.brand
+        if (id === '') {
+            let idSrc = '';
+            if (siOS.serial !== '') {
+                idSrc = siOS.serial + config.get('Butler.configQRS.host') + siSystem.uuid;
+            } else if (siMem.total !== '') {
+                idSrc = siMem.total + config.get('Butler.configQRS.host') + siSystem.uuid;
+            } else if (siOS.release !== '') {
+                idSrc = siOS.release + config.get('Butler.configQRS.host') + siSystem.uuid;
+            } else if (siCPU.brand !== '') {
+                idSrc = siCPU.brand + config.get('Butler.configQRS.host') + siSystem.uuid;
+            } else {
+                idSrc = config.get('Butler.configQRS.host') + siSystem.uuid;
+            }
+            const salt = siMem.total;
+            const hash = crypto.createHmac('sha256', salt);
+            hash.update(idSrc);
+            id = hash.digest('hex');
+        }
+
+        // Warn if we couldn't create a unique ID
+        if (id === '') {
+            logger.warn('CONFIG: Could not create a unique ID for this Butler instance!');
+        }
 
         hostInfo = {
             id,
