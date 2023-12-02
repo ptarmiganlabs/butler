@@ -435,6 +435,11 @@ const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.anonTelemetry')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.anonTelemetry"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.heartbeat.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.heartbeat.enable"');
         configFileCorrect = false;
@@ -564,6 +569,11 @@ const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.influxDb.instanceTag')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.instanceTag"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.influxDb.retentionPolicy.name')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.retentionPolicy.name"');
         configFileCorrect = false;
@@ -571,6 +581,31 @@ const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.influxDb.retentionPolicy.duration')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.retentionPolicy.duration"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskFailure.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskFailure.tailScriptLogLines')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tailScriptLogLines"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskFailure.tag.static')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tag.static"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskFailure.tag.dynamic.useAppTags')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tag.dynamic.useAppTags"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags"');
         configFileCorrect = false;
     }
 
