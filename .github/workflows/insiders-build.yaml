@@ -65,9 +65,8 @@ jobs:
               copy ./src/config/production_template.yaml ./config/
               copy ./src/config/schedule_template.yaml ./config/
 
-              Compress-Archive -Path "./config" -Update -DestinationPath "../${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
               
-              cd ..
               # dir
             # artifact_release_name: release-binaries-win
             # artifact_release_path: release-binaries-win/*
