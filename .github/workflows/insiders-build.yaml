@@ -49,6 +49,19 @@ jobs:
                 DestinationPath = "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
               }
               Compress-Archive @compress
+
+              // Add following directories & files to the created zip file.
+              // - ./src/config/email_templates
+              // - ./src/config/slack_templates
+              // - ./src/config/teams_templates
+              // - ./src/config⁄production_template.yaml
+              // - ./src/config⁄schedule_template.yaml
+              Compress-Archive -Path "./src/config/email_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              Compress-Archive -Path "./src/config/slack_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              Compress-Archive -Path "./src/config/teams_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              Compress-Archive -Path "./src/config/production_template.yaml" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              Compress-Archive -Path "./src/config/schedule_template.yaml" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
+              
               # dir
             # artifact_release_name: release-binaries-win
             # artifact_release_path: release-binaries-win/*
@@ -94,8 +107,14 @@ jobs:
 
 
               # Notarize insider binary
+              # Include following directories & files in the created zip file.
+              # - ./src/config/email_templates
+              # - ./src/config/slack_templates
+              # - ./src/config/teams_templates
+              # - ./src/config⁄production_template.yaml
+              # - ./src/config⁄schedule_template.yaml
               echo "Creating temp notarization archive for insider build"
-              ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}--macos-x64--${{ github.sha }}.zip"
+              zip -r "./${DIST_FILE_NAME}--macos-x64--${{ github.sha }}.zip" "./${DIST_FILE_NAME}" "./src/config/email_templates" "./src/config/slack_templates" "./src/config/teams_templates" "./src/config/production_template.yaml" "./src/config/schedule_template.yaml" -x "*.DS_Store"
 
               # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
               # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
@@ -117,7 +136,14 @@ jobs:
               chmod +x ${DIST_FILE_NAME}
 
               # Compress insider's build
-              tar -czf "${DIST_FILE_NAME}--linux-x64--${{ github.sha }}.tgz" "${DIST_FILE_NAME}"
+              # Include following directories & files in the created archive file.
+              # - ./src/config/email_templates
+              # - ./src/config/slack_templates
+              # - ./src/config/teams_templates
+              # - ./src/config⁄production_template.yaml
+              # - ./src/config⁄schedule_template.yaml
+              echo "Creating temp notarization archive for insider build"
+              zip -9 -r "./${DIST_FILE_NAME}--linux-x64--${{ github.sha }}.zip" "${DIST_FILE_NAME}" "./src/config/email_templates" "./src/config/slack_templates" "./src/config/teams_templates" "./src/config/production_template.yaml" "./src/config/schedule_template.yaml"
               ls -la
 
             # artifact_release_name: release-binaries-linux
