@@ -558,7 +558,7 @@ async function initHostInfo() {
         // Loop through all network interfaces, find the first one with a MAC address
         // and use that to generate a unique ID for this Butler instance
         let id = '';
-        for (let i = 0; i < networkInterface.length; i++) {
+        for (let i = 0; i < networkInterface.length; ) {
             if (networkInterface[i].mac !== '') {
                 const idSrc = networkInterface[i].mac + networkInterface[i].ip4 + config.get('Butler.configQRS.host') + siSystem.uuid;
                 const salt = networkInterface[i].mac;
@@ -567,6 +567,7 @@ async function initHostInfo() {
                 id = hash.digest('hex');
                 break;
             }
+            i += 1;
         }
 
         // If no MAC address was found, use either of

@@ -40,6 +40,8 @@ const callRemoteURL = async () => {
         let api_senseStartTask = 'null';
         let api_slackPostMessage = 'null';
 
+        let influxDb_reloadTaskFailure = 'null';
+
         let teamsNotification_reloadTaskFailure = 'null';
         let teamsNotification_reloadTaskAborted = 'null';
 
@@ -49,8 +51,10 @@ const callRemoteURL = async () => {
         let emailNotification_reloadTaskFailure = 'null';
         let emailNotification_reloadTaskAborted = 'null';
 
+        let webhookNotification = 'null';
         let webhookNotification_reloadTaskFailure = 'null';
         let webhookNotification_reloadTaskAborted = 'null';
+        let webhookNotification_serviceMonitor = 'null';
 
         let signl4Notification_reloadTaskFailure = 'null';
         let signl4Notification_reloadTaskAborted = 'null';
@@ -201,6 +205,10 @@ const callRemoteURL = async () => {
             api_slackPostMessage = globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage');
         }
 
+        if (globals.config.has('Butler.influxDb.reloadTaskFailure.enable')) {
+            influxDb_reloadTaskFailure = globals.config.get('Butler.influxDb.reloadTaskFailure.enable');
+        }
+
         if (globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable')) {
             teamsNotification_reloadTaskFailure = globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable');
         }
@@ -226,15 +234,15 @@ const callRemoteURL = async () => {
         }
 
         if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
-            webhookNotification_reloadTaskFailure = globals.config.get('Butler.webhookNotification.reloadTaskFailure.webhooks').length > 0;
+            webhookNotification = true;
+            webhookNotification_reloadTaskFailure = globals.config.get('Butler.webhookNotification.reloadTaskFailure.webhooks')?.length > 0;
+            webhookNotification_reloadTaskAborted = globals.config.get('Butler.webhookNotification.reloadTaskAborted.webhooks')?.length > 0;
+            webhookNotification_serviceMonitor = globals.config.get('Butler.webhookNotification.serviceMonitor.webhooks')?.length > 0;
         } else {
+            webhookNotification = false;
             webhookNotification_reloadTaskFailure = false;
-        }
-
-        if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
-            webhookNotification_reloadTaskAborted = globals.config.get('Butler.webhookNotification.reloadTaskAborted.webhooks').length > 0;
-        } else {
             webhookNotification_reloadTaskAborted = false;
+            webhookNotification_serviceMonitor = false;
         }
 
         if (globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable')) {
@@ -348,6 +356,8 @@ const callRemoteURL = async () => {
                 feature_apiSenseStartTask: api_senseStartTask,
                 feature_apiSlackPostMessage: api_slackPostMessage,
 
+                feature_influxDbReloadTaskFailure: influxDb_reloadTaskFailure,
+
                 feature_teamsNotificationReloadTaskFailure: teamsNotification_reloadTaskFailure,
                 feature_teamsNotificationReloadTaskAborted: teamsNotification_reloadTaskAborted,
 
@@ -363,8 +373,10 @@ const callRemoteURL = async () => {
                 feature_emailNotificationReloadTaskFailure: emailNotification_reloadTaskFailure,
                 feature_emailNotificationReloadTaskAborted: emailNotification_reloadTaskAborted,
 
+                feature_webhookNotification: webhookNotification,
                 feature_webhookNotificationReloadTaskFailure: webhookNotification_reloadTaskFailure,
                 feature_webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
+                feature_webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
 
                 feature_mqtt: mqtt,
                 feature_scheduler: scheduler,
@@ -397,6 +409,8 @@ const callRemoteURL = async () => {
                                 ? globals.config.get('Butler.restServerEndpointsEnable')
                                 : {},
 
+                            influxDbReloadTaskFailure: influxDb_reloadTaskFailure,
+
                             teamsNotificationReloadTaskFailure: teamsNotification_reloadTaskFailure,
                             teamsNotificationReloadTaskAborted: teamsNotification_reloadTaskAborted,
 
@@ -414,6 +428,7 @@ const callRemoteURL = async () => {
 
                             webhookNotificationReloadTaskFailure: webhookNotification_reloadTaskFailure,
                             webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
+                            webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
 
                             mqtt,
                             scheduler,
