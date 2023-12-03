@@ -294,12 +294,12 @@ jobs:
           # - ./src/config⁄production_template.yaml
           # - ./src/config⁄schedule_template.yaml
           mkdir config
-          copy ./src/config/log_appender_xml/ ./config/
-          copy ./src/config/email_templates/ ./config/
-          copy ./src/config/slack_templates/ ./config/
-          copy ./src/config/teams_templates/ ./config/
-          copy ./src/config/production_template.yaml ./config/
-          copy ./src/config/schedule_template.yaml ./config/
+          Copy-Item -Path ./src/config/log_appender_xml/ -Destination ./config/ -Recurse
+          Copy-Item -Path ./src/config/email_templates/ -Destination ./config/ -Recurse
+          Copy-Item -Path ./src/config/slack_templates/ -Destination ./config/ -Recurse
+          Copy-Item -Path ./src/config/teams_templates/ -Destination ./config/ -Recurse
+          Copy-Item -Path ./src/config/production_template.yaml -Destination ./config/
+          Copy-Item -Path ./src/config/schedule_template.yaml -Destination ./config/
 
           Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
           
