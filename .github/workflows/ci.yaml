@@ -293,16 +293,16 @@ jobs:
           # - ./src/config/teams_templates
           # - ./src/config⁄production_template.yaml
           # - ./src/config⁄schedule_template.yaml
-          cd src
-          Compress-Archive -Path "./config/log_appender_xml" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          Compress-Archive -Path "./config/email_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          Compress-Archive -Path "./config/slack_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          Compress-Archive -Path "./config/teams_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          Compress-Archive -Path "./config/production_template.yaml" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          Compress-Archive -Path "./config/schedule_template.yaml" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
-          
-          cd ..
+          mkdir config
+          copy ./src/config/log_appender_xml/ ./config/
+          copy ./src/config/email_templates/ ./config/
+          copy ./src/config/slack_templates/ ./config/
+          copy ./src/config/teams_templates/ ./config/
+          copy ./src/config/production_template.yaml ./config/
+          copy ./src/config/schedule_template.yaml ./config/
 
+          Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+          
       - name: Upload to existing release
         uses: ncipollo/release-action@v1
         with:
