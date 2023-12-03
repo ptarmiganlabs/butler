@@ -50,12 +50,12 @@ jobs:
               }
               Compress-Archive @compress
 
-              // Add following directories & files to the created zip file.
-              // - ./src/config/email_templates
-              // - ./src/config/slack_templates
-              // - ./src/config/teams_templates
-              // - ./src/config⁄production_template.yaml
-              // - ./src/config⁄schedule_template.yaml
+              # Add following directories & files to the created zip file.
+              # - ./src/config/email_templates
+              # - ./src/config/slack_templates
+              # - ./src/config/teams_templates
+              # - ./src/config⁄production_template.yaml
+              # - ./src/config⁄schedule_template.yaml
               Compress-Archive -Path "./src/config/email_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
               Compress-Archive -Path "./src/config/slack_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
               Compress-Archive -Path "./src/config/teams_templates" -Update -DestinationPath "${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
@@ -148,7 +148,7 @@ jobs:
 
             # artifact_release_name: release-binaries-linux
             # artifact_release_path: release-binaries-linux/*
-            artifact_insider: butler--linux-x64--${{ github.sha }}.tgz
+            artifact_insider: butler--linux-x64--${{ github.sha }}.zip
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
