@@ -170,7 +170,7 @@ jobs:
 
           # Notarize release binary
           # Include following directories & files in the created zip file, in the ./config directory.
-          # - ./src/config/log4net_xml
+          # - ./src/config/log_appender_xml
           # - ./src/config/email_templates
           # - ./src/config/slack_templates
           # - ./src/config/teams_templates
@@ -182,7 +182,7 @@ jobs:
           # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip"
 
           cd src
-          zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip" "./src/config/email_templates" "./src/config/slack_templates" "./src/config/teams_templates" "./src/config/production_template.yaml" "./src/config/schedule_template.yaml" "./docs/log4net_xml" -x "*.DS_Store"
+          zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip" "./src/config/email_templates" "./src/config/slack_templates" "./src/config/teams_templates" "./src/config/production_template.yaml" "./src/config/schedule_template.yaml" "./docs/log_appender_xml" -x "*.DS_Store"
           cd ..
 
           # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
@@ -287,14 +287,14 @@ jobs:
           Compress-Archive @compress
 
           # Add following directories & files to the created zip file, in the ./config directory.
-          # - ./src/config/log4net_xml
+          # - ./src/config/log_appender_xml
           # - ./src/config/email_templates
           # - ./src/config/slack_templates
           # - ./src/config/teams_templates
           # - ./src/config⁄production_template.yaml
           # - ./src/config⁄schedule_template.yaml
           cd src
-          Compress-Archive -Path "./config/log4net_xml" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+          Compress-Archive -Path "./config/log_appender_xml" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
           Compress-Archive -Path "./config/email_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
           Compress-Archive -Path "./config/slack_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
           Compress-Archive -Path "./config/teams_templates" -Update -DestinationPath "../${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
@@ -369,11 +369,20 @@ jobs:
 
       - name: Compress release binary
         run: |
+          # Compress insider's build
+          # Include following directories & files in the created archive file.
+          # - ./src/config/log_appender_xml
+          # - ./src/config/email_templates
+          # - ./src/config/slack_templates
+          # - ./src/config/teams_templates
+          # - ./src/config⁄production_template.yaml
+          # - ./src/config⁄schedule_template.yaml
+
           ls -la
           zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip" ${DIST_FILE_NAME} 
 
           cd src
-          zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log4net_task-failed"
+          zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
           cd ..
 
       - name: Debug
