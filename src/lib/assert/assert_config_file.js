@@ -1806,11 +1806,6 @@ const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.mqttConfig.azureEventGrid')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid"');
-        configFileCorrect = false;
-    }
-
     if (!config.has('Butler.mqttConfig.azureEventGrid.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.azureEventGrid.enable"');
         configFileCorrect = false;

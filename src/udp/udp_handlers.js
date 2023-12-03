@@ -9,6 +9,7 @@ const newRelic = require('../lib/incident_mgmt/new_relic');
 const { failedTaskStoreLogOnDisk, getScriptLog } = require('../lib/scriptlog');
 const { getTaskTags } = require('../qrs_util/task_tag_util');
 const { getAppTags } = require('../qrs_util/app_tag_util');
+const { postReloadTaskNotificationInfluxDb } = require('../lib/post_to_influxdb');
 
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
@@ -261,6 +262,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
         (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
         (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
         (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
+        (globals.config.has('Butler.influxDb.reloadTaskFailure.enable') && globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) ||
         (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
     ) {
         if (legacyFlag) {
@@ -598,6 +600,30 @@ const schedulerFailed = async (msg, legacyFlag) => {
             });
         }
 
+        // Post to InfluxDB when a task has failed
+        if (
+            globals.config.has('Butler.influxDb.enable') &&
+            globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true
+        ) {
+            postReloadTaskNotificationInfluxDb({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                appTags,
+                taskTags,
+                scriptLog,
+            });
+        }
+
         // Post to Slack when a task has failed, if Slack is enabled
         if (
             globals.config.has('Butler.slackNotification.enable') &&
@@ -749,7 +775,7 @@ module.exports.udpInitTaskErrorServer = () => {
 
         // Publish MQTT message that UDP server has started
         if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            if (globals?.mqttClient?.connected) {            
+            if (globals?.mqttClient?.connected) {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
             } else {
                 globals.logger.warn(
