@@ -62,7 +62,7 @@
         "esbuild": "^0.19.8",
         "eslint": "^8.54.0",
         "eslint-config-airbnb-base": "^15.0.0",
-        "eslint-config-prettier": "^9.0.0",
+        "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-import": "^2.29.0",
         "eslint-plugin-prettier": "^5.0.1",
         "express-handlebars": "^7.0.7",
