@@ -38,33 +38,32 @@
     </appender>
 
     <!-- Mail appender. Not dependent on Butler. Works as a basic solution, but does not support templating, script logs etc that Butler offers -->
-    <appender name="MailAppender" type="log4net.Appender.SmtpAppender">
-        <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Message from ReloadProvider" />
-        </filter>
-        <filter type="log4net.Filter.DenyAllFilter" />
-        <evaluator type="log4net.Core.LevelEvaluator">
-            <param name="threshold" value="ERROR"/>
-            <!--Sets the level of logging, in this case any ERROR in the log will be sent as an email-->
-        </evaluator>
-        <param name="to" value="<email address to send failed task notification emails to>" />
-        <param name="from" value="<sender email address used in notification emails>" />
-        <param name="subject" value="Qlik Sense failed task (server <servername>)" />
-        <param name="smtpHost" value="smtp.gmail.com" />
-        <param name="port" value="587" />
-        <param name="EnableSsl" value="true" />
-        <param name="Authentication" value="Basic" />
-        <param name="username" value="<Gmail username>" />
-        <param name="password" value="<Gmail password>" />
-        <param name="bufferSize" value="0" />
-        <!-- Set this to 0 to make sure an email is sent on every error -->
-        <param name="lossy" value="true" />
-        <layout type="log4net.Layout.PatternLayout">
-            <param name="conversionPattern" value="%newline%date %-5level %newline%property{TaskName}%newline%property{AppName}%newline%message%newline%newline%newline" />
-            <!--Defined conversion pattern for the output. To be able to output custom properties in the log (example, Taskname), append %property{propertyname} to the output pattern-->
-        </layout>
-    </appender>
-
+    <!-- <appender name="MailAppender" type="log4net.Appender.SmtpAppender"> -->
+        <!-- <filter type="log4net.Filter.StringMatchFilter"> -->
+            <!-- <param name="stringToMatch" value="Message from ReloadProvider" /> -->
+        <!-- </filter> -->
+        <!-- <filter type="log4net.Filter.DenyAllFilter" /> -->
+        <!-- <evaluator type="log4net.Core.LevelEvaluator"> -->
+            <!-- <param name="threshold" value="ERROR"/> -->
+            <!--Tip: Sets the level of logging, in this case any ERROR in the log will be sent as an email-->
+        <!-- </evaluator> -->
+        <!-- <param name="to" value="<email address to send failed task notification emails to>" /> -->
+        <!-- <param name="from" value="<sender email address used in notification emails>" /> -->
+        <!-- <param name="subject" value="Qlik Sense failed task (server <servername>)" /> -->
+        <!-- <param name="smtpHost" value="smtp.gmail.com" /> -->
+        <!-- <param name="port" value="587" /> -->
+        <!-- <param name="EnableSsl" value="true" /> -->
+        <!-- <param name="Authentication" value="Basic" /> -->
+        <!-- <param name="username" value="<Gmail username>" /> -->
+        <!-- <param name="password" value="<Gmail password>" /> -->
+        <!-- <param name="bufferSize" value="0" /> -->
+        <!-- Tip: Set this to 0 to make sure an email is sent on every error -->
+        <!-- <param name="lossy" value="true" /> -->
+        <!-- <layout type="log4net.Layout.PatternLayout"> -->
+            <!-- <param name="conversionPattern" value="%newline%date %-5level %newline%property{TaskName}%newline%property{AppName}%newline%message%newline%newline%newline" /> -->
+            <!-- Tip: Defined conversion pattern for the output. To be able to output custom properties in the log (example, Taskname), append %property{propertyname} to the output pattern-->
+        <!-- </layout> -->
+    <!-- </appender> -->
 
     <!-- Send message to Butler on task failure -->
     <!-- Send message to Butler on task abort -->
@@ -75,9 +74,10 @@
 
 
     <!--Send email on task failure-->
-    <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
-        <!--Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
-        <!--appender-ref should match the name identifying the appender. More than one appender can be configured in the same configuration file-->
-        <appender-ref ref="MailAppender" />
-    </logger>
+    <!-- <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask"> -->
+        <!-- Tip: Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
+        <!-- Tip: appender-ref should match the name identifying the appender. More than one appender can be configured in the same configuration file-->
+        <!-- <appender-ref ref="MailAppender" /> -->
+    <!-- </logger> -->
+
 </configuration>
