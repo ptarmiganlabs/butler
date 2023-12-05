@@ -904,7 +904,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
                 taskInfo,
             });
 
-            globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId} stored in InfluxDB`);
+            globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId}, "${msg[2]}" stored in InfluxDB`);
         }
 
         return true;
