@@ -94,15 +94,116 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
         });
 }
 
-// Store information about failed reload tasks to InfluxDB
-function postReloadTaskNotificationInfluxDb(reloadParams) {
+// Store information about successful reload tasks to InfluxDB
+function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
     try {
-        globals.logger.verbose('TASK FAILED INFLUXDB: Sending reload task notification to InfluxDB');
+        globals.logger.verbose('RELOAD TASK SUCCESS INFLUXDB: Sending reload task notification to InfluxDB');
 
         // Build InfluxDB datapoint
         let datapoint = [
             {
-                measurement: 'task_failed',
+                measurement: 'reload_task_success',
+                tags: {
+                    host: reloadParams.host,
+                    user: reloadParams.user,
+                    task_id: reloadParams.taskId,
+                    task_name: reloadParams.taskName,
+                    app_id: reloadParams.appId,
+                    app_name: reloadParams.appName,
+                    log_level: reloadParams.logLevel,
+                },
+                fields: {
+                    log_timestamp: reloadParams.logTimeStamp,
+                    execution_id: reloadParams.executionId,
+                    log_message: reloadParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = reloadParams;
+
+        globals.logger.debug(`RELOAD TASK SUCCESS INFLUXDB: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should app tags be included?
+        if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags') === true) {
+            // Add app tags to InfluxDB datapoint
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of reloadParams.appTags) {
+                datapoint[0].tags[`appTag_${item}`] = 'true';
+            }
+        }
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of reloadParams.taskTags) {
+                datapoint[0].tags[`taskTag_${item}`] = 'true';
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.static');
+        if (staticTags) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `RELOAD TASK SUCCESS INFLUXDB: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                );
+
+                datapoint = null;
+                globals.logger.verbose('RELOAD TASK SUCCESS INFLUXDB: Sent reload task notification to InfluxDB');
+            })
+            .catch((err) => {
+                globals.logger.error(`RELOAD TASK SUCCESS INFLUXDB: Error saving reload task notification to InfluxDB! ${err.stack}`);
+            });
+    } catch (err) {
+        globals.logger.error(`RELOAD TASK SUCCESS INFLUXDB: ${err}`);
+    }
+}
+
+// Store information about failed reload tasks to InfluxDB
+function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
+    try {
+        globals.logger.verbose('RELOAD TASK FAILED INFLUXDB: Sending reload task notification to InfluxDB');
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'reload_task_failed',
                 tags: {
                     host: reloadParams.host,
                     user: reloadParams.user,
@@ -136,7 +237,7 @@ function postReloadTaskNotificationInfluxDb(reloadParams) {
             scriptLogData.scriptLogTail = '';
         }
 
-        globals.logger.debug(`TASK FAILED INFLUXDB: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+        globals.logger.debug(`RELOAD TASK FAILED INFLUXDB: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
         // Use script log data to enrich log entry sent to InfluxDB
         datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
@@ -206,21 +307,22 @@ function postReloadTaskNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `TASK FAILED INFLUXDB: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                    `RELOAD TASK FAILED INFLUXDB: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
                 );
 
                 datapoint = null;
-                globals.logger.verbose('TASK FAILED INFLUXDB: Sent reload task notification to InfluxDB');
+                globals.logger.verbose('RELOAD TASK FAILED INFLUXDB: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`TASK FAILED INFLUXDB: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                globals.logger.error(`RELOAD TASK FAILED INFLUXDB: Error saving reload task notification to InfluxDB! ${err.stack}`);
             });
     } catch (err) {
-        globals.logger.error(`TASK FAILED INFLUXDB: ${err}`);
+        globals.logger.error(`RELOAD TASK FAILED INFLUXDB: ${err}`);
     }
 }
 module.exports = {
     postButlerMemoryUsageToInfluxdb,
     postWindowsServiceStatusToInfluxDB,
-    postReloadTaskNotificationInfluxDb,
+    postReloadTaskFailureNotificationInfluxDb,
+    postReloadTaskSuccessNotificationInfluxDb,
 };

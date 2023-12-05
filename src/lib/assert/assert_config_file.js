@@ -1,8 +1,87 @@
 const QrsInteract = require('qrs-interact');
 const yaml = require('js-yaml');
+const { getReloadTasksCustomProperties } = require('../../qrs_util/task_cp_util');
+
+// Veriify InfluxDb related settings in the config file
+const configFileInfluxDbAssert = async (config, configQRS, logger) => {
+    // Set up shared Sense repository service configuration
+    const cfg = {
+        hostname: config.get('Butler.configQRS.host'),
+        portNumber: 4242,
+        certificates: {
+            certFile: configQRS.certPaths.certPath,
+            keyFile: configQRS.certPaths.keyPath,
+        },
+    };
+
+    cfg.headers = {
+        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+    };
+
+    const qrsInstance = new QrsInteract(cfg);
+
+    // ------------------------------------------
+    // The custom property specified by
+    // Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName
+    // should be present on reload tasks in the Qlik Sense server
+
+    // Only test if the feature in question is enabled in the config file
+    if (
+        config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enable') === true &&
+        config.has('Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName') &&
+        config.has('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue')
+    ) {
+        // Get custom property values
+        try {
+            const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
+            logger.debug(`ASSERT CONFIG INFLUXDB: The following custom properties are available for reload tasks: ${res1}`);
+
+            // CEnsure that the CP name specified in the config file is found in the list of available CPs
+            // CP name is case sensitive and found in the "name" property of the CP object
+            if (
+                res1.findIndex((cp) => cp.name === config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName')) ===
+                -1
+            ) {
+                logger.error(
+                    `ASSERT CONFIG INFLUXDB: Custom property '${config.get(
+                        'Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName'
+                    )}' not found in Qlik Sense. Aborting.`
+                );
+                process.exit(1);
+            }
+
+            // Ensure that the CP value specified in the config file is found in the list of available CP values
+            // CP value is case sensitive and found in the "choiceValues" array of the CP objects in res1
+            const res2 = res1.filter(
+                (cp) => cp.name === config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName')
+            )[0].choiceValues;
+            logger.debug(
+                `ASSERT CONFIG INFLUXDB: The following values are available for custom property '${config.get(
+                    'Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName'
+                )}': ${res2}`
+            );
+
+            if (
+                res2.findIndex((cpValue) => cpValue === config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue')) ===
+                -1
+            ) {
+                logger.error(
+                    `ASSERT CONFIG INFLUXDB: Custom property value '${config.get(
+                        'Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue'
+                    )}' not found for custom property '${config.get(
+                        'Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName'
+                    )}'. Aborting.`
+                );
+                process.exit(1);
+            }
+        } catch (err) {
+            logger.error(`ASSERT CONFIG INFLUXDB: ${err}`);
+        }
+    }
+};
 
 /**
- * Verify settings in the config file
+ * Verify New Relic settings in the config file
  */
 const configFileNewRelicAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
@@ -606,6 +685,46 @@ const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.allReloadTasks.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.allReloadTasks.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.byCustomProperty.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.tag.static')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.tag.static"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags"');
         configFileCorrect = false;
     }
 
@@ -2273,4 +2392,5 @@ module.exports = {
     configFileNewRelicAssert,
     configFileStructureAssert,
     configFileYamlAssert,
+    configFileInfluxDbAssert,
 };

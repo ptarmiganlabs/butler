@@ -11,7 +11,32 @@ const build = require('./app');
 const udp = require('./udp');
 const { mqttInitHandlers } = require('./lib/mqtt_handlers');
 
+const {
+    configFileStructureAssert,
+    configFileYamlAssert,
+    configFileNewRelicAssert,
+    configFileInfluxDbAssert,
+} = require('./lib/assert/assert_config_file');
+
 const start = async () => {
+    // Verify correct structure of config file
+    configFileStructureAssert(globals.config, globals.logger);
+
+    // Verify that config file is valid YAML
+    configFileStructureAssert(globals.config, globals.logger);
+
+    // Verify that config file is valid YAML
+    configFileYamlAssert(globals.configFileExpanded);
+
+    // Verify select parts/values in config file
+    if (globals.options.qsConnection) {
+        // Verify that the config file contains the required data related to New Relic
+        configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
+
+        // Verify that the config file contains the required data related to InfluxDb
+        configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
+    }
+
     const apps = await build({});
 
     const { restServer } = apps;
@@ -132,7 +157,7 @@ const start = async () => {
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-    globals.udpServerTaskFailureSocket = dgram.createSocket({
+    globals.udpServerReloadTaskSocket = dgram.createSocket({
         type: 'udp4',
         reuseAddr: true,
     });
@@ -143,7 +168,7 @@ const start = async () => {
         udp.udp.udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
-        globals.udpServerTaskFailureSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
+        globals.udpServerReloadTaskSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
     }
 };

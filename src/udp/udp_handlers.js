@@ -6,10 +6,12 @@ const webhookOut = require('../lib/webhook_notification');
 const msteams = require('../lib/msteams_notification');
 const signl4 = require('../lib/incident_mgmt/signl4');
 const newRelic = require('../lib/incident_mgmt/new_relic');
-const { failedTaskStoreLogOnDisk, getScriptLog } = require('../lib/scriptlog');
+const { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } = require('../lib/scriptlog');
 const { getTaskTags } = require('../qrs_util/task_tag_util');
 const { getAppTags } = require('../qrs_util/app_tag_util');
-const { postReloadTaskNotificationInfluxDb } = require('../lib/post_to_influxdb');
+const { doesTaskExist } = require('../qrs_util/does_task_exist');
+const qrsUtil = require('../qrs_util');
+const { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } = require('../lib/post_to_influxdb');
 
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
@@ -262,7 +264,8 @@ const schedulerFailed = async (msg, legacyFlag) => {
         (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
         (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
         (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
-        (globals.config.has('Butler.influxDb.reloadTaskFailure.enable') && globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) ||
+        (globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) ||
         (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
     ) {
         if (legacyFlag) {
@@ -607,7 +610,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.influxDb.enable') === true &&
             globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true
         ) {
-            postReloadTaskNotificationInfluxDb({
+            postReloadTaskFailureNotificationInfluxDb({
                 host: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
                 taskName: msg[2],
@@ -763,13 +766,162 @@ const schedulerFailed = async (msg, legacyFlag) => {
 };
 
 // --------------------------------------------------------
+// Handler for successful scheduler initiated reloads
+// --------------------------------------------------------
+const schedulerReloadTaskSuccess = async (msg) => {
+    globals.logger.verbose(
+        `RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+    );
+
+    const reloadTaskId = msg[5];
+
+    // Does task ID exist in Sense?
+    const taskExists = await doesTaskExist(reloadTaskId);
+    if (taskExists.exists !== true) {
+        globals.logger.warn(`RELOAD TASK SUCCESS: Task ID ${reloadTaskId} does not exist in Sense`);
+        return false;
+    }
+
+    // Determine if this task should be stored in InflixDB
+    let storeInInfluxDb = false;
+    if (
+        globals.config.get('Butler.influxDb.enable') === true &&
+        globals.config.get('Butler.influxDb.reloadTaskSuccess.enable') === true &&
+        globals.config.get('Butler.influxDb.reloadTaskSuccess.allReloadTasks.enable') === true
+    ) {
+        storeInInfluxDb = true;
+    } else if (
+        // Is storing of data in InfluxDB enabled for this specific task, via custom property?
+        globals.config.get('Butler.influxDb.enable') === true &&
+        globals.config.get('Butler.influxDb.reloadTaskSuccess.enable') === true &&
+        globals.config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enable') === true
+    ) {
+        // Is the custom property set for this specific task?
+        // Get custom property name and value from config
+        const customPropertyName = globals.config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName');
+        const customPropertyValue = globals.config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue');
+
+        // Get custom property value for this task
+        const customPropertyValueForTask = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
+            reloadTaskId,
+            customPropertyName,
+            customPropertyValue,
+            globals.logger
+        );
+
+        if (customPropertyValueForTask) {
+            storeInInfluxDb = true;
+        }
+    }
+
+    if (storeInInfluxDb) {
+        // Get results from last reload task execution
+        // It may take a seconds or two from the finished-successfully log message is written until the execution results are available via the QRS.
+        // Specifically, it may take a while for the last "FinishedSuccess" meesage to appear in the executionDetails array.
+        //
+        // Try at most five times, with a 1 second delay between each attempt.
+        // Check if the message property of the last entry in the taskInfo.executionDetailsSorted array is "Changing task state from Started to FinishedSuccess"
+        // Then give up and don't store anything in InfluxDB, but show a log warning.
+        let taskInfo;
+        let retryCount = 0;
+        while (retryCount < 5) {
+            // eslint-disable-next-line no-await-in-loop
+            taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
+
+            if (
+                taskInfo?.executionDetailsSorted[taskInfo.executionDetailsSorted.length - 1]?.message ===
+                'Changing task state from Started to FinishedSuccess'
+            ) {
+                // Is duration longer than 0 seconds?
+                // I.e. is executionDuration.hours, executionDuration.minutes or executionDuration.seconds > 0?
+                // Warn if not, as this is likely caused by the QRS not having updated the execution details yet
+                if (
+                    taskInfo.executionDuration.hours === 0 &&
+                    taskInfo.executionDuration.minutes === 0 &&
+                    taskInfo.executionDuration.seconds === 0
+                ) {
+                    globals.logger.warn(
+                        `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`
+                    );
+                }
+
+                globals.logger.debug(
+                    `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts`
+                );
+                break;
+            }
+
+            retryCount += 1;
+
+            globals.logger.verbose(
+                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`
+            );
+
+            // eslint-disable-next-line no-await-in-loop
+            await globals.sleep(1000);
+        }
+
+        if (!taskInfo) {
+            globals.logger.warn(
+                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`
+            );
+            return false;
+        }
+        globals.logger.verbose(`RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId}: ${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Get app/task tags so they can be included in data sent to alert destinations
+        let appTags = [];
+        let taskTags = [];
+
+        // Get tags for the app that was reloaded
+        appTags = await getAppTags(msg[6]);
+        globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+
+        // Get tags for the task that finished reloading successfully
+        taskTags = await getTaskTags(msg[5]);
+        globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
+        // Post to InfluxDB when a reload task has finished successfully
+        if (
+            globals.config.has('Butler.influxDb.enable') &&
+            globals.config.has('Butler.influxDb.reloadTaskSuccess.enable') &&
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.get('Butler.influxDb.reloadTaskSuccess.enable') === true
+        ) {
+            postReloadTaskSuccessNotificationInfluxDb({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                appTags,
+                taskTags,
+                taskInfo,
+            });
+
+            globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId} stored in InfluxDB`);
+        }
+
+        return true;
+    }
+
+    globals.logger.verbose(`RELOAD TASK SUCCESS: Not storing task info in InfluxDB`);
+    return false;
+};
+
+// --------------------------------------------------------
 // Set up UDP server handlers for acting on Sense failed task events
 // --------------------------------------------------------
 module.exports.udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
     // eslint-disable-next-line no-unused-vars
-    globals.udpServerTaskFailureSocket.on('listening', (message, remote) => {
-        const address = globals.udpServerTaskFailureSocket.address();
+    globals.udpServerReloadTaskSocket.on('listening', (message, remote) => {
+        const address = globals.udpServerReloadTaskSocket.address();
 
         globals.logger.info(`TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
@@ -789,8 +941,8 @@ module.exports.udpInitTaskErrorServer = () => {
 
     // Handler for UDP error event
     // eslint-disable-next-line no-unused-vars
-    globals.udpServerTaskFailureSocket.on('error', (message, remote) => {
-        const address = globals.udpServerTaskFailureSocket.address();
+    globals.udpServerReloadTaskSocket.on('error', (message, remote) => {
+        const address = globals.udpServerReloadTaskSocket.address();
         globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has reported an error
@@ -809,7 +961,7 @@ module.exports.udpInitTaskErrorServer = () => {
 
     // Main handler for UDP messages relating to failed tasks
     // eslint-disable-next-line no-unused-vars
-    globals.udpServerTaskFailureSocket.on('message', async (message, remote) => {
+    globals.udpServerReloadTaskSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===
         //
@@ -891,6 +1043,9 @@ module.exports.udpInitTaskErrorServer = () => {
             } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/') {
                 // Scheduler log appender detecting aborted scheduler-started reload
                 schedulerAborted(msg);
+            } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/') {
+                // Scheduler log appender detecting successful scheduler-started reload task
+                schedulerReloadTaskSuccess(msg);
             } else {
                 // Scheduler log appender detecting failed scheduler-started reload.
                 // This is default to better support legacy Butler installations. See above.

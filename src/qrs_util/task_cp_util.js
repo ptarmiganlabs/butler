@@ -10,8 +10,10 @@ const globals = require('../globals');
  * @param {*} cpValue
  * @returns
  */
-async function isCustomPropertyValueSet(taskId, cpName, cpValue) {
-    globals.logger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
+async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
+    const localLogger = logger !== undefined ? logger : globals.logger;
+
+    localLogger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
 
     try {
         const qrsInstance = new QrsInteract({
@@ -28,14 +30,14 @@ async function isCustomPropertyValueSet(taskId, cpName, cpValue) {
 
         // Get info about the task
         try {
-            globals.logger.debug(
+            localLogger.debug(
                 `ISCPVALUESET: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
             );
 
             const result = await qrsInstance.Get(
                 `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
             );
-            globals.logger.debug(`ISCPVALUESET: Got response: ${result.statusCode} for CP ${cpName}`);
+            localLogger.debug(`ISCPVALUESET: Got response: ${result.statusCode} for CP ${cpName}`);
 
             if (result.body.length === 1) {
                 // Yes, the CP/value exists for this task
@@ -45,11 +47,11 @@ async function isCustomPropertyValueSet(taskId, cpName, cpValue) {
             // Value not set for the CP
             return false;
         } catch (err) {
-            globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err.message}`);
+            localLogger.error(`ISCPVALUESET: Error while getting CP: ${err.message}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`ISCPVALUESET: Error while getting CP: ${err}`);
+        localLogger.error(`ISCPVALUESET: Error while getting CP: ${err}`);
         return false;
     }
 }
@@ -107,7 +109,52 @@ async function getTaskCustomPropertyValues(taskId, cpName) {
     }
 }
 
+// Function to get all custom properties that are available for reload tasks
+async function getReloadTasksCustomProperties(config, configQRS, logger) {
+    logger.debug('GETRELOADTASKSCP: Retrieving all custom properties that are available for reload tasks');
+
+    try {
+        const cfg = {
+            hostname: config.get('Butler.configQRS.host'),
+            portNumber: 4242,
+            certificates: {
+                certFile: configQRS.certPaths.certPath,
+                keyFile: configQRS.certPaths.keyPath,
+            },
+        };
+
+        cfg.headers = {
+            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        };
+
+        const qrsInstance = new QrsInteract(cfg);
+
+        // Get info about the task
+        try {
+            logger.debug('GETRELOADTASKSCP: custompropertydefinition/full?filter=objectType eq ReloadTask');
+
+            const result = await qrsInstance.Get(`custompropertydefinition/full?filter=objectTypes eq 'ReloadTask'`);
+            logger.debug(`GETRELOADTASKSCP: Got response: ${result.statusCode} for CP`);
+
+            if (result.body.length > 0) {
+                // At least one CP exists for reload tasks.
+                return result.body;
+            }
+
+            // The task and/or the CP does not exist
+            return [];
+        } catch (err) {
+            logger.error(`GETRELOADTASKSCP: Error while getting CP: ${err.message}`);
+            return [];
+        }
+    } catch (err) {
+        logger.error(`GETRELOADTASKSCP: Error while getting CP: ${err}`);
+        return false;
+    }
+}
+
 module.exports = {
     isCustomPropertyValueSet,
     getTaskCustomPropertyValues,
+    getReloadTasksCustomProperties,
 };

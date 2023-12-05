@@ -10,7 +10,6 @@ const winston = require('winston');
 
 // Add dependencies
 const { Command, Option } = require('commander');
-const { configFileNewRelicAssert, configFileStructureAssert, configFileYamlAssert } = require('./lib/assert/assert_config_file');
 
 require('winston-daily-rotate-file');
 
@@ -95,9 +94,6 @@ if (options.configfile && options.configfile.length > 0) {
     // Get path to config file
     configFileExpanded = upath.resolve(__dirname, `./config/${env}.yaml`);
 }
-
-// Verify that config file is valid YAML
-configFileYamlAssert(configFileExpanded);
 
 // Are we running as standalone app or not?
 const isPkg = typeof process.pkg !== 'undefined';
@@ -217,9 +213,6 @@ logger.verbose(
     )}`
 );
 
-// Verify correct structure of config file
-configFileStructureAssert(config, logger);
-
 // Helper function to read the contents of the certificate files:
 const readCert = (filename) => fs.readFileSync(filename);
 
@@ -263,11 +256,6 @@ if (config.has('Butler.restServerApiDocGenerate') === false || config.get('Butle
     };
 } else {
     logger.debug('CONFIG: API doc mode=on');
-}
-
-// Verify select parts/values in config file
-if (options.qsConnection) {
-    configFileNewRelicAssert(config, configQRS, logger);
 }
 
 // MS Teams notification objects
@@ -325,9 +313,9 @@ if (
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
-let udpServerTaskFailureSocket = null;
+let udpServerReloadTaskSocket = null;
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-// const udpServerTaskFailureSocket = dgram.createSocket({
+// const udpServerReloadTaskSocket = dgram.createSocket({
 //     type: 'udp4',
 //     reuseAddr: true,
 // });
@@ -634,6 +622,11 @@ async function initHostInfo() {
     }
 }
 
+function sleep(ms) {
+    // eslint-disable-next-line no-promise-executor-return
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 module.exports = {
     config,
     configEngine,
@@ -644,7 +637,7 @@ module.exports = {
     teamsUserSessionObj,
     teamsServiceStoppedMonitorObj,
     teamsServiceStartedMonitorObj,
-    udpServerTaskFailureSocket,
+    udpServerReloadTaskSocket,
     udpHost,
     udpPortTaskFailure,
     // mqttClient,
@@ -667,4 +660,5 @@ module.exports = {
     checkFileExistsSync,
     options,
     execPath,
+    sleep,
 };
