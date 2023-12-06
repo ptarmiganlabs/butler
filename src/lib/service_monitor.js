@@ -119,9 +119,11 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
 };
 
 const verifyServicesExist = async (config, logger) => {
+    logger.info('Verifying that all Windows services specified in config file exist and can be reached.');
+
     // Return false if one or more services do not exist or cannot be reached.
     // Return true if all services are reachable.
-    let result = false;
+    let result = true;
 
     const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
@@ -132,13 +134,25 @@ const verifyServicesExist = async (config, logger) => {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const service of servicesToCheck) {
-            // eslint-disable-next-line no-await-in-loop
-            const serviceExists = await svcTools.exists(service.name, host.host);
-            if (serviceExists) {
-                result = true;
+            let serviceExists;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                serviceExists = await svcTools.exists(service.name, host.host);
+            } catch (err) {
+                logger.error(`Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`);
+                result = false;
             }
 
-            logger.verbose(`Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists: ${serviceExists}`);
+            if (serviceExists) {
+                logger.verbose(
+                    `Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists: ${serviceExists}`
+                );
+            } else {
+                logger.error(
+                    `Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
+                );
+                result = false;
+            }
         }
     }
 
@@ -539,7 +553,7 @@ async function setupServiceMonitorTimer(config, logger) {
                     }
                 } else {
                     logger.error(
-                        'At least one Windows service does not exist or could not be reached. Will not check any Windows services from here on.'
+                        'At least one Windows service does not exist or could not be reached. Monitoring of Windows services is disabled.'
                     );
                 }
             } else {
