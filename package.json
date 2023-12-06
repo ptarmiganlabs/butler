@@ -49,7 +49,7 @@
         "@fastify/sensible": "^5.5.0",
         "@fastify/static": "^6.12.0",
         "@fastify/swagger": "^8.12.1",
-        "@fastify/swagger-ui": "^1.10.2",
+        "@fastify/swagger-ui": "^2.0.0",
         "@keyvhq/core": "^2.1.0",
         "@xstate/fsm": "^2.0.1",
         "any-base": "^1.1.0",
