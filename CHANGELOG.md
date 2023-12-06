@@ -1,5 +1,30 @@
 # Changelog
 
+## [9.3.0](https://github.com/ptarmiganlabs/butler/compare/v9.2.3...v9.3.0) (2023-12-06)
+
+
+### Features
+
+* **influxdb:** Store failed reload info in InfluxDB ([b45dedd](https://github.com/ptarmiganlabs/butler/commit/b45deddf3f3ec0a2b5337343fe8cc873ccad3acf)), closes [#866](https://github.com/ptarmiganlabs/butler/issues/866)
+* **mqtt:** Add support for Azure Event Grid as MQTT broker ([3794da3](https://github.com/ptarmiganlabs/butler/commit/3794da32a8f80e45217e1bde72b39a327995a390))
+* Store reload task success info in InfluxBD ([e642ad4](https://github.com/ptarmiganlabs/butler/commit/e642ad4791605eaa64a4b2368928befbe40d23f4)), closes [#870](https://github.com/ptarmiganlabs/butler/issues/870)
+
+
+### Bug Fixes
+
+* Disable SMTP mail appender in sample config ([4f63cb3](https://github.com/ptarmiganlabs/butler/commit/4f63cb34cab19aa1b077de867c19c7c3e0ccc890))
+* More robust generation of anonymous Butler instance id ([5203d54](https://github.com/ptarmiganlabs/butler/commit/5203d549059f1726deeeb74c89c98eeb715e569b)), closes [#863](https://github.com/ptarmiganlabs/butler/issues/863)
+* **mqtt:** Better error handling when establishing MQTT connection ([6299a2c](https://github.com/ptarmiganlabs/butler/commit/6299a2ccb5e64703c15cc56cafb59d5290692f8f))
+* Verify that all required config file entries exist ([38c42b0](https://github.com/ptarmiganlabs/butler/commit/38c42b0175d7668574fff69fe1ec424350d95e34)), closes [#874](https://github.com/ptarmiganlabs/butler/issues/874)
+* **winservice:** Better handling of services that don't exist ([56a18de](https://github.com/ptarmiganlabs/butler/commit/56a18de4627b0e45cf25677bee0a5e09b1559a8c))
+
+
+### Miscellaneous
+
+* Add sample config files to release ZIPs ([03f2fdf](https://github.com/ptarmiganlabs/butler/commit/03f2fdf25b8155bd5dec36f5ea9d4cfef9a921f4)), closes [#873](https://github.com/ptarmiganlabs/butler/issues/873)
+* **deps:** Update dependencies ([f2592b0](https://github.com/ptarmiganlabs/butler/commit/f2592b07aa0ef8a65225197e4c0db1a3ff776728))
+* **deps:** Update deps to stay safe and secure ([1e9f2f6](https://github.com/ptarmiganlabs/butler/commit/1e9f2f6ccc58d1fb6107fc9960e05c670e0812b3))
+
 ## [9.2.3](https://github.com/ptarmiganlabs/butler/compare/v9.2.3...v9.2.3) (2023-11-25)
 
 
