@@ -10,6 +10,7 @@ function all(host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         let command = '';
+
         if (host === null) {
             // Run command for get states of all services on local machine
             command = 'sc.exe query state= all';
@@ -21,6 +22,9 @@ function all(host = null) {
         exec(command, (err, stdout) => {
             // On error, reject and exit
             if (err) {
+                if (stdout) {
+                    reject(stdout);
+                }
                 reject(err);
                 return;
             }
@@ -54,6 +58,8 @@ function exists(serviceName, host = null) {
             reject(new Error('Service name is invalid'));
             return;
         }
+
+        // Is host reachable?
 
         // Get all services
         all(host).then(

@@ -942,20 +942,24 @@ module.exports.udpInitTaskErrorServer = () => {
     // Handler for UDP error event
     // eslint-disable-next-line no-unused-vars
     globals.udpServerReloadTaskSocket.on('error', (message, remote) => {
-        const address = globals.udpServerReloadTaskSocket.address();
-        globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
+        try {
+            const address = globals.udpServerReloadTaskSocket.address();
+            globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
 
-        // Publish MQTT message that UDP server has reported an error
-        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            if (globals?.mqttClient?.connected) {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
-            } else {
-                globals.logger.warn(
-                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskAbortedTopic'
-                    )}`
-                );
+            // Publish MQTT message that UDP server has reported an error
+            if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
+                if (globals?.mqttClient?.connected) {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
+                } else {
+                    globals.logger.warn(
+                        `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                            'Butler.mqttConfig.taskAbortedTopic'
+                        )}`
+                    );
+                }
             }
+        } catch (err) {
+            globals.logger.error(`TASKFAILURE: Error in UDP error handler: ${err}`);
         }
     });
 
