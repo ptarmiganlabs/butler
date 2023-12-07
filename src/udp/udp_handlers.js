@@ -461,7 +461,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             } else {
                 globals.logger.warn(
                     `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskAbortedTopic'
+                        'Butler.mqttConfig.taskFailureTopic'
                     )}`
                 );
             }
@@ -730,7 +730,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             } else {
                 globals.logger.warn(
                     `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskAbortedTopic'
+                        'Butler.mqttConfig.taskFailureTopic'
                     )}`
                 );
             }
@@ -931,8 +931,8 @@ module.exports.udpInitTaskErrorServer = () => {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
             } else {
                 globals.logger.warn(
-                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskAbortedTopic'
+                    `UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        'Butler.mqttConfig.taskFailureServerStatusTopic'
                     )}`
                 );
             }
@@ -952,8 +952,8 @@ module.exports.udpInitTaskErrorServer = () => {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
                 } else {
                     globals.logger.warn(
-                        `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                            'Butler.mqttConfig.taskAbortedTopic'
+                        `UDP SERVER ERROR: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                            'Butler.mqttConfig.taskFailureServerStatusTopic'
                         )}`
                     );
                 }

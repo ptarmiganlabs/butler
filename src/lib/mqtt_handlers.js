@@ -8,7 +8,7 @@ const { config, logger, execPath } = require('../globals');
 const globals = require('../globals');
 const qrsUtil = require('../qrs_util');
 
-async function mqttInitHandlers() {
+function mqttInitHandlers() {
     try {
         let mqttClient;
         let mqttOptions;
@@ -23,6 +23,8 @@ async function mqttInitHandlers() {
                 };
 
                 mqttClient = mqtt.connect(mqttOptions);
+
+                globals.mqttClient = mqttClient;
 
                 /*
             Following might be needed for conecting to older Mosquitto versions
@@ -52,19 +54,19 @@ async function mqttInitHandlers() {
                 };
 
                 // Connect to MQTT broker
-                // mqttClient = mqtt.connect(mqttOptions);
                 mqttClient = mqtt.connect(
                     `mqtts://${config.get('Butler.mqttConfig.brokerHost')}:${config.get('Butler.mqttConfig.brokerPort')}`,
                     mqttOptions
                 );
+
                 globals.mqttClient = mqttClient;
             } else {
-                logger.error('CONFIG: MQTT configuration error');
+                logger.error('MQTT INIT HANDLERS: MQTT configuration error');
             }
 
             if (!mqttClient.connected) {
                 logger.verbose(
-                    `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
+                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
                 );
             }
 
@@ -97,7 +99,7 @@ async function mqttInitHandlers() {
                 // Handler for MQTT messages matching the previously set up subscription
                 mqttClient.on('message', async (topic, message) => {
                     try {
-                        logger.verbose(`MQTT message received. Topic=${topic.toString()},  Message=${message.toString()}`);
+                        logger.verbose(`MQTT MESSAGE: Message received. Topic=${topic.toString()},  Message=${message.toString()}`);
 
                         // **MQTT message dispatch**
                         // Start Sense task
@@ -120,22 +122,22 @@ async function mqttInitHandlers() {
                             }
                         }
                     } catch (err) {
-                        logger.error(`MQTT MSG: Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`MQTT MESSAGE: Error=${JSON.stringify(err, null, 2)}`);
                     }
                 });
 
                 // Handler for MQTT errors
                 mqttClient.on('error', (topic, message) => {
                     // Error occured
-                    logger.error(`MQTT: MQTT error topic: ${topic}`);
-                    logger.error(`MQTT: MQTT error message: ${message}`);
+                    logger.error(`MQTT ERROR: Topic: ${topic}`);
+                    logger.error(`MQTT ERROR: Message: ${message}`);
                 });
             } else {
-                logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
+                logger.info('MQTT INIT HANDLERS : MQTT disabled, not connecting to MQTT broker');
             }
         }
     } catch (err) {
-        logger.error(`CONFIG: Could not set up MQTT: ${err}`);
+        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT: ${err}`);
     }
 }
 

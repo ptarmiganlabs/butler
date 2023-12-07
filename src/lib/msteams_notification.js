@@ -55,14 +55,14 @@ function getTeamsReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.teamsNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK FAILED ALERT TEAMS: Reload failure Teams config info missing in Butler config file');
+            globals.logger.error('TEAMS RELOAD TASK FAILED: Reload failure Teams config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable')) {
             // Teams task falure notifications are disabled
             globals.logger.error(
-                "TASK FAILED ALERT TEAMS: Reload failure Teams notifications are disabled in config file - won't send Teams message"
+                "TEAMS RELOAD TASK FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message"
             );
             return false;
         }
@@ -73,7 +73,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
         ) {
             // Invalid Teams message type
             globals.logger.error(
-                `TASK FAILED ALERT TEAMS: Invalid Teams message type: ${globals.config.get(
+                `TEAMS RELOAD TASK FAILED: Invalid Teams message type: ${globals.config.get(
                     'Butler.teamsNotification.reloadTaskFailure.messageType'
                 )}`
             );
@@ -84,13 +84,13 @@ function getTeamsReloadFailedNotificationConfigOk() {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.reloadTaskFailure.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('TASK FAILED ALERT TEAMS: No message text in config file.');
+                globals.logger.error('TEAMS RELOAD TASK FAILED: No message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.teamsNotification.reloadTaskFailure.messageType') === 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.reloadTaskFailure.templateFile')) {
-                globals.logger.error('TASK FAILED ALERT TEAMS: Message template file not specified in config file.');
+                globals.logger.error('TEAMS RELOAD TASK FAILED: Message template file not specified in config file.');
                 return false;
             }
         }
@@ -114,7 +114,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`TASK FAILED ALERT TEAMS: ${err}`);
+        globals.logger.error(`TEAMS RELOAD TASK FAILED: ${err}`);
         return false;
     }
 }
@@ -128,14 +128,14 @@ function getTeamsReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.teamsNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK ABORTED ALERT TEAMS: Reload aborted Teams config info missing in Butler config file');
+            globals.logger.error('TEAMS RELOAD TASK ABORTED: Reload aborted Teams config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable')) {
             // Teams task aborted notifications are disabled
             globals.logger.error(
-                "TASK ABORTED ALERT TEAMS: Reload aborted Teams notifications are disabled in config file - won't send Teams message"
+                "TEAMS RELOAD TASK ABORTED: Reload aborted Teams notifications are disabled in config file - won't send Teams message"
             );
             return false;
         }
@@ -146,7 +146,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
         ) {
             // Invalid Teams message type
             globals.logger.error(
-                `TASK ABORTED ALERT TEAMS: Invalid Teams message type: ${globals.config.get(
+                `TEAMS RELOAD TASK ABORTED: Invalid Teams message type: ${globals.config.get(
                     'Butler.teamsNotification.reloadTaskAborted.messageType'
                 )}`
             );
@@ -157,13 +157,13 @@ function getTeamsReloadAbortedNotificationConfigOk() {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.reloadTaskAborted.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('TASK ABORTED ALERT TEAMS: No message text in config file.');
+                globals.logger.error('TEAMS RELOAD TASK ABORTED: No message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.teamsNotification.reloadTaskAborted.messageType') === 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.reloadTaskAborted.templateFile')) {
-                globals.logger.error('TASK ABORTED ALERT TEAMS: Message template file not specified in config file.');
+                globals.logger.error('TEAMS RELOAD TASK ABORTED: Message template file not specified in config file.');
                 return false;
             }
         }
@@ -190,7 +190,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`TASK ABORTED ALERT TEAMS: ${err}`);
+        globals.logger.error(`TEAMS RELOAD TASK ABORTED: ${err}`);
         return false;
     }
 }
@@ -206,14 +206,14 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             !globals.config.has('Butler.teamsNotification.serviceStarted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('SERVICE MONITOR TEAMS: Reload aborted Teams config info missing in Butler config file');
+            globals.logger.error('TEAMS SERVICE MONITOR: Reload aborted Teams config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable')) {
             // Teams notifications are disabled
             globals.logger.error(
-                "SERVICE MONITOR TEAMS: Service monitor Teams notifications are disabled in config file - won't send Teams message"
+                "TEAMS SERVICE MONITOR: TEAMS SERVICE MONITOR notifications are disabled in config file - won't send Teams message"
             );
             return false;
         }
@@ -224,7 +224,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
         ) {
             // Invalid Teams message type
             globals.logger.error(
-                `SERVICE MONITOR TEAMS: Invalid Teams message type: ${globals.config.get(
+                `TEAMS SERVICE MONITOR: Invalid Teams message type: ${globals.config.get(
                     'Butler.teamsNotification.serviceStopped.messageType'
                 )}`
             );
@@ -237,7 +237,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
         ) {
             // Invalid Teams message type
             globals.logger.error(
-                `SERVICE MONITOR TEAMS: Invalid Teams message type: ${globals.config.get(
+                `TEAMS SERVICE MONITOR: Invalid Teams message type: ${globals.config.get(
                     'Butler.teamsNotification.serviceStopped.messageType'
                 )}`
             );
@@ -248,13 +248,13 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStopped.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR TEAMS: No service stopped basic message text in config file.');
+                globals.logger.error('TEAMS SERVICE MONITOR: No service stopped basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.teamsNotification.serviceStopped.messageType') === 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStopped.templateFile')) {
-                globals.logger.error('SERVICE MONITOR TEAMS: Service stopped message template file not specified in config file.');
+                globals.logger.error('TEAMS SERVICE MONITOR: Service stopped message template file not specified in config file.');
                 return false;
             }
         }
@@ -263,13 +263,13 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStarted.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR TEAMS: No service started basic message text in config file.');
+                globals.logger.error('TEAMS SERVICE MONITOR: No service started basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.teamsNotification.serviceStarted.messageType') === 'formatted') {
             // Extended formatting using Teams blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.teamsNotification.serviceStarted.templateFile')) {
-                globals.logger.error('SERVICE MONITOR TEAMS: Service started message template file not specified in config file.');
+                globals.logger.error('TEAMS SERVICE MONITOR: Service started message template file not specified in config file.');
                 return false;
             }
         }
@@ -314,7 +314,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR TEAMS: ${err}`);
+        globals.logger.error(`TEAMS SERVICE MONITOR: ${err}`);
         return false;
     }
 }
@@ -385,8 +385,8 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMSNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMSNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(`TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                        globals.logger.debug(`TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
@@ -394,15 +394,15 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
 
                     renderedText = compiledTemplate(templateContext);
 
-                    globals.logger.debug(`TEAMSNOTIF: Rendered message:\n${renderedText}`);
+                    globals.logger.debug(`TEAMS SEND: Rendered message:\n${renderedText}`);
 
                     // Parse the JSON string to get rid of extra linebreaks etc.
                     msg = JSON.parse(renderedText);
                 } else {
-                    globals.logger.error(`TEAMSNOTIF: Could not open Teams template file ${teamsConfig.templateFile}.`);
+                    globals.logger.error(`TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`TEAMSNOTIF: Error processing Teams template file: ${err}`);
+                globals.logger.error(`TEAMS SEND: Error processing Teams template file: ${err}`);
             }
         }
 
@@ -410,11 +410,11 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
             // const res = await teamsWebhookObj.send(JSON.stringify(msg));
             const res = await teamsWebhookObj.send(msg);
             if (res !== undefined) {
-                globals.logger.debug(`TEAMSNOTIF: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(`TEAMS SEND: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
-        globals.logger.error(`TEAMSNOTIF: ${err}`);
+        globals.logger.error(`TEAMS SEND: ${err}`);
     }
 }
 
@@ -424,9 +424,9 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED ALERT TEAMS: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `TEAMS RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`TEAMS RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
                 const teamsConfig = getTeamsReloadFailedNotificationConfigOk();
@@ -455,7 +455,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     scriptLogData.scriptLogTail = '';
                 }
 
-                globals.logger.debug(`TASK FAILED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(`TEAMS RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -552,15 +552,15 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
 
                 sendTeams(globals.teamsTaskFailureObj, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`TASK FAILED ALERT TEAMS: ${err}`);
+                globals.logger.error(`TEAMS RELOAD TASK FAILED: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.warn(
-                `TASK FAILED ALERT TEAMS: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
+                `TEAMS RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
             );
-            globals.logger.debug(`TASK FAILED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.debug(`TEAMS RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -570,9 +570,9 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORTED ALERT TEAMS: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `TEAMS RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`TEAMS RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
                 const teamsConfig = getTeamsReloadAbortedNotificationConfigOk();
@@ -600,7 +600,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     scriptLogData.scriptLogTail = '';
                 }
 
-                globals.logger.debug(`TASK ABORTED ALERT TEAMS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(`TEAMS RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -697,15 +697,15 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
 
                 sendTeams(globals.teamsTaskAbortedObj, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`TASK ABORTED ALERT TEAMS: ${err}`);
+                globals.logger.error(`TEAMS RELOAD TASK ABORTED: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORTED ALERT TEAMS: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
+                `TEAMS RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(`TASK ABORTED ALERT TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`TEAMS RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -715,9 +715,9 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SERVICE MONITOR TEAMS: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
+                    `TEAMS SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
                 );
-                globals.logger.verbose(`SERVICE MONITOR TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
                 const teamsConfig = getTeamsServiceMonitorNotificationConfig(serviceParams.serviceStatus);
@@ -743,15 +743,15 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
                     sendTeams(globals.teamsServiceStartedMonitorObj, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`SERVICE MONITOR TEAMS: ${err}`);
+                globals.logger.error(`TEAMS SERVICE MONITOR: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `SERVICE MONITOR TEAMS: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
+                `TEAMS SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
             );
-            globals.logger.verbose(`SERVICE MONITOR TEAMS: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 

@@ -79,7 +79,7 @@ function getReloadFailedEventConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('RELOADFAILEDEVENT: Reload failure New Relic event config info missing in Butler config file');
+            globals.logger.error('NEW RELIC RELOAD FAILED EVENT: Reload failure New Relic event config info missing in Butler config file');
             return false;
         }
 
@@ -133,16 +133,16 @@ function getReloadFailedEventConfig() {
         return cfg;
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDEVENT: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT: ${JSON.stringify(err, null, 2)}`);
         }
 
         return false;
@@ -158,7 +158,7 @@ function getReloadFailedLogConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC RELOADFAILEDLOG: Reload failure New Relic log config info missing in Butler config file');
+            globals.logger.error('NEW RELIC RELOADFAILEDLOG: Reload failure New Relic log config info missing in Butler config file');
             return false;
         }
 
@@ -209,16 +209,16 @@ function getReloadFailedLogConfig() {
         return cfg;
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDLOG message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDLOG stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC RELOADFAILEDLOG: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG: ${JSON.stringify(err, null, 2)}`);
         }
 
         return false;
@@ -234,7 +234,7 @@ function getReloadAbortedEventConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC RELOADABORTEDEVENT: Reload aborted New Relic event config info missing in Butler config file');
+            globals.logger.error('NEW RELIC RELOADABORTEDEVENT: Reload aborted New Relic event config info missing in Butler config file');
             return false;
         }
 
@@ -288,16 +288,16 @@ function getReloadAbortedEventConfig() {
         return cfg;
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDEVENT: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT: ${JSON.stringify(err, null, 2)}`);
         }
 
         return false;
@@ -313,7 +313,7 @@ function getReloadAbortedLogConfig() {
             !globals.config.has('Butler.incidentTool.newRelic.url.event')
         ) {
             // Not enough info in config file
-            globals.logger.error('NEWRELIC RELOADABORTEDLOG: Reload aborted New Relic log config info missing in Butler config file');
+            globals.logger.error('NEW RELIC RELOADABORTEDLOG: Reload aborted New Relic log config info missing in Butler config file');
             return false;
         }
 
@@ -364,16 +364,16 @@ function getReloadAbortedLogConfig() {
         return cfg;
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDLOG message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDLOG stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC RELOADABORTEDLOG: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG: ${JSON.stringify(err, null, 2)}`);
         }
 
         return false;
@@ -405,17 +405,17 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
         // Verbose: Show what New Relic account names/API keys/account IDs have been defined
-        globals.logger.verbose(`NEWRELIC EVENT: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+        globals.logger.verbose(`NEW RELIC EVENT: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
 
         // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax
         for (const accountName of destNewRelicAccounts) {
-            globals.logger.debug(`NEWRELIC EVENT: Current loop New Relic account name=${JSON.stringify(accountName)}`);
+            globals.logger.debug(`NEW RELIC EVENT: Current loop New Relic account name=${JSON.stringify(accountName)}`);
 
             // Is there any config available for the current account?
             const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
             if (newRelicConfig.length === 0) {
-                globals.logger.error(`NEWRELIC EVENT: New Relic account name "${accountName}" does not exist in the Butler config file.`);
+                globals.logger.error(`NEW RELIC EVENT: New Relic account name "${accountName}" does not exist in the Butler config file.`);
             } else {
                 headers['Api-Key'] = newRelicConfig[0].insertApiKey;
                 const newRelicAccountId = newRelicConfig[0].accountId;
@@ -434,31 +434,31 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.request(axiosRequest);
                 globals.logger.debug(
-                    `NEWRELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEW RELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                 );
 
                 if (res.status === 200 || res.status === 202) {
                     // Posting done without error
-                    globals.logger.verbose(`NEWRELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
+                    globals.logger.verbose(`NEW RELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
                 } else {
                     globals.logger.error(
-                        `NEWRELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                        `NEW RELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                     );
                 }
             }
         }
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC 1 message: ${err.message}`);
+            globals.logger.error(`NEW RELIC 1 message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC 1 stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC 1 stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
         }
     }
 }
@@ -543,17 +543,17 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
         const nrAccounts = globals.config.Butler.thirdPartyToolsCredentials.newRelic;
 
         // Verbose: Show what New Relic account names/API keys/account IDs have been defined
-        globals.logger.verbose(`NEWRELIC LOG: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+        globals.logger.verbose(`NEW RELIC LOG: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
 
         // Send to New Relic
         // eslint-disable-next-line no-restricted-syntax
         for (const accountName of destNewRelicAccounts) {
-            globals.logger.debug(`NEWRELIC LOG: Current loop New Relic config=${JSON.stringify(accountName)}`);
+            globals.logger.debug(`NEW RELIC LOG: Current loop New Relic config=${JSON.stringify(accountName)}`);
 
             // Is there any config available for the current account?
             const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
             if (newRelicConfig.length === 0) {
-                globals.logger.error(`NEWRELIC LOG: New Relic account name "${accountName}" does not exist in the Butler config file.`);
+                globals.logger.error(`NEW RELIC LOG: New Relic account name "${accountName}" does not exist in the Butler config file.`);
             } else {
                 headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
@@ -569,31 +569,31 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.request(axiosRequest);
                 globals.logger.debug(
-                    `NEWRELIC LOG: Result code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEW RELIC LOG: Result code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                 );
 
                 if (res.status === 200 || res.status === 202) {
                     // Posting done without error
-                    globals.logger.verbose(`NEWRELIC LOG: Sent log New Relic account ${newRelicConfig[0].accountId}`);
+                    globals.logger.verbose(`NEW RELIC LOG: Sent log New Relic account ${newRelicConfig[0].accountId}`);
                 } else {
                     globals.logger.error(
-                        `NEWRELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                        `NEW RELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                     );
                 }
             }
         }
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEWRELIC 2 message: ${err.message}`);
+            globals.logger.error(`NEW RELIC 2 message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`NEWRELIC 2 stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC 2 stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
         }
     }
 }
@@ -717,16 +717,16 @@ async function sendReloadTaskFailureEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 1 message: ${err.message}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 1 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 1 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -857,16 +857,16 @@ async function sendReloadTaskFailureLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 2 message: ${err.message}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 2 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 2 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK FAILED NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`TASK FAILED NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -999,16 +999,16 @@ function sendReloadTaskAbortedEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 1 message: ${err.message}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 1 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 1 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -1141,16 +1141,16 @@ function sendReloadTaskAbortedLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 2 message: ${err.message}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 2 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 2 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK ABORT NEWRELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`TASK ABORT NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;

@@ -7,7 +7,7 @@ const configVerifyAllTaskId = () => {
     try {
         // Only verify allowed task IDs if that feature is turned on
         if (globals.config.has('Butler.startTaskFilter.enable') && globals.config.get('Butler.startTaskFilter.enable') === true) {
-            globals.logger.info('CONFIG_VERIFY: Verifying that task IDs are valid...');
+            globals.logger.info('CONFIG VERIFY: Verifying that task IDs are valid...');
 
             if (
                 globals.config.has('Butler.startTaskFilter.allowTask.taskId') === true &&
@@ -15,27 +15,27 @@ const configVerifyAllTaskId = () => {
             ) {
                 globals.config.get('Butler.startTaskFilter.allowTask.taskId').forEach((taskId) => {
                     if (guidRegExp.test(taskId) === true) {
-                        globals.logger.verbose(`CONFIG_VERIFY: Allowed task ID is valid: ${taskId}`);
+                        globals.logger.verbose(`CONFIG VERIFY: Allowed task ID is valid: ${taskId}`);
                     } else {
-                        globals.logger.warn(`CONFIG_VERIFY: Allowed task ID not valid: ${taskId}`);
+                        globals.logger.warn(`CONFIG VERIFY: Allowed task ID not valid: ${taskId}`);
                     }
                 });
             }
         }
     } catch (err) {
-        globals.logger.error(`CONFIG_VERIFY: Error verifying all task IDs: ${err}`);
+        globals.logger.error(`CONFIG VERIFY: Error verifying all task IDs: ${err}`);
     }
 };
 
 const verifyTaskId = (taskId) => {
     try {
         if (guidRegExp.test(taskId) === true) {
-            globals.logger.verbose(`TASKID_VERIFY: Task ID is valid: ${taskId}`);
+            globals.logger.verbose(`TASK ID VERIFY: Task ID is valid: ${taskId}`);
             return true;
         }
-        globals.logger.warn(`TASKID_VERIFY: Task ID not valid: ${taskId}`);
+        globals.logger.warn(`TASK ID VERIFY: Task ID not valid: ${taskId}`);
     } catch (err) {
-        globals.logger.error(`TASKID_VERIFY: Error verifying task ID: ${err}`);
+        globals.logger.error(`TASK ID VERIFY: Error verifying task ID: ${err}`);
     }
     return false;
 };

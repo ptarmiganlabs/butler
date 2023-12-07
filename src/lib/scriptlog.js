@@ -60,11 +60,11 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
         const qrsInstance = new QrsInteract(configQRS);
 
         // Step 1
-        globals.logger.debug(`GETSCRIPTLOG 1: reloadTaskId: ${reloadTaskId}`);
+        globals.logger.debug(`GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
 
         const result1 = await qrsInstance.Get(`reloadtask/${reloadTaskId}`);
 
-        globals.logger.debug(`GETSCRIPTLOG 1: body: ${JSON.stringify(result1.body)}`);
+        globals.logger.debug(`GET SCRIPT LOG 1: body: ${JSON.stringify(result1.body)}`);
 
         const taskInfo = {
             fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
@@ -164,7 +164,7 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`SCRIPTLOG: ${err}`);
+        globals.logger.error(`GET SCRIPT LOG: ${err}`);
         return false;
     }
 }
@@ -195,9 +195,9 @@ async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
         const qrsInstance = new QrsInteract(configQRS);
 
         // Only get script log if there is a valid fileReferenceId
-        globals.logger.debug(`GETSCRIPTLOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
+        globals.logger.debug(`GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
         if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
-            globals.logger.debug(`GETSCRIPTLOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
+            globals.logger.debug(`GET SCRIPT LOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
 
             const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
 
@@ -238,10 +238,10 @@ async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
             }
 
-            globals.logger.debug(`SCRIPTLOG: Script log head:\n${scriptLogHead}`);
-            globals.logger.debug(`SCRIPTLOG: Script log tails:\n${scriptLogTail}`);
+            globals.logger.debug(`GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
+            globals.logger.debug(`GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
 
-            globals.logger.verbose('SCRIPTLOG: Done getting script log');
+            globals.logger.verbose('GET SCRIPT LOG: Done getting script log');
 
             return {
                 executingNodeName: taskInfo.executingNodeName,
@@ -278,7 +278,7 @@ async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             scriptLogTailCount: 0,
         };
     } catch (err) {
-        globals.logger.error(`SCRIPTLOG: ${err}`);
+        globals.logger.error(`GET SCRIPT LOG: ${err}`);
         return false;
     }
 }

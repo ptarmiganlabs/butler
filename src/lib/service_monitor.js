@@ -159,7 +159,10 @@ const verifyServicesExist = async (config, logger) => {
     return result;
 };
 
-const checkServiceStatus = async (config, logger) => {
+// Function to check the status of all Windows services specified in the config file
+// The isFirsCheck parameter is used to determine if we should send a message to the alert destinations
+// Set isFirsCheck default to false
+const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
     const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
     hostsToCheck.forEach(async (host) => {
@@ -312,6 +315,12 @@ const checkServiceStatus = async (config, logger) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
+
+                // First check?
+                if (isFirstCheck) {
+                    // Set state to running as this is the first/startup check and we don't want to alert in this case
+                    const res = smService.stateSvc.send('START');
+                }
                 const prevState = smService.stateSvc.state.value;
 
                 logger.verbose(
@@ -492,20 +501,20 @@ async function setupServiceMonitorTimer(config, logger) {
                 const servicesExist = await verifyServicesExist(config, logger);
                 if (servicesExist) {
                     if (!config.has('Butler.serviceMonitor.monitor') || config.get('Butler.serviceMonitor.monitor').length === 0) {
-                        logger.warn(`SERVICE MONITOR: Missing or empty section in config file: Butler.serviceMonitor.service`);
+                        logger.warn(`SERVICE MONITOR INIT: Missing or empty section in config file: Butler.serviceMonitor.service`);
                     } else {
-                        logger.info(`SERVICE MONITOR: Setting up monitor for Windows services:`);
+                        logger.info(`SERVICE MONITOR INIT: Setting up monitor for Windows services:`);
 
                         const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
                         // eslint-disable-next-line no-restricted-syntax
                         for (const host of hostsToCheck) {
-                            logger.info(`SERVICE MONITOR: --- Host: ${host.host}`);
+                            logger.info(`SERVICE MONITOR INIT: --- Host: ${host.host}`);
                             const servicesToCheck = host.services;
 
                             // eslint-disable-next-line no-restricted-syntax
                             for (const service of servicesToCheck) {
-                                logger.info(`SERVICE MONITOR: ---          ${service.name}`);
+                                logger.info(`SERVICE MONITOR INIT: ---          ${service.name}`);
 
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
@@ -549,7 +558,7 @@ async function setupServiceMonitorTimer(config, logger) {
                         }, sched);
 
                         // Do an initial service status check
-                        checkServiceStatus(config, logger);
+                        checkServiceStatus(config, logger, true);
                     }
                 } else {
                     logger.error(
@@ -563,9 +572,9 @@ async function setupServiceMonitorTimer(config, logger) {
             }
         }
     } catch (err) {
-        logger.error(`SERVICE MONITOR: ${err}`);
+        logger.error(`SERVICE MONITOR INIT: ${err}`);
         if (err.stack) {
-            logger.error(`SERVICE MONITOR: ${err.stack}`);
+            logger.error(`SERVICE MONITOR INIT: ${err.stack}`);
         }
     }
 }
