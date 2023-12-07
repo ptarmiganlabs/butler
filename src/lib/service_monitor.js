@@ -315,6 +315,12 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
+
+                // First check?
+                if (isFirstCheck) {
+                    // Set state to running as this is the first/startup check and we don't want to alert in this case
+                    const res = smService.stateSvc.send('START');
+                }
                 const prevState = smService.stateSvc.state.value;
 
                 logger.verbose(
