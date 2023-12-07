@@ -3,7 +3,7 @@ const axios = require('axios');
 async function slackSend(slackConfig, logger) {
     // TODO Sanity check Slack config
     if (slackConfig.text === undefined) {
-        logger.error('SLACKSEND: Text missing - mandatory when sending Slack messages');
+        logger.error('SLACK SEND: Text missing - mandatory when sending Slack messages');
         return;
     }
 
@@ -25,9 +25,9 @@ async function slackSend(slackConfig, logger) {
         }
 
         const res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
-        logger.debug(`SLACKSEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
+        logger.debug(`SLACK SEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
     } catch (err) {
-        logger.error(`SLACKSEND: ${err}"`);
+        logger.error(`SLACK SEND: ${err}"`);
     }
 }
 

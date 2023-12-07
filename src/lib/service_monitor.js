@@ -492,20 +492,20 @@ async function setupServiceMonitorTimer(config, logger) {
                 const servicesExist = await verifyServicesExist(config, logger);
                 if (servicesExist) {
                     if (!config.has('Butler.serviceMonitor.monitor') || config.get('Butler.serviceMonitor.monitor').length === 0) {
-                        logger.warn(`SERVICE MONITOR: Missing or empty section in config file: Butler.serviceMonitor.service`);
+                        logger.warn(`SERVICE MONITOR INIT: Missing or empty section in config file: Butler.serviceMonitor.service`);
                     } else {
-                        logger.info(`SERVICE MONITOR: Setting up monitor for Windows services:`);
+                        logger.info(`SERVICE MONITOR INIT: Setting up monitor for Windows services:`);
 
                         const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
                         // eslint-disable-next-line no-restricted-syntax
                         for (const host of hostsToCheck) {
-                            logger.info(`SERVICE MONITOR: --- Host: ${host.host}`);
+                            logger.info(`SERVICE MONITOR INIT: --- Host: ${host.host}`);
                             const servicesToCheck = host.services;
 
                             // eslint-disable-next-line no-restricted-syntax
                             for (const service of servicesToCheck) {
-                                logger.info(`SERVICE MONITOR: ---          ${service.name}`);
+                                logger.info(`SERVICE MONITOR INIT: ---          ${service.name}`);
 
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
@@ -563,9 +563,9 @@ async function setupServiceMonitorTimer(config, logger) {
             }
         }
     } catch (err) {
-        logger.error(`SERVICE MONITOR: ${err}`);
+        logger.error(`SERVICE MONITOR INIT: ${err}`);
         if (err.stack) {
-            logger.error(`SERVICE MONITOR: ${err.stack}`);
+            logger.error(`SERVICE MONITOR INIT: ${err.stack}`);
         }
     }
 }

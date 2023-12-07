@@ -23,13 +23,15 @@ function postButlerMemoryUsageToInfluxdb(memory) {
         .writePoints(deepClonedDatapoint)
 
         .then(() => {
-            globals.logger.silly(`MEMORY USAGE: Influxdb datapoint for Butler memory usage: ${JSON.stringify(datapoint, null, 2)}`);
+            globals.logger.silly(
+                `INFLUXDB MEMORY USAGE: Influxdb datapoint for Butler INFLUXDB MEMORY USAGE: ${JSON.stringify(datapoint, null, 2)}`
+            );
 
             datapoint = null;
-            globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
+            globals.logger.verbose('INFLUXDB MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(`MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.stack}`);
+            globals.logger.error(`INFLUXDB MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.stack}`);
         });
 }
 
@@ -83,21 +85,21 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
 
         .then(() => {
             globals.logger.silly(
-                `WINDOWS SERVICE STATUS: Influxdb datapoint for Windows service status: ${JSON.stringify(datapoint, null, 2)}`
+                `INFLUXDB WINDOWS SERVICE STATUS: Influxdb datapoint for INFLUXDB WINDOWS SERVICE STATUS: ${JSON.stringify(datapoint, null, 2)}`
             );
 
             datapoint = null;
-            globals.logger.verbose('WINDOWS SERVICE STATUS: Sent Windows service status data to InfluxDB');
+            globals.logger.verbose('INFLUXDB WINDOWS SERVICE STATUS: Sent Windows service status data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(`WINDOWS SERVICE STATUS: Error saving Windows service status to InfluxDB! ${err.stack}`);
+            globals.logger.error(`INFLUXDB WINDOWS SERVICE STATUS: Error saving Windows service status to InfluxDB! ${err.stack}`);
         });
 }
 
 // Store information about successful reload tasks to InfluxDB
 function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
     try {
-        globals.logger.verbose('RELOAD TASK SUCCESS INFLUXDB: Sending reload task notification to InfluxDB');
+        globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
 
         // Build InfluxDB datapoint
         let datapoint = [
@@ -123,7 +125,7 @@ function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         // Get task info
         const { taskInfo } = reloadParams;
 
-        globals.logger.debug(`RELOAD TASK SUCCESS INFLUXDB: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+        globals.logger.debug(`INFLUXDB RELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
 
         // Use task info to enrich log entry sent to InfluxDB
         datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
@@ -182,24 +184,24 @@ function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `RELOAD TASK SUCCESS INFLUXDB: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                    `INFLUXDB RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
                 );
 
                 datapoint = null;
-                globals.logger.verbose('RELOAD TASK SUCCESS INFLUXDB: Sent reload task notification to InfluxDB');
+                globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`RELOAD TASK SUCCESS INFLUXDB: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                globals.logger.error(`INFLUXDB RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.stack}`);
             });
     } catch (err) {
-        globals.logger.error(`RELOAD TASK SUCCESS INFLUXDB: ${err}`);
+        globals.logger.error(`INFLUXDB RELOAD TASK SUCCESS: ${err}`);
     }
 }
 
 // Store information about failed reload tasks to InfluxDB
 function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     try {
-        globals.logger.verbose('RELOAD TASK FAILED INFLUXDB: Sending reload task notification to InfluxDB');
+        globals.logger.info('INFLUXDB RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
         // Build InfluxDB datapoint
         let datapoint = [
             {
@@ -237,7 +239,7 @@ function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
             scriptLogData.scriptLogTail = '';
         }
 
-        globals.logger.debug(`RELOAD TASK FAILED INFLUXDB: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+        globals.logger.debug(`INFLUXDB RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
         // Use script log data to enrich log entry sent to InfluxDB
         datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
@@ -307,17 +309,17 @@ function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `RELOAD TASK FAILED INFLUXDB: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                    `INFLUXDB RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
                 );
 
                 datapoint = null;
-                globals.logger.verbose('RELOAD TASK FAILED INFLUXDB: Sent reload task notification to InfluxDB');
+                globals.logger.verbose('INFLUXDB RELOAD TASK FAILED: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`RELOAD TASK FAILED INFLUXDB: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                globals.logger.error(`INFLUXDB RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.stack}`);
             });
     } catch (err) {
-        globals.logger.error(`RELOAD TASK FAILED INFLUXDB: ${err}`);
+        globals.logger.error(`INFLUXDB RELOAD TASK FAILED: ${err}`);
     }
 }
 module.exports = {

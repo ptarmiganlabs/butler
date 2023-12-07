@@ -57,14 +57,14 @@ function getSlackReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskFailure.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK FAILED ALERT SLACK: Reload failure Slack config info missing in Butler config file');
+            globals.logger.error('SLACK RELOAD TASK FAILED: Reload failure Slack config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.slackNotification.reloadTaskFailure.enable')) {
             // Slack task falure notifications are disabled
             globals.logger.error(
-                "TASK FAILED ALERT SLACK: Reload failure Slack notifications are disabled in config file - won't send Slack message"
+                "SLACK RELOAD TASK FAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message"
             );
             return false;
         }
@@ -75,7 +75,7 @@ function getSlackReloadFailedNotificationConfigOk() {
         ) {
             // Invalid Slack message type
             globals.logger.error(
-                `TASK FAILED ALERT SLACK: Invalid Slack message type: ${globals.config.get(
+                `SLACK RELOAD TASK FAILED: Invalid Slack message type: ${globals.config.get(
                     'Butler.slackNotification.reloadTaskFailure.messageType'
                 )}`
             );
@@ -86,13 +86,13 @@ function getSlackReloadFailedNotificationConfigOk() {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('TASK FAILED ALERT SLACK: No message text in config file.');
+                globals.logger.error('SLACK RELOAD TASK FAILED: No message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.slackNotification.reloadTaskFailure.messageType') === 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskFailure.templateFile')) {
-                globals.logger.error('TASK FAILED ALERT SLACK: Message template file not specified in config file.');
+                globals.logger.error('SLACK RELOAD TASK FAILED: Message template file not specified in config file.');
                 return false;
             }
         }
@@ -125,7 +125,7 @@ function getSlackReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`TASK FAILED ALERT SLACK: ${err}`);
+        globals.logger.error(`SLACK RELOAD TASK FAILED: ${err}`);
         return false;
     }
 }
@@ -139,14 +139,14 @@ function getSlackReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('TASK ABORTED ALERT SLACK: Reload aborted Slack config info missing in Butler config file');
+            globals.logger.error('SLACK RELOAD TASK ABORTED: Reload aborted Slack config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
             // Slack task aborted notifications are disabled
             globals.logger.error(
-                "TASK ABORTED ALERT SLACK: Reload aborted Slack notifications are disabled in config file - won't send Slack message"
+                "SLACK RELOAD TASK ABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message"
             );
             return false;
         }
@@ -157,7 +157,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
         ) {
             // Invalid Slack message type
             globals.logger.error(
-                `TASK ABORTED ALERT SLACK: Invalid Slack message type: ${globals.config.get(
+                `SLACK RELOAD TASK ABORTED: Invalid Slack message type: ${globals.config.get(
                     'Butler.slackNotification.reloadTaskAborted.messageType'
                 )}`
             );
@@ -168,13 +168,13 @@ function getSlackReloadAbortedNotificationConfigOk() {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('TASK ABORTED ALERT SLACK: No message text in config file.');
+                globals.logger.error('SLACK RELOAD TASK ABORTED: No message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.slackNotification.reloadTaskAborted.messageType') === 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.reloadTaskAborted.templateFile')) {
-                globals.logger.error('TASK ABORTED ALERT SLACK: Message template file not specified in config file.');
+                globals.logger.error('SLACK RELOAD TASK ABORTED: Message template file not specified in config file.');
                 return false;
             }
         }
@@ -207,7 +207,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`TASK ABORTED ALERT SLACK: ${err}`);
+        globals.logger.error(`SLACK RELOAD TASK ABORTED: ${err}`);
         return false;
     }
 }
@@ -223,14 +223,14 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
             !globals.config.has('Butler.slackNotification.serviceStarted.messageType')
         ) {
             // Not enough info in config file
-            globals.logger.error('SERVICE MONITOR SLACK: Service monitor Slack config info missing in Butler config file');
+            globals.logger.error('SLACK SERVICE MONITOR: SLACK SERVICE MONITOR config info missing in Butler config file');
             return false;
         }
 
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable')) {
             // Slack notifications are disabled
             globals.logger.error(
-                "SERVICE MONITOR SLACK: Service monitor Slack notifications are disabled in config file - won't send Slack message"
+                "SLACK SERVICE MONITOR: SLACK SERVICE MONITOR notifications are disabled in config file - won't send Slack message"
             );
             return false;
         }
@@ -241,7 +241,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
         ) {
             // Invalid Slack message type
             globals.logger.error(
-                `SERVICE MONITOR SLACK: Invalid Slack message type: ${globals.config.get(
+                `SLACK SERVICE MONITOR: Invalid Slack message type: ${globals.config.get(
                     'Butler.slackNotification.serviceStopped.messageType'
                 )}`
             );
@@ -254,7 +254,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
         ) {
             // Invalid Slack message type
             globals.logger.error(
-                `SERVICE MONITOR SLACK: Invalid Slack message type: ${globals.config.get(
+                `SLACK SERVICE MONITOR: Invalid Slack message type: ${globals.config.get(
                     'Butler.slackNotification.serviceStarted.messageType'
                 )}`
             );
@@ -265,13 +265,13 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
             // Basic formatting. Make sure required parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStopped.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR SLACK: No service stopped basic message text in config file.');
+                globals.logger.error('SLACK SERVICE MONITOR: No service stopped basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.slackNotification.serviceStopped.messageType') === 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStopped.templateFile')) {
-                globals.logger.error('SERVICE MONITOR SLACK: Service stopped message template file not specified in config file.');
+                globals.logger.error('SLACK SERVICE MONITOR: Service stopped message template file not specified in config file.');
                 return false;
             }
         }
@@ -280,13 +280,13 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
             // Basic formatting. Make sure required parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStarted.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SERVICE MONITOR SLACK: No service started basic message text in config file.');
+                globals.logger.error('SLACK SERVICE MONITOR: No service started basic message text in config file.');
                 return false;
             }
         } else if (globals.config.get('Butler.slackNotification.serviceStarted.messageType') === 'formatted') {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.slackNotification.serviceStarted.templateFile')) {
-                globals.logger.error('SERVICE MONITOR SLACK: Service started message template file not specified in config file.');
+                globals.logger.error('SLACK SERVICE MONITOR: Service started message template file not specified in config file.');
                 return false;
             }
         }
@@ -343,7 +343,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR SLACK: ${err}`);
+        globals.logger.error(`SLACK SERVICE MONITOR: ${err}`);
         return false;
     }
 }
@@ -429,8 +429,8 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`SLACKNOTIF: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`SLACKNOTIF: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(`SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                        globals.logger.debug(`SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
@@ -439,12 +439,12 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     // Render Slack message using template. Do not convert to &lt; and &gt; as Slack will not render the message correctly
                     slackMsg = compiledTemplate(templateContext);
 
-                    globals.logger.debug(`SLACKNOTIF: Rendered message:\n${slackMsg}`);
+                    globals.logger.debug(`SLACK SEND: Rendered message:\n${slackMsg}`);
                 } else {
-                    globals.logger.error(`SLACKNOTIF: Could not open Slack template file ${slackConfig.templateFile}.`);
+                    globals.logger.error(`SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`SLACKNOTIF: Error processing Slack template file: ${err}`);
+                globals.logger.error(`SLACK SEND: Error processing Slack template file: ${err}`);
             }
         }
 
@@ -452,11 +452,11 @@ async function sendSlack(slackConfig, templateContext, msgType) {
             msg.text = slackMsg;
             const res = await slackApi.slackSend(msg, globals.logger);
             if (res !== undefined) {
-                globals.logger.debug(`SLACKNOTIF: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(`SLACK SEND: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
-        globals.logger.error(`SLACKNOTIF: ${err}`);
+        globals.logger.error(`SLACK SEND: ${err}`);
     }
 }
 
@@ -466,9 +466,9 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED ALERT SLACK: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `SLACK RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`TASK FAILED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`SLACK RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const slackConfig = getSlackReloadFailedNotificationConfigOk();
@@ -497,7 +497,7 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     scriptLogData.scriptLogTail = '';
                 }
 
-                globals.logger.debug(`TASK FAILED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(`SLACK RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -610,15 +610,15 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
 
                 sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`TASK FAILED ALERT SLACK: ${err}`);
+                globals.logger.error(`SLACK RELOAD TASK FAILED: ${err}`);
             }
             return true;
         })
         .catch((err) => {
             globals.logger.warn(
-                `TASK FAILED ALERT SLACK: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+                `SLACK RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
             );
-            globals.logger.debug(`TASK FAILED ALERT SLACK: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+            globals.logger.debug(`SLACK RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
 }
 
@@ -628,9 +628,9 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORTED ALERT SLACK: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `SLACK RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
                 );
-                globals.logger.verbose(`TASK ABORTED ALERT SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`SLACK RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const slackConfig = getSlackReloadAbortedNotificationConfigOk();
@@ -659,7 +659,7 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     scriptLogData.scriptLogTail = '';
                 }
 
-                globals.logger.debug(`TASK ABORTED ALERT SLACK: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+                globals.logger.debug(`SLACK RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
@@ -757,15 +757,15 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
 
                 sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`TASK ABORTED ALERT SLACK: ${err}`);
+                globals.logger.error(`SLACK RELOAD TASK ABORTED: ${err}`);
             }
             return true;
         })
         .catch((err) => {
             globals.logger.verbose(
-                `TASK ABORTED ALERT SLACK: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+                `SLACK RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
             );
-            globals.logger.verbose(`TASK ABORTED ALERT SLACK: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+            globals.logger.verbose(`SLACK RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
 }
 
@@ -775,9 +775,9 @@ function sendServiceMonitorNotificationSlack(serviceParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SERVICE MONITOR SLACK: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
+                    `SLACK SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
                 );
-                globals.logger.verbose(`SERVICE MONITOR SLACK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`SLACK SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
                 const slackConfig = getSlackServiceMonitorNotificationConfig(serviceParams.serviceStatus);
@@ -803,15 +803,15 @@ function sendServiceMonitorNotificationSlack(serviceParams) {
                     sendSlack(slackConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`SERVICE MONITOR SLACK: ${err}`);
+                globals.logger.error(`SLACK SERVICE MONITOR: ${err}`);
             }
             return true;
         })
         .catch((err) => {
             globals.logger.warn(
-                `SERVICE MONITOR SLACK: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
+                `SLACK SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
             );
-            globals.logger.debug(`SERVICE MONITOR SLACK: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+            globals.logger.debug(`SLACK SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
 }
 

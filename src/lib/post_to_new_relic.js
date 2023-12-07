@@ -82,7 +82,7 @@ async function postButlerUptimeToNewRelic(fields) {
             metrics,
         });
 
-        globals.logger.debug(`UPTIME NEW RELIC: Payload: ${JSON.stringify(payload, null, 2)}`);
+        globals.logger.debug(`NEW RELIC UPTIME: Payload: ${JSON.stringify(payload, null, 2)}`);
 
         // Preapare call to remote host
         const remoteUrl = globals.config.get('Butler.uptimeMonitor.storeNewRelic.url');
@@ -104,26 +104,26 @@ async function postButlerUptimeToNewRelic(fields) {
         //
         // Get New Relic accounts
         const nrAccounts = globals.config.get('Butler.thirdPartyToolsCredentials.newRelic');
-        globals.logger.debug(`UPTIME NEW RELIC: Complete New Relic config=${JSON.stringify(nrAccounts)}`);
+        globals.logger.debug(`NEW RELIC UPTIME: Complete New Relic config=${JSON.stringify(nrAccounts)}`);
 
         // Verbose: Show what New Relic account names/API keys/account IDs have been defined
-        globals.logger.verbose(`UPTIME NEW RELIC: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
+        globals.logger.verbose(`NEW RELIC UPTIME: Account names/API keys/account IDs: ${JSON.stringify(nrAccounts, null, 2)}`);
 
         // Are there any NR destinations defined for uptime metrics?
         const nrDestAccounts = globals.config.get('Butler.uptimeMonitor.storeNewRelic.destinationAccount');
-        globals.logger.verbose(`UPTIME NEW RELIC: Destination account names for uptime data: ${JSON.stringify(nrDestAccounts, null, 2)}`);
+        globals.logger.verbose(`NEW RELIC UPTIME: Destination account names for uptime data: ${JSON.stringify(nrDestAccounts, null, 2)}`);
 
         if (nrDestAccounts) {
             // eslint-disable-next-line no-restricted-syntax
             for (const accountName of globals.config.Butler.uptimeMonitor.storeNewRelic.destinationAccount) {
-                globals.logger.debug(`UPTIME NEW RELIC: Current loop New Relic config=${JSON.stringify(accountName)}`);
+                globals.logger.debug(`NEW RELIC UPTIME: Current loop New Relic config=${JSON.stringify(accountName)}`);
 
                 // Is there any config available for the current account?
                 const newRelicConfig = nrAccounts.filter((item) => item.accountName === accountName);
-                globals.logger.debug(`UPTIME NEW RELIC: New Relic config=${JSON.stringify(newRelicConfig)}`);
+                globals.logger.debug(`NEW RELIC UPTIME: New Relic config=${JSON.stringify(newRelicConfig)}`);
 
                 if (newRelicConfig.length === 0) {
-                    globals.logger.error(`UPTIME NEW RELIC: New Relic config "${accountName}" does not exist in the Butler config file.`);
+                    globals.logger.error(`NEW RELIC UPTIME: New Relic config "${accountName}" does not exist in the Butler config file.`);
                 } else {
                     headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
@@ -131,17 +131,17 @@ async function postButlerUptimeToNewRelic(fields) {
                     const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
 
                     globals.logger.debug(
-                        `UPTIME NEW RELIC: Result code from posting to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                        `NEW RELIC UPTIME: Result code from posting to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                     );
                     if (res.status === 200 || res.status === 202) {
                         // Posting done without error
                         globals.logger.verbose(
-                            `UPTIME NEW RELIC: Sent Butler memory usage data to New Relic account ${newRelicConfig[0].accountId}`
+                            `NEW RELIC UPTIME: Sent Butler memory usage data to New Relic account ${newRelicConfig[0].accountId}`
                         );
                         // reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
                     } else {
                         globals.logger.error(
-                            `UPTIME NEW RELIC: Error code from posting memory usage data to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                            `NEW RELIC UPTIME: Error code from posting memory usage data to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
                         );
                     }
                 }
@@ -149,7 +149,7 @@ async function postButlerUptimeToNewRelic(fields) {
         }
     } catch (error) {
         // handle error
-        globals.logger.error(`UPTIME NEW RELIC: Error sending uptime: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error sending uptime: ${error}`);
     }
 }
 
@@ -158,7 +158,7 @@ async function postFailedReloadEventToNewRelic() {
         //
     } catch (error) {
         // handle error
-        globals.logger.error(`UPTIME NEW RELIC: Error posting reload failed event: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error posting reload failed event: ${error}`);
     }
 }
 
@@ -167,7 +167,7 @@ async function postAbortedReloadEventToNewRelic() {
         //
     } catch (error) {
         // handle error
-        globals.logger.error(`UPTIME NEW RELIC: Error posting reload aborted event: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error posting reload aborted event: ${error}`);
     }
 }
 
