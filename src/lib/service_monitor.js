@@ -159,7 +159,10 @@ const verifyServicesExist = async (config, logger) => {
     return result;
 };
 
-const checkServiceStatus = async (config, logger) => {
+// Function to check the status of all Windows services specified in the config file
+// The isFirsCheck parameter is used to determine if we should send a message to the alert destinations
+// Set isFirsCheck default to false
+const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
     const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
     hostsToCheck.forEach(async (host) => {
@@ -549,7 +552,7 @@ async function setupServiceMonitorTimer(config, logger) {
                         }, sched);
 
                         // Do an initial service status check
-                        checkServiceStatus(config, logger);
+                        checkServiceStatus(config, logger, true);
                     }
                 } else {
                     logger.error(
