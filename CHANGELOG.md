@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.3.1](https://github.com/ptarmiganlabs/butler/compare/v9.3.0...v9.3.1) (2023-12-07)
+
+
+### Bug Fixes
+
+* **mqtt:** More reboust startup code for MQTT & Win svc monitoring ([577dba3](https://github.com/ptarmiganlabs/butler/commit/577dba39b253533a5e128ebeacdfa2b81be2a4fa)), closes [#897](https://github.com/ptarmiganlabs/butler/issues/897)
+* **winsvc:** Don't send Win svc alerts when Butler starts ([d716cfe](https://github.com/ptarmiganlabs/butler/commit/d716cfe2d1241a84be8349f75accd360b28e3978)), closes [#896](https://github.com/ptarmiganlabs/butler/issues/896)
+
+
+### Refactoring
+
+* **logging:** More consistent log prefixes ([f0621af](https://github.com/ptarmiganlabs/butler/commit/f0621af52f49027816b98c25728121d475a2daf0)), closes [#895](https://github.com/ptarmiganlabs/butler/issues/895)
+
 ## [9.3.0](https://github.com/ptarmiganlabs/butler/compare/v9.3.0...v9.3.0) (2023-12-06)
 
 
