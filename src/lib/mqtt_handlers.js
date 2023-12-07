@@ -8,7 +8,7 @@ const { config, logger, execPath } = require('../globals');
 const globals = require('../globals');
 const qrsUtil = require('../qrs_util');
 
-async function mqttInitHandlers() {
+function mqttInitHandlers() {
     try {
         let mqttClient;
         let mqttOptions;
@@ -23,6 +23,8 @@ async function mqttInitHandlers() {
                 };
 
                 mqttClient = mqtt.connect(mqttOptions);
+
+                globals.mqttClient = mqttClient;
 
                 /*
             Following might be needed for conecting to older Mosquitto versions
@@ -52,11 +54,11 @@ async function mqttInitHandlers() {
                 };
 
                 // Connect to MQTT broker
-                // mqttClient = mqtt.connect(mqttOptions);
                 mqttClient = mqtt.connect(
                     `mqtts://${config.get('Butler.mqttConfig.brokerHost')}:${config.get('Butler.mqttConfig.brokerPort')}`,
                     mqttOptions
                 );
+
                 globals.mqttClient = mqttClient;
             } else {
                 logger.error('MQTT INIT HANDLERS: MQTT configuration error');

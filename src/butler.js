@@ -117,39 +117,20 @@ const start = async () => {
 
     // ------------------------------------
     // Create MQTT client object and connect to MQTT broker, if MQTT is enabled
-    try {
-        await mqttInitHandlers();
+    mqttInitHandlers();
 
-        // if (
-        //     globals.config.has('Butler.mqttConfig.enable') &&
-        //     globals.config.has('Butler.mqttConfig.brokerHost') &&
-        //     globals.config.has('Butler.mqttConfig.brokerPort') &&
-        //     globals.config.get('Butler.mqttConfig.enable')
-        // ) {
-        //     const mqttOptions = {
-        //         host: globals.config.get('Butler.mqttConfig.brokerHost'),
-        //         port: globals.config.get('Butler.mqttConfig.brokerPort'),
-        //     };
-
-        //     globals.mqttClient = mqtt.connect(mqttOptions);
-        //     /*
-        //         Following might be needed for conecting to older Mosquitto versions
-        //         var mqttClient  = mqtt.connect('mqtt://<IP of MQTT server>', {
-        //             protocolId: 'MQIsdp',
-        //             protocolVersion: 3
-        //         });
-        //         */
-        //     if (!globals.mqttClient.connected) {
-        //         globals.logger.verbose(
-        //             `CONFIG: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
-        //         );
-        //     }
-        // } else {
-        //     globals.logger.info('CONFIG: MQTT disabled, not connecting to MQTT broker');
-        // }
-    } catch (err) {
-        globals.logger.error(`CONFIG: Could not set up MQTT: ${JSON.stringify(err, null, 2)}`);
-    }
+    // Sleep 5 seconds to allow MQTT to connect
+    globals.logger.info('MAIN: Sleeping 5 seconds to allow MQTT to connect.');
+    globals.logger.info('5...');
+    await globals.sleep(1000);
+    globals.logger.info('4...');
+    await globals.sleep(1000);
+    globals.logger.info('3...');
+    await globals.sleep(1000);
+    globals.logger.info('2...');
+    await globals.sleep(1000);
+    globals.logger.info('1...');
+    await globals.sleep(1000);
 
     // Set up service monitoring, if enabled in the config file
     if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
