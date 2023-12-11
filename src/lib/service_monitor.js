@@ -134,10 +134,13 @@ const verifyServicesExist = async (config, logger) => {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const service of servicesToCheck) {
+            logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
             let serviceExists;
             try {
+console.log('a1')
                 // eslint-disable-next-line no-await-in-loop
-                serviceExists = await svcTools.exists(service.name, host.host);
+                serviceExists = await svcTools.exists(logger, service.name, host.host);
+console.log('a2')
             } catch (err) {
                 logger.error(`Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`);
                 result = false;
@@ -172,10 +175,11 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
         servicesToCheck.forEach(async (service) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
-            const serviceStatus = await svcTools.status(service.name);
+            const serviceStatus = await svcTools.status(logger, service.name);
+            logger.verbose(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
             // Get details about this service
-            const serviceDetails = await svcTools.details(service.name);
+            const serviceDetails = await svcTools.details(logger, service.name);
             if (
                 serviceStatus === 'STOPPED' &&
                 config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
