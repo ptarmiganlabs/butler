@@ -86,12 +86,13 @@ function exists(logger, serviceName, host = null) {
                 console.log('b1');
                 // Find provided name
                 for (let i = 0; i < allServices.length; ) {
-                    console.log(`b2: ${allServices[i]}`);
+                    console.log(`b2: "${allServices[i]}"`);
                     if (allServices[i] === serviceName) {
                         console.log('b3');
                         // Found, resolve true
                         logger.verbose(`WINSVC EXISTS: Found! Service ${serviceName} exists on host ${host}`);
                         resolveExists(true);
+                        return;
                     }
 
                     i += 1;
