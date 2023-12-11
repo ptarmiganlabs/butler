@@ -2,32 +2,40 @@ const { exec } = require('child_process');
 
 /**
  * Get all names of services installed
+ * @param {object} logger Logger object
  * @param {string} host Host from which to get services
  */
-function all(host = null) {
+function all(logger, host = null) {
     // If host is not specified, use services on localhost
 
     // Create promise
-    return new Promise((resolve, reject) => {
+    return new Promise((resolveAll, rejectAll) => {
         let command = '';
 
         if (host === null) {
             // Run command for get states of all services on local machine
+            logger.verbose('WINSVC ALL: Getting all services on local machine');
             command = 'sc.exe query state= all';
         } else {
             // A host other that local machine is specfied
+            logger.verbose(`WINSVC ALL: Getting all services on host ${host}`);
             command = `sc.exe \\\\${host} query state= all`;
         }
 
+        logger.verbose(`WINSVC ALL: Running command ${command}`);
         exec(command, (err, stdout) => {
+            console.log('c1');
             // On error, reject and exit
             if (err) {
+                logger.error(`WINSVC ALL: Error while getting all services on host ${host}`);
+                logger.error(err);
                 if (stdout) {
-                    reject(stdout);
+                    rejectAll(stdout);
                 }
-                reject(err);
+                rejectAll(err);
                 return;
             }
+            console.log('c2');
 
             // Get all lines on standard output, take only
             // lines with "SERVICE_NAME" and remove extra parts
@@ -37,89 +45,121 @@ function all(host = null) {
                 .filter((line) => line.indexOf('SERVICE_NAME') !== -1)
                 .map((line) => line.replace('SERVICE_NAME: ', ''));
 
+            logger.verbose(`WINSVC ALL: Got all services on host ${host}`);
+            logger.verbose(lines);
+
             // Resolve with array of service names
-            resolve(lines);
+            console.log('a3');
+            resolveAll(lines);
+            console.log('a4');
         });
     });
 }
 
 /**
  * Check if provided service name exists
+ * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function exists(serviceName, host = null) {
+function exists(logger, serviceName, host = null) {
     // If host is not specified, use services on localhost
 
     // Create promise
-    return new Promise((resolve, reject) => {
+    return new Promise((resolveExists, rejectExists) => {
         // With invalid service name, reject
         if (!serviceName) {
-            reject(new Error('Service name is invalid'));
+            logger.error('WINSVC EXISTS: Service name is invalid');
+
+            rejectExists(new Error('Service name is invalid'));
             return;
         }
 
         // Is host reachable?
 
         // Get all services
-        all(host).then(
+        logger.verbose(`WINSVC EXISTS: Getting all services on host ${host}`);
+        all(logger, host).then(
             // On success, check
             (allServices) => {
+                logger.verbose(`WINSVC EXISTS: Checking if service ${serviceName} exists on host ${host}`);
+                console.log('b1');
                 // Find provided name
                 for (let i = 0; i < allServices.length; ) {
+                    console.log(`b2: ${allServices[i]}`);
                     if (allServices[i] === serviceName) {
-                        resolve(true);
+                        console.log('b3');
+                        // Found, resolve true
+                        logger.verbose(`WINSVC EXISTS: Found! Service ${serviceName} exists on host ${host}`);
+                        resolveExists(true);
                     }
 
                     i += 1;
                 }
 
                 // Not found, resolve false
-                resolve(false);
+                logger.verbose(`WINSVC EXISTS: Not found! Service ${serviceName} does not exists on host ${host}`);
+                resolveExists(false);
             },
 
             // Reject on error
-            (err) => reject(err)
+            (err) => {
+                logger.error(`WINSVC EXISTS: Error while getting all services on host ${host}`);
+                logger.error(err);
+
+                rejectExists(err);
+            }
         );
     });
 }
 
 /**
  * Get status of provided service
+ * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function status(serviceName, host = null) {
+function status(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
         if (!serviceName) {
+            logger.error('WINSVC STATUS: Service name is invalid');
             reject(new Error('Service name is invalid'));
             return;
         }
 
         // Check existence
-        exists(serviceName, host).then(
-            // Existence check completed
+        exists(logger, serviceName, host).then(
             (alreadyExists) => {
+                // serviceName exists on host
+                logger.verbose(`WINSVC STATUS: Service ${serviceName} exists on host ${host}`);
+
                 // If exists, reject
                 if (!alreadyExists) {
+                    logger.verbose(`WINSVC STATUS: Service ${serviceName} does not exists on host ${host}`);
                     return reject(new Error(`Service with name '${serviceName}' does not exists`));
                 }
 
                 let command = '';
                 if (host === null) {
                     // Run command for get states of all services on local machine
+                    logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
                     command = `sc.exe query "${serviceName}"`;
                 } else {
                     // A host other that local machine is specfied
+                    logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
                     command = `sc.exe \\\\${host} query "${serviceName}"`;
                 }
 
                 // Run command for create service with provided data
+                logger.verbose(`WINSVC STATUS: Running command ${command}`);
                 exec(command, (err, stdout) => {
                     // On error, reject and exit
                     if (err) {
+                        logger.error(`WINSVC STATUS: Error while getting status of service ${serviceName} on host ${host}`);
+                        logger.error(err);
+
                         return reject(err);
                     }
 
@@ -133,53 +173,74 @@ function status(serviceName, host = null) {
                     // Split "STOPPED" o "RUNNING"
                     const stateName = lines[0].indexOf('STOPPED') !== -1 ? 'STOPPED' : 'RUNNING';
 
-                    // Get state name
+                    // Return state name
+                    logger.verbose(`WINSVC STATUS: Service ${serviceName} is ${stateName} on host ${host}`);
                     return resolve(stateName);
                 });
 
                 // We should never arrive here, but if we do return null
+                logger.warn('WINSVC STATUS: We should never arrive here, but if we do return null');
                 return null;
             },
 
             // Reject on error
-            (err) => reject(err)
+            (err) => {
+                logger.error(`WINSVC STATUS: Error while getting status of service ${serviceName} on host ${host}`);
+                logger.error(err);
+
+                reject(err);
+            }
         );
     });
 }
 
 /**
  * Get the details of provided service
+ * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function details(serviceName, host = null) {
+function details(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
         if (!serviceName) {
+            logger.error('WINSVC DETAILS: Service name is invalid');
+
             reject(new Error('Service name is invalid'));
             return;
         }
 
         // Run check for service existance
-        exists(serviceName, host).then(
+        logger.verbose(`WINSVC DETAILS: Checking if service ${serviceName} exists on host ${host}`);
+        exists(logger, serviceName, host).then(
             // Existance check completed
             (alreadyExists) => {
+                // Service exists
+                logger.verbose(`WINSVC DETAILS: Found! Service ${serviceName} exists on host ${host}`);
+
                 // If exists, reject
                 if (!alreadyExists) {
+                    logger.verbose(`WINSVC DETAILS: Not found! Service ${serviceName} does not exists on host ${host}`);
+
                     return reject(new Error(`Service with name '${serviceName}' does not exists`));
                 }
 
                 let command = '';
                 if (host === null) {
                     // Run command for get states of all services on local machine
+                    logger.verbose(`WINSVC DETAILS: Getting details of service ${serviceName} on local machine`);
+
                     command = `sc.exe qc "${serviceName}"`;
                 } else {
                     // A host other that local machine is specfied
+                    logger.verbose(`WINSVC DETAILS: Getting details of service ${serviceName} on host ${host}`);
+
                     command = `sc.exe \\\\${host} qc "${serviceName}"`;
                 }
 
                 // Run command to get service details with provided data
+                logger.verbose(`WINSVC DETAILS: Running command ${command}`);
                 exec(command, (err, stdout) => {
                     let i = 0;
                     const startTypeRegex = /\d/;
@@ -197,10 +258,15 @@ function details(serviceName, host = null) {
 
                     // On error, reject and exit
                     if (err) {
+                        logger.error(`WINSVC DETAILS: Error while getting details of service ${serviceName} on host ${host}`);
+                        logger.error(err);
+
                         return reject(err);
                     }
 
                     const lines = stdout.toString().split('\r\n');
+                    // Debug log lines
+                    logger.debug(`WINSVC DETAILS: Lines: ${lines}`);
 
                     let startTypeName = '';
 
@@ -218,6 +284,25 @@ function details(serviceName, host = null) {
                             return 'Unknown';
                     }
 
+                    // Show all details that will be returned
+                    logger.verbose(`WINSVC DETAILS: Service ${serviceName} is ${startTypeName} on host ${host}`);
+                    logger.verbose(`WINSVC DETAILS: Service ${serviceName} has dependencies ${deps}`);
+                    logger.verbose(
+                        `WINSVC DETAILS: Service ${serviceName} has exe path ${lines
+                            .find((line) => line.indexOf('BINARY_PATH_NAME') !== -1)
+                            .replace(/\s*BINARY_PATH_NAME\s*: /, '')}`
+                    );
+                    logger.verbose(
+                        `WINSVC DETAILS: Service ${serviceName} has display name ${lines
+                            .find((line) => line.indexOf('DISPLAY_NAME') !== -1)
+                            .replace(/\s*DISPLAY_NAME\s*: /, '')}`
+                    );
+                    logger.verbose(
+                        `WINSVC DETAILS: Service ${serviceName} has name ${lines
+                            .find((line) => line.indexOf('SERVICE_NAME: ') !== -1)
+                            .replace('SERVICE_NAME: ', '')}`
+                    );
+
                     return resolve({
                         name: lines.find((line) => line.indexOf('SERVICE_NAME: ') !== -1).replace('SERVICE_NAME: ', ''),
 
@@ -232,11 +317,17 @@ function details(serviceName, host = null) {
                 });
 
                 // We should never arrive here, but if we do return null
+                logger.warn('WINSVC DETAILS: We should never arrive here, but if we do return null');
                 return null;
             },
 
             // Reject on error
-            (err) => reject(err)
+            (err) => {
+                logger.error(`WINSVC DETAILS: Error while getting details of service ${serviceName} on host ${host}`);
+                logger.error(err);
+
+                reject(err);
+            }
         );
     });
 }
