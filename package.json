@@ -102,7 +102,7 @@
     },
     "devDependencies": {
         "jest": "^29.7.0",
-        "prettier": "^3.1.0",
+        "prettier": "^3.1.1",
         "snyk": "^1.1260.0"
     },
     "pkg": {
