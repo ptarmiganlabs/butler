@@ -137,10 +137,8 @@ const verifyServicesExist = async (config, logger) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
             let serviceExists;
             try {
-console.log('a1')
                 // eslint-disable-next-line no-await-in-loop
                 serviceExists = await svcTools.exists(logger, service.name, host.host);
-console.log('a2')
             } catch (err) {
                 logger.error(`Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`);
                 result = false;
