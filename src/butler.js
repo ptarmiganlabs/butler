@@ -117,20 +117,22 @@ const start = async () => {
 
     // ------------------------------------
     // Create MQTT client object and connect to MQTT broker, if MQTT is enabled
-    mqttInitHandlers();
+    if (globals.config.get('Butler.mqttConfig.enable')) {
+        mqttInitHandlers();
 
-    // Sleep 5 seconds to allow MQTT to connect
-    globals.logger.info('MAIN: Sleeping 5 seconds to allow MQTT to connect.');
-    globals.logger.info('5...');
-    await globals.sleep(1000);
-    globals.logger.info('4...');
-    await globals.sleep(1000);
-    globals.logger.info('3...');
-    await globals.sleep(1000);
-    globals.logger.info('2...');
-    await globals.sleep(1000);
-    globals.logger.info('1...');
-    await globals.sleep(1000);
+        // Sleep 5 seconds to allow MQTT to connect
+        globals.logger.info('MAIN: Sleeping 5 seconds to allow MQTT to connect.');
+        globals.logger.info('5...');
+        await globals.sleep(1000);
+        globals.logger.info('4...');
+        await globals.sleep(1000);
+        globals.logger.info('3...');
+        await globals.sleep(1000);
+        globals.logger.info('2...');
+        await globals.sleep(1000);
+        globals.logger.info('1...');
+        await globals.sleep(1000);
+    }
 
     // Set up service monitoring, if enabled in the config file
     if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
