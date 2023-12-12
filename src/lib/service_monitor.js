@@ -175,11 +175,11 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
         servicesToCheck.forEach(async (service) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
-            const serviceStatus = await svcTools.status(logger, service.name);
+            const serviceStatus = await svcTools.status(logger, service.name, host.host);
             logger.verbose(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
             // Get details about this service
-            const serviceDetails = await svcTools.details(logger, service.name);
+            const serviceDetails = await svcTools.details(logger, service.name, host.host);
             if (
                 serviceStatus === 'STOPPED' &&
                 config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
@@ -558,10 +558,11 @@ async function setupServiceMonitorTimer(config, logger) {
                         }
                         const sched = later.parse.text(config.get('Butler.serviceMonitor.frequency'));
                         later.setInterval(() => {
-                            checkServiceStatus(config, logger);
+                            checkServiceStatus(config, logger, false);
                         }, sched);
 
                         // Do an initial service status check
+                        logger.verbose('Doing initial service status check');
                         checkServiceStatus(config, logger, true);
                     }
                 } else {
