@@ -37,6 +37,10 @@ function postButlerMemoryUsageToInfluxdb(memory) {
 
 // Add function to store windows service status to InfluxDB
 function postWindowsServiceStatusToInfluxDB(serviceStatus) {
+    globals.logger.verbose(
+        `INFLUXDB WINDOWS SERVICE STATUS: Sending service status to InfluxDB: service="${serviceStatus.serviceFriendlyName}", status="${serviceStatus.serviceStatus}"`
+    );
+
     // Create lookup table for Windows service state to numeric value, starting with 1 for stopped
     const serviceStateLookup = {
         STOPPED: 1,

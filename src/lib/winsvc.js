@@ -118,7 +118,92 @@ function exists(logger, serviceName, host = null) {
 }
 
 /**
- * Get status of provided service
+ * Get status of all services on a host
+ * @param {object} logger Logger object
+ * @param {string} host Host on which service is running
+ */
+function statusAll(logger, host = null) {
+    // Create promise
+    return new Promise((resolve, reject) => {
+        // If host is not specified, get services on localhost
+        let command = '';
+
+        if (host === null) {
+            // Run command for get states of all services on local machine
+            logger.verbose('WINSVC STATUSALL: Getting status of all services on local machine');
+            command = 'sc.exe query state= all';
+        } else {
+            // A host other that local machine is specfied
+            logger.verbose(`WINSVC STATUSALL: Getting status of all services on host ${host}`);
+            command = `sc.exe \\\\${host} query state= all`;
+        }
+
+        // Run command for create service with provided data
+        logger.debug(`WINSVC STATUSALL: Running command ${command}`);
+        exec(command, (err, stdout) => {
+            // On error, reject and exit
+            if (err) {
+                logger.error(`WINSVC STATUSALL: Error while getting status of all services on host ${host}`);
+                if (err.code) {
+                    logger.error(`WINSVC STATUSALL: Error code: ${err.code}`);
+                }
+
+                reject(err);
+                return;
+            }
+
+            // Create temporary stdout variable
+            let stdoutTmp = stdout;
+
+            // Remove first line, if it is empty
+            if (stdoutTmp.toString().split('\r\n')[0] === '') {
+                stdoutTmp = stdoutTmp.toString().split('\r\n').slice(1).join('\r\n');
+            }
+
+            // Each service block starts with SERVICE_NAME and ends with an empty line
+            // Split stdout into blocks of services
+            // Create object from each block, then add objects to array of services
+            const serviceStatusAll = stdoutTmp
+                .toString()
+                .split('\r\n\r\n')
+                .map((block) => {
+                    const lines = block.split('\r\n');
+                    // The state line has format "<statenum><one or more spaces><statetext>"
+                    // Extract stateNum and stateText from state line, to separate properties
+                    const service = {
+                        name: lines.find((line) => line.indexOf('SERVICE_NAME') !== -1).replace('SERVICE_NAME: ', ''),
+                        displayName: lines.find((line) => line.indexOf('DISPLAY_NAME') !== -1).replace(/\s*DISPLAY_NAME\s*: /, ''),
+                        type: lines.find((line) => line.indexOf('TYPE') !== -1).replace(/\s*TYPE\s*: /, ''),
+                        stateNum: lines
+                            .find((line) => line.indexOf('STATE') !== -1)
+                            .replace('STATE', '')
+                            .replace(/\s*:\s*/, '')
+                            .split(' ')[0],
+                        stateText: lines
+                            .find((line) => line.indexOf('STATE') !== -1)
+                            .replace('STATE', '')
+                            .replace(/\s*:\s*/, '')
+                            .split(' ')[2],
+                        win32ExitCode: lines.find((line) => line.indexOf('WIN32_EXIT_CODE') !== -1).replace(/\s*WIN32_EXIT_CODE\s*: /, ''),
+                        serviceExitCode: lines
+                            .find((line) => line.indexOf('SERVICE_EXIT_CODE') !== -1)
+                            .replace(/\s*SERVICE_EXIT_CODE\s*: /, ''),
+                    };
+
+                    return service;
+                });
+
+            logger.verbose(`WINSVC STATUSALL: Got status of all services on host ${host}`);
+            logger.debug(serviceStatusAll);
+
+            // Resolve with array of service objects
+            resolve(serviceStatusAll);
+        });
+    });
+}
+
+/**
+ * Get status of a specific service on a host
  * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
@@ -344,4 +429,5 @@ module.exports = {
     details,
     exists,
     status,
+    statusAll,
 };
