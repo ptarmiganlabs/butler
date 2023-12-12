@@ -1,5 +1,19 @@
 # Changelog
 
+## [9.3.2](https://github.com/ptarmiganlabs/butler/compare/v9.3.1...v9.3.2) (2023-12-12)
+
+
+### Bug Fixes
+
+* **mqtt:** Don't show MQTT startup info when MQTT is disabled ([7f48bd3](https://github.com/ptarmiganlabs/butler/commit/7f48bd3f72433ea7b89bbeaebdbee7bffa97017c)), closes [#913](https://github.com/ptarmiganlabs/butler/issues/913)
+* **winsvc:** Bug fixes and better logging for win service monitoring ([dc76b63](https://github.com/ptarmiganlabs/butler/commit/dc76b63875bb6255649c214947694f1153d3afe4))
+* **winsvc:** Make Windows service status checks quicker ([001f99f](https://github.com/ptarmiganlabs/butler/commit/001f99fe2bc20d21674868b43133be73e474f77b)), closes [#912](https://github.com/ptarmiganlabs/butler/issues/912)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies to stay safe & secure ([f6389dd](https://github.com/ptarmiganlabs/butler/commit/f6389dd671ab56e3910b04391aaf818c6b3c9aea))
+
 ## [9.3.1](https://github.com/ptarmiganlabs/butler/compare/v9.3.0...v9.3.1) (2023-12-07)
 
 
