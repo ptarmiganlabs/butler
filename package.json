@@ -59,7 +59,7 @@
         "cron-job-manager": "^2.3.1",
         "email-validator": "^2.0.4",
         "enigma.js": "^2.12.0",
-        "esbuild": "^0.19.8",
+        "esbuild": "^0.19.9",
         "eslint": "^8.55.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^9.1.0",
@@ -90,19 +90,19 @@
         "posthog-node": "^3.2.0",
         "promise": "^8.3.0",
         "qrs-interact": "^6.3.1",
-        "rate-limiter-flexible": "^3.0.4",
+        "rate-limiter-flexible": "^3.0.6",
         "serializeapp": "^3.0.0",
         "systeminformation": "^5.21.20",
         "upath": "^2.0.1",
         "uuid": "^9.0.1",
         "winston": "^3.11.0",
         "winston-daily-rotate-file": "^4.7.1",
-        "ws": "^8.14.2",
+        "ws": "^8.15.0",
         "xstate": "^4.38.3"
     },
     "devDependencies": {
         "jest": "^29.7.0",
-        "prettier": "^3.1.0",
+        "prettier": "^3.1.1",
         "snyk": "^1.1260.0"
     },
     "pkg": {

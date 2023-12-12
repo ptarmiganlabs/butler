@@ -101,7 +101,10 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
     ) {
         logger.verbose(`"${svc.serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
     } else {
-        logger.verbose(`Sending service status to MQTT: service="${svc.serviceName}", status="${svc.serviceStatus}"`);
+        logger.verbose(
+            `MQTT WINDOWS SERVICE STATUS: Sending service status to MQTT: service="${svc.serviceDetails.displayName}", status="${svc.serviceStatus}"`
+        );
+
         globals.mqttClient.publish(
             `${config.get('Butler.mqttConfig.serviceStatusTopic')}/${svc.host}/${svc.serviceName}`,
             JSON.stringify({
@@ -137,10 +140,8 @@ const verifyServicesExist = async (config, logger) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
             let serviceExists;
             try {
-console.log('a1')
                 // eslint-disable-next-line no-await-in-loop
                 serviceExists = await svcTools.exists(logger, service.name, host.host);
-console.log('a2')
             } catch (err) {
                 logger.error(`Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`);
                 result = false;
@@ -172,9 +173,25 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
         logger.verbose(`Checking status of Windows services on host ${host.host}`);
         const servicesToCheck = host.services;
 
+        // Get status of all services on host
+        logger.verbose(`Getting status of all Windows services on host ${host.host}`);
+
+        const serviceStatusAll = await svcTools.statusAll(logger, host.host);
+
         servicesToCheck.forEach(async (service) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
+            // Does this service exist in the serviceStatusAll array?
+            const svcMonitored = serviceStatusAll.find((svc) => svc.name === service.name);
+
+            if (svcMonitored === undefined) {
+                logger.error(
+                    `Service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
+                );
+                return;
+            }
+
+            // Get status of this service
             const serviceStatus = await svcTools.status(logger, service.name, host.host);
             logger.verbose(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
@@ -469,9 +486,9 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // InfluDB
             if (
-                globals.config.has('Butler.emailNotification.enable') &&
+                globals.config.has('Butler.influxDb.enable') &&
                 globals.config.has('Butler.serviceMonitor.alertDestination.influxDb.enable') &&
-                globals.config.get('Butler.emailNotification.enable') === true &&
+                globals.config.get('Butler.influxDb.enable') === true &&
                 globals.config.get('Butler.serviceMonitor.alertDestination.influxDb.enable') === true
             ) {
                 const instanceTag = globals.config.has('Butler.influxDb.instanceTag')
