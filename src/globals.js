@@ -377,7 +377,7 @@ if (config.get('Butler.influxDb.enable')) {
                     external: Influx.FieldType.FLOAT,
                     process_memory: Influx.FieldType.FLOAT,
                 },
-                tags: ['butler_instance'],
+                tags: ['butler_instance', 'version'],
             },
             {
                 measurement: 'win_service_state',
