@@ -157,7 +157,7 @@ const verifyServicesExist = async (config, logger) => {
 
             if (serviceExists) {
                 logger.verbose(
-                    `VERIFY WIN SERVICES EXIST: Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists: ${serviceExists}`
+                    `VERIFY WIN SERVICES EXIST: Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists.`
                 );
             } else {
                 logger.error(
