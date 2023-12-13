@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.4.0](https://github.com/ptarmiganlabs/butler/compare/v9.3.2...v9.4.0) (2023-12-13)
+
+
+### Features
+
+* **influxdb:** Add Butler version tag to uptime data sent to InfluxDb ([e60528a](https://github.com/ptarmiganlabs/butler/commit/e60528a7848bc66652cc505156a1e060bfef8aff)), closes [#919](https://github.com/ptarmiganlabs/butler/issues/919)
+
+
+### Bug Fixes
+
+* Improve Winsvc checking efficiency ([e9a1ff5](https://github.com/ptarmiganlabs/butler/commit/e9a1ff512ade5af87b2613ae716ff32c3719ad15))
+* **winsvc:** Optimize windows services checks ([47e08ad](https://github.com/ptarmiganlabs/butler/commit/47e08ad03a2cbff8a653403c111b2f8befcff4e7))
+
 ## [9.3.2](https://github.com/ptarmiganlabs/butler/compare/v9.3.1...v9.3.2) (2023-12-12)
 
 
