@@ -122,7 +122,7 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
 };
 
 const verifyServicesExist = async (config, logger) => {
-    logger.info('Verifying that all Windows services specified in config file exist and can be reached.');
+    logger.info('VERIFY WIN SERVICES EXIST: Verifying that all Windows services specified in config file exist and can be reached.');
 
     // Return false if one or more services do not exist or cannot be reached.
     // Return true if all services are reachable.
@@ -132,33 +132,43 @@ const verifyServicesExist = async (config, logger) => {
 
     // eslint-disable-next-line no-restricted-syntax
     for (const host of hostsToCheck) {
-        logger.verbose(`Checking status of Windows services on host ${host.host}`);
+        // Get status of all services on host
+        logger.verbose(`VERIFY WIN SERVICES EXIST: Getting status of all Windows services on host ${host.host}`);
+        // eslint-disable-next-line no-await-in-loop
+        const serviceStatusAll = await svcTools.statusAll(logger, host.host);
         const servicesToCheck = host.services;
 
         // eslint-disable-next-line no-restricted-syntax
         for (const service of servicesToCheck) {
-            logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
+            logger.verbose(
+                `VERIFY WIN SERVICES EXIST: Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`
+            );
             let serviceExists;
+
             try {
-                // eslint-disable-next-line no-await-in-loop
-                serviceExists = await svcTools.exists(logger, service.name, host.host);
+                // Try to find service.name in serviceStatusAll array
+                serviceExists = serviceStatusAll.find((svc) => svc.name === service.name);
             } catch (err) {
-                logger.error(`Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`);
+                logger.error(
+                    `VERIFY WIN SERVICES EXIST: Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`
+                );
                 result = false;
             }
 
             if (serviceExists) {
                 logger.verbose(
-                    `Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists: ${serviceExists}`
+                    `VERIFY WIN SERVICES EXIST: Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists.`
                 );
             } else {
                 logger.error(
-                    `Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
+                    `VERIFY WIN SERVICES EXIST:  Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
                 );
                 result = false;
             }
         }
     }
+
+    logger.info(`VERIFY WIN SERVICES EXIST: Checked all services on all hosts. Result: ${result}`);
 
     return result;
 };
@@ -175,7 +185,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
         // Get status of all services on host
         logger.verbose(`Getting status of all Windows services on host ${host.host}`);
-
         const serviceStatusAll = await svcTools.statusAll(logger, host.host);
 
         servicesToCheck.forEach(async (service) => {
@@ -573,6 +582,7 @@ async function setupServiceMonitorTimer(config, logger) {
                                 });
                             }
                         }
+                        
                         const sched = later.parse.text(config.get('Butler.serviceMonitor.frequency'));
                         later.setInterval(() => {
                             checkServiceStatus(config, logger, false);

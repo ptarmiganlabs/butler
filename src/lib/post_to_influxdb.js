@@ -3,11 +3,15 @@ const _ = require('lodash');
 const globals = require('../globals');
 
 function postButlerMemoryUsageToInfluxdb(memory) {
+    // Get Butler version
+    const butlerVersion = globals.appVersion;
+
     let datapoint = [
         {
             measurement: 'butler_memory_usage',
             tags: {
                 butler_instance: memory.instanceTag,
+                version: butlerVersion,
             },
             fields: {
                 heap_used: memory.heapUsedMByte,
