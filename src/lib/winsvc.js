@@ -204,6 +204,8 @@ function statusAll(logger, host = null) {
 
 /**
  * Get status of a specific service on a host
+ * It is assumed that the service exists.
+ *
  * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
@@ -219,71 +221,71 @@ function status(logger, serviceName, host = null) {
             return;
         }
 
-        // Check existence
-        exists(logger, serviceName, host).then(
-            (alreadyExists) => {
-                // serviceName exists on host
-                logger.verbose(`WINSVC STATUS: Service ${serviceName} exists on host ${host}`);
+        // // Check existence
+        // exists(logger, serviceName, host).then(
+        //     (alreadyExists) => {
+        //         // serviceName exists on host
+        //         logger.verbose(`WINSVC STATUS: Service ${serviceName} exists on host ${host}`);
 
-                // If exists, reject
-                if (!alreadyExists) {
-                    logger.verbose(`WINSVC STATUS: Service ${serviceName} does not exists on host ${host}`);
+        //         // If exists, reject
+        //         if (!alreadyExists) {
+        //             logger.verbose(`WINSVC STATUS: Service ${serviceName} does not exists on host ${host}`);
 
-                    reject(new Error(`Service with name '${serviceName}' does not exists`));
-                    return;
-                }
+        //             reject(new Error(`Service with name '${serviceName}' does not exists`));
+        //             return;
+        //         }
 
-                let command = '';
-                if (host === null) {
-                    // Run command for get states of all services on local machine
-                    logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
-                    command = `sc.exe query "${serviceName}"`;
-                } else {
-                    // A host other that local machine is specfied
-                    logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
-                    command = `sc.exe \\\\${host} query "${serviceName}"`;
-                }
+        let command = '';
+        if (host === null) {
+            // Run command for get states of all services on local machine
+            logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
+            command = `sc.exe query "${serviceName}"`;
+        } else {
+            // A host other that local machine is specfied
+            logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
+            command = `sc.exe \\\\${host} query "${serviceName}"`;
+        }
 
-                // Run command for create service with provided data
-                logger.debug(`WINSVC STATUS: Running command ${command}`);
-                exec(command, (err, stdout) => {
-                    // On error, reject and exit
-                    if (err) {
-                        logger.error(`WINSVC STATUS: Error while getting status of service ${serviceName} on host ${host}`);
-                        if (err.code) {
-                            logger.error(`WINSVC STATUS: Error code: ${err.code}`);
-                        }
-
-                        reject(err);
-                        return;
-                    }
-
-                    // Get all lines on standard output, take only
-                    // lines with "STATE" and remove extra parts
-                    const lines = stdout
-                        .toString()
-                        .split('\r\n')
-                        .filter((line) => line.indexOf('STATE') !== -1);
-
-                    // Split "STOPPED" o "RUNNING"
-                    const stateName = lines[0].indexOf('STOPPED') !== -1 ? 'STOPPED' : 'RUNNING';
-
-                    // Return state name
-                    logger.verbose(`WINSVC STATUS: Service ${serviceName} is ${stateName} on host ${host}`);
-                    resolve(stateName);
-                });
-            },
-
-            // Reject on error
-            (err) => {
+        // Run command for create service with provided data
+        logger.debug(`WINSVC STATUS: Running command ${command}`);
+        exec(command, (err, stdout) => {
+            // On error, reject and exit
+            if (err) {
                 logger.error(`WINSVC STATUS: Error while getting status of service ${serviceName} on host ${host}`);
                 if (err.code) {
                     logger.error(`WINSVC STATUS: Error code: ${err.code}`);
                 }
 
                 reject(err);
+                return;
             }
-        );
+
+            // Get all lines on standard output, take only
+            // lines with "STATE" and remove extra parts
+            const lines = stdout
+                .toString()
+                .split('\r\n')
+                .filter((line) => line.indexOf('STATE') !== -1);
+
+            // Split "STOPPED" o "RUNNING"
+            const stateName = lines[0].indexOf('STOPPED') !== -1 ? 'STOPPED' : 'RUNNING';
+
+            // Return state name
+            logger.verbose(`WINSVC STATUS: Service ${serviceName} is ${stateName} on host ${host}`);
+            resolve(stateName);
+        });
+        // },
+
+        // // Reject on error
+        // (err) => {
+        //     logger.error(`WINSVC STATUS: Error while getting status of service ${serviceName} on host ${host}`);
+        //     if (err.code) {
+        //         logger.error(`WINSVC STATUS: Error code: ${err.code}`);
+        //     }
+
+        //     reject(err);
+        // }
+        // );
     });
 }
 
