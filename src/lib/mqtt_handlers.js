@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 const { validate } = require('uuid');
 const fs = require('fs');
-const path = require('path');
+const upath = require('upath');
 
 // Load global variables and functions
 const { config, logger, execPath } = require('../globals');
@@ -37,9 +37,33 @@ function mqttInitHandlers() {
                 // Connecting to Azure Event Grid?
 
                 // Load certificate and key files used to authenticate with Azure Event Grid
-                // FIle names are store din the config file, Butler.mqttConfig.azureEventGrid.clientCertFile and Butler.mqttConfig.azureEventGrid.clientKeyFile
-                const certFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
-                const keyFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
+                // File names are stored in the config file:
+                // - Butler.mqttConfig.azureEventGrid.clientCertFile
+                // - Butler.mqttConfig.azureEventGrid.clientKeyFile
+
+                // Helper function to read the contents of the certificate files:
+                const readCert = (filename) => fs.readFileSync(filename);
+
+                const certFile = upath.resolve(__dirname, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
+                const keyFile = upath.resolve(__dirname, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
+
+                // const certFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
+                // const keyFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
+
+                // Check that the certificate and key files exist
+                if (!fs.existsSync(certFile)) {
+                    logger.error(`MQTT INIT HANDLERS: Certificate file ${certFile} does not exist`);
+                    process.exit(1);
+                } else {
+                    logger.verbose(`MQTT INIT HANDLERS: Certificate file ${certFile} exists`);
+                }
+
+                if (!fs.existsSync(keyFile)) {
+                    logger.error(`MQTT INIT HANDLERS: Key file ${keyFile} does not exist`);
+                    process.exit(1);
+                } else {
+                    logger.verbose(`MQTT INIT HANDLERS: Key file ${keyFile} exists`);
+                }
 
                 mqttOptions = {
                     clientId: config.get('Butler.mqttConfig.azureEventGrid.clientId'),
@@ -48,9 +72,9 @@ function mqttInitHandlers() {
                     // protocol: 'mqtts',
                     // host: config.get('Butler.mqttConfig.brokerHost'),
                     // port: config.get('Butler.mqttConfig.brokerPort'),
-                    key: fs.readFileSync(keyFile),
-                    cert: fs.readFileSync(certFile),
-                    rejectUnauthorized: false,
+                    key: readCert(keyFile),
+                    cert: readCert(certFile),
+                    rejectUnauthorized: true,
                 };
 
                 // Connect to MQTT broker
@@ -66,7 +90,9 @@ function mqttInitHandlers() {
 
             if (!mqttClient.connected) {
                 logger.verbose(
-                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT object for ${mqttOptions.host}:${mqttOptions.port}, protocol version ${mqttOptions.protocolVersion}`
+                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT object for ${config.get(
+                        'Butler.mqttConfig.brokerHost'
+                    )}:${config.get('Butler.mqttConfig.brokerPort')}`
                 );
             }
 
