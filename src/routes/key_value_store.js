@@ -1,19 +1,12 @@
 /* eslint-disable no-lonely-if */
-const httpErrors = require('http-errors');
+import httpErrors from 'http-errors';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
+import globals from '../globals.js';
 
-const {
-    getNamespaceList,
-    getNamespace,
-    deleteNamespace,
-    addKeyValuePair,
-    deleteKeyValuePair,
-    getValue,
-} = require('../lib/key_value_store');
-const {
+import { logRESTCall } from '../lib/log_rest_call.js';
+import { getNamespaceList, getNamespace, deleteNamespace, addKeyValuePair, deleteKeyValuePair, getValue } from '../lib/key_value_store.js';
+import {
     apiGetAllNamespaces,
     apiGetKVPair,
     apiGetKVExists,
@@ -21,7 +14,7 @@ const {
     apiDeleteKVPair,
     apiDeleteNamespace,
     apiGetKeysInNamespace,
-} = require('../api/key_value_store');
+} from '../api/key_value_store.js';
 
 async function handlerGetNamespaceList(request, reply) {
     try {
@@ -317,7 +310,7 @@ async function handlerGetKeyList(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.keyValueStore') &&
         globals.config.get('Butler.restServerEndpointsEnable.keyValueStore')

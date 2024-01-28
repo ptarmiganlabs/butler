@@ -1,8 +1,8 @@
-// Function to check if a given directory (child) is a subdirectory of 
+// Function to check if a given directory (child) is a subdirectory of
 // another directory (parent).
 //
-// This function assumes that both child and parent are normalized paths 
-// (i.e., they don't contain . or .. segments), and that they use 
+// This function assumes that both child and parent are normalized paths
+// (i.e., they don't contain . or .. segments), and that they use
 // forward slashes (/) as path separators.
 const isDirectoryChildOf = (child, parent) => {
     if (child === parent) return true;
@@ -12,6 +12,4 @@ const isDirectoryChildOf = (child, parent) => {
     return parentTokens.every((t, i) => child.split('/').filter((j) => j.length)[i] === t);
 };
 
-module.exports = {
-    isDirectoryChildOf,
-};
+export default isDirectoryChildOf;

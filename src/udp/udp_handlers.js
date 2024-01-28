@@ -1,17 +1,23 @@
 // Load global variables and functions
-const globals = require('../globals');
-const smtp = require('../lib/smtp');
-const slack = require('../lib/slack_notification');
-const webhookOut = require('../lib/webhook_notification');
-const msteams = require('../lib/msteams_notification');
-const signl4 = require('../lib/incident_mgmt/signl4');
-const newRelic = require('../lib/incident_mgmt/new_relic');
-const { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } = require('../lib/scriptlog');
-const { getTaskTags } = require('../qrs_util/task_tag_util');
-const { getAppTags } = require('../qrs_util/app_tag_util');
-const { doesTaskExist } = require('../qrs_util/does_task_exist');
-const qrsUtil = require('../qrs_util');
-const { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } = require('../lib/post_to_influxdb');
+import globals from '../globals.js';
+import { sendReloadTaskAbortedNotificationEmail, sendReloadTaskFailureNotificationEmail } from '../lib/smtp.js';
+import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/slack_notification.js';
+import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/webhook_notification.js';
+import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/msteams_notification.js';
+import { sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification } from '../lib/incident_mgmt/signl4.js';
+import {
+    sendReloadTaskFailureLog,
+    sendReloadTaskFailureEvent,
+    sendReloadTaskAbortedLog,
+    sendReloadTaskAbortedEvent,
+} from '../lib/incident_mgmt/new_relic.js';
+import { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } from '../lib/scriptlog.js';
+import getTaskTags from '../qrs_util/task_tag_util.js';
+import getAppTags from '../qrs_util/app_tag_util.js';
+import doesTaskExist from '../qrs_util/does_task_exist.js';
+import { isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
+
+import { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } from '../lib/post_to_influxdb.js';
 
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
@@ -55,7 +61,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.incidentTool.signl4.enable') === true &&
         globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.enable') === true
     ) {
-        signl4.sendReloadTaskAbortedNotification({
+        sendReloadTaskAbortedNotification({
             hostName: msg[1],
             user: msg[4].replace(/\\/g, '/'),
             taskName: msg[2],
@@ -78,7 +84,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') === true
     ) {
-        newRelic.sendReloadTaskAbortedEvent({
+        sendReloadTaskAbortedEvent({
             qs_hostName: msg[1],
             qs_user: msg[4].replace(/\\/g, '/'),
             qs_taskName: msg[2],
@@ -101,7 +107,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.enable') === true
     ) {
-        newRelic.sendReloadTaskAbortedLog({
+        sendReloadTaskAbortedLog({
             qs_hostName: msg[1],
             qs_user: msg[4].replace(/\\/g, '/'),
             qs_taskName: msg[2],
@@ -125,7 +131,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.slackNotification.enable') === true &&
         globals.config.get('Butler.slackNotification.reloadTaskAborted.enable') === true
     ) {
-        slack.sendReloadTaskAbortedNotificationSlack({
+        sendReloadTaskAbortedNotificationSlack({
             hostName: msg[1],
             user: msg[4].replace(/\\/g, '/'),
             taskName: msg[2],
@@ -149,7 +155,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.teamsNotification.enable') === true &&
         globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') === true
     ) {
-        msteams.sendReloadTaskAbortedNotificationTeams({
+        sendReloadTaskAbortedNotificationTeams({
             hostName: msg[1],
             user: msg[4].replace(/\\/g, '/'),
             taskName: msg[2],
@@ -173,7 +179,7 @@ const schedulerAborted = async (msg) => {
         globals.config.get('Butler.emailNotification.enable') === true &&
         globals.config.get('Butler.emailNotification.reloadTaskAborted.enable') === true
     ) {
-        smtp.sendReloadTaskAbortedNotificationEmail({
+        sendReloadTaskAbortedNotificationEmail({
             hostName: msg[1],
             user: msg[4],
             taskName: msg[2],
@@ -194,7 +200,7 @@ const schedulerAborted = async (msg) => {
     // Note that there is no enable/disable flag for failed reloads.
     // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
     if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
-        webhookOut.sendReloadTaskAbortedNotificationWebhook({
+        sendReloadTaskAbortedNotificationWebhook({
             hostName: msg[1],
             user: msg[4],
             taskName: msg[2],
@@ -306,7 +312,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.signl4.enable') === true &&
             globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
         ) {
-            signl4.sendReloadTaskFailureNotification({
+            sendReloadTaskFailureNotification({
                 hostName: msg[0],
                 user: msg[3].replace(/\\/g, '/'),
                 taskName: msg[1],
@@ -327,7 +333,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
             globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureEvent({
+            sendReloadTaskFailureEvent({
                 qs_hostName: msg[0],
                 qs_user: msg[3].replace(/\\/g, '/'),
                 qs_taskName: msg[1],
@@ -348,7 +354,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
             globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureLog({
+            sendReloadTaskFailureLog({
                 qs_hostName: msg[0],
                 qs_user: msg[3].replace(/\\/g, '/'),
                 qs_taskName: msg[1],
@@ -370,7 +376,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.slackNotification.enable') === true &&
             globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
         ) {
-            slack.sendReloadTaskFailureNotificationSlack({
+            sendReloadTaskFailureNotificationSlack({
                 hostName: msg[0],
                 user: msg[3].replace(/\\/g, '/'),
                 taskName: msg[1],
@@ -392,7 +398,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.teamsNotification.enable') === true &&
             globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
         ) {
-            msteams.sendReloadTaskFailureNotificationTeams({
+            sendReloadTaskFailureNotificationTeams({
                 hostName: msg[0],
                 user: msg[3].replace(/\\/g, '/'),
                 taskName: msg[1],
@@ -414,7 +420,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.emailNotification.enable') === true &&
             globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
         ) {
-            smtp.sendReloadTaskFailureNotificationEmail({
+            sendReloadTaskFailureNotificationEmail({
                 hostName: msg[0],
                 user: msg[3].replace(/\\\\/g, '\\'),
                 taskName: msg[1],
@@ -436,7 +442,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') &&
             globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') === true
         ) {
-            webhookOut.sendReloadTaskFailureNotificationWebhook({
+            sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[0],
                 user: msg[3].replace(/\\\\/g, '\\'),
                 taskName: msg[1],
@@ -540,7 +546,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.signl4.enable') === true &&
             globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
         ) {
-            signl4.sendReloadTaskFailureNotification({
+            sendReloadTaskFailureNotification({
                 hostName: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
                 taskName: msg[2],
@@ -563,7 +569,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
             globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureEvent({
+            sendReloadTaskFailureEvent({
                 qs_hostName: msg[1],
                 qs_user: msg[4].replace(/\\/g, '/'),
                 qs_taskName: msg[2],
@@ -586,7 +592,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
             globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
         ) {
-            newRelic.sendReloadTaskFailureLog({
+            sendReloadTaskFailureLog({
                 qs_hostName: msg[1],
                 qs_user: msg[4].replace(/\\/g, '/'),
                 qs_taskName: msg[2],
@@ -634,7 +640,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.slackNotification.enable') === true &&
             globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
         ) {
-            slack.sendReloadTaskFailureNotificationSlack({
+            sendReloadTaskFailureNotificationSlack({
                 hostName: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
                 taskName: msg[2],
@@ -658,7 +664,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.teamsNotification.enable') === true &&
             globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
         ) {
-            msteams.sendReloadTaskFailureNotificationTeams({
+            sendReloadTaskFailureNotificationTeams({
                 hostName: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
                 taskName: msg[2],
@@ -682,7 +688,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.emailNotification.enable') === true &&
             globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
         ) {
-            smtp.sendReloadTaskFailureNotificationEmail({
+            sendReloadTaskFailureNotificationEmail({
                 hostName: msg[1],
                 user: msg[4].replace(/\\\\/g, '\\'),
                 taskName: msg[2],
@@ -703,7 +709,7 @@ const schedulerFailed = async (msg, legacyFlag) => {
         // Note that there is no enable/disable flag for failed reloads.
         // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
         if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
-            webhookOut.sendReloadTaskFailureNotificationWebhook({
+            sendReloadTaskFailureNotificationWebhook({
                 hostName: msg[1],
                 user: msg[4].replace(/\\\\/g, '\\'),
                 taskName: msg[2],
@@ -802,7 +808,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
         const customPropertyValue = globals.config.get('Butler.influxDb.reloadTaskSuccess.byCustomProperty.enabledValue');
 
         // Get custom property value for this task
-        const customPropertyValueForTask = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
+        const customPropertyValueForTask = await isCustomPropertyValueSet(
             reloadTaskId,
             customPropertyName,
             customPropertyValue,
@@ -917,7 +923,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
 // --------------------------------------------------------
 // Set up UDP server handlers for acting on Sense failed task events
 // --------------------------------------------------------
-module.exports.udpInitTaskErrorServer = () => {
+const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
     // eslint-disable-next-line no-unused-vars
     globals.udpServerReloadTaskSocket.on('listening', (message, remote) => {
@@ -1065,3 +1071,5 @@ module.exports.udpInitTaskErrorServer = () => {
         }
     });
 };
+
+export default udpInitTaskErrorServer;

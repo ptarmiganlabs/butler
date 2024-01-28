@@ -16,6 +16,4 @@ const apiGetAPIEndpointsEnabled = {
     },
 };
 
-module.exports = {
-    apiGetAPIEndpointsEnabled,
-};
+export default apiGetAPIEndpointsEnabled;

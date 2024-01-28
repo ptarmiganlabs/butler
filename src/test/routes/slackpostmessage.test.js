@@ -1,10 +1,6 @@
 /* eslint-disable camelcase */
-const path = require('path');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-process.env.NODE_ENV = 'production';
-const config = require('config');
+import config from 'config';
+import axios from 'axios';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,

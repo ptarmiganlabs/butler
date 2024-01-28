@@ -2,22 +2,23 @@
 /* eslint-disable global-require */
 // const Fastify = require('fastify');
 
-const path = require('path');
-const Fastify = require('fastify');
-const AutoLoad = require('@fastify/autoload');
-const FastifySwagger = require('@fastify/swagger');
-const FastifySwaggerUi = require('@fastify/swagger-ui');
-const FastifyReplyFrom = require('@fastify/reply-from');
-const FastifyHealthcheck = require('fastify-healthcheck');
-const FastifyRateLimit = require('@fastify/rate-limit');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Fastify from 'fastify';
+// import AutoLoad from '@fastify/autoload';
+import FastifySwagger from '@fastify/swagger';
+import FastifySwaggerUi from '@fastify/swagger-ui';
+import FastifyReplyFrom from '@fastify/reply-from';
+import FastifyHealthcheck from 'fastify-healthcheck';
+import FastifyRateLimit from '@fastify/rate-limit';
 
-const globals = require('./globals');
-const heartbeat = require('./lib/heartbeat');
-const scheduler = require('./lib/scheduler');
-const serviceUptime = require('./lib/service_uptime');
-const telemetry = require('./lib/telemetry');
-const configUtil = require('./lib/config_util');
-const { sendTestEmail } = require('./lib/testemail');
+import globals from './globals.js';
+import setupHeartbeatTimer from './lib/heartbeat.js';
+import { loadSchedulesFromDisk } from './lib/scheduler.js';
+import serviceUptimeStart from './lib/service_uptime.js';
+import setupAnonUsageReportTimer from './lib/telemetry.js';
+import { configVerifyAllTaskId } from './lib/config_util.js';
+import sendTestEmail from './lib/testemail.js';
 
 async function build(opts = {}) {
     // Create two Fastify servers. One server is a REST server and the other is a reverse proxy server.
@@ -36,20 +37,22 @@ async function build(opts = {}) {
         (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
         (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
     ) {
-        serviceUptime.serviceUptimeStart();
+        serviceUptimeStart();
     }
 
     // Load certificates to use when connecting to healthcheck API
-    const certFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCert'));
-    const keyFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertKey'));
-    const caFile = path.resolve(__dirname, globals.config.get('Butler.cert.clientCertCA'));
+    const filename = fileURLToPath(import.meta.url);
+    const dirname = path.dirname(filename);
+    const certFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCert'));
+    const keyFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertKey'));
+    const caFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertCA'));
 
     // Set up heartbeats, if enabled in the config file
     if (
         (globals.config.has('Butler.heartbeat.enabled') && globals.config.get('Butler.heartbeat.enabled') === true) ||
         (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true)
     ) {
-        heartbeat.setupHeartbeatTimer(globals.config, globals.logger);
+        setupHeartbeatTimer(globals.config, globals.logger);
     }
 
     try {
@@ -115,12 +118,12 @@ async function build(opts = {}) {
             (globals.config.has('Butler.anonTelemetry') === true && globals.config.get('Butler.anonTelemetry') === true)
         ) {
             // Set up the timer to send anonymous telemetry
-            telemetry.setupAnonUsageReportTimer();
+            setupAnonUsageReportTimer();
             globals.logger.verbose('MAIN: Anonymous telemetry reporting has been set up.');
         }
 
         // Verify that select parts of config file are valid
-        configUtil.configVerifyAllTaskId();
+        configVerifyAllTaskId();
 
         // Show link to Swagger API docs page, if the API is enabled
         if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
@@ -166,8 +169,8 @@ async function build(opts = {}) {
 
         // This loads all plugins defined in plugins.
         // Those should be support plugins that are reused through your application
-        await restServer.register(require('./plugins/sensible'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./plugins/support'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./plugins/sensible.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./plugins/support.js'), { options: Object.assign({}, opts) });
 
         await restServer.register(FastifySwagger, {
             mode: 'dynamic',
@@ -204,20 +207,20 @@ async function build(opts = {}) {
         });
 
         // Loads all plugins defined in routes
-        await restServer.register(require('./routes/api'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/base_conversion'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/butler_ping'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/disk_utils'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/key_value_store'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/mqtt_publish_message'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/newrelic_event'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/newrelic_metric'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/scheduler'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/sense_app'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/sense_app_dump'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/sense_list_apps'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/sense_start_task'), { options: Object.assign({}, opts) });
-        await restServer.register(require('./routes/slack_post_message'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/api.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/base_conversion.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/butler_ping.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/disk_utils.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/key_value_store.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/mqtt_publish_message.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/newrelic_event.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/newrelic_metric.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/scheduler.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/sense_app.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/sense_app_dump.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/sense_list_apps.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/sense_start_task.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/slack_post_message.js'), { options: Object.assign({}, opts) });
 
         // ---------------------------------------------------
         // Configure X-HTTP-Method-Override handling
@@ -284,7 +287,7 @@ async function build(opts = {}) {
     // Load already defined schedules
     if (globals.config.has('Butler.scheduler')) {
         if (globals.config.get('Butler.scheduler.enable') === true) {
-            scheduler.loadSchedulesFromDisk();
+            loadSchedulesFromDisk();
             // scheduler.launchAllSchedules();
         } else {
             // eslint-disable-next-line quotes
@@ -297,4 +300,4 @@ async function build(opts = {}) {
     return { restServer, proxyRestServer, dockerHealthCheckServer };
 }
 
-module.exports = build;
+export default build;

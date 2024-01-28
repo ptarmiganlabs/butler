@@ -1,10 +1,11 @@
-const httpErrors = require('http-errors');
-const axios = require('axios');
+import httpErrors from 'http-errors';
+import axios from 'axios';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiPostNewRelicMetric } = require('../api/newrelic_metric');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import apiPostNewRelicMetric from '../api/newrelic_metric.js';
 
 // eslint-disable-next-line consistent-return
 async function handlerPostNewRelicMetric(request, reply) {
@@ -129,7 +130,7 @@ async function handlerPostNewRelicMetric(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.newRelic.postNewRelicMetric') &&
         globals.config.get('Butler.restServerEndpointsEnable.newRelic.postNewRelicMetric') === true

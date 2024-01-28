@@ -82,6 +82,4 @@ const apiPutSlackPostMessage = {
     },
 };
 
-module.exports = {
-    apiPutSlackPostMessage,
-};
+export default apiPutSlackPostMessage;

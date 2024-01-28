@@ -1,9 +1,5 @@
-const path = require('path');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-process.env.NODE_ENV = 'production';
-const config = require('config');
+import config from 'config';
+import axios from 'axios';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
@@ -22,8 +18,9 @@ beforeAll(async () => {
     appId1 = 'c1e27bf7-56ae-45b9-87a6-cdfab255b269';
     appPartialReload1 = true;
     appReloadMode1 = 0;
-    appStartTaskSuccess = ['e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e', '7552d9fc-d1bb-4975-9a38-18357de531ea'];
-    appStartTaskFailure = ['fb0f317d-da91-4b86-aafa-0174ae1e8c8f', 'fa93345c-f7a3-4f43-ab24-4da4245e16e8'];
+    // Task IDs to be started after successful reload
+    appStartTaskSuccess = ['25732e8f-a96f-44c0-ba81-7407a2ef4c8a', '62a91752-0340-4db4-ab1f-4df4e671ea60'];
+    appStartTaskFailure = ['4788dc51-2bf6-45f0-a4ad-8bd8d40e1d3f', 'd2902674-6bde-4d64-86c0-2e5d3a0c08f2'];
 });
 
 afterAll(async () => {

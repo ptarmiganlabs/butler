@@ -54,6 +54,4 @@ const apiPutMqttMessage = {
     },
 };
 
-module.exports = {
-    apiPutMqttMessage,
-};
+export default apiPutMqttMessage;

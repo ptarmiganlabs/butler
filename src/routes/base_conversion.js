@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
-const httpErrors = require('http-errors');
-const anyBase = require('any-base');
+import httpErrors from 'http-errors';
+
+import anyBase from 'any-base';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiGetBase16ToBase62, apiGetBase62ToBase16 } = require('../api/base_conversion');
+import globals from '../globals.js';
+import { logRESTCall } from '../lib/log_rest_call.js';
+import { apiGetBase16ToBase62, apiGetBase62ToBase16 } from '../api/base_conversion.js';
 
 const base62_to_Hex = anyBase('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789abcdef');
 const hex_to_base62 = anyBase('0123456789abcdef', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
@@ -55,7 +56,7 @@ async function handlerGetBase16ToBase62(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') &&
         globals.config.get('Butler.restServerEndpointsEnable.base62ToBase16')

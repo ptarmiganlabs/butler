@@ -1,10 +1,11 @@
-const httpErrors = require('http-errors');
+import httpErrors from 'http-errors';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const slackApi = require('../lib/slack_api');
-const { apiPutSlackPostMessage } = require('../api/slack_post_message');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import slackSend from '../lib/slack_api.js';
+import apiPutSlackPostMessage from '../api/slack_post_message.js';
 
 async function handlerPutSlackPostMessage(request, reply) {
     try {
@@ -33,7 +34,7 @@ async function handlerPutSlackPostMessage(request, reply) {
                 webhookUrl: globals.config.get('Butler.slackNotification.restMessage.webhookURL'),
             };
 
-            slackApi.slackSend(slackConfig, globals.logger);
+            await slackSend(slackConfig, globals.logger);
 
             reply.code(201).send(request.body);
         }
@@ -46,7 +47,7 @@ async function handlerPutSlackPostMessage(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.slackPostMessage') &&
         globals.config.get('Butler.restServerEndpointsEnable.slackPostMessage')

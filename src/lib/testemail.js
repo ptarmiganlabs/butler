@@ -1,5 +1,5 @@
-const globals = require('../globals');
-const { sendEmailBasic } = require('./smtp');
+import globals from '../globals.js';
+import { sendEmailBasic } from './smtp.js';
 
 function sendTestEmail(emailAddress, fromAddress) {
     try {
@@ -25,6 +25,4 @@ function sendTestEmail(emailAddress, fromAddress) {
     }
 }
 
-module.exports = {
-    sendTestEmail,
-};
+export default sendTestEmail;

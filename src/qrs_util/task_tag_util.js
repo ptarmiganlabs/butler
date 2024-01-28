@@ -1,7 +1,6 @@
-const path = require('path');
-const QrsInteract = require('qrs-interact');
-
-const globals = require('../globals');
+import path from 'path';
+import QrsInteract from 'qrs-interact';
+import globals from '../globals.js';
 
 /**
  *
@@ -54,6 +53,4 @@ async function getTaskTags(taskId) {
     }
 }
 
-module.exports = {
-    getTaskTags,
-};
+export default getTaskTags;

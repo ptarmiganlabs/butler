@@ -1,7 +1,6 @@
-const { RateLimiterMemory } = require('rate-limiter-flexible');
-
-const globals = require('../../globals');
-const { sendNewRelicEvent, sendNewRelicLog } = require('./new_relic');
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import globals from '../../globals.js';
+import { sendNewRelicEvent, sendNewRelicLog } from './new_relic.js';
 
 let rateLimiterServiceStatusEvent;
 let rateLimiterServiceStatusLog;
@@ -352,7 +351,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
         });
 }
 
-module.exports = {
+export default {
     sendServiceMonitorEvent,
     sendServiceMonitorLog,
 };

@@ -1,4 +1,4 @@
-const apiGetAllNamespaces = {
+export const apiGetAllNamespaces = {
     schema: {
         description: '',
         summary: 'List all currently defined namespaces.',
@@ -26,7 +26,7 @@ const apiGetAllNamespaces = {
     },
 };
 
-const apiGetKVPair = {
+export const apiGetKVPair = {
     schema: {
         description: '',
         summary: 'Get the value associated with a key, in a specific namespace.',
@@ -99,7 +99,7 @@ const apiGetKVPair = {
     },
 };
 
-const apiGetKVExists = {
+export const apiGetKVExists = {
     schema: {
         description: 'Returns true if the specified key exists, otherwise false.',
         summary: 'Checks if a key exists in a namespace.',
@@ -181,7 +181,7 @@ const apiGetKVExists = {
     },
 };
 
-const apiPostKVPair = {
+export const apiPostKVPair = {
     schema: {
         description:
             'If the specified key already exists it will be overwritten.\n\nIf the posted data has a TTL, it will start counting when the post occur.\nI.e. if a previouly posted key also had a TTL, it will be replace with the most recent TTL.',
@@ -270,7 +270,7 @@ const apiPostKVPair = {
     },
 };
 
-const apiDeleteKVPair = {
+export const apiDeleteKVPair = {
     schema: {
         description: '',
         summary: 'Delete a key-value pair in a specific namespace.',
@@ -322,7 +322,7 @@ const apiDeleteKVPair = {
     },
 };
 
-const apiDeleteNamespace = {
+export const apiDeleteNamespace = {
     schema: {
         description: '',
         summary: 'Delete a namespace and all key-value pairs in it.',
@@ -368,7 +368,7 @@ const apiDeleteNamespace = {
     },
 };
 
-const apiGetKeysInNamespace = {
+export const apiGetKeysInNamespace = {
     schema: {
         description: '',
         summary: 'Retrieve a list of all keys present in the specified namespace.',
@@ -437,14 +437,4 @@ const apiGetKeysInNamespace = {
             },
         },
     },
-};
-
-module.exports = {
-    apiGetAllNamespaces,
-    apiGetKVPair,
-    apiGetKVExists,
-    apiPostKVPair,
-    apiDeleteKVPair,
-    apiDeleteNamespace,
-    apiGetKeysInNamespace,
 };

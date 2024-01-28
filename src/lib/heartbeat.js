@@ -1,5 +1,5 @@
-const later = require('@breejs/later');
-const axios = require('axios');
+import later from '@breejs/later';
+import axios from 'axios';
 
 const callRemoteURL = (remoteURL, logger) => {
     axios
@@ -31,6 +31,4 @@ function setupHeartbeatTimer(config, logger) {
     }
 }
 
-module.exports = {
-    setupHeartbeatTimer,
-};
+export default setupHeartbeatTimer;

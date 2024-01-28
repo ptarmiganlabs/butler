@@ -1,14 +1,14 @@
-const later = require('@breejs/later');
-const { createMachine, interpret } = require('xstate');
+import later from '@breejs/later';
+import { createMachine, interpret } from 'xstate';
 
-const svcTools = require('./winsvc');
-const globals = require('../globals');
-const newRelic = require('./incident_mgmt/new_relic_service_monitor');
-const webhookOut = require('./webhook_notification');
-const slack = require('./slack_notification');
-const teams = require('./msteams_notification');
-const smtp = require('./smtp');
-const influxDb = require('./post_to_influxdb');
+import { statusAll, status, details } from './winsvc.js';
+import globals from '../globals.js';
+import newRelic from './incident_mgmt/new_relic_service_monitor.js';
+import { sendServiceMonitorWebhook } from './webhook_notification.js';
+import { sendServiceMonitorNotificationSlack } from './slack_notification.js';
+import { sendServiceMonitorNotificationTeams } from './msteams_notification.js';
+import { sendServiceMonitorNotificationEmail } from './smtp.js';
+import { postWindowsServiceStatusToInfluxDB } from './post_to_influxdb.js';
 
 // One state machines for each service
 const serviceStateMachine = [];
@@ -135,7 +135,7 @@ const verifyServicesExist = async (config, logger) => {
         // Get status of all services on host
         logger.verbose(`VERIFY WIN SERVICES EXIST: Getting status of all Windows services on host ${host.host}`);
         // eslint-disable-next-line no-await-in-loop
-        const serviceStatusAll = await svcTools.statusAll(logger, host.host);
+        const serviceStatusAll = await statusAll(logger, host.host);
         const servicesToCheck = host.services;
 
         // eslint-disable-next-line no-restricted-syntax
@@ -185,7 +185,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
         // Get status of all services on host
         logger.verbose(`Getting status of all Windows services on host ${host.host}`);
-        const serviceStatusAll = await svcTools.statusAll(logger, host.host);
+        const serviceStatusAll = await statusAll(logger, host.host);
 
         servicesToCheck.forEach(async (service) => {
             logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
@@ -201,11 +201,11 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
             }
 
             // Get status of this service
-            const serviceStatus = await svcTools.status(logger, service.name, host.host);
+            const serviceStatus = await status(logger, service.name, host.host);
             logger.verbose(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
             // Get details about this service
-            const serviceDetails = await svcTools.details(logger, service.name, host.host);
+            const serviceDetails = await details(logger, service.name, host.host);
             if (
                 serviceStatus === 'STOPPED' &&
                 config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
@@ -267,7 +267,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
                     ) {
-                        webhookOut.sendServiceMonitorWebhook({
+                        sendServiceMonitorWebhook({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -286,7 +286,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.slackNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
-                        slack.sendServiceMonitorNotificationSlack({
+                        sendServiceMonitorNotificationSlack({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -305,7 +305,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.teamsNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
-                        teams.sendServiceMonitorNotificationTeams({
+                        sendServiceMonitorNotificationTeams({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -324,7 +324,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.emailNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
-                        smtp.sendServiceMonitorNotificationEmail({
+                        sendServiceMonitorNotificationEmail({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -349,7 +349,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                 // First check?
                 if (isFirstCheck) {
                     // Set state to running as this is the first/startup check and we don't want to alert in this case
-                    const res = smService.stateSvc.send('START');
+                    smService.stateSvc.send('START');
                 }
                 const prevState = smService.stateSvc.state.value;
 
@@ -405,7 +405,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
                     ) {
-                        webhookOut.sendServiceMonitorWebhook({
+                        sendServiceMonitorWebhook({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -424,7 +424,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.slackNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
-                        slack.sendServiceMonitorNotificationSlack({
+                        sendServiceMonitorNotificationSlack({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -443,7 +443,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.teamsNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
-                        teams.sendServiceMonitorNotificationTeams({
+                        sendServiceMonitorNotificationTeams({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -462,7 +462,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         globals.config.get('Butler.emailNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
-                        smtp.sendServiceMonitorNotificationEmail({
+                        sendServiceMonitorNotificationEmail({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
                             serviceStatus,
@@ -504,7 +504,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                     ? globals.config.get('Butler.influxDb.instanceTag')
                     : '';
 
-                influxDb.postWindowsServiceStatusToInfluxDB({
+                postWindowsServiceStatusToInfluxDB({
                     instanceTag,
                     serviceName: service.name,
                     serviceFriendlyName: service.friendlyName,
@@ -582,7 +582,7 @@ async function setupServiceMonitorTimer(config, logger) {
                                 });
                             }
                         }
-                        
+
                         const sched = later.parse.text(config.get('Butler.serviceMonitor.frequency'));
                         later.setInterval(() => {
                             checkServiceStatus(config, logger, false);
@@ -611,6 +611,4 @@ async function setupServiceMonitorTimer(config, logger) {
     }
 }
 
-module.exports = {
-    setupServiceMonitorTimer,
-};
+export default setupServiceMonitorTimer;

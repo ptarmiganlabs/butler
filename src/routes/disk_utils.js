@@ -1,14 +1,15 @@
-const httpErrors = require('http-errors');
-const fs = require('fs-extra');
-const upath = require('upath');
-const { mkdirp } = require('mkdirp');
-const isUncPath = require('is-unc-path');
+import httpErrors from 'http-errors';
+import fs from 'fs-extra';
+import upath from 'upath';
+import { mkdirp } from 'mkdirp';
+import isUncPath from 'is-unc-path';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { isDirectoryChildOf } = require('../lib/disk_utils');
-const { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } = require('../api/disk_utils');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import isDirectoryChildOf from '../lib/disk_utils.js';
+import { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } from '../api/disk_utils.js';
 
 async function handlerFileCopy(request, reply) {
     try {
@@ -341,7 +342,7 @@ async function handlerCreateDir(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.fileCopy') &&
         globals.config.get('Butler.restServerEndpointsEnable.fileCopy')

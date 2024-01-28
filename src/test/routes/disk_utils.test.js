@@ -1,14 +1,10 @@
 /* eslint-disable no-console */
 /* eslint-disable camelcase */
-const fs = require('fs/promises');
-const upath = require('upath');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = upath.resolve('./src/config/');
-process.env.NODE_ENV = 'production';
-const config = require('config');
-
-const { isDirectoryChildOf } = require('../../lib/disk_utils');
+import config from 'config';
+import fs from 'fs/promises';
+import upath from 'upath';
+import axios from 'axios';
+import isDirectoryChildOf from '../../lib/disk_utils.js';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,

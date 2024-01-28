@@ -1,9 +1,10 @@
-const httpErrors = require('http-errors');
+import httpErrors from 'http-errors';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiPutMqttMessage } = require('../api/mqtt_publish_message');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import apiPutMqttMessage from '../api/mqtt_publish_message.js';
 
 // eslint-disable-next-line consistent-return
 function handlerPutMqttMessage(request, reply) {
@@ -46,7 +47,7 @@ function handlerPutMqttMessage(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.mqttPublishMessage') &&
         globals.config.get('Butler.restServerEndpointsEnable.mqttPublishMessage')

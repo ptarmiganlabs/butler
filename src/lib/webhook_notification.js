@@ -1,8 +1,7 @@
-const { RateLimiterMemory } = require('rate-limiter-flexible');
-const axios = require('axios');
-
-const globals = require('../globals');
-const { getAppOwner } = require('../qrs_util/get_app_owner');
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import axios from 'axios';
+import globals from '../globals.js';
+import getAppOwner from '../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -151,115 +150,120 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
         // Get app owner
         const appOwner = await getAppOwner(reloadParams.appId);
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const webhook of webhookConfig.webhooks) {
-            globals.logger.debug(`WEBHOOKOUT: Processing webhook ${JSON.stringify(webhook)}`);
+        // Is webhookConfig.webhooks non-null, i.e. are there any webhooiks to process?
+        if (webhookConfig.webhooks) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const webhook of webhookConfig.webhooks) {
+                globals.logger.debug(`WEBHOOKOUT: Processing webhook ${JSON.stringify(webhook)}`);
 
-            // Only process the webhook if all required info is available
-            let lowercaseMethod = null;
-            let url = null;
-            let axiosRequest = null;
+                // Only process the webhook if all required info is available
+                let lowercaseMethod = null;
+                let url = null;
+                let axiosRequest = null;
 
-            try {
-                // 1. Make sure the webhook URL is a valid URL.
-                // If the URL is not valid an error will be thrown
-                url = new URL(webhook.webhookURL);
+                try {
+                    // 1. Make sure the webhook URL is a valid URL.
+                    // If the URL is not valid an error will be thrown
+                    url = new URL(webhook.webhookURL);
 
-                // 2. Make sure the HTTP method is one of the supported ones
-                lowercaseMethod = webhook.httpMethod.toLowerCase();
-                if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
-                    throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
+                    // 2. Make sure the HTTP method is one of the supported ones
+                    lowercaseMethod = webhook.httpMethod.toLowerCase();
+                    if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
+                        throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
+                    }
+                } catch (err) {
+                    globals.logger.error(`WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`);
+                    throw err;
                 }
-            } catch (err) {
-                globals.logger.error(`WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`);
-                throw err;
+
+                globals.logger.silly(`WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+                if (lowercaseMethod === 'get') {
+                    // Build parameter string for GET call
+                    const params = new URLSearchParams();
+                    params.append('event', webhookConfig.event);
+                    params.append('hostName', reloadParams.hostName);
+                    params.append('user', reloadParams.user);
+                    params.append('taskName', reloadParams.taskName);
+                    params.append('taskId', reloadParams.taskId);
+                    params.append('appName', reloadParams.appName);
+                    params.append('appId', reloadParams.appId);
+                    params.append('appOwnerName', appOwner.userName);
+                    params.append('appOwnerUserDirectory', appOwner.directory);
+                    params.append('appOwnerUserId', appOwner.userId);
+                    params.append('appOwnerEmail', appOwner.emails?.length > 0 ? appOwner.emails[0] : '');
+                    params.append('logTimeStamp', reloadParams.logTimeStamp);
+                    params.append('logLevel', reloadParams.logLevel);
+                    params.append('executionId', reloadParams.executionId);
+                    params.append('logMessage', reloadParams.logMessage);
+
+                    url.search = params.toString();
+
+                    globals.logger.silly(`WEBHOOKOUT: Final GET webhook URL: ${url.toString()}`);
+
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'get',
+                        timeout: 10000,
+                    };
+                } else if (lowercaseMethod === 'put') {
+                    // Build body for PUT call
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'put',
+                        timeout: 10000,
+                        data: {
+                            event: webhookConfig.event,
+                            hostName: reloadParams.hostName,
+                            user: reloadParams.user,
+                            taskName: reloadParams.taskName,
+                            taskId: reloadParams.taskId,
+                            appName: reloadParams.appName,
+                            appId: reloadParams.appId,
+                            appOwnerName: appOwner.userName,
+                            appOwnerUserDirectory: appOwner.directory,
+                            appOwnerUserId: appOwner.userId,
+                            appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
+                            logTimeStamp: reloadParams.logTimeStamp,
+                            logLevel: reloadParams.logLevel,
+                            executionId: reloadParams.executionId,
+                            logMessage: reloadParams.logMessage,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+                } else if (lowercaseMethod === 'post') {
+                    // Build body for POST call
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'post',
+                        timeout: 10000,
+                        data: {
+                            event: webhookConfig.event,
+                            hostName: reloadParams.hostName,
+                            user: reloadParams.user,
+                            taskName: reloadParams.taskName,
+                            taskId: reloadParams.taskId,
+                            appName: reloadParams.appName,
+                            appId: reloadParams.appId,
+                            appOwnerName: appOwner.userName,
+                            appOwnerUserDirectory: appOwner.directory,
+                            appOwnerUserId: appOwner.userId,
+                            appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
+                            logTimeStamp: reloadParams.logTimeStamp,
+                            logLevel: reloadParams.logLevel,
+                            executionId: reloadParams.executionId,
+                            logMessage: reloadParams.logMessage,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+                }
+
+                // eslint-disable-next-line no-await-in-loop
+                const response = await axios.request(axiosRequest);
+                globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
             }
-
-            globals.logger.silly(`WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
-
-            if (lowercaseMethod === 'get') {
-                // Build parameter string for GET call
-                const params = new URLSearchParams();
-                params.append('event', webhookConfig.event);
-                params.append('hostName', reloadParams.hostName);
-                params.append('user', reloadParams.user);
-                params.append('taskName', reloadParams.taskName);
-                params.append('taskId', reloadParams.taskId);
-                params.append('appName', reloadParams.appName);
-                params.append('appId', reloadParams.appId);
-                params.append('appOwnerName', appOwner.userName);
-                params.append('appOwnerUserDirectory', appOwner.directory);
-                params.append('appOwnerUserId', appOwner.userId);
-                params.append('appOwnerEmail', appOwner.emails?.length > 0 ? appOwner.emails[0] : '');
-                params.append('logTimeStamp', reloadParams.logTimeStamp);
-                params.append('logLevel', reloadParams.logLevel);
-                params.append('executionId', reloadParams.executionId);
-                params.append('logMessage', reloadParams.logMessage);
-
-                url.search = params.toString();
-
-                globals.logger.silly(`WEBHOOKOUT: Final GET webhook URL: ${url.toString()}`);
-
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'get',
-                    timeout: 10000,
-                };
-            } else if (lowercaseMethod === 'put') {
-                // Build body for PUT call
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'put',
-                    timeout: 10000,
-                    data: {
-                        event: webhookConfig.event,
-                        hostName: reloadParams.hostName,
-                        user: reloadParams.user,
-                        taskName: reloadParams.taskName,
-                        taskId: reloadParams.taskId,
-                        appName: reloadParams.appName,
-                        appId: reloadParams.appId,
-                        appOwnerName: appOwner.userName,
-                        appOwnerUserDirectory: appOwner.directory,
-                        appOwnerUserId: appOwner.userId,
-                        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
-                        logTimeStamp: reloadParams.logTimeStamp,
-                        logLevel: reloadParams.logLevel,
-                        executionId: reloadParams.executionId,
-                        logMessage: reloadParams.logMessage,
-                    },
-                    headers: { 'Content-Type': 'application/json' },
-                };
-            } else if (lowercaseMethod === 'post') {
-                // Build body for POST call
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'post',
-                    timeout: 10000,
-                    data: {
-                        event: webhookConfig.event,
-                        hostName: reloadParams.hostName,
-                        user: reloadParams.user,
-                        taskName: reloadParams.taskName,
-                        taskId: reloadParams.taskId,
-                        appName: reloadParams.appName,
-                        appId: reloadParams.appId,
-                        appOwnerName: appOwner.userName,
-                        appOwnerUserDirectory: appOwner.directory,
-                        appOwnerUserId: appOwner.userId,
-                        appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
-                        logTimeStamp: reloadParams.logTimeStamp,
-                        logLevel: reloadParams.logLevel,
-                        executionId: reloadParams.executionId,
-                        logMessage: reloadParams.logMessage,
-                    },
-                    headers: { 'Content-Type': 'application/json' },
-                };
-            }
-
-            // eslint-disable-next-line no-await-in-loop
-            const response = await axios.request(axiosRequest);
-            globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
+        } else {
+            globals.logger.info('WEBHOOKOUT: No outgoing webhooks to process');
         }
     } catch (err) {
         if (err.message) {
@@ -281,99 +285,104 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
 
-        // eslint-disable-next-line no-restricted-syntax
-        for (const webhook of webhookConfig.webhooks) {
-            globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Processing webhook ${JSON.stringify(webhook)}`);
+        // Is webhookConfig.webhooks non-null, i.e. are there any webhooiks to process?
+        if (webhookConfig.webhooks) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const webhook of webhookConfig.webhooks) {
+                globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Processing webhook ${JSON.stringify(webhook)}`);
 
-            // Only process the webhook if all required info is available
-            let lowercaseMethod = null;
-            let url = null;
-            let axiosRequest = null;
+                // Only process the webhook if all required info is available
+                let lowercaseMethod = null;
+                let url = null;
+                let axiosRequest = null;
 
-            try {
-                // 1. Make sure the webhook URL is a valid URL.
-                // If the URL is not valid an error will be thrown
-                url = new URL(webhook.webhookURL);
+                try {
+                    // 1. Make sure the webhook URL is a valid URL.
+                    // If the URL is not valid an error will be thrown
+                    url = new URL(webhook.webhookURL);
 
-                // 2. Make sure the HTTP method is one of the supported ones
-                lowercaseMethod = webhook.httpMethod.toLowerCase();
-                if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
-                    throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
+                    // 2. Make sure the HTTP method is one of the supported ones
+                    lowercaseMethod = webhook.httpMethod.toLowerCase();
+                    if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
+                        throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
+                    }
+                } catch (err) {
+                    globals.logger.error(
+                        `SERVICE MONITOR SEND WEBHOOK: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
+                    );
+                    throw err;
                 }
-            } catch (err) {
-                globals.logger.error(
-                    `SERVICE MONITOR SEND WEBHOOK: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
-                );
-                throw err;
+
+                globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+                if (lowercaseMethod === 'get') {
+                    // Build parameter string for GET call
+                    const params = new URLSearchParams();
+                    params.append('event', webhookConfig.event);
+                    params.append('host', serviceParams.host);
+                    params.append('servicestatus', serviceParams.serviceStatus);
+                    params.append('servicename', serviceParams.serviceName);
+                    params.append('servicedisplayname', serviceParams.serviceDetails.displayName);
+                    params.append('servicestarttype', serviceParams.serviceDetails.startType);
+                    params.append('prevstate', serviceParams.prevState);
+                    params.append('currstate', serviceParams.currState);
+                    params.append('statechanged', serviceParams.stateChanged);
+
+                    url.search = params.toString();
+
+                    globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Final GET webhook URL: ${url.toString()}`);
+
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'get',
+                        timeout: 10000,
+                    };
+                } else if (lowercaseMethod === 'put') {
+                    // Build body for PUT call
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'put',
+                        timeout: 10000,
+                        data: {
+                            event: webhookConfig.event,
+                            host: serviceParams.host,
+                            serviceStatus: serviceParams.serviceStatus,
+                            serviceName: serviceParams.serviceName,
+                            serviceDisplayName: serviceParams.serviceDetails.displayName,
+                            serviceStartType: serviceParams.serviceDetails.startType,
+                            prevState: serviceParams.prevState,
+                            currState: serviceParams.currState,
+                            stateChanged: serviceParams.stateChanged,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+                } else if (lowercaseMethod === 'post') {
+                    // Build body for POST call
+                    axiosRequest = {
+                        url: url.toString(),
+                        method: 'post',
+                        timeout: 10000,
+                        data: {
+                            event: webhookConfig.event,
+                            host: serviceParams.host,
+                            serviceStatus: serviceParams.serviceStatus,
+                            serviceName: serviceParams.serviceName,
+                            serviceDisplayName: serviceParams.serviceDetails.displayName,
+                            serviceStartType: serviceParams.serviceDetails.startType,
+                            prevState: serviceParams.prevState,
+                            currState: serviceParams.currState,
+                            stateChanged: serviceParams.stateChanged,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+                }
+
+                // eslint-disable-next-line no-await-in-loop
+                const response = await axios.request(axiosRequest);
+                globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Webhook response: ${response}`);
             }
-
-            globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Webhook config is valid: ${JSON.stringify(webhook)}`);
-
-            if (lowercaseMethod === 'get') {
-                // Build parameter string for GET call
-                const params = new URLSearchParams();
-                params.append('event', webhookConfig.event);
-                params.append('host', serviceParams.host);
-                params.append('servicestatus', serviceParams.serviceStatus);
-                params.append('servicename', serviceParams.serviceName);
-                params.append('servicedisplayname', serviceParams.serviceDetails.displayName);
-                params.append('servicestarttype', serviceParams.serviceDetails.startType);
-                params.append('prevstate', serviceParams.prevState);
-                params.append('currstate', serviceParams.currState);
-                params.append('statechanged', serviceParams.stateChanged);
-
-                url.search = params.toString();
-
-                globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Final GET webhook URL: ${url.toString()}`);
-
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'get',
-                    timeout: 10000,
-                };
-            } else if (lowercaseMethod === 'put') {
-                // Build body for PUT call
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'put',
-                    timeout: 10000,
-                    data: {
-                        event: webhookConfig.event,
-                        host: serviceParams.host,
-                        serviceStatus: serviceParams.serviceStatus,
-                        serviceName: serviceParams.serviceName,
-                        serviceDisplayName: serviceParams.serviceDetails.displayName,
-                        serviceStartType: serviceParams.serviceDetails.startType,
-                        prevState: serviceParams.prevState,
-                        currState: serviceParams.currState,
-                        stateChanged: serviceParams.stateChanged,
-                    },
-                    headers: { 'Content-Type': 'application/json' },
-                };
-            } else if (lowercaseMethod === 'post') {
-                // Build body for POST call
-                axiosRequest = {
-                    url: url.toString(),
-                    method: 'post',
-                    timeout: 10000,
-                    data: {
-                        event: webhookConfig.event,
-                        host: serviceParams.host,
-                        serviceStatus: serviceParams.serviceStatus,
-                        serviceName: serviceParams.serviceName,
-                        serviceDisplayName: serviceParams.serviceDetails.displayName,
-                        serviceStartType: serviceParams.serviceDetails.startType,
-                        prevState: serviceParams.prevState,
-                        currState: serviceParams.currState,
-                        stateChanged: serviceParams.stateChanged,
-                    },
-                    headers: { 'Content-Type': 'application/json' },
-                };
-            }
-
-            // eslint-disable-next-line no-await-in-loop
-            const response = await axios.request(axiosRequest);
-            globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Webhook response: ${response}`);
+        } else {
+            globals.logger.info('SERVICE MONITOR SEND WEBHOOK: No outgoing webhooks to process');
         }
     } catch (err) {
         if (err.message) {
@@ -391,7 +400,7 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
     }
 }
 
-function sendReloadTaskFailureNotificationWebhook(reloadParams) {
+export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -423,7 +432,7 @@ function sendReloadTaskFailureNotificationWebhook(reloadParams) {
         });
 }
 
-function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
+export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -455,7 +464,7 @@ function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         });
 }
 
-function sendServiceMonitorWebhook(svc) {
+export function sendServiceMonitorWebhook(svc) {
     rateLimiterMemoryServiceMonitor
         .consume(`${svc.host}|${svc.serviceName}`, 1)
         .then(async (rateLimiterRes) => {
@@ -494,9 +503,3 @@ function sendServiceMonitorWebhook(svc) {
             globals.logger.verbose(`WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
-
-module.exports = {
-    sendReloadTaskFailureNotificationWebhook,
-    sendReloadTaskAbortedNotificationWebhook,
-    sendServiceMonitorWebhook,
-};

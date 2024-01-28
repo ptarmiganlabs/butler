@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-const { PostHog } = require('posthog-node');
+import { PostHog } from 'posthog-node';
 
-const globals = require('../globals');
+import globals from '../globals.js';
 
 // Define variable to hold the PostHog client
 let posthogClient;
@@ -462,7 +462,7 @@ const callRemoteURL = async () => {
     }
 };
 
-function setupAnonUsageReportTimer(logger, hostInfo) {
+export default function setupAnonUsageReportTimer(logger, hostInfo) {
     try {
         // Setup PostHog client
         posthogClient = new PostHog('phc_5cmKiX9OubQjsSfOZuaolWaxo2z7WXqd295eB0uOtTb', {
@@ -486,7 +486,3 @@ function setupAnonUsageReportTimer(logger, hostInfo) {
         logger.error(`TELEMETRY: ${err}`);
     }
 }
-
-module.exports = {
-    setupAnonUsageReportTimer,
-};

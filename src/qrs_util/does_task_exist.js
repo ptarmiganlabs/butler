@@ -1,8 +1,8 @@
-const QrsInteract = require('qrs-interact');
-const globals = require('../globals');
+import QrsInteract from 'qrs-interact';
+import globals from '../globals.js';
 
 // Function for getting info about owner of Qlik Sense apps
-module.exports.doesTaskExist = async (taskId) => {
+const doesTaskExist = async (taskId) => {
     // eslint-disable-next-line no-unused-vars
     try {
         const qrsInstance = new QrsInteract({
@@ -48,3 +48,5 @@ module.exports.doesTaskExist = async (taskId) => {
         return false;
     }
 };
+
+export default doesTaskExist;

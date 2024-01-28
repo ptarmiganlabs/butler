@@ -1,9 +1,8 @@
-const path = require('path');
-const axios = require('axios');
+import axios from 'axios';
+import config from 'config';
 
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-process.env.NODE_ENV = 'production';
-const config = require('config');
+// Load global variables and functions
+import globals from '../../globals.js';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
@@ -13,7 +12,7 @@ const instance = axios.create({
 let result;
 
 // Get app version from package.json
-const appVersion = require('../../../package.json').version;
+const { appVersion } = globals;
 
 /**
  * D1

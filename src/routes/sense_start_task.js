@@ -1,12 +1,15 @@
-const httpErrors = require('http-errors');
+import httpErrors from 'http-errors';
 
 // Load global variables and functions
-const globals = require('../globals');
-const qrsUtil = require('../qrs_util');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { addKeyValuePair } = require('../lib/key_value_store');
-const { apiPutStartTask } = require('../api/sense_start_task');
-const { verifyTaskId } = require('../lib/config_util');
+import globals from '../globals.js';
+
+import doesTaskExist from '../qrs_util/does_task_exist.js';
+import senseStartTask from '../qrs_util/sense_start_task.js';
+import getTasks from '../qrs_util/get_tasks.js';
+import { logRESTCall } from '../lib/log_rest_call.js';
+import { addKeyValuePair } from '../lib/key_value_store.js';
+import apiPutStartTask from '../api/sense_start_task.js';
+import { verifyTaskId } from '../lib/config_util.js';
 
 // Get array of allowed task IDs
 function getTaskIdAllowed() {
@@ -119,7 +122,7 @@ async function handlerPutStartTask(request, reply) {
                 ) {
                     // Task ID is allowed
                     // Verify task exists
-                    taskExists = await qrsUtil.doesTaskExist.doesTaskExist(request.params.taskId);
+                    taskExists = await doesTaskExist(request.params.taskId);
                     if (taskExists.exists) {
                         tasksToStartTaskId.push(taskExists.task);
                         globals.logger.silly(
@@ -175,7 +178,7 @@ async function handlerPutStartTask(request, reply) {
                                 // Verify task exists
                                 // payload: { taskId: 'abc' }
                                 // eslint-disable-next-line no-await-in-loop
-                                taskExists = await qrsUtil.doesTaskExist.doesTaskExist(item.payload.taskId);
+                                taskExists = await doesTaskExist(item.payload.taskId);
                                 if (taskExists.exists) {
                                     tasksToStartTaskId.push(taskExists.task);
                                     globals.logger.silly(
@@ -205,7 +208,7 @@ async function handlerPutStartTask(request, reply) {
                             // payload: { tag: 'abc' }
 
                             // eslint-disable-next-line no-await-in-loop
-                            const tagTasks = await qrsUtil.getTasks.getTasks({ tag: item.payload.tag });
+                            const tagTasks = await getTasks({ tag: item.payload.tag });
                             // eslint-disable-next-line no-restricted-syntax
                             for (const task of tagTasks) {
                                 tasksToStartTags.push(task);
@@ -229,7 +232,7 @@ async function handlerPutStartTask(request, reply) {
                             // payload: { customPropertyName: 'abc', customPropertyValue: 'def }
 
                             // eslint-disable-next-line no-await-in-loop
-                            const cpTasks = await qrsUtil.getTasks.getTasks({
+                            const cpTasks = await getTasks({
                                 customProperty: {
                                     name: item.payload.customPropertyName,
                                     value: item.payload.customPropertyValue,
@@ -271,7 +274,7 @@ async function handlerPutStartTask(request, reply) {
                 // eslint-disable-next-line no-restricted-syntax
                 for (const item of tasksToStartTaskId) {
                     globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
-                    qrsUtil.senseStartTask.senseStartTask(item.taskId);
+                    senseStartTask(item.taskId);
                     res.tasksId.started.push({ taskId: item.taskId, taskName: item.taskName });
                 }
             } else {
@@ -287,7 +290,7 @@ async function handlerPutStartTask(request, reply) {
             // eslint-disable-next-line no-restricted-syntax
             for (const item of tasksToStartTaskId) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
-                qrsUtil.senseStartTask.senseStartTask(item.taskId);
+                senseStartTask(item.taskId);
                 res.tasksId.started.push({ taskId: item.taskId, taskName: item.taskName });
             }
             res.tasksId.invalid = tasksInvalid;
@@ -298,7 +301,7 @@ async function handlerPutStartTask(request, reply) {
             // eslint-disable-next-line no-restricted-syntax
             for (const item of tasksToStartTags) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
-                qrsUtil.senseStartTask.senseStartTask(item.taskId);
+                senseStartTask(item.taskId);
             }
             res.tasksTag = tasksToStartTags;
         }
@@ -308,7 +311,7 @@ async function handlerPutStartTask(request, reply) {
             // eslint-disable-next-line no-restricted-syntax
             for (const item of tasksToStartCPs) {
                 globals.logger.verbose(`STARTTASK: Starting task: ${item.taskId}`);
-                qrsUtil.senseStartTask.senseStartTask(item.taskId);
+                senseStartTask(item.taskId);
             }
             res.tasksCP = tasksToStartCPs;
         }
@@ -321,7 +324,7 @@ async function handlerPutStartTask(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') &&
         globals.config.get('Butler.restServerEndpointsEnable.senseStartTask')

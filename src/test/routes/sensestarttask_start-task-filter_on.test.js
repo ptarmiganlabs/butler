@@ -1,11 +1,6 @@
 /* eslint-disable camelcase */
-const path = require('path');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-// Use config file where start task filtering is turned ON
-process.env.NODE_ENV = 'production';
-const config = require('config');
+import config from 'config';
+import axios from 'axios';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
@@ -447,7 +442,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             expect(result.data.tasksId.started.length).toBe(0);
             expect(result.data.tasksId.invalid.length).toBe(1);
             expect(result.data.tasksId.denied.length).toBe(0);
-            expect(result.data.tasksTag.length).toBe(4);
+            expect(result.data.tasksTag.length).toBe(5);
             expect(result.data.tasksTagDenied.length).toBe(0);
             expect(result.data.tasksCP.length).toBe(0);
             expect(result.data.tasksCPDenied.length).toBe(0);
@@ -495,7 +490,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             expect(result.data.tasksId.started.length).toBe(0);
             expect(result.data.tasksId.invalid.length).toBe(1);
             expect(result.data.tasksId.denied.length).toBe(0);
-            expect(result.data.tasksTag.length).toBe(4);
+            expect(result.data.tasksTag.length).toBe(5);
             expect(result.data.tasksTagDenied.length).toBe(1);
             expect(result.data.tasksCP.length).toBe(0);
             expect(result.data.tasksCPDenied.length).toBe(0);
@@ -682,7 +677,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             expect(result.data.tasksId.started.length).toBe(3);
             expect(result.data.tasksId.invalid.length).toBe(1);
             expect(result.data.tasksId.denied.length).toBe(1);
-            expect(result.data.tasksTag.length).toBe(4);
+            expect(result.data.tasksTag.length).toBe(5);
             expect(result.data.tasksTagDenied.length).toBe(1);
             expect(result.data.tasksCP.length).toBe(4);
             expect(result.data.tasksCPDenied.length).toBe(2);
@@ -1101,7 +1096,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
             expect(result.data.tasksId.started.length).toBe(3);
             expect(result.data.tasksId.invalid.length).toBe(1);
             expect(result.data.tasksId.denied.length).toBe(1);
-            expect(result.data.tasksTag.length).toBe(4);
+            expect(result.data.tasksTag.length).toBe(5);
             expect(result.data.tasksTagDenied.length).toBe(1);
             expect(result.data.tasksCP.length).toBe(4);
             expect(result.data.tasksCPDenied.length).toBe(2);

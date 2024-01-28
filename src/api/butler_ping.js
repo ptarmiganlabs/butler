@@ -26,6 +26,4 @@ const apiGetButlerPing = {
     },
 };
 
-module.exports = {
-    apiGetButlerPing,
-};
+export default apiGetButlerPing;

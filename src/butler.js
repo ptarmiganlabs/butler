@@ -1,22 +1,29 @@
 // Add dependencies
-const mqtt = require('mqtt');
-const dgram = require('dgram');
+import mqtt from 'mqtt';
+
+import dgram from 'dgram';
 
 // Load code from sub modules
-const globals = require('./globals');
-const serviceMonitor = require('./lib/service_monitor');
+import globals from './globals.js';
+import setupServiceMonitorTimer from './lib/service_monitor.js';
 
 // The build function creates a new instance of the App class and returns it.
-const build = require('./app');
-const udp = require('./udp');
-const { mqttInitHandlers } = require('./lib/mqtt_handlers');
+import build from './app.js';
 
-const {
+import udpInitTaskErrorServer from './udp/udp_handlers.js';
+import mqttInitHandlers from './lib/mqtt_handlers.js';
+
+// import configFileStructureAssert from './lib/assert/assert_config_file.js';
+// import configFileYamlAssert from './lib/assert/assert_config_file.js';
+// import configFileNewRelicAssert from './lib/assert/assert_config_file.js';
+// import configFileInfluxDbAssert from './lib/assert/assert_config_file.js';
+
+import {
     configFileStructureAssert,
     configFileYamlAssert,
     configFileNewRelicAssert,
     configFileInfluxDbAssert,
-} = require('./lib/assert/assert_config_file');
+} from './lib/assert/assert_config_file.js';
 
 const start = async () => {
     // Verify correct structure of config file
@@ -136,7 +143,7 @@ const start = async () => {
 
     // Set up service monitoring, if enabled in the config file
     if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
-        serviceMonitor.setupServiceMonitorTimer(globals.config, globals.logger);
+        setupServiceMonitorTimer(globals.config, globals.logger);
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
@@ -148,7 +155,7 @@ const start = async () => {
     // ---------------------------------------------------
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {
-        udp.udp.udpInitTaskErrorServer();
+        udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
         globals.udpServerReloadTaskSocket.bind(globals.udpPortTaskFailure, globals.udpHost);

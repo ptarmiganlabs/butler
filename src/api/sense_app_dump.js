@@ -1,4 +1,4 @@
-const apiGetSenseAppDump = {
+export const apiGetSenseAppDump = {
     schema: {
         summary: 'Dump a Sense app to JSON.',
         description: 'Does the same thing as `/v4/app/:appId/dump`',
@@ -72,7 +72,7 @@ const apiGetSenseAppDump = {
     },
 };
 
-const apiGetAppDump = {
+export const apiGetAppDump = {
     schema: {
         summary: 'Dump a Sense app to JSON.',
         description: 'Does the same thing as `/v4/senseappdump/:appId`',
@@ -144,9 +144,4 @@ const apiGetAppDump = {
             },
         },
     },
-};
-
-module.exports = {
-    apiGetSenseAppDump,
-    apiGetAppDump,
 };

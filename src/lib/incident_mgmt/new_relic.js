@@ -1,8 +1,7 @@
-const axios = require('axios');
-const QrsInteract = require('qrs-interact');
-const { RateLimiterMemory } = require('rate-limiter-flexible');
-
-const globals = require('../../globals');
+import axios from 'axios';
+import QrsInteract from 'qrs-interact';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import globals from '../../globals.js';
 
 function getQRSConfig() {
     const cfg = {
@@ -380,7 +379,7 @@ function getReloadAbortedLogConfig() {
     }
 }
 
-async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccounts) {
+export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final payload
         const payload = [];
@@ -463,7 +462,7 @@ async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccou
     }
 }
 
-async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccounts) {
+export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final URL
         const logApiUrl = incidentConfig.url;
@@ -598,7 +597,7 @@ async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccount
     }
 }
 
-async function sendReloadTaskFailureEvent(reloadParams) {
+export async function sendReloadTaskFailureEvent(reloadParams) {
     const params = reloadParams;
 
     rateLimiterFailedReloadsEvent
@@ -740,7 +739,7 @@ async function sendReloadTaskFailureEvent(reloadParams) {
         });
 }
 
-async function sendReloadTaskFailureLog(reloadParams) {
+export async function sendReloadTaskFailureLog(reloadParams) {
     const params = reloadParams;
 
     rateLimiterFailedReloadsLog
@@ -880,7 +879,7 @@ async function sendReloadTaskFailureLog(reloadParams) {
         });
 }
 
-function sendReloadTaskAbortedEvent(reloadParams) {
+export function sendReloadTaskAbortedEvent(reloadParams) {
     const params = reloadParams;
 
     rateLimiterAbortedReloadsEvent
@@ -1022,7 +1021,7 @@ function sendReloadTaskAbortedEvent(reloadParams) {
         });
 }
 
-function sendReloadTaskAbortedLog(reloadParams) {
+export function sendReloadTaskAbortedLog(reloadParams) {
     const params = reloadParams;
 
     rateLimiterAbortedReloadsLog
@@ -1163,12 +1162,3 @@ function sendReloadTaskAbortedLog(reloadParams) {
             globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
-
-module.exports = {
-    sendReloadTaskFailureEvent,
-    sendReloadTaskFailureLog,
-    sendReloadTaskAbortedEvent,
-    sendReloadTaskAbortedLog,
-    sendNewRelicEvent,
-    sendNewRelicLog,
-};

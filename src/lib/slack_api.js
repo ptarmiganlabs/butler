@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 async function slackSend(slackConfig, logger) {
     // TODO Sanity check Slack config
@@ -31,6 +31,4 @@ async function slackSend(slackConfig, logger) {
     }
 }
 
-module.exports = {
-    slackSend,
-};
+export default slackSend;

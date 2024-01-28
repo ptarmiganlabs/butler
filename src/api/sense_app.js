@@ -80,6 +80,4 @@ const apiPutAppReload = {
     },
 };
 
-module.exports = {
-    apiPutAppReload,
-};
+export default apiPutAppReload;

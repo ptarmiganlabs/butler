@@ -1,9 +1,8 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
-const CronJobManager = require('cron-job-manager');
-
-const globals = require('../globals');
-const qrsUtil = require('../qrs_util');
+import fs from 'fs';
+import yaml from 'js-yaml';
+import CronJobManager from 'cron-job-manager';
+import globals from '../globals.js';
+import senseStartTask from '../qrs_util/sense_start_task.js';
 
 const cronManager = new CronJobManager();
 
@@ -20,7 +19,7 @@ function addCronEntry(newSchedule) {
         newSchedule.cronSchedule,
         () => {
             globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
-            qrsUtil.senseStartTask.senseStartTask(newSchedule.qlikSenseTaskId);
+            senseStartTask(newSchedule.qlikSenseTaskId);
         },
         {
             start:
@@ -32,7 +31,7 @@ function addCronEntry(newSchedule) {
 }
 
 // Add new schedule
-function addSchedule(newSchedule) {
+export function addSchedule(newSchedule) {
     try {
         globals.logger.debug(`SCHEDULER: Adding new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
 
@@ -56,7 +55,7 @@ function addSchedule(newSchedule) {
     }
 }
 
-function loadSchedulesFromDisk() {
+export function loadSchedulesFromDisk() {
     // Load scheduler config, if available
     try {
         if (globals.config.has('Butler.scheduler')) {
@@ -79,7 +78,7 @@ function loadSchedulesFromDisk() {
 }
 
 // Start all currently defined schedules
-function startAllSchedules() {
+export function startAllSchedules() {
     return new Promise((resolve, reject) => {
         globals.logger.debug('SCHEDULER: Starting all schedules');
 
@@ -101,7 +100,7 @@ function startAllSchedules() {
 }
 
 // Stop all currently defined schedules
-function stopAllSchedules() {
+export function stopAllSchedules() {
     return new Promise((resolve, reject) => {
         globals.logger.debug('SCHEDULER: Stopping all schedules');
 
@@ -122,22 +121,32 @@ function stopAllSchedules() {
     });
 }
 
+// Get schedule statuses
+export function getSchedulesStatus() {
+    globals.logger.debug('SCHEDULER: Getting all crons');
+
+    const cronList = cronManager.listCrons();
+    globals.logger.debug(`SCHEDULER: Cron list: ${JSON.stringify(cronList, null, 2)}`);
+
+    return cronList;
+}
+
 // Get array with all schedules
-function getAllSchedules() {
+export function getAllSchedules() {
     globals.logger.debug('SCHEDULER: Getting all schedules');
 
     return globals.configSchedule;
 }
 
 // Get object with a single schedule
-function getSchedule(scheduleId) {
+export function getSchedule(scheduleId) {
     globals.logger.debug('SCHEDULER: Getting schedule');
 
     return globals.configSchedule.find((item) => item.id === scheduleId);
 }
 
 // Does a particular schedule exist?
-function existsSchedule(scheduleId) {
+export function existsSchedule(scheduleId) {
     // Does the schedule ID exist?
     const idExists = globals.configSchedule.find((item) => item.id === scheduleId) !== undefined;
     globals.logger.debug(`SCHEDULER: Does schedule id ${scheduleId} exist: ${JSON.stringify(idExists, null, 2)}`);
@@ -150,7 +159,7 @@ function existsSchedule(scheduleId) {
 }
 
 // Delete a schedule
-function deleteSchedule(deleteScheduleId) {
+export function deleteSchedule(deleteScheduleId) {
     try {
         globals.logger.debug(`SCHEDULER: Deleting schedule with ID: ${deleteScheduleId}`);
 
@@ -178,7 +187,7 @@ function deleteSchedule(deleteScheduleId) {
     }
 }
 
-function startSchedule(scheduleId) {
+export function startSchedule(scheduleId) {
     try {
         cronManager.start(scheduleId.toString());
 
@@ -195,7 +204,7 @@ function startSchedule(scheduleId) {
     }
 }
 
-function stopSchedule(scheduleId) {
+export function stopSchedule(scheduleId) {
     try {
         cronManager.stop(scheduleId.toString());
 
@@ -211,17 +220,3 @@ function stopSchedule(scheduleId) {
         return false;
     }
 }
-
-module.exports = {
-    loadSchedulesFromDisk,
-    startAllSchedules,
-    stopAllSchedules,
-    startSchedule,
-    stopSchedule,
-    getAllSchedules,
-    addSchedule,
-    getSchedule,
-    deleteSchedule,
-    existsSchedule,
-    cronManager,
-};
