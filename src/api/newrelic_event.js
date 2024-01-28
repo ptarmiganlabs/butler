@@ -74,6 +74,4 @@ const apiPostNewRelicEvent = {
     },
 };
 
-module.exports = {
-    apiPostNewRelicEvent,
-};
+export default apiPostNewRelicEvent;

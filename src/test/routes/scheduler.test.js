@@ -1,9 +1,5 @@
-const path = require('path');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-process.env.NODE_ENV = 'production';
-const config = require('config');
+import config from 'config';
+import axios from 'axios';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
@@ -126,15 +122,15 @@ describe('H2: GET /v4/schedules', () => {
     });
 
     test('Response should contain correct fields', () => {
-        expect(result.data.name).toEqual(scheduleName1);
-        expect(result.data.cronSchedule).toEqual(scheduleCron1);
-        expect(result.data.timezone).toEqual(scheduleTimezone1);
-        expect(result.data.qlikSenseTaskId).toEqual(scheduleTaskId1);
-        expect(result.data.startupState).toEqual(scheduleStartupState1);
-        expect(result.data.tags).toEqual([scheduleTag1, scheduleTag2]);
-        expect(result.data.id).toBeTruthy();
-        expect(result.data.created).toBeTruthy();
-        expect(result.data.lastKnownState).toEqual('started');
+        expect(result.data[0].name).toEqual(scheduleName1);
+        expect(result.data[0].cronSchedule).toEqual(scheduleCron1);
+        expect(result.data[0].timezone).toEqual(scheduleTimezone1);
+        expect(result.data[0].qlikSenseTaskId).toEqual(scheduleTaskId1);
+        expect(result.data[0].startupState).toEqual(scheduleStartupState1);
+        expect(result.data[0].tags).toEqual([scheduleTag1, scheduleTag2]);
+        expect(result.data[0].id).toBeTruthy();
+        expect(result.data[0].created).toBeTruthy();
+        expect(result.data[0].lastKnownState).toEqual('started');
     });
 
     test('It should respond with 204 when deleting an existing schedule', async () => {
@@ -196,10 +192,13 @@ describe('H4: PUT /v4/schedules/:scheduleId/start', () => {
         expect(result.status).toBe(200);
     });
 
-    test('Response should be an object and last known state stopped', () => {
+    test('Response data should be an array', () => {
         expect(result.data).toBeTruthy();
-        expect(typeof result.data).toBe('object');
-        expect(result.data.lastKnownState).toBe('stopped');
+        expect(Array.isArray(result.data)).toBe(true);
+    });
+
+    test('Response should have last known state stopped', () => {
+        expect(result.data[0].lastKnownState).toBe('stopped');
     });
 
     test('It should respond with 200 when starting an existing schedule', async () => {
@@ -213,7 +212,7 @@ describe('H4: PUT /v4/schedules/:scheduleId/start', () => {
         expect(typeof result.data).toBe('object');
     });
 
-    test('Response should contain correct fields', () => {
+    test('Response should contain correct fields', () => {       
         expect(result.data[0].name).toEqual(scheduleName1);
         expect(result.data[0].cronSchedule).toEqual(scheduleCron1);
         expect(result.data[0].timezone).toEqual(scheduleTimezone1);
@@ -235,10 +234,10 @@ describe('H4: PUT /v4/schedules/:scheduleId/start', () => {
         expect(result.status).toBe(200);
     });
 
-    test('Response should be an object and last known state started', () => {
+    test('Response should be an array and last known state started', () => {
         expect(result.data).toBeTruthy();
-        expect(typeof result.data).toBe('object');
-        expect(result.data.lastKnownState).toBe('started');
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data[0].lastKnownState).toBe('started');
     });
 
     test('It should respond with 204 when deleting an existing schedule', async () => {
@@ -310,10 +309,10 @@ describe('H6: PUT /v4/schedules/:scheduleId/stop', () => {
         expect(result.status).toBe(200);
     });
 
-    test('Response should be an object and last known state started', () => {
+    test('Response should be an array and last known state started', () => {
         expect(result.data).toBeTruthy();
-        expect(typeof result.data).toBe('object');
-        expect(result.data.lastKnownState).toBe('started');
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data[0].lastKnownState).toBe('started');
     });
 
     test('It should respond with 200 when stopping an existing schedule', async () => {
@@ -349,10 +348,10 @@ describe('H6: PUT /v4/schedules/:scheduleId/stop', () => {
         expect(result.status).toBe(200);
     });
 
-    test('Response should be an object and last known state started', () => {
+    test('Response should be an array and last known state started', () => {
         expect(result.data).toBeTruthy();
-        expect(typeof result.data).toBe('object');
-        expect(result.data.lastKnownState).toBe('stopped');
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data[0].lastKnownState).toBe('stopped');
     });
 
     test('It should respond with 204 when deleting an existing schedule', async () => {

@@ -1,7 +1,6 @@
-const path = require('path');
-const QrsInteract = require('qrs-interact');
-
-const globals = require('../globals');
+import path from 'path';
+import QrsInteract from 'qrs-interact';
+import globals from '../globals.js';
 
 /**
  *
@@ -10,7 +9,7 @@ const globals = require('../globals');
  * @param {*} cpValue
  * @returns
  */
-async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
+export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
     const localLogger = logger !== undefined ? logger : globals.logger;
 
     localLogger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
@@ -62,7 +61,7 @@ async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
  * @param {*} cpName
  * @returns
  */
-async function getTaskCustomPropertyValues(taskId, cpName) {
+export async function getTaskCustomPropertyValues(taskId, cpName) {
     globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
     try {
@@ -110,7 +109,7 @@ async function getTaskCustomPropertyValues(taskId, cpName) {
 }
 
 // Function to get all custom properties that are available for reload tasks
-async function getReloadTasksCustomProperties(config, configQRS, logger) {
+export async function getReloadTasksCustomProperties(config, configQRS, logger) {
     logger.debug('GETRELOADTASKSCP: Retrieving all custom properties that are available for reload tasks');
 
     try {
@@ -152,9 +151,3 @@ async function getReloadTasksCustomProperties(config, configQRS, logger) {
         return false;
     }
 }
-
-module.exports = {
-    isCustomPropertyValueSet,
-    getTaskCustomPropertyValues,
-    getReloadTasksCustomProperties,
-};

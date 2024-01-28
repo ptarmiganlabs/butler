@@ -1,8 +1,7 @@
-const _ = require('lodash');
+import _ from 'lodash';
+import globals from '../globals.js';
 
-const globals = require('../globals');
-
-function postButlerMemoryUsageToInfluxdb(memory) {
+export function postButlerMemoryUsageToInfluxdb(memory) {
     // Get Butler version
     const butlerVersion = globals.appVersion;
 
@@ -40,7 +39,7 @@ function postButlerMemoryUsageToInfluxdb(memory) {
 }
 
 // Add function to store windows service status to InfluxDB
-function postWindowsServiceStatusToInfluxDB(serviceStatus) {
+export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
     globals.logger.verbose(
         `INFLUXDB WINDOWS SERVICE STATUS: Sending service status to InfluxDB: service="${serviceStatus.serviceFriendlyName}", status="${serviceStatus.serviceStatus}"`
     );
@@ -93,7 +92,11 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
 
         .then(() => {
             globals.logger.silly(
-                `INFLUXDB WINDOWS SERVICE STATUS: Influxdb datapoint for INFLUXDB WINDOWS SERVICE STATUS: ${JSON.stringify(datapoint, null, 2)}`
+                `INFLUXDB WINDOWS SERVICE STATUS: Influxdb datapoint for INFLUXDB WINDOWS SERVICE STATUS: ${JSON.stringify(
+                    datapoint,
+                    null,
+                    2
+                )}`
             );
 
             datapoint = null;
@@ -105,7 +108,7 @@ function postWindowsServiceStatusToInfluxDB(serviceStatus) {
 }
 
 // Store information about successful reload tasks to InfluxDB
-function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
+export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
     try {
         globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
 
@@ -207,7 +210,7 @@ function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 }
 
 // Store information about failed reload tasks to InfluxDB
-function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
+export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     try {
         globals.logger.info('INFLUXDB RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
         // Build InfluxDB datapoint
@@ -330,9 +333,3 @@ function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         globals.logger.error(`INFLUXDB RELOAD TASK FAILED: ${err}`);
     }
 }
-module.exports = {
-    postButlerMemoryUsageToInfluxdb,
-    postWindowsServiceStatusToInfluxDB,
-    postReloadTaskFailureNotificationInfluxDb,
-    postReloadTaskSuccessNotificationInfluxDb,
-};

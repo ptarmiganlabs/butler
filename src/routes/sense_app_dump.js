@@ -1,18 +1,21 @@
-const serializeApp = require('serializeapp');
-const httpErrors = require('http-errors');
-const enigma = require('enigma.js');
-const WebSocket = require('ws');
+import serializeApp from 'serializeapp';
+import httpErrors from 'http-errors';
+import enigma from 'enigma.js';
+import WebSocket from 'ws';
+import { createRequire } from "module";
 
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiGetSenseAppDump, apiGetAppDump } = require('../api/sense_app_dump');
+import globals from '../globals.js';
+import { logRESTCall } from '../lib/log_rest_call.js';
+import { apiGetSenseAppDump, apiGetAppDump } from '../api/sense_app_dump.js';
 
 // Set up enigma.js configuration
 
 function handlerGetSenseAppDump(request, reply) {
     try {
-        // eslint-disable-next-line import/no-dynamic-require, global-require
-        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        const require = createRequire(import.meta.url);
+        // eslint-disable-next-line import/no-dynamic-require
+        const qixSchema = require(schemaFile);
 
         logRESTCall(request);
 
@@ -94,7 +97,7 @@ function handlerGetSenseAppDump(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') &&
         globals.config.get('Butler.restServerEndpointsEnable.senseAppDump')

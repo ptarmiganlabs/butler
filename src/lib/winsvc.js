@@ -1,11 +1,11 @@
-const { exec } = require('child_process');
+import { exec } from 'child_process';
 
 /**
  * Get all names of services installed
  * @param {object} logger Logger object
  * @param {string} host Host from which to get services
  */
-function all(logger, host = null) {
+export function all(logger, host = null) {
     // If host is not specified, use services on localhost
 
     // Create promise
@@ -63,7 +63,7 @@ function all(logger, host = null) {
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function exists(logger, serviceName, host = null) {
+export function exists(logger, serviceName, host = null) {
     // If host is not specified, use services on localhost
 
     // Create promise
@@ -122,7 +122,7 @@ function exists(logger, serviceName, host = null) {
  * @param {object} logger Logger object
  * @param {string} host Host on which service is running
  */
-function statusAll(logger, host = null) {
+export function statusAll(logger, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // If host is not specified, get services on localhost
@@ -210,7 +210,7 @@ function statusAll(logger, host = null) {
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function status(logger, serviceName, host = null) {
+export function status(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
@@ -297,7 +297,7 @@ function status(logger, serviceName, host = null) {
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
  */
-function details(logger, serviceName, host = null) {
+export function details(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
@@ -426,12 +426,3 @@ function details(logger, serviceName, host = null) {
         // );
     });
 }
-
-// Module schema
-module.exports = {
-    all,
-    details,
-    exists,
-    status,
-    statusAll,
-};

@@ -1,4 +1,4 @@
-const apiGETSchedules = {
+export const apiGETSchedules = {
     schema: {
         summary: 'Get all information available for existing schedule(s).',
         description:
@@ -101,7 +101,7 @@ const apiGETSchedules = {
     },
 };
 
-const apiPOSTSchedules = {
+export const apiPOSTSchedules = {
     schema: {
         summary: 'Create a new schedule.',
         description: '',
@@ -224,7 +224,7 @@ const apiPOSTSchedules = {
     },
 };
 
-const apiDELETESchedules = {
+export const apiDELETESchedules = {
     schema: {
         summary: 'Delete a schedule.',
         description: '',
@@ -270,7 +270,7 @@ const apiDELETESchedules = {
     },
 };
 
-const apiPUTSchedulesStart = {
+export const apiPUTSchedulesStart = {
     schema: {
         summary: 'Start a schedule.',
         description: "Start a schedule, i.e. have the scheduler run the associated reload task according to the schedule's cron settings.",
@@ -369,7 +369,7 @@ const apiPUTSchedulesStart = {
     },
 };
 
-const apiPUTSchedulesStop = {
+export const apiPUTSchedulesStop = {
     schema: {
         summary: 'Stop a schedule.',
         description: 'Stop a schedule, i.e. tell the scheduler to no longer execute the schedule according to its cron settings.',
@@ -468,7 +468,7 @@ const apiPUTSchedulesStop = {
     },
 };
 
-const apiPUTSchedulesStartAll = {
+export const apiPUTSchedulesStartAll = {
     schema: {
         summary: 'Start all schedules.',
         description:
@@ -544,7 +544,7 @@ const apiPUTSchedulesStartAll = {
     },
 };
 
-const apiPUTSchedulesStopAll = {
+export const apiPUTSchedulesStopAll = {
     schema: {
         summary: 'Stop all schedules.',
         description: 'Stop all schedules, i.e. tell the scheduler to no longer execute any schedule according to its cron settings.',
@@ -619,7 +619,7 @@ const apiPUTSchedulesStopAll = {
     },
 };
 
-const apiGETSchedulerStatus = {
+export const apiGETSchedulerStatus = {
     schema: {
         summary: 'Get scheduler status.',
         description:
@@ -646,15 +646,4 @@ const apiGETSchedulerStatus = {
             },
         },
     },
-};
-
-module.exports = {
-    apiGETSchedules,
-    apiPOSTSchedules,
-    apiDELETESchedules,
-    apiPUTSchedulesStart,
-    apiPUTSchedulesStartAll,
-    apiPUTSchedulesStop,
-    apiPUTSchedulesStopAll,
-    apiGETSchedulerStatus,
 };

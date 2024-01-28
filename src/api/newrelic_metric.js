@@ -88,6 +88,4 @@ const apiPostNewRelicMetric = {
     },
 };
 
-module.exports = {
-    apiPostNewRelicMetric,
-};
+export default apiPostNewRelicMetric;

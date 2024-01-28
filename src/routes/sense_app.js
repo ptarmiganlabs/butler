@@ -1,20 +1,24 @@
-const httpErrors = require('http-errors');
-const enigma = require('enigma.js');
-const SenseUtilities = require('enigma.js/sense-utilities');
-const WebSocket = require('ws');
+import httpErrors from 'http-errors';
+import enigma from 'enigma.js';
+import SenseUtilities from 'enigma.js/sense-utilities.js';
+import WebSocket from 'ws';
+import { createRequire } from "module";
 
 // Load global variables and functions
-const globals = require('../globals');
-const qrsUtil = require('../qrs_util');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiPutAppReload } = require('../api/sense_app');
+import globals from '../globals.js';
+
+import senseStartTask from '../qrs_util/sense_start_task.js';
+import { logRESTCall } from '../lib/log_rest_call.js';
+import apiPutAppReload from '../api/sense_app.js';
 
 // Set up enigma.js configuration
 
 async function handlerPutAppReload(request, reply) {
     try {
-        // eslint-disable-next-line import/no-dynamic-require, global-require
-        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        const require = createRequire(import.meta.url);
+        // eslint-disable-next-line import/no-dynamic-require
+        const qixSchema = require(schemaFile);
 
         logRESTCall(request);
 
@@ -101,7 +105,7 @@ async function handlerPutAppReload(request, reply) {
                         `APPRELOAD: Starting task ${taskId} after reloading success of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                     );
 
-                    qrsUtil.senseStartTask.senseStartTask(taskId);
+                    senseStartTask(taskId);
                 }
             } else {
                 globals.logger.warn(
@@ -115,7 +119,7 @@ async function handlerPutAppReload(request, reply) {
                         `APPRELOAD: Starting task ${taskId} after reloading failure of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
                     );
 
-                    qrsUtil.senseStartTask.senseStartTask(taskId);
+                    senseStartTask(taskId);
                 }
             }
 
@@ -147,7 +151,7 @@ async function handlerPutAppReload(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseAppReload') &&
         globals.config.get('Butler.restServerEndpointsEnable.senseAppReload')

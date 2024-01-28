@@ -1,5 +1,5 @@
-const dgram = require('dgram');
-const yargs = require('yargs');
+import dgram from 'dgram';
+import yargs from 'yargs';
 
 // Parse command line parameters
 const { argv } = yargs

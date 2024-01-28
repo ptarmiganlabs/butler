@@ -1,11 +1,24 @@
-const httpErrors = require('http-errors');
-const uuid = require('uuid');
+import httpErrors from 'http-errors';
+import { v4 as uuidv4 } from 'uuid';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const scheduler = require('../lib/scheduler');
-const {
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import {
+    getSchedulesStatus,
+    existsSchedule,
+    getAllSchedules,
+    addSchedule,
+    deleteSchedule,
+    startSchedule,
+    stopSchedule,
+    getSchedule,
+    startAllSchedules,
+    stopAllSchedules,
+} from '../lib/scheduler.js';
+
+import {
     apiGETSchedules,
     apiPOSTSchedules,
     apiDELETESchedules,
@@ -14,7 +27,7 @@ const {
     apiPUTSchedulesStop,
     apiPUTSchedulesStopAll,
     apiGETSchedulerStatus,
-} = require('../api/scheduler');
+} from '../api/scheduler.js';
 
 async function handlerGETSchedules(request, reply) {
     try {
@@ -23,16 +36,17 @@ async function handlerGETSchedules(request, reply) {
         // Is there a schedule ID passed along?
         if (request.query.id !== undefined) {
             // Return specific schedule, if it exists
-            if (scheduler.existsSchedule(request.query.id)) {
-                const sched = scheduler.getAllSchedules().find((item) => item.id === request.query.id);
+            // Schedule should be returned in array, even though only one schedule is returned
+            if (existsSchedule(request.query.id)) {
+                const sched = getAllSchedules().find((item) => item.id === request.query.id);
 
-                reply.code(200).send(JSON.stringify(sched));
+                reply.code(200).send(JSON.stringify([sched]));
             } else {
                 reply.send(httpErrors(400, `REST SCHEDULER: Schedule ID ${request.query.id} not found.`));
             }
         } else {
             // Return all schedules
-            reply.code(200).send(scheduler.getAllSchedules());
+            reply.code(200).send(getAllSchedules());
         }
     } catch (err) {
         globals.logger.error(
@@ -48,10 +62,10 @@ async function handlerPOSTSchedules(request, reply) {
 
         const newSchedule = request.body;
 
-        newSchedule.id = uuid.v4();
+        newSchedule.id = uuidv4();
         newSchedule.created = new Date().toISOString();
 
-        scheduler.addSchedule(newSchedule);
+        addSchedule(newSchedule);
 
         reply.code(201).send(JSON.stringify(newSchedule));
     } catch (err) {
@@ -67,7 +81,7 @@ async function handlerDELETESchedules(request, reply) {
         logRESTCall(request);
 
         globals.logger.debug(`REST SCHEDULER: Deleting schdule with ID: ${request.params.scheduleId}`);
-        if (scheduler.deleteSchedule(request.params.scheduleId) === true) {
+        if (deleteSchedule(request.params.scheduleId) === true) {
             // Delete succeeded
             reply.code(204).send();
         } else {
@@ -90,10 +104,13 @@ async function handlerPUTSchedulesStart(request, reply) {
         if (request.params.scheduleId !== undefined && request.params.scheduleId !== '') {
             globals.logger.debug(`REST SCHEDULER: Starting schedule ID: ${request.params.scheduleId}`);
 
-            if (scheduler.startSchedule(request.params.scheduleId) === true) {
+            if (startSchedule(request.params.scheduleId) === true) {
                 // Start succeeded
+
+                const schedule = getSchedule(request.params.scheduleId);
                 globals.logger.info(`REST SCHEDULER: Started schedule ID: ${request.params.scheduleId}`);
-                reply.code(200).send(JSON.stringify([scheduler.getSchedule(request.params.scheduleId)]));
+                // reply.code(200).send(JSON.stringify([request.params.scheduleId]));
+                reply.code(200).send(JSON.stringify([schedule]));
             } else {
                 // Start failed. Return error
                 globals.logger.info(`REST SCHEDULER: Failed starting schedule ID: ${request.params.scheduleId}`);
@@ -101,10 +118,10 @@ async function handlerPUTSchedulesStart(request, reply) {
             }
         } else {
             // Start all schedules
-            await scheduler.startAllSchedules();
+            await startAllSchedules();
 
             globals.logger.info('REST SCHEDULER: Started all schedules.');
-            reply.code(200).send(JSON.stringify(scheduler.getAllSchedules()));
+            reply.code(200).send(JSON.stringify(getAllSchedules()));
         }
     } catch (err) {
         globals.logger.error(
@@ -122,10 +139,10 @@ async function handlerPUTSchedulesStop(request, reply) {
         if (request.params.scheduleId !== undefined && request.params.scheduleId !== '') {
             globals.logger.debug(`REST SCHEDULER: Stopping schedule ID: ${request.params.scheduleId}`);
 
-            if (scheduler.stopSchedule(request.params.scheduleId) === true) {
+            if (stopSchedule(request.params.scheduleId) === true) {
                 // Stop succeeded
                 globals.logger.info(`REST SCHEDULER: Stopped schedule ID: ${request.params.scheduleId}`);
-                reply.code(200).send(JSON.stringify([scheduler.getSchedule(request.params.scheduleId)]));
+                reply.code(200).send(JSON.stringify([getSchedule(request.params.scheduleId)]));
             } else {
                 // Stop failed. Return error
                 globals.logger.error(`REST SCHEDULER: Failed stopping schedule ID: ${request.params.scheduleId}`);
@@ -133,10 +150,10 @@ async function handlerPUTSchedulesStop(request, reply) {
             }
         } else {
             // Stop all schedules
-            await scheduler.stopAllSchedules();
+            await stopAllSchedules();
 
             globals.logger.info('REST SCHEDULER: Stopped all schedules.');
-            reply.code(200).send(JSON.stringify(scheduler.getAllSchedules()));
+            reply.code(200).send(JSON.stringify(getAllSchedules()));
         }
     } catch (err) {
         globals.logger.error(
@@ -150,8 +167,8 @@ async function handlerGETSchedulesStatus(request, reply) {
     try {
         logRESTCall(request);
 
-        // let status = `${scheduler.cronManager}`;
-        const status = scheduler.cronManager.listCrons();
+        // const status = scheduler.cronManager.listCrons();
+        const status = getSchedulesStatus();
         reply.code(200).send(status);
     } catch (err) {
         globals.logger.error(`REST SCHEDULER: Failed retrieving scheduler status, error is: ${JSON.stringify(err, null, 2)}`);
@@ -160,7 +177,7 @@ async function handlerGETSchedulesStatus(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
         if (
             globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&

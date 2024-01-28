@@ -1,10 +1,10 @@
 /* eslint-disable no-param-reassign */
-const fs = require('fs');
-const handlebars = require('handlebars');
-const { RateLimiterMemory } = require('rate-limiter-flexible');
+import fs from 'fs';
 
-const globals = require('../globals');
-const { getAppOwner } = require('../qrs_util/get_app_owner');
+import handlebars from 'handlebars';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import globals from '../globals.js';
+import getAppOwner from '../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -418,7 +418,7 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
     }
 }
 
-function sendReloadTaskFailureNotificationTeams(reloadParams) {
+export function sendReloadTaskFailureNotificationTeams(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -564,7 +564,7 @@ function sendReloadTaskFailureNotificationTeams(reloadParams) {
         });
 }
 
-function sendReloadTaskAbortedNotificationTeams(reloadParams) {
+export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -709,7 +709,7 @@ function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         });
 }
 
-function sendServiceMonitorNotificationTeams(serviceParams) {
+export function sendServiceMonitorNotificationTeams(serviceParams) {
     rateLimiterMemoryServiceMonitor
         .consume(`${serviceParams.host}|${serviceParams.serviceName}`, 1)
         .then(async (rateLimiterRes) => {
@@ -754,9 +754,3 @@ function sendServiceMonitorNotificationTeams(serviceParams) {
             globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
-
-module.exports = {
-    sendReloadTaskFailureNotificationTeams,
-    sendReloadTaskAbortedNotificationTeams,
-    sendServiceMonitorNotificationTeams,
-};

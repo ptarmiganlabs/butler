@@ -1,9 +1,10 @@
-const httpErrors = require('http-errors');
+import httpErrors from 'http-errors';
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiGetButlerPing } = require('../api/butler_ping');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import apiGetButlerPing from '../api/butler_ping.js';
 
 async function handlerGetButlerPing(request, reply) {
     try {
@@ -21,7 +22,7 @@ async function handlerGetButlerPing(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.butlerping') &&
         globals.config.get('Butler.restServerEndpointsEnable.butlerping')

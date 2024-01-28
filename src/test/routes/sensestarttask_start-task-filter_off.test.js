@@ -1,11 +1,6 @@
 /* eslint-disable camelcase */
-const path = require('path');
-const axios = require('axios');
-
-process.env.NODE_CONFIG_DIR = path.resolve('./src/config/');
-// Use config file where start task filtering is turned ON
-process.env.NODE_ENV = 'production';
-const config = require('config');
+import config from 'config';
+import axios from 'axios';
 
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
@@ -22,10 +17,13 @@ let taskId_notallowed1;
 let taskTag1;
 let taskTag2;
 let taskTag_invalid1;
+let taskTag_notallowed1;
 let taskCPName1;
 let taskCPName_invalid1;
+let taskCPName_notallowed1;
 let taskCPValue1;
 let taskCPValue2;
+let taskCPValue_notallowed1;
 let taskCPValue_invalid1;
 let taskKVNamespace1;
 let taskKVKey1;

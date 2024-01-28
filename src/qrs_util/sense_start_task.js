@@ -1,6 +1,5 @@
-const QrsInteract = require('qrs-interact');
-
-const globals = require('../globals');
+import QrsInteract from 'qrs-interact';
+import globals from '../globals.js';
 
 // Function for starting Sense task, given its task ID (as it appears in the QMC task list)
 async function senseStartTask(taskId) {
@@ -40,6 +39,4 @@ async function senseStartTask(taskId) {
     }
 }
 
-module.exports = {
-    senseStartTask,
-};
+export default senseStartTask;

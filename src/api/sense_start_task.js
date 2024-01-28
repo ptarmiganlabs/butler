@@ -145,6 +145,4 @@ const apiPutStartTask = {
     },
 };
 
-module.exports = {
-    apiPutStartTask,
-};
+export default apiPutStartTask;

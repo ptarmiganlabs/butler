@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
 
-const fs = require('fs');
-const handlebars = require('handlebars');
-const { RateLimiterMemory } = require('rate-limiter-flexible');
+import fs from 'fs';
 
-const globals = require('../globals');
-const slackApi = require('./slack_api');
-const { getAppOwner } = require('../qrs_util/get_app_owner');
+import handlebars from 'handlebars';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import globals from '../globals.js';
+import slackSend from './slack_api.js';
+import getAppOwner from '../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -450,9 +450,9 @@ async function sendSlack(slackConfig, templateContext, msgType) {
 
         if (slackMsg !== null) {
             msg.text = slackMsg;
-            const res = await slackApi.slackSend(msg, globals.logger);
+            const res = await slackSend(msg, globals.logger);
             if (res !== undefined) {
-                globals.logger.debug(`SLACK SEND: Result from calling slackApi.slackSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(`SLACK SEND: Result from calling slackSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
@@ -460,7 +460,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
     }
 }
 
-function sendReloadTaskFailureNotificationSlack(reloadParams) {
+export function sendReloadTaskFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -622,7 +622,7 @@ function sendReloadTaskFailureNotificationSlack(reloadParams) {
         });
 }
 
-function sendReloadTaskAbortedNotificationSlack(reloadParams) {
+export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
         .then(async (rateLimiterRes) => {
@@ -769,7 +769,7 @@ function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         });
 }
 
-function sendServiceMonitorNotificationSlack(serviceParams) {
+export function sendServiceMonitorNotificationSlack(serviceParams) {
     rateLimiterMemoryServiceMonitor
         .consume(`${serviceParams.host}|${serviceParams.serviceName}`, 1)
         .then(async (rateLimiterRes) => {
@@ -814,9 +814,3 @@ function sendServiceMonitorNotificationSlack(serviceParams) {
             globals.logger.debug(`SLACK SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
 }
-
-module.exports = {
-    sendReloadTaskFailureNotificationSlack,
-    sendReloadTaskAbortedNotificationSlack,
-    sendServiceMonitorNotificationSlack,
-};

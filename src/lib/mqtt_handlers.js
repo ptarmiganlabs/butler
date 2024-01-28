@@ -1,12 +1,15 @@
-const mqtt = require('mqtt');
-const { validate } = require('uuid');
-const fs = require('fs');
-const upath = require('upath');
+import mqtt from 'mqtt';
+import { validate } from 'uuid';
+import fs from 'fs';
+import upath from 'upath';
+import { fileURLToPath } from 'url';
 
 // Load global variables and functions
-const { config, logger, execPath } = require('../globals');
-const globals = require('../globals');
-const qrsUtil = require('../qrs_util');
+// import { globals, config, logger } from '../globals.js';
+import globals from '../globals.js';
+import senseStartTask from '../qrs_util/sense_start_task.js';
+
+const { config, logger } = globals;
 
 function mqttInitHandlers() {
     try {
@@ -44,8 +47,10 @@ function mqttInitHandlers() {
                 // Helper function to read the contents of the certificate files:
                 const readCert = (filename) => fs.readFileSync(filename);
 
-                const certFile = upath.resolve(__dirname, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
-                const keyFile = upath.resolve(__dirname, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
+                const filename = fileURLToPath(import.meta.url);
+                const dirname = upath.dirname(filename);
+                const certFile = upath.resolve(dirname, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
+                const keyFile = upath.resolve(dirname, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
 
                 // const certFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientCertFile'));
                 // const keyFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
@@ -139,7 +144,7 @@ function mqttInitHandlers() {
                             }
 
                             logger.verbose(`MQTT IN: Valid task ID ${message.toString()}.`);
-                            const res = await qrsUtil.senseStartTask.senseStartTask(message.toString());
+                            const res = await senseStartTask(message.toString());
 
                             if (res) {
                                 logger.info(`MQTT IN: Started task ID ${message.toString()}.`);
@@ -167,6 +172,4 @@ function mqttInitHandlers() {
     }
 }
 
-module.exports = {
-    mqttInitHandlers,
-};
+export default mqttInitHandlers;

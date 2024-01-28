@@ -1,4 +1,4 @@
-const apiGetBase62ToBase16 = {
+export const apiGetBase62ToBase16 = {
     schema: {
         description: 'Converts strings from base62 to base16.',
         summary: 'Converts strings from base62 to base16.',
@@ -55,7 +55,7 @@ const apiGetBase62ToBase16 = {
     },
 };
 
-const apiGetBase16ToBase62 = {
+export const apiGetBase16ToBase62 = {
     schema: {
         description: 'Converts strings from base16 to base62.',
         summary: 'Converts strings from base16 to base62.',
@@ -115,9 +115,4 @@ const apiGetBase16ToBase62 = {
             },
         },
     },
-};
-
-module.exports = {
-    apiGetBase62ToBase16,
-    apiGetBase16ToBase62,
 };

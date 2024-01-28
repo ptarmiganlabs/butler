@@ -1,24 +1,24 @@
-const Keyv = require('@keyvhq/core');
+import Keyv from '@keyvhq/core';
 
 // Load global variables and functions
-const globals = require('../globals');
+import globals from '../globals.js';
 
 // Main key-value store
 // eslint-disable-next-line prefer-const
 let kvStore = [];
 
-function getNamespaceList() {
+export function getNamespaceList() {
     const ns = [];
     kvStore.forEach((item) => ns.push(item.namespace));
     return ns;
 }
 
-function getNamespace(namespaceName) {
+export function getNamespace(namespaceName) {
     const ns = kvStore.find((item) => item.namespace === namespaceName);
     return ns;
 }
 
-async function deleteNamespace(namespaceName) {
+export async function deleteNamespace(namespaceName) {
     try {
         // Remove all KV pairs from namespace
         const ns = kvStore.find((item) => item.namespace === namespaceName);
@@ -32,7 +32,7 @@ async function deleteNamespace(namespaceName) {
     }
 }
 
-async function getValue(namespace, key) {
+export async function getValue(namespace, key) {
     try {
         const ns = getNamespace(namespace);
         if (ns !== undefined) {
@@ -46,7 +46,7 @@ async function getValue(namespace, key) {
     }
 }
 
-async function deleteKeyValuePair(namespace, key) {
+export async function deleteKeyValuePair(namespace, key) {
     try {
         const ns = getNamespace(namespace);
         if (ns !== undefined) {
@@ -60,7 +60,7 @@ async function deleteKeyValuePair(namespace, key) {
     }
 }
 
-async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
+export async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
     try {
         // Does namespace already exist?
         const kv = kvStore.find((item) => item.namespace === newNamespace);
@@ -105,12 +105,3 @@ async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
         globals.logger.error(`Error while adding new KV pair: ${err}`);
     }
 }
-
-module.exports = {
-    deleteNamespace,
-    deleteKeyValuePair,
-    getNamespace,
-    getNamespaceList,
-    addKeyValuePair,
-    getValue,
-};

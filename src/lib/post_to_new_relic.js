@@ -1,9 +1,9 @@
 /* eslint-disable guard-for-in */
-const axios = require('axios');
+import axios from 'axios';
 
-const globals = require('../globals');
+import globals from '../globals.js';
 
-async function postButlerUptimeToNewRelic(fields) {
+export async function postButlerUptimeToNewRelic(fields) {
     try {
         const payload = [];
         const metrics = [];
@@ -153,7 +153,7 @@ async function postButlerUptimeToNewRelic(fields) {
     }
 }
 
-async function postFailedReloadEventToNewRelic() {
+export async function postFailedReloadEventToNewRelic() {
     try {
         //
     } catch (error) {
@@ -162,7 +162,7 @@ async function postFailedReloadEventToNewRelic() {
     }
 }
 
-async function postAbortedReloadEventToNewRelic() {
+export async function postAbortedReloadEventToNewRelic() {
     try {
         //
     } catch (error) {
@@ -170,9 +170,3 @@ async function postAbortedReloadEventToNewRelic() {
         globals.logger.error(`NEW RELIC UPTIME: Error posting reload aborted event: ${error}`);
     }
 }
-
-module.exports = {
-    postButlerUptimeToNewRelic,
-    postFailedReloadEventToNewRelic,
-    postAbortedReloadEventToNewRelic,
-};

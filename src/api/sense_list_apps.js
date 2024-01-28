@@ -1,4 +1,4 @@
-const apiGetSenseListApps = {
+export const apiGetSenseListApps = {
     schema: {
         summary: 'Get a list of all apps in Sense environment.',
         description: 'Does the same thing as `/v4/apps/list`',
@@ -37,7 +37,7 @@ const apiGetSenseListApps = {
     },
 };
 
-const apiGetAppsList = {
+export const apiGetAppsList = {
     schema: {
         summary: 'Get a list of all apps in Sense environment.',
         description: 'Does the same thing as `/v4/senselistapps`',
@@ -74,9 +74,4 @@ const apiGetAppsList = {
             },
         },
     },
-};
-
-module.exports = {
-    apiGetSenseListApps,
-    apiGetAppsList,
 };

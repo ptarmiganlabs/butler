@@ -1,4 +1,4 @@
-const apiFileCopy = {
+export const apiFileCopy = {
     schema: {
         description:
             "Copying of files is only posttible between pre-approved directories.\nDefining approved source and destination directories is done in Butler's config file.\n\nIf the source directory contains subdirectories, these will be copied too.",
@@ -97,7 +97,7 @@ const apiFileCopy = {
     },
 };
 
-const apiFileMove = {
+export const apiFileMove = {
     schema: {
         description:
             "Moving of files is only posttible between pre-approved directories.\nDefining approved source and destination directories is done in Butler's config file.\n\nIf the source directory contains subdirectories, these will be moved too.",
@@ -181,7 +181,7 @@ const apiFileMove = {
     },
 };
 
-const apiFileDelete = {
+export const apiFileDelete = {
     schema: {
         description:
             "It is only possible to delete files in pre-approved directories, or subdirectories thereof.\nDefining approved directories is done in Butler's config file.",
@@ -239,7 +239,7 @@ const apiFileDelete = {
     },
 };
 
-const apiCreateDir = {
+export const apiCreateDir = {
     schema: {
         description:
             "If the directory already exists nothing will happen.\nIf permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.",
@@ -292,7 +292,7 @@ const apiCreateDir = {
     },
 };
 
-const apiCreateDirQvd = {
+export const apiCreateDirQvd = {
     schema: {
         description: "Creates a directory in QVD directory (which is defined in Butler's config file).",
         summary: 'Creates a directory in designated QVD directory.',
@@ -342,12 +342,4 @@ const apiCreateDirQvd = {
             },
         },
     },
-};
-
-module.exports = {
-    apiFileCopy,
-    apiFileMove,
-    apiFileDelete,
-    apiCreateDir,
-    apiCreateDirQvd,
 };

@@ -1,17 +1,25 @@
-const os = require('os');
-const crypto = require('crypto');
-const fs = require('fs-extra');
-const upath = require('upath');
-const Influx = require('influx');
-const { IncomingWebhook } = require('ms-teams-webhook');
-const si = require('systeminformation');
-const isUncPath = require('is-unc-path');
-const winston = require('winston');
+import os from 'os';
+import crypto from 'crypto';
+import fs from 'fs-extra';
+import upath from 'upath';
+import Influx from 'influx';
+import { IncomingWebhook } from 'ms-teams-webhook';
+import si from 'systeminformation';
+import isUncPath from 'is-unc-path';
+import winston from 'winston';
+import { fileURLToPath } from 'url';
 
 // Add dependencies
-const { Command, Option } = require('commander');
+import { Command, Option } from 'commander';
 
-require('winston-daily-rotate-file');
+import 'winston-daily-rotate-file';
+
+// Get app version from package.json file
+// import { version as appVersion } from '../package.json';
+// import { version as appVersion } from '../package.json' assert { type: 'json' };
+const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
+const { version } = loadJSON('../package.json');
+const appVersion = version;
 
 // Variable holding info about all defined schedules
 const configSchedule = [];
@@ -28,9 +36,6 @@ function checkFileExistsSync(filepath) {
     }
     return flag;
 }
-
-// Get app version from package.json file
-const appVersion = require('../package.json').version;
 
 // Command line parameters
 const program = new Command();
@@ -92,7 +97,9 @@ if (options.configfile && options.configfile.length > 0) {
     const env = process.env.NODE_ENV;
 
     // Get path to config file
-    configFileExpanded = upath.resolve(__dirname, `./config/${env}.yaml`);
+    const filename = fileURLToPath(import.meta.url);
+    const dirname = upath.dirname(filename);
+    configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
 }
 
 // Are we running as standalone app or not?
@@ -103,7 +110,7 @@ if (isPkg && configFileOption === undefined) {
 }
 
 // eslint-disable-next-line import/order
-const config = require('config');
+import config from 'config';
 
 // Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
 // There must be the same number of each specified!
@@ -216,9 +223,11 @@ logger.verbose(
 // Helper function to read the contents of the certificate files:
 const readCert = (filename) => fs.readFileSync(filename);
 
-const certPath = upath.resolve(__dirname, config.get('Butler.cert.clientCert'));
-const keyPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertKey'));
-const caPath = upath.resolve(__dirname, config.get('Butler.cert.clientCertCA'));
+const filename = fileURLToPath(import.meta.url);
+const dirname = upath.dirname(filename);
+const certPath = upath.resolve(dirname, config.get('Butler.cert.clientCert'));
+const keyPath = upath.resolve(dirname, config.get('Butler.cert.clientCertKey'));
+const caPath = upath.resolve(dirname, config.get('Butler.cert.clientCertCA'));
 
 let configEngine;
 let configQRS;
@@ -313,7 +322,7 @@ if (
 // UDP server connection parameters
 const udpHost = config.get('Butler.udpServerConfig.serverHost');
 
-let udpServerReloadTaskSocket = null;
+const udpServerReloadTaskSocket = null;
 // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
 // const udpServerReloadTaskSocket = dgram.createSocket({
 //     type: 'udp4',
@@ -627,7 +636,7 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-module.exports = {
+export default {
     config,
     configEngine,
     configFileExpanded,

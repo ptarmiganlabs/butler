@@ -1,13 +1,14 @@
 /* eslint-disable consistent-return */
-const nodemailer = require('nodemailer');
-const hbs = require('nodemailer-express-handlebars');
-const expressHandlebars = require('express-handlebars');
-const handlebars = require('handlebars');
-const { RateLimiterMemory } = require('rate-limiter-flexible');
-const emailValidator = require('email-validator');
+import nodemailer from 'nodemailer';
 
-const globals = require('../globals');
-const qrsUtil = require('../qrs_util');
+import hbs from 'nodemailer-express-handlebars';
+import expressHandlebars from 'express-handlebars';
+import handlebars from 'handlebars';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import emailValidator from 'email-validator';
+import globals from '../globals.js';
+import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
+import getAppOwner from '../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -288,7 +289,7 @@ async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars
     }
 }
 
-async function sendEmailBasic(from, recipientsEmail, emailPriority, subject, body) {
+export async function sendEmailBasic(from, recipientsEmail, emailPriority, subject, body) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
         if (isSmtpConfigOk() === false) {
@@ -335,7 +336,7 @@ async function sendEmailBasic(from, recipientsEmail, emailPriority, subject, bod
     }
 }
 
-async function sendReloadTaskFailureNotificationEmail(reloadParams) {
+export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable is true
     //     ... only send alerts for the tasks that have "enabledValue" set
@@ -372,7 +373,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     let mainSendList = [];
 
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
-    const taskSpecificAlertEmailAddresses = await qrsUtil.customPropertyUtil.getTaskCustomPropertyValues(
+    const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
         reloadParams.taskId,
         emailAlertCpTaskSpecificEmailAddressName
     );
@@ -403,11 +404,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             `EMAIL RELOAD TASK FAILED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
         );
 
-        const sendAlert = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
-            reloadParams.taskId,
-            emailAlertCpName,
-            emailAlertCpEnabledValue
-        );
+        const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
@@ -423,7 +420,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     }
 
     // Get app owner
-    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
+    const appOwner = await getAppOwner(reloadParams.appId);
 
     // If enabled in config file: Add app owners (excluding those that don't have an email address!) to list of recipients
     // 3 Should app owners get alerts?
@@ -600,7 +597,7 @@ async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     }
 }
 
-async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
+export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable is true
     //     ... only send alerts for the tasks that have "enabledValue" set
@@ -637,7 +634,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     let mainSendList = [];
 
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
-    const taskSpecificAlertEmailAddresses = await qrsUtil.customPropertyUtil.getTaskCustomPropertyValues(
+    const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
         reloadParams.taskId,
         emailAlertCpTaskSpecificEmailAddressName
     );
@@ -661,11 +658,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             `EMAIL RELOAD TASK ABORTED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
         );
 
-        const sendAlert = await qrsUtil.customPropertyUtil.isCustomPropertyValueSet(
-            reloadParams.taskId,
-            emailAlertCpName,
-            emailAlertCpEnabledValue
-        );
+        const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             // 2.2.1 Yes: Add system-wide list of recipients to send list
@@ -678,7 +671,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 
     // Get app owner
-    const appOwner = await qrsUtil.getAppOwner.getAppOwner(reloadParams.appId);
+    const appOwner = await getAppOwner(reloadParams.appId);
 
     // If enabled in config file: Add app owners (excluding those that don't have an email address!) to list of recipients
     // 3 Should app owners get alerts?
@@ -850,7 +843,7 @@ async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 }
 
-async function sendServiceMonitorNotificationEmail(serviceParams) {
+export async function sendServiceMonitorNotificationEmail(serviceParams) {
     if (isSmtpConfigOk() === false) {
         return 1;
     }
@@ -941,10 +934,3 @@ async function sendServiceMonitorNotificationEmail(serviceParams) {
             });
     }
 }
-
-module.exports = {
-    sendReloadTaskFailureNotificationEmail,
-    sendReloadTaskAbortedNotificationEmail,
-    sendServiceMonitorNotificationEmail,
-    sendEmailBasic,
-};

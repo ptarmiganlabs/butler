@@ -1,18 +1,22 @@
-const httpErrors = require('http-errors');
-const enigma = require('enigma.js');
-const WebSocket = require('ws');
+import httpErrors from 'http-errors';
+import enigma from 'enigma.js';
+import WebSocket from 'ws';
+import { createRequire } from "module";
 
 // Load global variables and functions
-const globals = require('../globals');
-const { logRESTCall } = require('../lib/log_rest_call');
-const { apiGetSenseListApps, apiGetAppsList } = require('../api/sense_list_apps');
+import globals from '../globals.js';
+
+import { logRESTCall } from '../lib/log_rest_call.js';
+import { apiGetSenseListApps, apiGetAppsList } from '../api/sense_list_apps.js';
 
 // Set up enigma.js configuration
 
 function handlerGetSenseListApps(request, reply) {
     try {
-        // eslint-disable-next-line import/no-dynamic-require, global-require
-        const qixSchema = require(`enigma.js/schemas/${globals.configEngine.engineVersion}`);
+        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        const require = createRequire(import.meta.url);
+        // eslint-disable-next-line import/no-dynamic-require
+        const qixSchema = require(schemaFile);
 
         logRESTCall(request);
 
@@ -92,7 +96,7 @@ function handlerGetSenseListApps(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
-module.exports = async (fastify, options) => {
+export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseListApps') &&
         globals.config.get('Butler.restServerEndpointsEnable.senseListApps')

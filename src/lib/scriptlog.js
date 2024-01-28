@@ -1,11 +1,10 @@
-const QrsInteract = require('qrs-interact');
-const axios = require('axios');
-const https = require('https');
-const luxon = require('luxon');
-const path = require('path');
-const fs = require('fs');
-
-const globals = require('../globals');
+import QrsInteract from 'qrs-interact';
+import axios from 'axios';
+import https from 'https';
+import { Duration, DateTime } from 'luxon';
+import path from 'path';
+import fs from 'fs';
+import globals from '../globals.js';
 
 const taskStatusLookup = {
     0: 'NeverStarted',
@@ -41,7 +40,7 @@ function delay(milliseconds) {
 }
 
 // Function to get reload task execution results
-async function getReloadTaskExecutionResults(reloadTaskId) {
+export async function getReloadTaskExecutionResults(reloadTaskId) {
     try {
         // Set up Sense repository service configuration
         const configQRS = {
@@ -86,7 +85,7 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
         }
 
         // Add duration as JSON
-        const taskDuration = luxon.Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
+        const taskDuration = Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
         taskInfo.executionDuration = taskDuration.shiftTo('hours', 'minutes', 'seconds').toObject();
         taskInfo.executionDuration.seconds = Math.floor(taskInfo.executionDuration.seconds);
 
@@ -101,14 +100,14 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
                 startTimeLocal5: '-',
             };
         } else {
-            const luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
+            const luxonDT = DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
             taskInfo.executionStartTime = {
                 startTimeUTC: result1.body.operational.lastExecutionResult.startTime,
                 startTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                startTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                startTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                startTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                startTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                startTimeLocal2: luxonDT.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS),
+                startTimeLocal3: luxonDT.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS),
+                startTimeLocal4: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
+                startTimeLocal5: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
             };
         }
 
@@ -123,14 +122,14 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
                 stopTimeLocal5: '-',
             };
         } else {
-            const luxonDT = luxon.DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
+            const luxonDT = DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
             taskInfo.executionStopTime = {
                 stopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
                 stopTimeLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                stopTimeLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                stopTimeLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                stopTimeLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                stopTimeLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                stopTimeLocal2: luxonDT.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS),
+                stopTimeLocal3: luxonDT.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS),
+                stopTimeLocal4: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
+                stopTimeLocal5: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
             };
         }
 
@@ -149,14 +148,14 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
                 };
             }
 
-            const luxonDT = luxon.DateTime.fromISO(item.detailCreatedDate);
+            const luxonDT = DateTime.fromISO(item.detailCreatedDate);
             return {
                 timestampUTC: item.detailCreatedDate,
                 timestampLocal1: luxonDT.toFormat('yyyy-LL-dd HH:mm:ss'),
-                timestampLocal2: luxonDT.toLocaleString(luxon.DateTime.DATETIME_SHORT_WITH_SECONDS),
-                timestampLocal3: luxonDT.toLocaleString(luxon.DateTime.DATETIME_MED_WITH_SECONDS),
-                timestampLocal4: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
-                timestampLocal5: luxonDT.toLocaleString(luxon.DateTime.DATETIME_FULL_WITH_SECONDS),
+                timestampLocal2: luxonDT.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS),
+                timestampLocal3: luxonDT.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS),
+                timestampLocal4: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
+                timestampLocal5: luxonDT.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS),
                 message: item.message,
                 detailsType: item.detailsType,
             };
@@ -172,7 +171,7 @@ async function getReloadTaskExecutionResults(reloadTaskId) {
 // Function to get:
 // - reload task execution results
 // - reload task script log
-async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
+export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     try {
         // Step 1
         const taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
@@ -283,7 +282,7 @@ async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     }
 }
 
-async function failedTaskStoreLogOnDisk(reloadParams) {
+export async function failedTaskStoreLogOnDisk(reloadParams) {
     try {
         // Get top level directory where logs should be stored
         const reloadLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.logDirectory');
@@ -313,9 +312,3 @@ async function failedTaskStoreLogOnDisk(reloadParams) {
         return false;
     }
 }
-
-module.exports = {
-    getScriptLog,
-    failedTaskStoreLogOnDisk,
-    getReloadTaskExecutionResults,
-};

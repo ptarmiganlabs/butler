@@ -1,10 +1,9 @@
-const later = require('@breejs/later');
-const moment = require('moment');
-require('moment-precise-range-plugin');
-
-const globals = require('../globals');
-const postToInfluxdb = require('./post_to_influxdb');
-const postToHttp = require('./post_to_new_relic');
+import later from '@breejs/later';
+import moment from 'moment';
+import 'moment-precise-range-plugin';
+import globals from '../globals.js';
+import { postButlerMemoryUsageToInfluxdb } from './post_to_influxdb.js';
+import { postButlerUptimeToNewRelic } from './post_to_new_relic.js';
 
 function serviceUptimeStart() {
     const uptimeLogLevel = globals.config.get('Butler.uptimeMonitor.logLevel');
@@ -77,7 +76,7 @@ function serviceUptimeStart() {
             globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
             globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true
         ) {
-            postToInfluxdb.postButlerMemoryUsageToInfluxdb({
+            postButlerMemoryUsageToInfluxdb({
                 instanceTag: butlerMemoryInfluxTag,
                 heapUsedMByte,
                 heapTotalMByte,
@@ -91,7 +90,7 @@ function serviceUptimeStart() {
             globals.config.has('Butler.uptimeMonitor.storeNewRelic.enable') &&
             globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable') === true
         ) {
-            postToHttp.postButlerUptimeToNewRelic({
+            postButlerUptimeToNewRelic({
                 intervalMillisec,
                 heapUsed,
                 heapTotal,
@@ -105,6 +104,4 @@ function serviceUptimeStart() {
     }, later.parse.text(uptimeInterval));
 }
 
-module.exports = {
-    serviceUptimeStart,
-};
+export default serviceUptimeStart;

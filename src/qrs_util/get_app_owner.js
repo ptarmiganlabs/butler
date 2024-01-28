@@ -1,8 +1,8 @@
-const QrsInteract = require('qrs-interact');
-const globals = require('../globals');
+import QrsInteract from 'qrs-interact';
+import globals from '../globals.js';
 
 // Function for getting info about owner of Qlik Sense apps
-module.exports.getAppOwner = async (appId) => {
+const getAppOwner = async (appId) => {
     try {
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
@@ -57,3 +57,5 @@ module.exports.getAppOwner = async (appId) => {
         return false;
     }
 };
+
+export default getAppOwner;

@@ -1,9 +1,9 @@
-const QrsInteract = require('qrs-interact');
-const yaml = require('js-yaml');
-const { getReloadTasksCustomProperties } = require('../../qrs_util/task_cp_util');
+import QrsInteract from 'qrs-interact';
+import yaml from 'js-yaml';
+import { getReloadTasksCustomProperties } from '../../qrs_util/task_cp_util.js';
 
 // Veriify InfluxDb related settings in the config file
-const configFileInfluxDbAssert = async (config, configQRS, logger) => {
+export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
     const cfg = {
         hostname: config.get('Butler.configQRS.host'),
@@ -83,7 +83,7 @@ const configFileInfluxDbAssert = async (config, configQRS, logger) => {
 /**
  * Verify New Relic settings in the config file
  */
-const configFileNewRelicAssert = async (config, configQRS, logger) => {
+export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
     const cfg = {
         hostname: config.get('Butler.configQRS.host'),
@@ -486,7 +486,7 @@ const configFileNewRelicAssert = async (config, configQRS, logger) => {
 };
 
 // Function to verify that config file is valid YAML
-const configFileYamlAssert = async (configFile) => {
+export const configFileYamlAssert = async (configFile) => {
     try {
         const data = await yaml.load(configFile);
         return true;
@@ -497,7 +497,7 @@ const configFileYamlAssert = async (configFile) => {
 };
 
 // Function to verify that config variable have same structure as production.yaml file
-const configFileStructureAssert = async (config, logger) => {
+export const configFileStructureAssert = async (config, logger) => {
     let configFileCorrect = true;
     if (!config.has('Butler.logLevel')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.logLevel"');
@@ -2386,11 +2386,4 @@ const configFileStructureAssert = async (config, logger) => {
     if (configFileCorrect === false) {
         process.exit(1);
     }
-};
-
-module.exports = {
-    configFileNewRelicAssert,
-    configFileStructureAssert,
-    configFileYamlAssert,
-    configFileInfluxDbAssert,
 };
