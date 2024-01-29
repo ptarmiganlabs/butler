@@ -140,7 +140,7 @@ jobs:
       - name: Build binaries
         run: |
           pwd
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
           pkg --output "./${DIST_FILE_NAME}" -t node18-macos-x64 ./build.cjs --config package.json --compress GZip
 
           chmod +x "${DIST_FILE_NAME}"
@@ -257,7 +257,7 @@ jobs:
 
       - name: Build binaries
         run: |
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
           pkg --output "./${env:DIST_FILE_NAME}.exe" -t node18-win-x64 ./build.cjs --config package.json --compress GZip
 
           # Sign the executable
@@ -358,7 +358,7 @@ jobs:
 
       - name: Build binaries
         run: |
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify
+          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
           pkg --output "./${DIST_FILE_NAME}" -t node18-linux-x64 ./build.cjs --config package.json --compress GZip
 
           chmod +x ${DIST_FILE_NAME}
