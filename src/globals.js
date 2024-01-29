@@ -8,6 +8,7 @@ import si from 'systeminformation';
 import isUncPath from 'is-unc-path';
 import winston from 'winston';
 import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 
 // Add dependencies
 import { Command, Option } from 'commander';
@@ -23,9 +24,16 @@ class Settings {
         }
 
         // Get app version from package.json file
-        const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
-        const { version } = loadJSON('../package.json');
+        const filename = `./package.json`;
+        const a = upath.resolve(filename)
+        const b = readFileSync(a);
+        const { version } = JSON.parse(b);
+
+        // const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
+        // const { version } = loadJSON('../package.json');
         this.appVersion = version;
+
+        console.log(`appVersion: ${this.appVersion}`);
 
         // Command line parameters
         const program = new Command();
@@ -419,6 +427,9 @@ class Settings {
 
             // this.mqttClient,
 
+            // Indicate that we have finished initialising
+            this.initialised = true;
+
             // eslint-disable-next-line no-constructor-return
             return instance;
         })();
@@ -639,6 +650,12 @@ class Settings {
     initInfluxDB() {
         const dbName = this.config.get('Butler.influxDb.dbName');
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
+
+        // Ensure that InfluxDB has been created
+        if(this.influx === undefined) {
+            this.logger.error('CONFIG: InfluxDB not initialized! Possible race condition during startup of Butler. Exiting.');
+            process.exit(1);
+        }
 
         if (enableInfluxdb) {
             this.influx

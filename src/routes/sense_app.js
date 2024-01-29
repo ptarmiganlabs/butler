@@ -2,7 +2,10 @@ import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import SenseUtilities from 'enigma.js/sense-utilities.js';
 import WebSocket from 'ws';
-import { createRequire } from "module";
+// import { createRequire } from "module";
+import { readFile } from 'fs/promises';
+import upath from 'upath';
+
 
 // Load global variables and functions
 import globals from '../globals.js';
@@ -15,10 +18,27 @@ import apiPutAppReload from '../api/sense_app.js';
 
 async function handlerPutAppReload(request, reply) {
     try {
-        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
-        const require = createRequire(import.meta.url);
-        // eslint-disable-next-line import/no-dynamic-require
-        const qixSchema = require(schemaFile);
+        const schemaFile = `./node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        // const require = createRequire(import.meta.url);
+        // // eslint-disable-next-line import/no-dynamic-require
+        // const qixSchema = require(schemaFile);
+
+        // Convert schemaFile to absolute path using path
+        const a = upath.resolve(schemaFile)
+        const b = await readFile(schemaFile);
+        const qixSchema = JSON.parse(b);
+
+
+        // const qixSchema = JSON.parse(
+        //     await readFile(
+        //         //   new URL(schemaFile, import.meta.url);
+        //         new URL(schemaFile, import.meta.url);
+        //     )
+        // );
+
+        // const { createRequire } = require('node:module');
+        // const qixSchema = createRequire(schemaFile); 
+
 
         logRESTCall(request);
 

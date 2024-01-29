@@ -2,6 +2,8 @@ import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import WebSocket from 'ws';
 import { createRequire } from "module";
+import { readFile } from 'fs/promises';
+import upath from 'upath';
 
 // Load global variables and functions
 import globals from '../globals.js';
@@ -11,12 +13,24 @@ import { apiGetSenseListApps, apiGetAppsList } from '../api/sense_list_apps.js';
 
 // Set up enigma.js configuration
 
-function handlerGetSenseListApps(request, reply) {
+async function handlerGetSenseListApps(request, reply) {
     try {
-        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
-        const require = createRequire(import.meta.url);
-        // eslint-disable-next-line import/no-dynamic-require
-        const qixSchema = require(schemaFile);
+        const schemaFile = `./node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        // const require = createRequire(import.meta.url);
+        // // eslint-disable-next-line import/no-dynamic-require
+        // const qixSchema = require(schemaFile);
+
+        // Convert schemaFile to absolute path using path
+        const a = upath.resolve(schemaFile)
+        const b = await readFile(a);
+        const qixSchema = JSON.parse(b);
+
+
+
+        // const { createRequire } = require('node:module');
+        // const qixSchema = createRequire(schemaFile); 
+
+
 
         logRESTCall(request);
 
@@ -36,61 +50,47 @@ function handlerGetSenseListApps(request, reply) {
         };
 
         const session = enigma.create(configEnigma);
-        session
-            .open()
-            .then((global) => {
-                // We can now interact with the global object, for example get the document list.
-                // Please refer to the Engine API documentation for available methods.
-                // Note: getting a list of all apps could also be done using QRS
-                global
-                    .getDocList()
-                    .then((docList) => {
-                        let jsonArray = [];
-                        docList.forEach((doc) => {
-                            jsonArray = jsonArray.concat([
-                                {
-                                    id: doc.qDocId.toString(),
-                                    name: doc.qDocName.toString(),
-                                },
-                            ]);
-                        });
+        const global = await session.open();
 
-                        reply.code(200).send(jsonArray);
+        // We can now interact with the global object, for example get the document list.
+        // Please refer to the Engine API documentation for available methods.
+        // Note: getting a list of all apps could also be done using QRS
+        const docList = await global.getDocList();
 
-                        // Close connection to Sense server
-                        try {
-                            session.close();
-                        } catch (err) {
-                            globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
-                        }
-                    })
-                    .catch((error) => {
-                        globals.logger.error(`LISTAPPS: Error while getting app list: ${JSON.stringify(error, null, 2)}`);
+        let jsonArray = [];
+        docList.forEach((doc) => {
+            jsonArray = jsonArray.concat([
+                {
+                    id: doc.qDocId.toString(),
+                    name: doc.qDocName.toString(),
+                },
+            ]);
+        });
 
-                        try {
-                            session.close();
-                        } catch (err) {
-                            globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
-                        }
-                    });
-            })
-            .catch((error) => {
-                globals.logger.error(
-                    `LISTAPPS: Error while opening session to Sense engine during app listing: ${JSON.stringify(error, null, 2)}`
-                );
+        reply.code(200).send(jsonArray);
 
-                try {
-                    session.close();
-                } catch (err) {
-                    globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                }
+        // Close connection to Sense server
+        try {
+            await session.close();
+        } catch (err) {
+            globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
+        }
+            // .catch((error) => {
+            //     globals.logger.error(
+            //         `LISTAPPS: Error while opening session to Sense engine during app listing: ${JSON.stringify(error, null, 2)}`
+            //     );
 
-                reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
-            });
+            //     try {
+            //         session.close();
+            //     } catch (err) {
+            //         globals.logger.error(`LISTAPPS: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+            //     }
+
+            //     reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
+            // });
     } catch (err) {
-        globals.logger.error(`LISTAPPS: getting list of Sense apps: ${request.body.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`LISTAPPS: getting list of Sense apps, error is: ${JSON.stringify(err, null, 2)}`);
         reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }
 }
