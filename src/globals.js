@@ -25,8 +25,9 @@ class Settings {
 
         // Get app version from package.json file
         const filename = `./package.json`;
-        const a = upath.resolve(filename)
-        const b = readFileSync(a);
+        // const a = upath.resolve(filename)
+        const b = readFileSync(filename);
+        // const b = readFileSync(a);
         const { version } = JSON.parse(b);
 
         // const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
