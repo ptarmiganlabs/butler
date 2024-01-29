@@ -602,6 +602,7 @@ class Settings {
 
             const hostInfo = {
                 id,
+                isRunningInDocker: Settings.isRunningInDocker(),
                 node: {
                     nodeVersion: process.version,
                     versions: process.versions,
@@ -705,6 +706,16 @@ class Settings {
     static sleep(ms) {
         // eslint-disable-next-line no-promise-executor-return
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    // Static function to check if Butler is running in a Docker container
+    static isRunningInDocker() {
+        try {
+            fs.accessSync('/.dockerenv');
+            return true;
+        } catch (_) {
+            return false;
+        }
     }
 }
 
