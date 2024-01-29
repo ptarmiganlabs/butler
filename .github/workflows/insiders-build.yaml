@@ -229,7 +229,7 @@ jobs:
       #     path: ${{ matrix.artifact_release_path }}
 
       - name: Upload insider build artifacts to GitHub
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_insider }}
           path: ${{ matrix.artifact_insider }}
