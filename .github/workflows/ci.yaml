@@ -90,22 +90,21 @@ jobs:
         run: |
           pwd
           ls -la
-          cd src
-          node butler.js -c ./config/config-gen-api-docs.yaml --no-qs-connection & 
+          node src/butler.js -c ./src/config/config-gen-api-docs.yaml --no-qs-connection & 
           sleep 20
           echo "...1"
-          curl localhost:8081/documentation/json > ../docs/api_doc/butler-api.json
+          curl localhost:8081/documentation/json > ./docs/api_doc/butler-api.json
           echo "...4"
-          curl localhost:8081/documentation/yaml > ../docs/api_doc/butler-api.yaml
+          curl localhost:8081/documentation/yaml > ./docs/api_doc/butler-api.yaml
           echo "...5"
-          ls -la ../docs/api_doc
-          npx @redocly/cli build-docs ../docs/api_doc/butler-api.yaml --output ../docs/api_doc/butler-api.html
-          pkill -f 'node butler.js'
+          ls -la ./docs/api_doc
+          npx @redocly/cli build-docs ./docs/api_doc/butler-api.yaml --output ./docs/api_doc/butler-api.html
+          pkill -f 'node src/butler.js'
           git config --global user.name 'GitHub action'
           git config --global user.email 'mountaindude@users.noreply.github.com'
-          git add ../docs/api_doc/butler-api.json
-          git add ../docs/api_doc/butler-api.yaml
-          git add ../docs/api_doc/butler-api.html
+          git add ./docs/api_doc/butler-api.json
+          git add ./docs/api_doc/butler-api.yaml
+          git add ./docs/api_doc/butler-api.html
           git commit -m "Auto-adding API docs" --allow-empty
           git push
   
