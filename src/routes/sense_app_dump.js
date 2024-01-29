@@ -2,7 +2,10 @@ import serializeApp from 'serializeapp';
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import WebSocket from 'ws';
-import { createRequire } from "module";
+// import { createRequire } from "module";
+import { readFile } from 'fs/promises';
+import upath from 'upath';
+
 
 import globals from '../globals.js';
 import { logRESTCall } from '../lib/log_rest_call.js';
@@ -10,12 +13,24 @@ import { apiGetSenseAppDump, apiGetAppDump } from '../api/sense_app_dump.js';
 
 // Set up enigma.js configuration
 
-function handlerGetSenseAppDump(request, reply) {
+async function handlerGetSenseAppDump(request, reply) {
     try {
-        const schemaFile = `../../node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
-        const require = createRequire(import.meta.url);
-        // eslint-disable-next-line import/no-dynamic-require
-        const qixSchema = require(schemaFile);
+        const schemaFile = `./node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+
+
+        // const require = createRequire(import.meta.url);
+        // // eslint-disable-next-line import/no-dynamic-require
+        // const qixSchema = require(schemaFile);
+
+
+        // Convert schemaFile to absolute path using path
+        const a = upath.resolve(schemaFile)
+        const b = await readFile(a);
+        const qixSchema = JSON.parse(b);
+
+
+        // const { createRequire } = require('node:module');
+        // const qixSchema = createRequire(schemaFile); 
 
         logRESTCall(request);
 
@@ -42,53 +57,22 @@ function handlerGetSenseAppDump(request, reply) {
             };
 
             const session = enigma.create(configEnigma);
-            session
-                .open()
-                .then((global) => {
-                    // We can now interact with the global object, for example get the document list.
-                    // Please refer to the Engine API documentation for available methods.
+            const global = await session.open();
+    
+            // We can now interact with the global object, for example get the document list.
+            // Please refer to the Engine API documentation for available methods.
+            const app = await global.openDoc(request.params.appId, '', '', '', true);           
+            const data = await serializeApp(app);
 
-                    global
-                        .openDoc(request.params.appId, '', '', '', true)
-                        .then((app) => serializeApp(app))
-                        .then((data) => {
-                            reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
+            reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
 
-                            // Close connection to Sense server
-                            try {
-                                session.close();
-                            } catch (err) {
-                                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                                reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
-                            }
-                        })
-                        .catch((error) => {
-                            globals.logger.error(`APPDUMP: Error while opening doc during app dump: ${JSON.stringify(error, null, 2)}`);
-
-                            try {
-                                session.close();
-                            } catch (err) {
-                                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                                reply.send(httpErrors(500, 'Error closing connection to Sense server'));
-                            }
-
-                            reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
-                        });
-                })
-                .catch((error) => {
-                    globals.logger.error(
-                        `APPDUMP: Error while opening session to Sense engine during app dump: ${JSON.stringify(error, null, 2)}`
-                    );
-
-                    try {
-                        session.close();
-                    } catch (err) {
-                        globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
-                        reply.send(httpErrors(500, 'Error closing connection to Sense server'));
-                    }
-
-                    reply.send(httpErrors(422, 'Failed to open session to Sense engine'));
-                });
+            // Close connection to Sense server
+            try {
+                await session.close();
+            } catch (err) {
+                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
+            }
         }
     } catch (err) {
         globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);

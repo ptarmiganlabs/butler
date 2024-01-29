@@ -2,28 +2,23 @@
 // Add dependencies
 import dgram from 'dgram';
 
-// Load code from sub modules
-
-// Load globals dynamically/async to ensure singleton pattern works
-const globalModule = await import('./globals.js');
-const globals = globalModule.default;
-
-const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
-
-// The build function creates a new instance of the App class and returns it.
-const build = (await import('./app.js')).default;
-
-const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
-const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
-
-import {
-    configFileStructureAssert,
-    configFileYamlAssert,
-    configFileNewRelicAssert,
-    configFileInfluxDbAssert,
-} from './lib/assert/assert_config_file.js';
-
 const start = async () => {
+    // Load code from sub modules
+    // Load globals dynamically/async to ensure singleton pattern works
+    const globals = (await import('./globals.js')).default;
+
+    const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
+
+    // The build function creates a new instance of the App class and returns it.
+    const build = (await import('./app.js')).default;
+
+    const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
+    const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
+
+    const { configFileStructureAssert, configFileYamlAssert, configFileNewRelicAssert, configFileInfluxDbAssert } = await import(
+        './lib/assert/assert_config_file.js'
+    );
+
     // Verify correct structure of config file
     configFileStructureAssert(globals.config, globals.logger);
 
@@ -40,6 +35,21 @@ const start = async () => {
 
         // Verify that the config file contains the required data related to InfluxDb
         configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
+    }
+
+    // Ensure that initialisation of globals is complete
+    // Sleep 5 seconds otherwise to llow globals to be initialised
+
+    function sleepLocal(ms) {
+        // eslint-disable-next-line no-promise-executor-return
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    if (!globals.initialised) {
+        globals.logger.info('START: Sleeping 5 seconds to allow globals to be initialised.');
+        await sleepLocal(5000);
+    } else {
+        globals.logger.info('START: Globals initialised, all good.');
     }
 
     const apps = await build({});
