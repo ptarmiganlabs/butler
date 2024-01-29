@@ -1,10 +1,10 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable global-require */
-// const Fastify = require('fastify');
 
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Fastify from 'fastify';
+
 // import AutoLoad from '@fastify/autoload';
 import FastifySwagger from '@fastify/swagger';
 import FastifySwaggerUi from '@fastify/swagger-ui';

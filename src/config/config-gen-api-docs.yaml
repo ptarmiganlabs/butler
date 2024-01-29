@@ -607,14 +607,11 @@ Butler:
   # How? First you have /Users/goran/butler-test-dir1//abc which cleans up to /Users/goran/butler-test-dir1/abc, 
   # then up one level (..).
   fileCopyApprovedDirectories:
-    - ...
 
   # List of directories between which file moves via the REST API can be done.
   fileMoveApprovedDirectories:
-    - ...
 
   fileDeleteApprovedDirectories:
-    - ...
 
   # If set to true, Butler will be started with a focus on creating an API documentation file
   # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.

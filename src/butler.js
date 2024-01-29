@@ -1,22 +1,20 @@
+/* eslint-disable import/first */
 // Add dependencies
-import mqtt from 'mqtt';
-
 import dgram from 'dgram';
 
 // Load code from sub modules
-import globals from './globals.js';
-import setupServiceMonitorTimer from './lib/service_monitor.js';
+
+// Load globals dynamically/async to ensure singleton pattern works
+const globalModule = await import('./globals.js');
+const globals = globalModule.default;
+
+const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
 
 // The build function creates a new instance of the App class and returns it.
-import build from './app.js';
+const build = (await import('./app.js')).default;
 
-import udpInitTaskErrorServer from './udp/udp_handlers.js';
-import mqttInitHandlers from './lib/mqtt_handlers.js';
-
-// import configFileStructureAssert from './lib/assert/assert_config_file.js';
-// import configFileYamlAssert from './lib/assert/assert_config_file.js';
-// import configFileNewRelicAssert from './lib/assert/assert_config_file.js';
-// import configFileInfluxDbAssert from './lib/assert/assert_config_file.js';
+const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
+const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
 import {
     configFileStructureAssert,
@@ -56,7 +54,6 @@ const start = async () => {
         globals.logger.debug(`REST server host: ${globals.config.get('Butler.restServerConfig.serverHost')}`);
         globals.logger.debug(`REST server port: ${globals.config.get('Butler.restServerConfig.serverPort')}`);
 
-        // restServer.listen(globals.config.get('Butler.restServerConfig.backgroundServerPort'), 'localhost', (err, address) => {
         restServer.listen(
             {
                 port: globals.config.get('Butler.restServerConfig.backgroundServerPort'),
