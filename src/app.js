@@ -1,10 +1,10 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable global-require */
-// const Fastify = require('fastify');
 
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Fastify from 'fastify';
+
 // import AutoLoad from '@fastify/autoload';
 import FastifySwagger from '@fastify/swagger';
 import FastifySwaggerUi from '@fastify/swagger-ui';
@@ -72,21 +72,21 @@ async function build(opts = {}) {
 
         globals.logger.info('--------------------------------------');
         globals.logger.info('Starting Butler');
-        globals.logger.info(`Log level      : ${globals.getLoggingLevel()}`);
-        globals.logger.info(`App version    : ${globals.appVersion}`);
-        globals.logger.info(`Instance ID    : ${globals.hostInfo.id}`);
+        globals.logger.info(`Log level         : ${globals.getLoggingLevel()}`);
+        globals.logger.info(`App version       : ${globals.appVersion}`);
+        globals.logger.info(`Instance ID       : ${globals.hostInfo.id}`);
+        globals.logger.info(`Running in Docker : ${globals.hostInfo.isRunningInDocker}`);
         globals.logger.info('');
-        globals.logger.info(`Node version   : ${globals.hostInfo.node.nodeVersion}`);
-        globals.logger.info(`Architecture   : ${globals.hostInfo.si.os.arch}`);
-        globals.logger.info(`Platform       : ${globals.hostInfo.si.os.platform}`);
-        globals.logger.info(`Release        : ${globals.hostInfo.si.os.release}`);
-        globals.logger.info(`Distro         : ${globals.hostInfo.si.os.distro}`);
-        globals.logger.info(`Codename       : ${globals.hostInfo.si.os.codename}`);
-        globals.logger.info(`Virtual        : ${globals.hostInfo.si.system.virtual}`);
-        globals.logger.info(`Processors     : ${globals.hostInfo.si.cpu.processors}`);
-        globals.logger.info(`Physical cores : ${globals.hostInfo.si.cpu.physicalCores}`);
-        globals.logger.info(`Cores          : ${globals.hostInfo.si.cpu.cores}`);
-        globals.logger.info(`Docker arch.   : ${globals.hostInfo.si.cpu.hypervizor}`);
+        globals.logger.info(`Node version      : ${globals.hostInfo.node.nodeVersion}`);
+        globals.logger.info(`Architecture      : ${globals.hostInfo.si.os.arch}`);
+        globals.logger.info(`Platform          : ${globals.hostInfo.si.os.platform}`);
+        globals.logger.info(`Release           : ${globals.hostInfo.si.os.release}`);
+        globals.logger.info(`Distro            : ${globals.hostInfo.si.os.distro}`);
+        globals.logger.info(`Codename          : ${globals.hostInfo.si.os.codename}`);
+        globals.logger.info(`Virtual           : ${globals.hostInfo.si.system.virtual}`);
+        globals.logger.info(`Processors        : ${globals.hostInfo.si.cpu.processors}`);
+        globals.logger.info(`Physical cores    : ${globals.hostInfo.si.cpu.physicalCores}`);
+        globals.logger.info(`Cores             : ${globals.hostInfo.si.cpu.cores}`);
         globals.logger.info(`Total memory   : ${globals.hostInfo.si.memory.total}`);
         globals.logger.info('');
         // Add log line with name of config file

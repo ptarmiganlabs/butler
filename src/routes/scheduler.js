@@ -178,59 +178,57 @@ async function handlerGETSchedulesStatus(request, reply) {
 
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
-    if (globals.config.has('Butler.scheduler.enable') && globals.config.get('Butler.scheduler.enable')) {
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')
-        ) {
-            globals.logger.debug('Registering REST endpoint GET /v4/schedules');
-            fastify.get('/v4/schedules', apiGETSchedules, handlerGETSchedules);
-        }
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.getSchedule')
+    ) {
+        globals.logger.debug('Registering REST endpoint GET /v4/schedules');
+        fastify.get('/v4/schedules', apiGETSchedules, handlerGETSchedules);
+    }
 
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')
-        ) {
-            globals.logger.debug('Registering REST endpoint POST /v4/schedules');
-            fastify.post('/v4/schedules', apiPOSTSchedules, handlerPOSTSchedules);
-        }
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.createNewSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.createNewSchedule')
+    ) {
+        globals.logger.debug('Registering REST endpoint POST /v4/schedules');
+        fastify.post('/v4/schedules', apiPOSTSchedules, handlerPOSTSchedules);
+    }
 
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')
-        ) {
-            globals.logger.debug('Registering REST endpoint DELETE /v4/schedules/:scheduleId');
-            fastify.delete('/v4/schedules/:scheduleId', apiDELETESchedules, handlerDELETESchedules);
-        }
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.deleteSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.deleteSchedule')
+    ) {
+        globals.logger.debug('Registering REST endpoint DELETE /v4/schedules/:scheduleId');
+        fastify.delete('/v4/schedules/:scheduleId', apiDELETESchedules, handlerDELETESchedules);
+    }
 
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
-        ) {
-            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/start');
-            fastify.put('/v4/schedules/:scheduleId/start', apiPUTSchedulesStart, handlerPUTSchedulesStart);
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.startSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.startSchedule')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/start');
+        fastify.put('/v4/schedules/:scheduleId/start', apiPUTSchedulesStart, handlerPUTSchedulesStart);
 
-            // Start all schedules
-            fastify.put('/v4/schedules/startall', apiPUTSchedulesStartAll, handlerPUTSchedulesStart);
-        }
+        // Start all schedules
+        fastify.put('/v4/schedules/startall', apiPUTSchedulesStartAll, handlerPUTSchedulesStart);
+    }
 
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
-        ) {
-            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/stop');
-            fastify.put('/v4/schedules/:scheduleId/stop', apiPUTSchedulesStop, handlerPUTSchedulesStop);
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.stopSchedule') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.stopSchedule')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/schedules/:scheduleId/stop');
+        fastify.put('/v4/schedules/:scheduleId/stop', apiPUTSchedulesStop, handlerPUTSchedulesStop);
 
-            // Stop all schedules
-            fastify.put('/v4/schedules/stopall', apiPUTSchedulesStopAll, handlerPUTSchedulesStop);
-        }
+        // Stop all schedules
+        fastify.put('/v4/schedules/stopall', apiPUTSchedulesStopAll, handlerPUTSchedulesStop);
+    }
 
-        if (
-            globals.config.has('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll') &&
-            globals.config.get('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll')
-        ) {
-            globals.logger.debug('Registering REST endpoint PUT /v4/schedules/status');
-            fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
-        }
+    if (
+        globals.config.has('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll') &&
+        globals.config.get('Butler.restServerEndpointsEnable.scheduler.getScheduleStatusAll')
+    ) {
+        globals.logger.debug('Registering REST endpoint PUT /v4/schedules/status');
+        fastify.get('/v4/schedules/status', apiGETSchedulerStatus, handlerGETSchedulesStatus);
     }
 };
