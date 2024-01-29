@@ -224,29 +224,25 @@ paths:
                 fromFile:
                   type: string
                   description: Name of source file.
-                  examples:
-                    - subfolder/file1.qvd
+                  example: subfolder/file1.qvd
                 toFile:
                   type: string
                   description: Name of destination file. Can be different from source file name,
                     if needed.
-                  examples:
-                    - archive/file1_20200925.qvd
+                  example: archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
                   description: Controls whether destination file should be overwritten if it
                     already exists. Note that the copy operation will silently
                     fail if you set this to false and the destination exists.
                     Defaults to false.
-                  examples:
-                    - false
+                  example: false
                 preserveTimestamp:
                   type: boolean
                   description: When true, the timestamp of the source file(s) will be preserved on
                     the destination file(s). When false, timestamp behaviour is
                     OS-dependent. Defaults to false.
-                  examples:
-                    - false
+                  example: false
       responses:
         "201":
           description: File copied.
@@ -259,29 +255,25 @@ paths:
                   fromFile:
                     type: string
                     description: Name of source file.
-                    examples:
-                      - subfolder/file1.qvd
+                    example: subfolder/file1.qvd
                   toFile:
                     type: string
                     description: Name of destination file. Can be different from source file name,
                       if needed.
-                    examples:
-                      - archive/file1_20200925.qvd
+                    example: archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
                     description: Controls whether destination file should be overwritten if it
                       already exists. Note that the copy operation will silently
                       fail if you set this to false and the destination exists.
                       Defaults to false.
-                    examples:
-                      - false
+                    example: false
                   preserveTimestamp:
                     type: boolean
                     description: When true, the timestamp of the source file(s) will be preserved on
                       the destination file(s). When false, timestamp behaviour
                       is OS-dependent. Defaults to false.
-                    examples:
-                      - false
+                    example: false
         "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
@@ -357,20 +349,17 @@ paths:
                 fromFile:
                   type: string
                   description: Name of source file.
-                  examples:
-                    - subfolder/file1.qvd
+                  example: subfolder/file1.qvd
                 toFile:
                   type: string
                   description: Name of destination file. Can be different from source file name,
                     if needed.
-                  examples:
-                    - archive/file1_20200925.qvd
+                  example: archive/file1_20200925.qvd
                 overwrite:
                   type: boolean
                   description: Controls whether destination file should be overwritten if it
                     already exists. Defaults to false.
-                  examples:
-                    - false
+                  example: false
       responses:
         "201":
           description: File moved.
@@ -383,20 +372,17 @@ paths:
                   fromFile:
                     type: string
                     description: Name of source file.
-                    examples:
-                      - subfolder/file1.qvd
+                    example: subfolder/file1.qvd
                   toFile:
                     type: string
                     description: Name of destination file. Can be different from source file name,
                       if needed.
-                    examples:
-                      - archive/file1_20200925.qvd
+                    example: archive/file1_20200925.qvd
                   overwrite:
                     type: boolean
                     description: Controls whether destination file should be overwritten if it
                       already exists. Defaults to false.
-                    examples:
-                      - false
+                    example: false
         "400":
           description: '"Required parameter missing" or "fromFile not found".'
           content:
@@ -470,8 +456,7 @@ paths:
                   description: Name of file to be deleted. Use forward/backward slashes in paths
                     as needed, depending on whether Butler runs on
                     Windows/non-Windows platform.
-                  examples:
-                    - data/qvdstore/sales/file1.qvd
+                  example: data/qvdstore/sales/file1.qvd
       responses:
         "204":
           description: File deleted.
@@ -550,8 +535,7 @@ paths:
                 directory:
                   type: string
                   description: Directory that should be created.
-                  examples:
-                    - subfolder/2020-10
+                  example: subfolder/2020-10
       responses:
         "201":
           description: Directory created.
@@ -564,8 +548,7 @@ paths:
                   directory:
                     type: string
                     description: Directory that was created.
-                    examples:
-                      - subfolder/2020-10
+                    example: subfolder/2020-10
         "400":
           description: Required parameter missing.
           content:
@@ -619,8 +602,7 @@ paths:
                   type: string
                   description: Path to directory that should be created. Can be a relative or
                     absolute path.
-                  examples:
-                    - /Users/joe/data/qvds/2020
+                  example: /Users/joe/data/qvds/2020
       responses:
         "201":
           description: Directory created.
@@ -633,8 +615,7 @@ paths:
                   directory:
                     type: string
                     description: Directory that was created.
-                    examples:
-                      - /Users/joe/data/qvds/2020
+                    example: /Users/joe/data/qvds/2020
         "400":
           description: Required parameter missing.
           content:
@@ -734,18 +715,15 @@ paths:
                   namespace:
                     type: string
                     description: Namespace name.
-                    examples:
-                      - Sales ETL step 2
+                    example: Sales ETL step 2
                   key:
                     type: string
                     description: Key name.
-                    examples:
-                      - Last extract timestamp
+                    example: Last extract timestamp
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    examples:
-                      - 2020-09-29 17:14:56
+                    example: 2020-09-29 17:14:56
         "400":
           description: '"Namespace or key not found" or "Required parameter missing".'
           content:
@@ -800,19 +778,16 @@ paths:
                 key:
                   type: string
                   description: Key to use
-                  examples:
-                    - ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
+                  example: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
                 value:
                   type: string
                   description: Value to set
-                  examples:
-                    - "12345.789"
+                  example: "12345.789"
                 ttl:
                   type: number
                   description: Time to live = how long (milliseconds) the key-value pair should
                     exist before being automatically deleted
-                  examples:
-                    - 10000
+                  example: 10000
       parameters:
         - schema:
             type: string
@@ -833,24 +808,20 @@ paths:
                   namespace:
                     type: string
                     description: Name of namespace.
-                    examples:
-                      - Sales ETL step 2
+                    example: Sales ETL step 2
                   key:
                     type: string
                     description: Key name.
-                    examples:
-                      - Last extract timestamp
+                    example: Last extract timestamp
                   value:
                     type: string
                     description: Value stored in the key-value pair.
-                    examples:
-                      - 2020-09-29 17:14:56
+                    example: 2020-09-29 17:14:56
                   ttl:
                     type: number
                     description: Time-to-live for the key-value pair. 0 if no ttl was set, otherwise
                       in milliseconds.
-                    examples:
-                      - 60000
+                    example: 60000
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -980,18 +951,15 @@ paths:
                       namespace:
                         type: string
                         description: Namespace name.
-                        examples:
-                          - Sales ETL step 2
+                        example: Sales ETL step 2
                       key:
                         type: string
                         description: Key name.
-                        examples:
-                          - Last extract timestamp
+                        example: Last extract timestamp
                       value:
                         type: string
                         description: Value stored in the key-value pair.
-                        examples:
-                          - 2020-09-29 17:14:56
+                        example: 2020-09-29 17:14:56
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -1115,17 +1083,16 @@ paths:
                   namespace:
                     type: string
                     description: ""
-                    examples:
-                      - Sales ETL step 2
+                    example: Sales ETL step 2
                   keys:
                     type: array
                     items:
                       type: object
                       key:
                         type: string
-                    examples:
-                      - - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
-                        - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
+                    example:
+                      - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1
+                      - key: ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_2
         "400":
           description: '"Namespace not found" or "Required parameter missing".'
           content:
@@ -1174,15 +1141,13 @@ paths:
                 topic:
                   type: string
                   description: Topic to which message should be published.
-                  examples:
-                    - qliksense/new_data_notification/sales
+                  example: qliksense/new_data_notification/sales
                 message:
                   type: string
                   description: The message is a generic text string and can thus contain anything
                     that can be represented in a string, including JSON,
                     key-value pairs, plain text etc.
-                  examples:
-                    - dt=20201028
+                  example: dt=20201028
               required:
                 - topic
                 - message
@@ -1252,9 +1217,8 @@ paths:
                   type: string
                   description: "Event type. Can be a combination of alphanumeric characters, _
                     underscores, and : colons."
-                  examples:
-                    - relead-failed
                   maxLength: 254
+                  example: relead-failed
                 timestamp:
                   type: number
                   description: The event's start time in Unix time. Uses UTC time zone. This field
@@ -1264,8 +1228,7 @@ paths:
                     than 48 hours ago or newer than 24 hours from the time they
                     are reported are dropped by New Relic. If left empty Butler
                     will use the current time as timestamp.
-                  examples:
-                    - 1642164296053
+                  example: 1642164296053
                 attributes:
                   type: array
                   description: Dimensions/attributs that will be associated with the event.
@@ -1274,14 +1237,12 @@ paths:
                     properties:
                       name:
                         type: string
-                        examples:
-                          - host.name
                         maxLength: 254
+                        example: host.name
                       value:
                         type: string
-                        examples:
-                          - dev.server.com
                         maxLength: 4096
+                        example: dev.server.com
               required:
                 - eventType
         required: true
@@ -1296,12 +1257,10 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    examples:
-                      - "202"
+                    example: "202"
                   newRelicResultText:
                     type: string
-                    examples:
-                      - Data accepted.
+                    example: Data accepted.
         "400":
           description: Required parameter missing.
           content:
@@ -1351,21 +1310,18 @@ paths:
                 name:
                   type: string
                   description: Metric name.
-                  examples:
-                    - memory.heap
                   maxLength: 254
+                  example: memory.heap
                 type:
                   type: string
                   description: Metric type.
-                  examples:
-                    - gauge
                   enum:
                     - gauge
+                  example: gauge
                 value:
                   type: number
                   description: Value of the metric.
-                  examples:
-                    - 2.3
+                  example: 2.3
                 timestamp:
                   type: number
                   description: The metric's start time in Unix time. Uses UTC time zone. This
@@ -1375,8 +1331,7 @@ paths:
                     than 48 hours ago or newer than 24 hours from the time they
                     are reported are dropped by New Relic. If left empty Butler
                     will use the current time as timestamp.
-                  examples:
-                    - 1642164296053
+                  example: 1642164296053
                 interval:
                   type: number
                   description: The length of the time window (millisec). Required for count and
@@ -1389,13 +1344,11 @@ paths:
                     properties:
                       name:
                         type: string
-                        examples:
-                          - host.name
                         maxLength: 254
+                        example: host.name
                       value:
                         type: string
-                        examples:
-                          - dev.server.com
+                        example: dev.server.com
               required:
                 - name
                 - type
@@ -1412,12 +1365,10 @@ paths:
                 properties:
                   newRelicResultCode:
                     type: number
-                    examples:
-                      - "202"
+                    example: "202"
                   newRelicResultText:
                     type: string
-                    examples:
-                      - Data accepted.
+                    example: Data accepted.
         "400":
           description: Required parameter missing.
           content:
@@ -1454,6 +1405,818 @@ paths:
                     type: string
                   time:
                     type: string
+  /v4/schedules:
+    get:
+      summary: Get all information available for existing schedule(s).
+      description: >-
+        If a schedule ID is specified using a query parameter (and there exists
+        a schedule with that ID), information about that schedule will be
+        returned.
+
+        If no schedule ID is specified, all schedules will be returned.
+      parameters:
+        - schema:
+            type: string
+          example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+          in: query
+          name: id
+          required: false
+          description: Scheduld ID
+      responses:
+        "200":
+          description: Schedule successfully retrieved.
+          content:
+            application/json:
+              schema:
+                description: Schedule successfully retrieved.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Schedule ID
+                      example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                    created:
+                      type: string
+                      description: Timestamp when schedule was created
+                      example: 2020-09-29T14:29:12.283Z
+                    name:
+                      type: string
+                      description: Schedule name.
+                      example: Reload sales metrics
+                    cronSchedule:
+                      type: string
+                      description: >-
+                        5 or 6 position cron schedule.
+
+
+                        If 6 positions used, the leftmost position represent seconds.
+
+                        If 5 positions used, leftmost position is minutes.
+
+
+                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      example: 0,30 6 * * 1-5
+                    timezone:
+                      type: string
+                      description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                      example: Europe/Stockholm
+                    qlikSenseTaskId:
+                      type: string
+                      description: ID of Qlik Sense task that should be started when schedule
+                        triggers.
+                      example: 210832b5-6174-4572-bd19-3e61eda675ef
+                    startupState:
+                      type: string
+                      enum:
+                        - start
+                        - started
+                        - stop
+                        - stopped
+                      description: If set to "start" or "started", the schedule will be started upon
+                        creation. Otherwise it will remain in stopped state.
+                      example: started
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                      description: Can be used to categorise schedules.
+                      example:
+                        - tag 1
+                        - tag 2
+                    lastKnownState:
+                      type: string
+                      description: Last known state (started/stopped) for the schedule.
+                      enum:
+                        - started
+                        - stopped
+                      example: started
+        "400":
+          description: Schedule not found.
+          content:
+            application/json:
+              schema:
+                description: Schedule not found.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+    post:
+      summary: Create a new schedule.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Descriptive name for the schedule.
+                  example: Reload sales metrics
+                cronSchedule:
+                  type: string
+                  description: >-
+                    5 or 6 position cron schedule.
+
+
+                    If 6 positions used, the leftmost position represent seconds.
+
+                    If 5 positions used, leftmost position is minutes.
+
+
+                    The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                  example: 0,30 6 * * 1-5
+                timezone:
+                  type: string
+                  description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                  example: Europe/Stockholm
+                qlikSenseTaskId:
+                  type: string
+                  description: ID of Qlik Sense task that should be started when schedule
+                    triggers.
+                  example: 210832b5-6174-4572-bd19-3e61eda675ef
+                startupState:
+                  type: string
+                  enum:
+                    - start
+                    - started
+                    - stop
+                    - stopped
+                  description: If set to "start" or "started", the schedule will be started upon
+                    creation. Otherwise it will remain in stopped state.
+                  example: started
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Can be used to categorise schedules.
+                  example:
+                    - tag 1
+                    - tag 2
+              required:
+                - name
+                - cronSchedule
+                - timezone
+                - qlikSenseTaskId
+                - startupState
+        required: true
+      responses:
+        "201":
+          description: Schedule successfully retrieved.
+          content:
+            application/json:
+              schema:
+                description: Schedule successfully retrieved.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Schedule ID
+                      example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                    created:
+                      type: string
+                      description: Timestamp when schedule was created
+                      example: 2020-09-29T14:29:12.283Z
+                    name:
+                      type: string
+                      description: Schedule name.
+                      example: Reload sales metrics
+                    cronSchedule:
+                      type: string
+                      description: >-
+                        5 or 6 position cron schedule.
+
+
+                        If 6 positions used, the leftmost position represent seconds.
+
+                        If 5 positions used, leftmost position is minutes.
+
+
+                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      example: 0,30 6 * * 1-5
+                    timezone:
+                      type: string
+                      description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                      example: Europe/Stockholm
+                    qlikSenseTaskId:
+                      type: string
+                      description: ID of Qlik Sense task that should be started when schedule
+                        triggers.
+                      example: 210832b5-6174-4572-bd19-3e61eda675ef
+                    startupState:
+                      type: string
+                      enum:
+                        - start
+                        - started
+                        - stop
+                        - stopped
+                      description: If set to "start" or "started", the schedule will be started upon
+                        creation. Otherwise it will remain in stopped state.
+                      example: started
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                      description: Can be used to categorise schedules.
+                      example:
+                        - tag 1
+                        - tag 2
+                    lastKnownState:
+                      type: string
+                      enum:
+                        - start
+                        - started
+                        - stop
+                        - stopped
+                      description: Last known state of the schedule
+                      example: started
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  "/v4/schedules/{scheduleId}":
+    delete:
+      summary: Delete a schedule.
+      parameters:
+        - schema:
+            type: string
+          example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+          in: path
+          name: scheduleId
+          required: true
+          description: Schedule ID.
+      responses:
+        "204":
+          description: Schedule successfully deleted.
+          content:
+            application/json:
+              schema:
+                description: Schedule successfully deleted.
+                type: string
+              example: ""
+        "400":
+          description: Schedule not found.
+          content:
+            application/json:
+              schema:
+                description: Schedule not found.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  "/v4/schedules/{scheduleId}/start":
+    put:
+      summary: Start a schedule.
+      description: Start a schedule, i.e. have the scheduler run the associated reload
+        task according to the schedule's cron settings.
+      parameters:
+        - schema:
+            type: string
+          example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+          in: path
+          name: scheduleId
+          required: true
+          description: Schedule ID.
+      responses:
+        "200":
+          description: >-
+            Schedule successfully started.
+
+
+            An object with all information about the started schedule is returned.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  Schedule successfully started.
+
+
+                  An object with all information about the started schedule is returned.
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Schedule ID
+                    example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                  created:
+                    type: string
+                    description: Timestamp when schedule was created
+                    example: 2020-09-29T14:29:12.283Z
+                  name:
+                    type: string
+                    description: Schedule name.
+                    example: Reload sales metrics
+                  cronSchedule:
+                    type: string
+                    description: >-
+                      5 or 6 position cron schedule.
+
+
+                      If 6 positions used, the leftmost position represent seconds.
+
+                      If 5 positions used, leftmost position is minutes.
+
+
+                      The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                    example: 0,30 6 * * 1-5
+                  timezone:
+                    type: string
+                    description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                    example: Europe/Stockholm
+                  qlikSenseTaskId:
+                    type: string
+                    description: ID of Qlik Sense task that should be started when schedule
+                      triggers.
+                    example: 210832b5-6174-4572-bd19-3e61eda675ef
+                  startupState:
+                    type: string
+                    enum:
+                      - start
+                      - started
+                      - stop
+                      - stopped
+                    description: If set to "start" or "started", the schedule will be started upon
+                      creation. Otherwise it will remain in stopped state.
+                    example: started
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                    description: Can be used to categorise schedules.
+                    example:
+                      - tag 1
+                      - tag 2
+                  lastKnownState:
+                    type: string
+                    description: Last known state (started/stopped) for the schedule.
+                    enum:
+                      - started
+                      - stopped
+                    example: started
+        "400":
+          description: Schedule not found.
+          content:
+            application/json:
+              schema:
+                description: Schedule not found.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  /v4/schedules/startall:
+    put:
+      summary: Start all schedules.
+      description: Start all schedules, i.e. tell the scheduler to run each schedule
+        and start associated tasks according to each schedule's settings.
+      responses:
+        "200":
+          description: >-
+            Schedules successfully started.
+
+
+            An array with all information about the started schedules is returned.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  Schedules successfully started.
+
+
+                  An array with all information about the started schedules is returned.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Schedule ID
+                      example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                    created:
+                      type: string
+                      description: Timestamp when schedule was created
+                      example: 2020-09-29T14:29:12.283Z
+                    name:
+                      type: string
+                      description: Schedule name.
+                      example: Reload sales metrics
+                    cronSchedule:
+                      type: string
+                      description: >-
+                        5 or 6 position cron schedule.
+
+
+                        If 6 positions used, the leftmost position represent seconds.
+
+                        If 5 positions used, leftmost position is minutes.
+
+
+                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      example: 0,30 6 * * 1-5
+                    timezone:
+                      type: string
+                      description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                      example: Europe/Stockholm
+                    qlikSenseTaskId:
+                      type: string
+                      description: ID of Qlik Sense task that should be started when schedule
+                        triggers.
+                      example: 210832b5-6174-4572-bd19-3e61eda675ef
+                    startupState:
+                      type: string
+                      enum:
+                        - start
+                        - started
+                        - stop
+                        - stopped
+                      description: If set to "start" or "started", the schedule will be started upon
+                        creation. Otherwise it will remain in stopped state.
+                      example: started
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                      description: Can be used to categorise schedules.
+                      example:
+                        - tag 1
+                        - tag 2
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  "/v4/schedules/{scheduleId}/stop":
+    put:
+      summary: Stop a schedule.
+      description: Stop a schedule, i.e. tell the scheduler to no longer execute the
+        schedule according to its cron settings.
+      parameters:
+        - schema:
+            type: string
+          example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+          in: path
+          name: scheduleId
+          required: true
+          description: Schedule ID.
+      responses:
+        "200":
+          description: >-
+            Schedule successfully stopped.
+
+
+            An object with all information about the stopped schedule is returned.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  Schedule successfully stopped.
+
+
+                  An object with all information about the stopped schedule is returned.
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Schedule ID
+                    example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                  created:
+                    type: string
+                    description: Timestamp when schedule was created
+                    example: 2020-09-29T14:29:12.283Z
+                  name:
+                    type: string
+                    description: Schedule name.
+                    example: Reload sales metrics
+                  cronSchedule:
+                    type: string
+                    description: >-
+                      5 or 6 position cron schedule.
+
+
+                      If 6 positions used, the leftmost position represent seconds.
+
+                      If 5 positions used, leftmost position is minutes.
+
+
+                      The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                    example: 0,30 6 * * 1-5
+                  timezone:
+                    type: string
+                    description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                    example: Europe/Stockholm
+                  qlikSenseTaskId:
+                    type: string
+                    description: ID of Qlik Sense task that should be started when schedule
+                      triggers.
+                    example: 210832b5-6174-4572-bd19-3e61eda675ef
+                  startupState:
+                    type: string
+                    enum:
+                      - start
+                      - started
+                      - stop
+                      - stopped
+                    description: If set to "start" or "started", the schedule will be started upon
+                      creation. Otherwise it will remain in stopped state.
+                    example: started
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                    description: Can be used to categorise schedules.
+                    example:
+                      - tag 1
+                      - tag 2
+                  lastKnownState:
+                    type: string
+                    description: Last known state (started/stopped) for the schedule.
+                    enum:
+                      - started
+                      - stopped
+                    example: started
+        "400":
+          description: Schedule not found.
+          content:
+            application/json:
+              schema:
+                description: Schedule not found.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  /v4/schedules/stopall:
+    put:
+      summary: Stop all schedules.
+      description: Stop all schedules, i.e. tell the scheduler to no longer execute
+        any schedule according to its cron settings.
+      responses:
+        "200":
+          description: >-
+            Schedules successfully stopped.
+
+
+            An array with all information about the stopped schedules is returned.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  Schedules successfully stopped.
+
+
+                  An array with all information about the stopped schedules is returned.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Schedule ID
+                      example: e4b1c455-aa15-4a51-a9cf-c5e4cfc91339
+                    created:
+                      type: string
+                      description: Timestamp when schedule was created
+                      example: 2020-09-29T14:29:12.283Z
+                    name:
+                      type: string
+                      description: Schedule name.
+                      example: Reload sales metrics
+                    cronSchedule:
+                      type: string
+                      description: >-
+                        5 or 6 position cron schedule.
+
+
+                        If 6 positions used, the leftmost position represent seconds.
+
+                        If 5 positions used, leftmost position is minutes.
+
+
+                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      example: 0,30 6 * * 1-5
+                    timezone:
+                      type: string
+                      description: Time zone the schedule should use. Ex "Europe/Stockholm".
+                      example: Europe/Stockholm
+                    qlikSenseTaskId:
+                      type: string
+                      description: ID of Qlik Sense task that should be started when schedule
+                        triggers.
+                      example: 210832b5-6174-4572-bd19-3e61eda675ef
+                    startupState:
+                      type: string
+                      enum:
+                        - start
+                        - started
+                        - stop
+                        - stopped
+                      description: If set to "start" or "started", the schedule will be started upon
+                        creation. Otherwise it will remain in stopped state.
+                      example: started
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                      description: Can be used to categorise schedules.
+                      example:
+                        - tag 1
+                        - tag 2
+        "500":
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
+  /v4/schedules/status:
+    get:
+      summary: Get scheduler status.
+      description: >-
+        Get basic status from the core scheduler.
+
+
+        No schedule metadata beyond ID, cron setting and job state will be returned, but as this comes from the core scheduler it is the authorative truth about what jobs are running (and which ones are not).
+      responses:
+        "200":
+          description: Status for all jobs that exist in the core scheduler.
+          content:
+            text/plain:
+              schema:
+                description: Status for all jobs that exist in the core scheduler.
+                type: string
+              example: >-
+                {
+
+                '3702cec1-b6c8-463e-bda3-58d6a94dd9ac': * */2 * * * status: Running 
+
+                '2d5dcebc-2440-4bd7-9aa1-fb69708715c8': */45 * * * * * status: Running 
+
+                'a93ca0f3-7980-439b-9eda-723a167352e3': */10 * * * * * status: Running 
+
+                'ad250f49-ffd8-45dc-9b2b-f76028e969a4': */5 * * * * * status: Running 
+
+                }
+        "500":
+          description: Internal error.
+          content:
+            text/plain:
+              schema:
+                description: Internal error.
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  code:
+                    type: string
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  time:
+                    type: string
   "/v4/app/{appId}/reload":
     put:
       summary: Do a stand-alone reload of a Qlik Sense app, without using a task.
@@ -1471,26 +2234,25 @@ paths:
                   type: boolean
                   description: Should a full (=false) or partial (=true) reload be done? If not
                     specified a full reload will be done.
-                  examples:
-                    - true
+                  example: true
                 startQSEoWTaskOnSuccess:
                   type: array
                   description: Array of task IDs that should be started when the app has
                     successfully reloaded.
                   items:
                     type: string
-                  examples:
-                    - - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
-                      - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
+                  example:
+                    - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
+                    - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
                 startQSEoWTaskOnFailure:
                   type: array
                   description: Array of task IDs that should be started if the app fails
                     reloading.
                   items:
                     type: string
-                  examples:
-                    - - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
-                      - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
+                  example:
+                    - 09b3c78f-04dd-45e3-a4bf-1b074d6572fa
+                    - eaf1da4f-fd44-4cea-b2de-7b67a6496ee3
       parameters:
         - schema:
             type: string
@@ -1511,8 +2273,7 @@ paths:
                   appId:
                     type: string
                     description: ID of reloaded app
-                    examples:
-                      - 210832b5-6174-4572-bd19-3e61eda675ef
+                    example: 210832b5-6174-4572-bd19-3e61eda675ef
         "400":
           description: Required parameter missing.
           content:
@@ -1745,13 +2506,11 @@ paths:
                     id:
                       type: string
                       description: App ID
-                      examples:
-                        - 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
+                      example: 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
                     name:
                       type: string
                       description: App name
-                      examples:
-                        - 2021 sales targets
+                      example: 2021 sales targets
         "500":
           description: Internal error.
           content:
@@ -1788,13 +2547,11 @@ paths:
                     id:
                       type: string
                       description: App ID
-                      examples:
-                        - 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
+                      example: 5d7ae888-61cd-4539-97b2-6cf5baaa6f9d
                     name:
                       type: string
                       description: App name
-                      examples:
-                        - 2021 sales targets
+                      example: 2021 sales targets
         "500":
           description: Internal error.
           content:
@@ -1850,13 +2607,12 @@ paths:
                 properties:
                   type:
                     type: string
-                    examples:
-                      - keyvaluestore
                     enum:
                       - keyvaluestore
                       - starttaskid
                       - starttasktag
                       - starttaskcustomproperty
+                    example: keyvaluestore
                   payload:
                     type: object
             example:
@@ -2007,13 +2763,12 @@ paths:
                 properties:
                   type:
                     type: string
-                    examples:
-                      - keyvaluestore
                     enum:
                       - keyvaluestore
                       - starttaskid
                       - starttasktag
                       - starttaskcustomproperty
+                    example: keyvaluestore
                   payload:
                     type: object
             example:
@@ -2141,23 +2896,19 @@ paths:
                 channel:
                   type: string
                   description: "Slack channel to post message into. Prefix channel name with #."
-                  examples:
-                    - "#reload-notification"
+                  example: "#reload-notification"
                 from_user:
                   type: string
                   description: Name of sending user, as shown in the Slack message
-                  examples:
-                    - Butler the Bot
+                  example: Butler the Bot
                 msg:
                   type: string
                   description: Text going into the Slack message
-                  examples:
-                    - This is a message from Qlik Sense
+                  example: This is a message from Qlik Sense
                 emoji:
                   type: string
                   description: Emoji to shown next to Slack message
-                  examples:
-                    - thumbsup
+                  example: thumbsup
               required:
                 - channel
                 - from_user
@@ -2175,23 +2926,19 @@ paths:
                   channel:
                     type: string
                     description: "Slack channel to post message into. Prefix channel name with #."
-                    examples:
-                      - "#reload-notification"
+                    example: "#reload-notification"
                   from_user:
                     type: string
                     description: Name of sending user, as shown in the Slack message
-                    examples:
-                      - Butler the Bot
+                    example: Butler the Bot
                   msg:
                     type: string
                     description: Text going into the Slack message
-                    examples:
-                      - This is a message from Qlik Sense
+                    example: This is a message from Qlik Sense
                   emoji:
                     type: string
                     description: Emoji to shown next to Slack message
-                    examples:
-                      - thumbsup
+                    example: thumbsup
         "400":
           description: Required parameter missing.
           content:
