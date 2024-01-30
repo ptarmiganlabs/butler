@@ -101,7 +101,8 @@ jobs:
       - sp53
     # timeout-minutes: 15
 
-    if: ${{ needs.release-please.outputs.releases_created }} 
+    # if: ${{ needs.release-please.outputs.releases_created }} 
+    if: needs.release-please.outputs.releases_created == 'true'
     env:
       DIST_FILE_NAME: butler
       GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
