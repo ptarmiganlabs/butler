@@ -2,7 +2,7 @@
     "release-type": "node",
     "prerelease": false,
     "draft": true,
-    "release-search-depth": 5,
+    "release-search-depth": 50,
     "commit-search-depth": 200,
     "changelog-sections": [
         {
