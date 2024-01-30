@@ -24,7 +24,7 @@ class Settings {
         }
 
         // Get app version from package.json file
-        const filename = `./package.json`;
+        const filenamePackage = `./package.json`;
         let a;
         let b;
         let c;
@@ -37,7 +37,7 @@ class Settings {
             b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, filename);
+            c = upath.join(b, filenamePackage);
         } else {
             // Get path to JS file
             a = fileURLToPath(import.meta.url);
@@ -46,7 +46,7 @@ class Settings {
             b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, '..', filename);
+            c = upath.join(b, '..', filenamePackage);
         }
 
         const { version } = JSON.parse(readFileSync(c));
@@ -669,7 +669,7 @@ class Settings {
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
 
         // Ensure that InfluxDB has been created
-        if(this.influx === undefined) {
+        if (this.influx === undefined) {
             this.logger.error('CONFIG: InfluxDB not initialized! Possible race condition during startup of Butler. Exiting.');
             process.exit(1);
         }

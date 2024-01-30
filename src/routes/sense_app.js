@@ -6,7 +6,6 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import upath from 'upath';
 
-
 // Load global variables and functions
 import globals from '../globals.js';
 
@@ -24,7 +23,7 @@ async function handlerPutAppReload(request, reply) {
         // Are we running as a packaged app?
         if (process.pkg) {
             // Yes, we are running as a packaged app
-            // Get path to JS file const 
+            // Get path to JS file const
             a = process.pkg.defaultEntrypoint;
 
             // Strip off the filename

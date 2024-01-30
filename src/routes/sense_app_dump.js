@@ -20,7 +20,7 @@ async function handlerGetSenseAppDump(request, reply) {
         // Are we running as a packaged app?
         if (process.pkg) {
             // Yes, we are running as a packaged app
-            // Get path to JS file const 
+            // Get path to JS file const
             a = process.pkg.defaultEntrypoint;
 
             // Strip off the filename
@@ -72,7 +72,7 @@ async function handlerGetSenseAppDump(request, reply) {
 
             // We can now interact with the global object, for example get the document list.
             // Please refer to the Engine API documentation for available methods.
-            const app = await global.openDoc(request.params.appId, '', '', '', true);           
+            const app = await global.openDoc(request.params.appId, '', '', '', true);
             const data = await serializeApp(app);
 
             reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
