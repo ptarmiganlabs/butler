@@ -9,4 +9,3 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = 'false';
 export const { NODE_CONFIG_DIR } = process.env;
 export const { SUPPRESS_NO_CONFIG_WARNING } = process.env;
 export const { NODE_ENV } = process.env;
-
