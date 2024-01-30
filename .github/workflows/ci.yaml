@@ -13,7 +13,7 @@ jobs:
       release_upload_url: ${{ steps.release.outputs['upload_url'] }}
     env:
       GITHUB_REF: ${{ github.ref }}
-      GITHUB_TOKEN: ${{ secrets.PAT }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
       DIST_FILE_NAME: butler
     steps:
       - name: Show github.ref
@@ -23,7 +23,7 @@ jobs:
         id: release
         if: github.repository_owner == 'ptarmiganlabs'
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.RELEASE_PLEASE_PAT }}
           # optional. customize path to release-please-config.json
           config-file: release-please-config.json
           # optional. customize path to .release-please-manifest.json
@@ -121,7 +121,7 @@ jobs:
     if: ${{ needs.release-please.outputs.releases_created }} 
     env:
       DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.PAT }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
       MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
       MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
       MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
@@ -243,7 +243,7 @@ jobs:
     if: ${{ needs.release-please.outputs.releases_created }} 
     env:
       DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.PAT }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
       CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
       CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
       CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
@@ -347,7 +347,7 @@ jobs:
     if: ${{ needs.release-please.outputs.releases_created }} 
     env:
       DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.PAT }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
     steps:
       - name: Release tag and upload url from previous job
         run: |
