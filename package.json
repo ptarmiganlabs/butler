@@ -120,7 +120,8 @@
             "node_modules/fsevents/fsevents.node",
             "../docs/api_doc/butler-api.yaml",
             "node_modules/@fastify/swagger",
-            "static/**/*"
+            "static/**/*",
+            "package.json"
         ],
         "scripts": [
             "node_modules/enigma.js/**/*.json",
