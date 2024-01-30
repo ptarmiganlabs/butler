@@ -2,6 +2,25 @@
 // Add dependencies
 import dgram from 'dgram';
 
+// Suppress experimental warnings
+// https://stackoverflow.com/questions/55778283/how-to-disable-warnings-when-node-is-launched-via-a-global-shell-script
+const originalEmit = process.emit;
+process.emit = function (name, data, ...args) {
+    // console.log(`Got a Node.js event: ${name}`);
+    // console.log(`Type of data: ${typeof data}`);
+    // if (typeof data === `object`) {
+    //     console.log(`Data: ${JSON.stringify(data)}`);
+    //     console.log(`Data name: ${data.name}`);
+    //     console.log(`Data message: ${data.message}`);
+    // }
+    // console.log(`Args: ${args}`);
+
+    if (name === `warning` && typeof data === `object` && data.name === `ExperimentalWarning` && data.message.includes(`Fetch API`)) {
+        return false;
+    }
+    return originalEmit.apply(process, arguments);
+};
+
 const start = async () => {
     // Load code from sub modules
     // Load globals dynamically/async to ensure singleton pattern works
