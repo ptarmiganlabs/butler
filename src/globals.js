@@ -24,17 +24,33 @@ class Settings {
         }
 
         // Get app version from package.json file
-        const filename = `./package.json`;
-        // const a = upath.resolve(filename)
-        const b = readFileSync(filename);
-        // const b = readFileSync(a);
-        const { version } = JSON.parse(b);
+        const filenamePackage = `./package.json`;
+        let a;
+        let b;
+        let c;
+        // Are we running as a packaged app?
+        if (process.pkg) {
+            // Get path to JS file
+            a = process.pkg.defaultEntrypoint;
 
-        // const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
-        // const { version } = loadJSON('../package.json');
+            // Strip off the filename
+            b = upath.dirname(a);
+
+            // Add path to package.json file
+            c = upath.join(b, filenamePackage);
+        } else {
+            // Get path to JS file
+            a = fileURLToPath(import.meta.url);
+
+            // Strip off the filename
+            b = upath.dirname(a);
+
+            // Add path to package.json file
+            c = upath.join(b, '..', filenamePackage);
+        }
+
+        const { version } = JSON.parse(readFileSync(c));
         this.appVersion = version;
-
-        console.log(`appVersion: ${this.appVersion}`);
 
         // Command line parameters
         const program = new Command();
@@ -653,7 +669,7 @@ class Settings {
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
 
         // Ensure that InfluxDB has been created
-        if(this.influx === undefined) {
+        if (this.influx === undefined) {
             this.logger.error('CONFIG: InfluxDB not initialized! Possible race condition during startup of Butler. Exiting.');
             process.exit(1);
         }

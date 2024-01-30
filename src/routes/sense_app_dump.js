@@ -2,35 +2,46 @@ import serializeApp from 'serializeapp';
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import WebSocket from 'ws';
-// import { createRequire } from "module";
-import { readFile } from 'fs/promises';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import upath from 'upath';
-
 
 import globals from '../globals.js';
 import { logRESTCall } from '../lib/log_rest_call.js';
 import { apiGetSenseAppDump, apiGetAppDump } from '../api/sense_app_dump.js';
 
-// Set up enigma.js configuration
-
 async function handlerGetSenseAppDump(request, reply) {
     try {
+        // Set up enigma.js configuration
         const schemaFile = `./node_modules/enigma.js/schemas/${globals.configEngine.engineVersion}.json`;
+        let a;
+        let b;
+        let c;
+        // Are we running as a packaged app?
+        if (process.pkg) {
+            // Yes, we are running as a packaged app
+            // Get path to JS file const
+            a = process.pkg.defaultEntrypoint;
 
+            // Strip off the filename
+            b = upath.dirname(a);
 
-        // const require = createRequire(import.meta.url);
-        // // eslint-disable-next-line import/no-dynamic-require
-        // const qixSchema = require(schemaFile);
+            // Add path to package.json file
+            c = upath.join(b, schemaFile);
+        } else {
+            // No, we are running as native Node.js
+            // Get path to JS file
+            a = fileURLToPath(import.meta.url);
 
+            // Strip off the filename
+            b = upath.dirname(a);
 
-        // Convert schemaFile to absolute path using path
-        const a = upath.resolve(schemaFile)
-        const b = await readFile(a);
-        const qixSchema = JSON.parse(b);
+            // Add path to package.json file
+            c = upath.join(b, '..', '..', schemaFile);
+        }
 
-
-        // const { createRequire } = require('node:module');
-        // const qixSchema = createRequire(schemaFile); 
+        globals.logger.verbose(`APPDUMP: Using engine schema in file: ${c}`);
+        const qixSchema = JSON.parse(readFileSync(c));
 
         logRESTCall(request);
 
@@ -58,10 +69,10 @@ async function handlerGetSenseAppDump(request, reply) {
 
             const session = enigma.create(configEnigma);
             const global = await session.open();
-    
+
             // We can now interact with the global object, for example get the document list.
             // Please refer to the Engine API documentation for available methods.
-            const app = await global.openDoc(request.params.appId, '', '', '', true);           
+            const app = await global.openDoc(request.params.appId, '', '', '', true);
             const data = await serializeApp(app);
 
             reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));

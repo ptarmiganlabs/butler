@@ -41,11 +41,19 @@ async function build(opts = {}) {
     }
 
     // Load certificates to use when connecting to healthcheck API
+    // When running in packaged app (using pkg): import.meta.url = /snapshot/butler/build.cjs
+    // When running as Node.js: import.meta.url =  /home/goran/code/butler/src/app.js
     const filename = fileURLToPath(import.meta.url);
     const dirname = path.dirname(filename);
     const certFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCert'));
     const keyFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertKey'));
     const caFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertCA'));
+
+    globals.logger.verbose(`MAIN: Executing JS filename: ${filename}`);
+    globals.logger.verbose(`MAIN: Executing JS dirname: ${dirname}`);
+    globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
+    globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
+    globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
 
     // Set up heartbeats, if enabled in the config file
     if (
