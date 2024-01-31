@@ -1,5 +1,24 @@
 # Changelog
 
+## [10.0.0](https://github.com/ptarmiganlabs/butler/compare/v9.4.0...v10.0.0) (2024-01-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Major rewrite, switching to ECMAScript instead of CJS.
+
+### Bug Fixes
+
+* Correctly report Docker status ([72e1087](https://github.com/ptarmiganlabs/butler/commit/72e1087ed94ffa6ddcd6b913a87373aebe39f5d3)), closes [#939](https://github.com/ptarmiganlabs/butler/issues/939)
+* Make path resoultion for QIX schema files more robust ([568aa2e](https://github.com/ptarmiganlabs/butler/commit/568aa2eeb3997bf2d5c344cd3313c1e8d42c5d06))
+* **mqtt:** Better logging and check for cert existence ([59dc4fa](https://github.com/ptarmiganlabs/butler/commit/59dc4fa0706de5a47c2f67cf75cae3964c516732))
+* **webhook:** Deal with empty webhook list wo errors ([3f42d02](https://github.com/ptarmiganlabs/butler/commit/3f42d02ba7b0a6a7afd5d03ce7983685cb1adc62)), closes [#944](https://github.com/ptarmiganlabs/butler/issues/944)
+
+
+### Code Refactoring
+
+* Major rewrite, switching to ECMAScript instead of CJS. ([25f0ab2](https://github.com/ptarmiganlabs/butler/commit/25f0ab2a2905e1895162c33bfb54732e526027b0)), closes [#942](https://github.com/ptarmiganlabs/butler/issues/942)
+
 ## [9.4.0](https://github.com/ptarmiganlabs/butler/compare/v9.3.2...v9.4.0) (2023-12-13)
 
 
