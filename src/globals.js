@@ -9,10 +9,7 @@ import isUncPath from 'is-unc-path';
 import winston from 'winston';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-
-// Add dependencies
 import { Command, Option } from 'commander';
-
 import 'winston-daily-rotate-file';
 
 let instance = null;
@@ -23,6 +20,14 @@ class Settings {
             instance = this;
         }
 
+        // Flag to keep track of initialisation status of globals object
+        this.initialised = false;
+
+        // eslint-disable-next-line no-constructor-return
+        return instance;
+    }
+
+    async init() {
         // Get app version from package.json file
         const filenamePackage = `./package.json`;
         let a;
@@ -124,332 +129,327 @@ class Settings {
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
         }
 
-        // this.config = this.loadConfig();
-        // this.config = await import('config');
-        (async () => {
-            this.config = (await import('config')).default;
+        this.config = (await import('config')).default;
 
-            // Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
-            // There must be the same number of each specified!
-            // If so, replace any info from the config file with data from command line options
-            if (
-                this.options?.newRelicAccountName?.length > 0 &&
-                this.options?.newRelicApiKey?.length > 0 &&
-                this.options?.newRelicAccountId?.length > 0 &&
-                this.options?.newRelicAccountName?.length === this.options?.newRelicApiKey?.length &&
-                this.options?.newRelicApiKey?.length === this.options?.newRelicAccountId?.length
-            ) {
-                this.config.Butler.thirdPartyToolsCredentials.newRelic = [];
+        // Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
+        // There must be the same number of each specified!
+        // If so, replace any info from the config file with data from command line options
+        if (
+            this.options?.newRelicAccountName?.length > 0 &&
+            this.options?.newRelicApiKey?.length > 0 &&
+            this.options?.newRelicAccountId?.length > 0 &&
+            this.options?.newRelicAccountName?.length === this.options?.newRelicApiKey?.length &&
+            this.options?.newRelicApiKey?.length === this.options?.newRelicAccountId?.length
+        ) {
+            this.config.Butler.thirdPartyToolsCredentials.newRelic = [];
 
-                // eslint-disable-next-line no-plusplus
-                for (let index = 0; index < this.options.newRelicApiKey.length; index++) {
-                    const accountName = this.ptions.newRelicAccountName[index];
-                    const accountId = this.options.newRelicAccountId[index];
-                    const insertApiKey = this.options.newRelicApiKey[index];
+            // eslint-disable-next-line no-plusplus
+            for (let index = 0; index < this.options.newRelicApiKey.length; index++) {
+                const accountName = this.ptions.newRelicAccountName[index];
+                const accountId = this.options.newRelicAccountId[index];
+                const insertApiKey = this.options.newRelicApiKey[index];
 
-                    this.config.Butler.thirdPartyToolsCredentials.newRelic.push({ accountName, accountId, insertApiKey });
-                }
-            } else if (
-                this.options?.newRelicAccountName?.length > 0 ||
-                this.options?.newRelicApiKey?.length > 0 ||
-                this.options?.newRelicAccountId?.length > 0
-            ) {
-                // eslint-disable-next-line no-console
-                console.log('\n\nIncorrect command line parameters: Number of New Relic account names/IDs/API keys must match. Exiting.');
-                process.exit(1);
+                this.config.Butler.thirdPartyToolsCredentials.newRelic.push({ accountName, accountId, insertApiKey });
             }
+        } else if (
+            this.options?.newRelicAccountName?.length > 0 ||
+            this.options?.newRelicApiKey?.length > 0 ||
+            this.options?.newRelicAccountId?.length > 0
+        ) {
+            // eslint-disable-next-line no-console
+            console.log('\n\nIncorrect command line parameters: Number of New Relic account names/IDs/API keys must match. Exiting.');
+            process.exit(1);
+        }
 
-            this.execPath = this.isPkg ? upath.dirname(process.execPath) : process.cwd();
+        this.execPath = this.isPkg ? upath.dirname(process.execPath) : process.cwd();
 
-            // Are we running as standalone app or not?
-            this.isPkg = typeof process.pkg !== 'undefined';
-            if (this.isPkg && configFileOption === undefined) {
-                // Show help if running as standalone app and mandatory options (e.g. config file) are not specified
-                program.help({ error: true });
-            }
+        // Are we running as standalone app or not?
+        this.isPkg = typeof process.pkg !== 'undefined';
+        if (this.isPkg && configFileOption === undefined) {
+            // Show help if running as standalone app and mandatory options (e.g. config file) are not specified
+            program.help({ error: true });
+        }
 
-            // Is there a log level file specified on the command line?
-            if (this.options.loglevel && this.options.loglevel.length > 0) {
-                this.config.Butler.logLevel = this.options.loglevel;
-            }
+        // Is there a log level file specified on the command line?
+        if (this.options.loglevel && this.options.loglevel.length > 0) {
+            this.config.Butler.logLevel = this.options.loglevel;
+        }
 
-            // Set up logger with timestamps and colors, and optional logging to disk file
-            this.logTransports = [];
+        // Set up logger with timestamps and colors, and optional logging to disk file
+        this.logTransports = [];
 
-            this.logTransports.push(
-                new winston.transports.Console({
-                    name: 'console',
-                    level: this.config.get('Butler.logLevel'),
-                    format: winston.format.combine(
-                        winston.format.errors({ stack: true }),
-                        winston.format.timestamp(),
-                        winston.format.colorize(),
-                        winston.format.simple(),
-                        winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
-                    ),
-                })
-            );
-
-            if (
-                this.config.Butler.logLevel === 'verbose' ||
-                this.config.Butler.logLevel === 'debug' ||
-                this.config.Butler.logLevel === 'silly'
-            ) {
-                // We don't have a logging object yet, so use plain console.log
-
-                // Are we in a packaged app?
-                if (this.isPkg) {
-                    // eslint-disable-next-line no-console
-                    console.log(`Running in packaged app. Executable path: ${this.execPath}`);
-                } else {
-                    // eslint-disable-next-line no-console
-                    console.log(`Running in non-packaged environment. Executable path: ${this.execPath}`);
-                }
-
-                // eslint-disable-next-line no-console
-                console.log(`Log file directory: ${upath.join(this.execPath, this.config.get('Butler.logDirectory'))}`);
-
-                // eslint-disable-next-line no-console
-                console.log(`upath.dirname(process.execPath): ${upath.dirname(process.execPath)}`);
-
-                // eslint-disable-next-line no-console
-                console.log(`process.cwd(): ${process.cwd()}`);
-            }
-
-            if (this.config.get('Butler.fileLogging')) {
-                this.logTransports.push(
-                    new winston.transports.DailyRotateFile({
-                        dirname: upath.join(this.execPath, this.config.get('Butler.logDirectory')),
-                        filename: 'butler.%DATE%.log',
-                        level: this.config.get('Butler.logLevel'),
-                        datePattern: 'YYYY-MM-DD',
-                        maxFiles: '30d',
-                    })
-                );
-            }
-
-            this.logger = winston.createLogger({
-                transports: this.logTransports,
+        this.logTransports.push(
+            new winston.transports.Console({
+                name: 'console',
+                level: this.config.get('Butler.logLevel'),
                 format: winston.format.combine(
+                    winston.format.errors({ stack: true }),
                     winston.format.timestamp(),
+                    winston.format.colorize(),
+                    winston.format.simple(),
                     winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
                 ),
-            });
+            })
+        );
 
-            // Function to get current logging level
-            this.getLoggingLevel = () => this.logTransports.find((transport) => transport.name === 'console').level;
+        if (
+            this.config.Butler.logLevel === 'verbose' ||
+            this.config.Butler.logLevel === 'debug' ||
+            this.config.Butler.logLevel === 'silly'
+        ) {
+            // We don't have a logging object yet, so use plain console.log
 
-            // Write various verbose log info now that we have a logger object
-            // Are we running as standalone app or not?
-            this.logger.verbose(`Running as standalone app: ${this.isPkg}`);
-
-            // Verbose: Show what New Relic account names/API keys/account IDs have been defined (on command line or in config file)
-            this.logger.verbose(
-                `New Relic account names/API keys/account IDs (via command line or config file): ${JSON.stringify(
-                    this.config.Butler.thirdPartyToolsCredentials.newRelic,
-                    null,
-                    2
-                )}`
-            );
-
-            // Get certificate file paths for QRS connection
-            const filename = fileURLToPath(import.meta.url);
-            const dirname = upath.dirname(filename);
-            const certPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCert'));
-            const keyPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertKey'));
-            const caPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertCA'));
-
-            this.configEngine = null;
-            this.configQRS = null;
-            if (
-                this.config.has('Butler.restServerApiDocGenerate') === false ||
-                this.config.get('Butler.restServerApiDocGenerate') === false
-            ) {
-                this.logger.debug('CONFIG: API doc mode=off');
-                //  Engine config
-                this.configEngine = {
-                    engineVersion: this.config.get('Butler.configEngine.engineVersion'),
-                    host: this.config.get('Butler.configEngine.host'),
-                    port: this.config.get('Butler.configEngine.port'),
-                    isSecure: this.config.get('Butler.configEngine.useSSL'),
-                    headers: this.config.get('Butler.configEngine.headers'),
-                    cert: this.readCert(this.config.get('Butler.cert.clientCert')),
-                    key: this.readCert(this.config.get('Butler.cert.clientCertKey')),
-                    rejectUnauthorized: this.config.get('Butler.configEngine.rejectUnauthorized'),
-                };
-
-                // QRS config
-                this.configQRS = {
-                    authentication: this.config.get('Butler.configQRS.authentication'),
-                    host: this.config.get('Butler.configQRS.host'),
-                    port: this.config.get('Butler.configQRS.port'),
-                    useSSL: this.config.get('Butler.configQRS.useSSL'),
-                    headerKey: this.config.get('Butler.configQRS.headerKey'),
-                    headerValue: this.config.get('Butler.configQRS.headerValue'),
-                    rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
-                    cert: this.readCert(certPath),
-                    key: this.readCert(keyPath),
-                    ca: this.readCert(caPath),
-                    certPaths: {
-                        certPath,
-                        keyPath,
-                        caPath,
-                    },
-                };
+            // Are we in a packaged app?
+            if (this.isPkg) {
+                // eslint-disable-next-line no-console
+                console.log(`Running in packaged app. Executable path: ${this.execPath}`);
             } else {
-                this.logger.debug('CONFIG: API doc mode=on');
+                // eslint-disable-next-line no-console
+                console.log(`Running in non-packaged environment. Executable path: ${this.execPath}`);
             }
 
-            // Variable holding info about all defined schedules
-            this.configSchedule = [];
+            // eslint-disable-next-line no-console
+            console.log(`Log file directory: ${upath.join(this.execPath, this.config.get('Butler.logDirectory'))}`);
 
-            // Create list of enabled API endpoints
-            this.endpointsEnabled = [];
+            // eslint-disable-next-line no-console
+            console.log(`upath.dirname(process.execPath): ${upath.dirname(process.execPath)}`);
 
-            const getEnabledApiEndpoints = (obj) => {
-                // eslint-disable-next-line no-restricted-syntax
-                for (const [key, value] of Object.entries(obj)) {
-                    if (typeof value === 'object' && value !== null) {
-                        // Sub-object
-                        getEnabledApiEndpoints(value);
-                    }
+            // eslint-disable-next-line no-console
+            console.log(`process.cwd(): ${process.cwd()}`);
+        }
 
-                    if (value === true) {
-                        this.endpointsEnabled.push(key);
-                    }
-                }
+        if (this.config.get('Butler.fileLogging')) {
+            this.logTransports.push(
+                new winston.transports.DailyRotateFile({
+                    dirname: upath.join(this.execPath, this.config.get('Butler.logDirectory')),
+                    filename: 'butler.%DATE%.log',
+                    level: this.config.get('Butler.logLevel'),
+                    datePattern: 'YYYY-MM-DD',
+                    maxFiles: '30d',
+                })
+            );
+        }
+
+        this.logger = winston.createLogger({
+            transports: this.logTransports,
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
+            ),
+        });
+
+        // Function to get current logging level
+        this.getLoggingLevel = () => this.logTransports.find((transport) => transport.name === 'console').level;
+
+        // Write various verbose log info now that we have a logger object
+        // Are we running as standalone app or not?
+        this.logger.verbose(`Running as standalone app: ${this.isPkg}`);
+
+        // Verbose: Show what New Relic account names/API keys/account IDs have been defined (on command line or in config file)
+        this.logger.verbose(
+            `New Relic account names/API keys/account IDs (via command line or config file): ${JSON.stringify(
+                this.config.Butler.thirdPartyToolsCredentials.newRelic,
+                null,
+                2
+            )}`
+        );
+
+        // Get certificate file paths for QRS connection
+        const filename = fileURLToPath(import.meta.url);
+        const dirname = upath.dirname(filename);
+        const certPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCert'));
+        const keyPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertKey'));
+        const caPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertCA'));
+
+        this.configEngine = null;
+        this.configQRS = null;
+        if (this.config.has('Butler.restServerApiDocGenerate') === false || this.config.get('Butler.restServerApiDocGenerate') === false) {
+            this.logger.debug('CONFIG: API doc mode=off');
+            //  Engine config
+            this.configEngine = {
+                engineVersion: this.config.get('Butler.configEngine.engineVersion'),
+                host: this.config.get('Butler.configEngine.host'),
+                port: this.config.get('Butler.configEngine.port'),
+                isSecure: this.config.get('Butler.configEngine.useSSL'),
+                headers: this.config.get('Butler.configEngine.headers'),
+                cert: this.readCert(this.config.get('Butler.cert.clientCert')),
+                key: this.readCert(this.config.get('Butler.cert.clientCertKey')),
+                rejectUnauthorized: this.config.get('Butler.configEngine.rejectUnauthorized'),
             };
 
-            if (this.config.has('Butler.restServerEndpointsEnable')) {
-                const endpoints = this.config.get('Butler.restServerEndpointsEnable');
-                getEnabledApiEndpoints(endpoints);
+            // QRS config
+            this.configQRS = {
+                authentication: this.config.get('Butler.configQRS.authentication'),
+                host: this.config.get('Butler.configQRS.host'),
+                port: this.config.get('Butler.configQRS.port'),
+                useSSL: this.config.get('Butler.configQRS.useSSL'),
+                headerKey: this.config.get('Butler.configQRS.headerKey'),
+                headerValue: this.config.get('Butler.configQRS.headerValue'),
+                rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
+                cert: this.readCert(certPath),
+                key: this.readCert(keyPath),
+                ca: this.readCert(caPath),
+                certPaths: {
+                    certPath,
+                    keyPath,
+                    caPath,
+                },
+            };
+        } else {
+            this.logger.debug('CONFIG: API doc mode=on');
+        }
+
+        // Variable holding info about all defined schedules
+        this.configSchedule = [];
+
+        // Create list of enabled API endpoints
+        this.endpointsEnabled = [];
+
+        const getEnabledApiEndpoints = (obj) => {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const [key, value] of Object.entries(obj)) {
+                if (typeof value === 'object' && value !== null) {
+                    // Sub-object
+                    getEnabledApiEndpoints(value);
+                }
+
+                if (value === true) {
+                    this.endpointsEnabled.push(key);
+                }
             }
+        };
 
-            this.logger.info(`Enabled API endpoints: ${JSON.stringify(this.endpointsEnabled, null, 2)}`);
+        if (this.config.has('Butler.restServerEndpointsEnable')) {
+            const endpoints = this.config.get('Butler.restServerEndpointsEnable');
+            getEnabledApiEndpoints(endpoints);
+        }
 
-            // Variables to hold info on what directories are approved for file system operations via Butler's REST API
-            this.fileCopyDirectories = [];
-            this.fileMoveDirectories = [];
-            this.fileDeleteDirectories = [];
+        this.logger.info(`Enabled API endpoints: ${JSON.stringify(this.endpointsEnabled, null, 2)}`);
 
-            // Variable holding info about the computer where Butler is running
-            this.hostInfo = await this.initHostInfo();
+        // Variables to hold info on what directories are approved for file system operations via Butler's REST API
+        this.fileCopyDirectories = [];
+        this.fileMoveDirectories = [];
+        this.fileDeleteDirectories = [];
 
-            // Set up InfluxDB
-            this.logger.info(`CONFIG: Influxdb enabled: ${this.config.get('Butler.influxDb.enable')}`);
-            if (this.config.get('Butler.influxDb.enable') === true) {
-                this.logger.info(`CONFIG: Influxdb host IP: ${this.config.get('Butler.influxDb.hostIP')}`);
-                this.logger.info(`CONFIG: Influxdb host port: ${this.config.get('Butler.influxDb.hostPort')}`);
-                this.logger.info(`CONFIG: Influxdb db name: ${this.config.get('Butler.influxDb.dbName')}`);
-            }
+        // Variable holding info about the computer where Butler is running
+        this.hostInfo = await this.initHostInfo();
 
-            // Set up Influxdb client
-            this.influx = null;
-            if (this.config.get('Butler.influxDb.enable')) {
-                this.influx = new Influx.InfluxDB({
-                    host: this.config.get('Butler.influxDb.hostIP'),
-                    port: `${this.config.has('Butler.influxDb.hostPort') ? this.config.get('Butler.influxDb.hostPort') : '8086'}`,
-                    database: this.config.get('Butler.influxDb.dbName'),
-                    username: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.username') : ''}`,
-                    password: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.password') : ''}`,
-                    schema: [
-                        {
-                            measurement: 'butler_memory_usage',
-                            fields: {
-                                heap_used: Influx.FieldType.FLOAT,
-                                heap_total: Influx.FieldType.FLOAT,
-                                external: Influx.FieldType.FLOAT,
-                                process_memory: Influx.FieldType.FLOAT,
-                            },
-                            tags: ['butler_instance', 'version'],
+        // Set up InfluxDB
+        this.logger.info(`CONFIG: Influxdb enabled: ${this.config.get('Butler.influxDb.enable')}`);
+        if (this.config.get('Butler.influxDb.enable') === true) {
+            this.logger.info(`CONFIG: Influxdb host IP: ${this.config.get('Butler.influxDb.hostIP')}`);
+            this.logger.info(`CONFIG: Influxdb host port: ${this.config.get('Butler.influxDb.hostPort')}`);
+            this.logger.info(`CONFIG: Influxdb db name: ${this.config.get('Butler.influxDb.dbName')}`);
+        }
+
+        // Set up Influxdb client
+        this.influx = null;
+        if (this.config.get('Butler.influxDb.enable')) {
+            this.influx = new Influx.InfluxDB({
+                host: this.config.get('Butler.influxDb.hostIP'),
+                port: `${this.config.has('Butler.influxDb.hostPort') ? this.config.get('Butler.influxDb.hostPort') : '8086'}`,
+                database: this.config.get('Butler.influxDb.dbName'),
+                username: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.username') : ''}`,
+                password: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.password') : ''}`,
+                schema: [
+                    {
+                        measurement: 'butler_memory_usage',
+                        fields: {
+                            heap_used: Influx.FieldType.FLOAT,
+                            heap_total: Influx.FieldType.FLOAT,
+                            external: Influx.FieldType.FLOAT,
+                            process_memory: Influx.FieldType.FLOAT,
                         },
-                        {
-                            measurement: 'win_service_state',
-                            fields: {
-                                state_num: Influx.FieldType.INTEGER,
-                                state_text: Influx.FieldType.STRING,
-                                startup_mode_num: Influx.FieldType.INTEGER,
-                                startup_mode_text: Influx.FieldType.STRING,
-                            },
-                            tags: ['butler_instance', 'host', 'service_name', 'display_name', 'friendly_name'],
+                        tags: ['butler_instance', 'version'],
+                    },
+                    {
+                        measurement: 'win_service_state',
+                        fields: {
+                            state_num: Influx.FieldType.INTEGER,
+                            state_text: Influx.FieldType.STRING,
+                            startup_mode_num: Influx.FieldType.INTEGER,
+                            startup_mode_text: Influx.FieldType.STRING,
                         },
-                    ],
-                });
-            }
+                        tags: ['butler_instance', 'host', 'service_name', 'display_name', 'friendly_name'],
+                    },
+                ],
+            });
+        }
 
-            // Folder under which QVD folders are to be created
-            this.qvdFolder = this.config.get('Butler.configDirectories.qvdPath');
+        // Folder under which QVD folders are to be created
+        this.qvdFolder = this.config.get('Butler.configDirectories.qvdPath');
 
-            // MS Teams notification objects
-            this.teamsTaskFailureObj = null;
-            this.teamsTaskAbortedObj = null;
-            this.teamsUserSessionObj = null;
-            this.teamsServiceStoppedMonitorObj = null;
-            this.teamsServiceStartedMonitorObj = null;
+        // MS Teams notification objects
+        this.teamsTaskFailureObj = null;
+        this.teamsTaskAbortedObj = null;
+        this.teamsUserSessionObj = null;
+        this.teamsServiceStoppedMonitorObj = null;
+        this.teamsServiceStartedMonitorObj = null;
 
-            // ------------------------------------
-            // MS Teams reload task failed
-            if (
-                this.config.has('Butler.teamsNotification.enable') &&
-                this.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
-                this.config.get('Butler.teamsNotification.enable') === true &&
-                this.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
-            ) {
-                const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
+        // ------------------------------------
+        // MS Teams reload task failed
+        if (
+            this.config.has('Butler.teamsNotification.enable') &&
+            this.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+            this.config.get('Butler.teamsNotification.enable') === true &&
+            this.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
+        ) {
+            const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
 
-                // Create MS Teams object
-                this.teamsTaskFailureObj = new IncomingWebhook(webhookUrl);
-            }
+            // Create MS Teams object
+            this.teamsTaskFailureObj = new IncomingWebhook(webhookUrl);
+        }
 
-            // MS Teams reload task aborted
-            if (
-                this.config.has('Butler.teamsNotification.enable') &&
-                this.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
-                this.config.get('Butler.teamsNotification.enable') === true &&
-                this.config.get('Butler.teamsNotification.reloadTaskAborted.enable') === true
-            ) {
-                const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
+        // MS Teams reload task aborted
+        if (
+            this.config.has('Butler.teamsNotification.enable') &&
+            this.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
+            this.config.get('Butler.teamsNotification.enable') === true &&
+            this.config.get('Butler.teamsNotification.reloadTaskAborted.enable') === true
+        ) {
+            const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
 
-                // Create MS Teams object
-                this.teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
-            }
+            // Create MS Teams object
+            this.teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
+        }
 
-            // MS Teams service started/stopped
-            if (
-                this.config.has('Butler.teamsNotification.enable') &&
-                this.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
-                this.config.get('Butler.teamsNotification.enable') === true &&
-                this.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
-            ) {
-                // Create MS Teams objects
-                // Service stopped
-                let webhookUrl = this.config.get('Butler.teamsNotification.serviceStopped.webhookURL');
-                this.teamsServiceStoppedMonitorObj = new IncomingWebhook(webhookUrl);
+        // MS Teams service started/stopped
+        if (
+            this.config.has('Butler.teamsNotification.enable') &&
+            this.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
+            this.config.get('Butler.teamsNotification.enable') === true &&
+            this.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+        ) {
+            // Create MS Teams objects
+            // Service stopped
+            let webhookUrl = this.config.get('Butler.teamsNotification.serviceStopped.webhookURL');
+            this.teamsServiceStoppedMonitorObj = new IncomingWebhook(webhookUrl);
 
-                // Service started
-                webhookUrl = this.config.get('Butler.teamsNotification.serviceStarted.webhookURL');
-                this.teamsServiceStartedMonitorObj = new IncomingWebhook(webhookUrl);
-            }
+            // Service started
+            webhookUrl = this.config.get('Butler.teamsNotification.serviceStarted.webhookURL');
+            this.teamsServiceStartedMonitorObj = new IncomingWebhook(webhookUrl);
+        }
 
-            // ------------------------------------
-            // UDP server connection parameters
-            this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
-            this.udpServerReloadTaskSocket = null;
-            // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-            // const udpServerReloadTaskSocket = dgram.createSocket({
-            //     type: 'udp4',
-            //     reuseAddr: true,
-            // });
-            this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
+        // ------------------------------------
+        // UDP server connection parameters
+        this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
+        this.udpServerReloadTaskSocket = null;
+        // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
+        // const udpServerReloadTaskSocket = dgram.createSocket({
+        //     type: 'udp4',
+        //     reuseAddr: true,
+        // });
+        this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
 
-            // this.mqttClient,
+        // this.mqttClient,
 
-            // Indicate that we have finished initialising
-            this.initialised = true;
+        // Indicate that we have finished initialising
+        this.initialised = true;
 
-            // eslint-disable-next-line no-constructor-return
-            return instance;
-        })();
+        console.log('globals init done');
+
+        // eslint-disable-next-line no-constructor-return
+        return instance;
     }
 
     // get(key) {

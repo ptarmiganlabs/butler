@@ -24,7 +24,8 @@ process.emit = function (name, data, ...args) {
 const start = async () => {
     // Load code from sub modules
     // Load globals dynamically/async to ensure singleton pattern works
-    const globals = (await import('./globals.js')).default;
+    const settingsObj = (await import('./globals.js')).default;
+    const globals = await settingsObj.init();
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
 
