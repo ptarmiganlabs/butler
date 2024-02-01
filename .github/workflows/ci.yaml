@@ -15,6 +15,9 @@ jobs:
       GITHUB_REF: ${{ github.ref }}
       GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
       DIST_FILE_NAME: butler
+    permissions:
+        contents: write
+        pull-requests: write
     steps:
       - name: Show github.ref
         run: echo "$GITHUB_REF"
