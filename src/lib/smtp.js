@@ -481,7 +481,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             // Does the main sendlist contain any email addresses? Warn if not
             if (mainSendList?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                    `EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for app owner's alert email for app "${reloadParams.appName}", ID=${reloadParams.appId}`
                 );
             }
         } else {
@@ -493,6 +493,15 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
     // Make sure send list does not contain any duplicate email addresses
     const mainSendListUnique = [...new Set(mainSendList)];
+
+    // Debug
+    globals.logger.verbose(
+        `EMAIL RELOAD TASK FAILED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
+            mainSendListUnique,
+            null,
+            2
+        )}`
+    );
 
     if (isSmtpConfigOk() === false) {
         return 1;

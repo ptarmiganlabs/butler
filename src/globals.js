@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import fs from 'fs-extra';
 import upath from 'upath';
 import Influx from 'influx';
-import { IncomingWebhook } from 'ms-teams-webhook';
 import si from 'systeminformation';
 import isUncPath from 'is-unc-path';
 import winston from 'winston';
@@ -379,57 +378,6 @@ class Settings {
         // Folder under which QVD folders are to be created
         this.qvdFolder = this.config.get('Butler.configDirectories.qvdPath');
 
-        // MS Teams notification objects
-        this.teamsTaskFailureObj = null;
-        this.teamsTaskAbortedObj = null;
-        this.teamsUserSessionObj = null;
-        this.teamsServiceStoppedMonitorObj = null;
-        this.teamsServiceStartedMonitorObj = null;
-
-        // ------------------------------------
-        // MS Teams reload task failed
-        if (
-            this.config.has('Butler.teamsNotification.enable') &&
-            this.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
-            this.config.get('Butler.teamsNotification.enable') === true &&
-            this.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
-        ) {
-            const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
-
-            // Create MS Teams object
-            this.teamsTaskFailureObj = new IncomingWebhook(webhookUrl);
-        }
-
-        // MS Teams reload task aborted
-        if (
-            this.config.has('Butler.teamsNotification.enable') &&
-            this.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
-            this.config.get('Butler.teamsNotification.enable') === true &&
-            this.config.get('Butler.teamsNotification.reloadTaskAborted.enable') === true
-        ) {
-            const webhookUrl = this.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
-
-            // Create MS Teams object
-            this.teamsTaskAbortedObj = new IncomingWebhook(webhookUrl);
-        }
-
-        // MS Teams service started/stopped
-        if (
-            this.config.has('Butler.teamsNotification.enable') &&
-            this.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
-            this.config.get('Butler.teamsNotification.enable') === true &&
-            this.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
-        ) {
-            // Create MS Teams objects
-            // Service stopped
-            let webhookUrl = this.config.get('Butler.teamsNotification.serviceStopped.webhookURL');
-            this.teamsServiceStoppedMonitorObj = new IncomingWebhook(webhookUrl);
-
-            // Service started
-            webhookUrl = this.config.get('Butler.teamsNotification.serviceStarted.webhookURL');
-            this.teamsServiceStartedMonitorObj = new IncomingWebhook(webhookUrl);
-        }
-
         // ------------------------------------
         // UDP server connection parameters
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
@@ -451,10 +399,6 @@ class Settings {
         // eslint-disable-next-line no-constructor-return
         return instance;
     }
-
-    // get(key) {
-    //     return config.get(key);
-    // }
 
     // Helper function to read the contents of the certificate files
     readCert(filename) {
