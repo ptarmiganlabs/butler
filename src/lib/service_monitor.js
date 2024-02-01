@@ -1,5 +1,5 @@
 import later from '@breejs/later';
-import { createMachine, interpret } from 'xstate';
+import { createMachine, createActor } from 'xstate';
 
 import { statusAll, status, details } from './winsvc.js';
 import globals from '../globals.js';
@@ -215,13 +215,20 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                 // Update state machine
                 const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
-                const prevState = smService.stateSvc.state.value;
+
+                const snapshotPrev = smService.stateSvc.getSnapshot();
+                const prevState = snapshotPrev.value;
                 logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
-                const sendResult = smService.stateSvc.send('STOP');
-                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
+                smService.stateSvc.send({ type: 'STOP' });
 
-                if (sendResult.changed) {
+                const snapshotNew = smService.stateSvc.getSnapshot();
+                const newState = snapshotNew.value;
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
+
+                // Has state changed?
+                const stateChanged = prevState !== newState;
+                if (stateChanged) {
                     logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" has stopped!`);
 
                     // Send message to enabled destinations
@@ -238,8 +245,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -257,8 +264,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -274,8 +281,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -293,8 +300,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -312,8 +319,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -331,8 +338,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
                 }
@@ -349,18 +356,22 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                 // First check?
                 if (isFirstCheck) {
                     // Set state to running as this is the first/startup check and we don't want to alert in this case
-                    smService.stateSvc.send('START');
+                    smService.stateSvc.send({ type: 'START' });
                 }
-                const prevState = smService.stateSvc.state.value;
 
-                logger.verbose(
-                    `Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${smService.stateSvc.state.value}`
-                );
+                const snapshotPrev = smService.stateSvc.getSnapshot();
+                const prevState = snapshotPrev.value;
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
-                const sendResult = smService.stateSvc.send('START');
-                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${sendResult.value}`);
+                smService.stateSvc.send({ type: 'START' });
 
-                if (sendResult.changed) {
+                const snapshotNew = smService.stateSvc.getSnapshot();
+                const newState = snapshotNew.value;
+                logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
+
+                // Has state changed?
+                const stateChanged = prevState !== newState;
+                if (stateChanged) {
                     logger.info(`Service "${serviceDetails.displayName}" on host "${host.host}" has started.`);
                     // Send message to enabled destinations
 
@@ -376,8 +387,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -395,8 +406,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -412,8 +423,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -431,8 +442,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -450,8 +461,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
 
@@ -469,8 +480,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                             serviceDetails,
                             host: host.host,
                             prevState: prevState.toUpperCase(),
-                            currState: sendResult.value.toUpperCase(),
-                            stateChanged: sendResult.changed,
+                            currState: newState.toUpperCase(),
+                            stateChanged,
                         });
                     }
                 }
@@ -548,7 +559,6 @@ async function setupServiceMonitorTimer(config, logger) {
 
                                 // Windows service states: https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions
                                 const windowsServiceMachine = createMachine({
-                                    predictableActionArguments: true,
                                     id: 'windowsService',
                                     initial: 'paused',
                                     states: {
@@ -572,12 +582,14 @@ async function setupServiceMonitorTimer(config, logger) {
                                     },
                                 });
 
-                                const svc = interpret(windowsServiceMachine).start();
+                                const actor = createActor(windowsServiceMachine);
+                                const svc = actor.start();
 
                                 serviceStateMachine.push({
                                     id: `${host.host}|${service.name}`,
                                     host,
                                     serviceName: service.name,
+                                    actor,
                                     stateSvc: svc,
                                 });
                             }
