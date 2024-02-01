@@ -446,7 +446,7 @@ class Settings {
         // Indicate that we have finished initialising
         this.initialised = true;
 
-        console.log('globals init done');
+        this.logger.verbose('GLOBALS: Init done');
 
         // eslint-disable-next-line no-constructor-return
         return instance;

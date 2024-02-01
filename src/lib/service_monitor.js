@@ -206,11 +206,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // Get details about this service
             const serviceDetails = await details(logger, service.name, host.host);
-            if (
-                serviceStatus === 'STOPPED' &&
-                config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
-                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true
-            ) {
+            if (serviceStatus === 'STOPPED') {
                 logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
 
                 // Update state machine
@@ -235,6 +231,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // New Relic
                     if (
+                        config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
+                        config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true &&
                         config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
@@ -343,11 +341,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                         });
                     }
                 }
-            } else if (
-                serviceStatus === 'RUNNING' &&
-                config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') &&
-                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true
-            ) {
+            } else if (serviceStatus === 'RUNNING') {
                 logger.verbose(`Service "${service.name}" is running`);
 
                 // Update state machine
@@ -377,6 +371,8 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // New Relic
                     if (
+                        config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') &&
+                        config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true &&
                         config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {

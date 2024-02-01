@@ -26,9 +26,7 @@ const start = async () => {
     // Load globals dynamically/async to ensure singleton pattern works
     const settingsObj = (await import('./globals.js')).default;
     const globals = await settingsObj.init();
-    console.log(`globals initialised`);
-    console.log(`globals.initialised: ${globals.initialised}`);
-    globals.logger.verbose('MAIN: Globals initialised.');
+    globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
 
