@@ -11,8 +11,6 @@ import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../qrs_ut
 import getAppOwner from '../qrs_util/get_app_owner.js';
 
 
-
-
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
 let rateLimiterMemoryServiceMonitor;
