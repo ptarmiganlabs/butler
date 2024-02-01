@@ -1,11 +1,11 @@
 {
-    "last-release-sha": "a68441c29f2b75809ac9ac8ea3d3a379e7431c1d",
+    "last-release-sha": "aa9279a363a45fba7e76b1631d3fc433fdbf1e19",
     "release-as": "10.0.0",
     "release-type": "node",
     "prerelease": false,
     "draft": true,
-    "release-search-depth": 50,
-    "commit-search-depth": 200,
+    "release-search-depth": 400,
+    "commit-search-depth": 500,
     "changelog-sections": [
         {
             "type": "feat",
