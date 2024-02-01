@@ -371,6 +371,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     const globalSendList = globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients');
 
     let mainSendList = [];
+    const emailRecipientsVerbose = { taskSpecific: [], common: [], appOwner: [] };
 
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
     const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
@@ -384,6 +385,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
+        emailRecipientsVerbose.taskSpecific = emailRecipientsVerbose.taskSpecific.concat(taskSpecificAlertEmailAddresses);
     }
 
     // 2 Should alert emails be sent for all failed reload tasks?
@@ -396,6 +398,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 `EMAIL RELOAD TASK FAILED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
             );
             mainSendList = mainSendList.concat(globalSendList);
+            emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
         }
     } else {
         // Only send alert email if the failed task has email alerts enabled
@@ -413,6 +416,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
                 mainSendList = mainSendList.concat(globalSendList);
+                emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
             }
         } else {
             // 2.2.2 No : Don't add recpients to send list
@@ -476,6 +480,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             const appOwnerSendListEmails = appOwnerSendList?.map((item) => item.email);
             if (appOwnerSendListEmails?.length > 0) {
                 mainSendList = mainSendList?.concat(appOwnerSendListEmails[0]);
+                emailRecipientsVerbose.appOwner = emailRecipientsVerbose.appOwner.concat(appOwnerSendListEmails[0]);
             }
 
             // Does the main sendlist contain any email addresses? Warn if not
@@ -502,6 +507,9 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             2
         )}`
     );
+    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
+    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
+    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
 
     if (isSmtpConfigOk() === false) {
         return 1;
@@ -641,6 +649,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     const globalSendList = globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients');
 
     let mainSendList = [];
+    const emailRecipientsVerbose = { taskSpecific: [], common: [], appOwner: [] };
 
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
     const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
@@ -649,7 +658,12 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     );
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
+        globals.logger.debug(
+            `EMAIL RELOAD TASK ABORTED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`
+        );
+
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
+        emailRecipientsVerbose.taskSpecific = emailRecipientsVerbose.taskSpecific.concat(taskSpecificAlertEmailAddresses);
     }
 
     // 2 Should alert emails be sent for all aborted reload tasks?
@@ -658,7 +672,11 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Send alert emails for all tasks`);
 
         if (globalSendList?.length > 0) {
+            globals.logger.debug(
+                `EMAIL RELOAD TASK ABORTED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
+            );
             mainSendList = mainSendList.concat(globalSendList);
+            emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
         }
     } else {
         // Only send alert email if the aborted task has email alerts enabled
@@ -670,9 +688,13 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
+            globals.logger.debug(
+                `EMAIL RELOAD TASK ABORTED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`
+            );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
                 mainSendList = mainSendList.concat(globalSendList);
+                emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
             }
         } else {
             // 2.2.2 No : Don't add recpients to send list
@@ -731,6 +753,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             const appOwnerSendListEmails = appOwnerSendList?.map((item) => item.email);
             if (appOwnerSendListEmails?.length > 0) {
                 mainSendList = mainSendList?.concat(appOwnerSendListEmails[0]);
+                emailRecipientsVerbose.appOwner = emailRecipientsVerbose.appOwner.concat(appOwnerSendListEmails[0]);
             }
 
             // Does the main sendlist contain any email addresses? Warn if not
@@ -748,6 +771,18 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
     // Make sure send list does not contain any duplicate email addresses
     const mainSendListUnique = [...new Set(mainSendList)];
+
+    // Debug
+    globals.logger.verbose(
+        `EMAIL RELOAD TASK ABORTED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
+            mainSendListUnique,
+            null,
+            2
+        )}`
+    );
+    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
+    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
+    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
 
     if (isSmtpConfigOk() === false) {
         return 1;
