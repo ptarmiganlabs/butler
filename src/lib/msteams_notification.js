@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 import fs from 'fs';
-
+import { Webhook, SimpleTextCard } from "ms-teams-wrapper";
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
+
 import globals from '../globals.js';
 import getAppOwner from '../qrs_util/get_app_owner.js';
 
@@ -337,7 +338,7 @@ function getQlikSenseUrls() {
     };
 }
 
-async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType) {
+async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
         let renderedText = null;
@@ -407,8 +408,9 @@ async function sendTeams(teamsWebhookObj, teamsConfig, templateContext, msgType)
         }
 
         if (msg !== null) {
-            // const res = await teamsWebhookObj.send(JSON.stringify(msg));
-            const res = await teamsWebhookObj.send(msg);
+            const webhook = new Webhook(teamsWebhookUrl, msg);
+            const res = await webhook.sendMessage();
+
             if (res !== undefined) {
                 globals.logger.debug(`TEAMS SEND: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
@@ -550,7 +552,8 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                sendTeams(globals.teamsTaskFailureObj, teamsConfig, templateContext, 'reload');
+                const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
+                sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`TEAMS RELOAD TASK FAILED: ${err}`);
             }
@@ -695,7 +698,8 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                sendTeams(globals.teamsTaskAbortedObj, teamsConfig, templateContext, 'reload');
+                const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
+                sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`TEAMS RELOAD TASK ABORTED: ${err}`);
             }
@@ -738,9 +742,11 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                 };
 
                 if (serviceParams.serviceStatus === 'STOPPED') {
-                    sendTeams(globals.teamsServiceStoppedMonitorObj, teamsConfig, templateContext, 'serviceStopped');
+                    const webhookUrl = globals.config.get('Butler.teamsNotification.serviceStopped.webhookURL');
+                    sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStopped');
                 } else if (serviceParams.serviceStatus === 'RUNNING') {
-                    sendTeams(globals.teamsServiceStartedMonitorObj, teamsConfig, templateContext, 'serviceStarted');
+                    const webhookUrl = globals.config.get('Butler.teamsNotification.serviceStarted.webhookURL');
+                    sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
                 globals.logger.error(`TEAMS SERVICE MONITOR: ${err}`);
