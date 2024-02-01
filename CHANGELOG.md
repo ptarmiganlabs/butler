@@ -1,5 +1,81 @@
 # Changelog
 
+## [11.0.0](https://github.com/ptarmiganlabs/butler/compare/v10.0.0...v11.0.0) (2024-02-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Major rewrite, switching to ECMAScript instead of CJS.
+* Move InfluxDB settings to their own section in config file
+
+### Features
+
+* Add InfluxDB as destination for Windows service status monitoring ([d2e4d25](https://github.com/ptarmiganlabs/butler/commit/d2e4d256bf7ca1148495832ede95fae06068b0ab))
+* Add monitoring of Windows services ([da6dfcc](https://github.com/ptarmiganlabs/butler/commit/da6dfcc8ff0e883cde3026db5c24db4b4549d47e)), closes [#637](https://github.com/ptarmiganlabs/butler/issues/637)
+* Add monitoring of Windows services ([76247a1](https://github.com/ptarmiganlabs/butler/commit/76247a1106779011e6ed0b6a5538c0aec49a8973)), closes [#637](https://github.com/ptarmiganlabs/butler/issues/637)
+* **build:** Create better API docs ([9bad21a](https://github.com/ptarmiganlabs/butler/commit/9bad21ab2b5d2f2ff282506671662b6f713bae52)), closes [#644](https://github.com/ptarmiganlabs/butler/issues/644)
+* **influxdb:** Add Butler version tag to uptime data sent to InfluxDb ([e60528a](https://github.com/ptarmiganlabs/butler/commit/e60528a7848bc66652cc505156a1e060bfef8aff)), closes [#919](https://github.com/ptarmiganlabs/butler/issues/919)
+* **influxdb:** Store failed reload info in InfluxDB ([b45dedd](https://github.com/ptarmiganlabs/butler/commit/b45deddf3f3ec0a2b5337343fe8cc873ccad3acf)), closes [#866](https://github.com/ptarmiganlabs/butler/issues/866)
+* log at startup current API rate limit ([2fd7055](https://github.com/ptarmiganlabs/butler/commit/2fd70550cde69e1ee69d43529b04f8423ddbdb1d))
+* log at startup which config file is used ([2fd7055](https://github.com/ptarmiganlabs/butler/commit/2fd70550cde69e1ee69d43529b04f8423ddbdb1d))
+* Log warnings when API rate limits exceeded ([c15c45d](https://github.com/ptarmiganlabs/butler/commit/c15c45d662b9ab73a3fd0ab1023b5d630aff88f8))
+* Move InfluxDB settings to their own section in config file ([d2e4d25](https://github.com/ptarmiganlabs/butler/commit/d2e4d256bf7ca1148495832ede95fae06068b0ab)), closes [#670](https://github.com/ptarmiganlabs/butler/issues/670)
+* **mqtt:** Add support for Azure Event Grid as MQTT broker ([3794da3](https://github.com/ptarmiganlabs/butler/commit/3794da32a8f80e45217e1bde72b39a327995a390))
+* New command line option for setting API rate limit ([2b08c5e](https://github.com/ptarmiganlabs/butler/commit/2b08c5ed207004a2425951f61fe41541fb88736c)), closes [#659](https://github.com/ptarmiganlabs/butler/issues/659)
+* Only get script log once from Sense server ([f193538](https://github.com/ptarmiganlabs/butler/commit/f19353809e44f17fcce5be3eca1ff5cc0c2925c6)), closes [#741](https://github.com/ptarmiganlabs/butler/issues/741)
+* **reload-alerts:** Make app owner info available in reload failed alerts ([1912d3e](https://github.com/ptarmiganlabs/butler/commit/1912d3e0c515ede34bebfc1d0ec048a17054ee79)), closes [#728](https://github.com/ptarmiganlabs/butler/issues/728)
+* Store reload task success info in InfluxBD ([e642ad4](https://github.com/ptarmiganlabs/butler/commit/e642ad4791605eaa64a4b2368928befbe40d23f4)), closes [#870](https://github.com/ptarmiganlabs/butler/issues/870)
+* **telemetry:** Change to using PostHog for telemetry collection ([4da339a](https://github.com/ptarmiganlabs/butler/commit/4da339ae3f7d9ce7d3e9fc24ddd442fc19157c7d)), closes [#744](https://github.com/ptarmiganlabs/butler/issues/744)
+* Verify structure of config file on Butler startup ([69e35ff](https://github.com/ptarmiganlabs/butler/commit/69e35ff960f6296f0f3e9c02f50c05bfc0c17a42)), closes [#675](https://github.com/ptarmiganlabs/butler/issues/675)
+
+
+### Bug Fixes
+
+* Add missing fields to template config file ([157f715](https://github.com/ptarmiganlabs/butler/commit/157f715b27d8640428506944c52c1bd05d1cdb77))
+* Add verbose logging showing which NR accounts are used ([907b9ae](https://github.com/ptarmiganlabs/butler/commit/907b9aeb3c135a03c34ba592d45192a2c3c98b2b))
+* **alerts:** Empty alert recipient lists no longer cause errors ([34421ce](https://github.com/ptarmiganlabs/butler/commit/34421cec7d60c1a1569c5a896ac634f3189370c7)), closes [#640](https://github.com/ptarmiganlabs/butler/issues/640)
+* Allow empty New Relic settings in config file's uptime section ([1de18e7](https://github.com/ptarmiganlabs/butler/commit/1de18e7bec819f3d124f77a1051269d067486d86)), closes [#562](https://github.com/ptarmiganlabs/butler/issues/562)
+* Allow uptime reporting to New Relic without custom http headers ([f455a38](https://github.com/ptarmiganlabs/butler/commit/f455a38d23b93fc6cd70b716d8a8eb3227cdf4cb)), closes [#587](https://github.com/ptarmiganlabs/butler/issues/587)
+* Automatic dependencies scanning ([1d8201d](https://github.com/ptarmiganlabs/butler/commit/1d8201dcd0bf469e3690687f27260de61cbc739a))
+* Better log messages when rate limiting for reload notifications passes ([0ee04fb](https://github.com/ptarmiganlabs/butler/commit/0ee04fb40b1a52b415203c42e9eee2a95068cef1)), closes [#571](https://github.com/ptarmiganlabs/butler/issues/571)
+* Correctly report Docker status ([72e1087](https://github.com/ptarmiganlabs/butler/commit/72e1087ed94ffa6ddcd6b913a87373aebe39f5d3)), closes [#939](https://github.com/ptarmiganlabs/butler/issues/939)
+* **deps:** update dependency @fastify/swagger to v8.9.0 ([b0f5440](https://github.com/ptarmiganlabs/butler/commit/b0f54400a3505b188fe6e5a5a4b6ac45b843f09f))
+* **deps:** update dependency yargs to v17.7.2 ([79dd198](https://github.com/ptarmiganlabs/butler/commit/79dd1988ada10b64ac6466b3fbd8ce7736b36a3d))
+* Disable SMTP mail appender in sample config ([4f63cb3](https://github.com/ptarmiganlabs/butler/commit/4f63cb34cab19aa1b077de867c19c7c3e0ccc890))
+* **disk-util:** All subdirs under approved dirs are also approved ([0ecc402](https://github.com/ptarmiganlabs/butler/commit/0ecc402c8ef56a85a88b08883f0e2330bda79949)), closes [#831](https://github.com/ptarmiganlabs/butler/issues/831)
+* **docker:** Docker image build fixed ([d230e14](https://github.com/ptarmiganlabs/butler/commit/d230e14085f297194ed8c3053293654d3c2931bd))
+* **docker:** Fix broken Docker image ([85f016e](https://github.com/ptarmiganlabs/butler/commit/85f016ec6ed8fbfa4163d5d6b4dfbe8417bab2a6)), closes [#764](https://github.com/ptarmiganlabs/butler/issues/764)
+* Enable Teams notif for Win service monitor now works ([a0761cb](https://github.com/ptarmiganlabs/butler/commit/a0761cb155ff96192e586f07dfec590fa81e41bd)), closes [#758](https://github.com/ptarmiganlabs/butler/issues/758)
+* Improve warning when custom property names in config file don't exist in Sense ([a53cbe8](https://github.com/ptarmiganlabs/butler/commit/a53cbe8d581b14571d61508112dc0e0915cb17e7)), closes [#586](https://github.com/ptarmiganlabs/butler/issues/586)
+* Improve Winsvc checking efficiency ([e9a1ff5](https://github.com/ptarmiganlabs/butler/commit/e9a1ff512ade5af87b2613ae716ff32c3719ad15))
+* Make path resoultion for QIX schema files more robust ([568aa2e](https://github.com/ptarmiganlabs/butler/commit/568aa2eeb3997bf2d5c344cd3313c1e8d42c5d06))
+* More robust generation of anonymous Butler instance id ([5203d54](https://github.com/ptarmiganlabs/butler/commit/5203d549059f1726deeeb74c89c98eeb715e569b)), closes [#863](https://github.com/ptarmiganlabs/butler/issues/863)
+* **mqtt:** Better error handling when establishing MQTT connection ([6299a2c](https://github.com/ptarmiganlabs/butler/commit/6299a2ccb5e64703c15cc56cafb59d5290692f8f))
+* **mqtt:** Better logging and check for cert existence ([59dc4fa](https://github.com/ptarmiganlabs/butler/commit/59dc4fa0706de5a47c2f67cf75cae3964c516732))
+* **mqtt:** Don't show MQTT startup info when MQTT is disabled ([7f48bd3](https://github.com/ptarmiganlabs/butler/commit/7f48bd3f72433ea7b89bbeaebdbee7bffa97017c)), closes [#913](https://github.com/ptarmiganlabs/butler/issues/913)
+* **mqtt:** More reboust startup code for MQTT & Win svc monitoring ([577dba3](https://github.com/ptarmiganlabs/butler/commit/577dba39b253533a5e128ebeacdfa2b81be2a4fa)), closes [#897](https://github.com/ptarmiganlabs/butler/issues/897)
+* **new-relic:** Send task failed event to New Relic ([154a921](https://github.com/ptarmiganlabs/butler/commit/154a921f8e8d406744a7f9aa46416dec6bd20b68)), closes [#750](https://github.com/ptarmiganlabs/butler/issues/750)
+* Only initiate InfluxDB connection if it's actually enabled in config file ([ba35605](https://github.com/ptarmiganlabs/butler/commit/ba3560559881cd62daf6f590ba7cde9e3f1a116e)), closes [#678](https://github.com/ptarmiganlabs/butler/issues/678)
+* Only send to New Relic if event/log is enabled AND custom property name specified. ([9fc81d0](https://github.com/ptarmiganlabs/butler/commit/9fc81d05c90a862cd477d90d25109b57e968bebc)), closes [#596](https://github.com/ptarmiganlabs/butler/issues/596)
+* Only set up REST server if it's actually enabled in the config file ([7746cee](https://github.com/ptarmiganlabs/butler/commit/7746ceea5281342745864e241a58688385d04b55)), closes [#679](https://github.com/ptarmiganlabs/butler/issues/679)
+* **smtp:** Add  verbose log of email recipients ([8d4ad93](https://github.com/ptarmiganlabs/butler/commit/8d4ad9308f44c876d2ecb335ee84448a99ae0d57))
+* Typos in Slack/Teams notifrication log messages ([e28b715](https://github.com/ptarmiganlabs/butler/commit/e28b7157a9378ee82af61772a165b80abf4d902b)), closes [#794](https://github.com/ptarmiganlabs/butler/issues/794)
+* Upgrade Swagger docs to latest version ([2cf84b9](https://github.com/ptarmiganlabs/butler/commit/2cf84b93336f612aba5421442b431e9e1e5e2991)), closes [#599](https://github.com/ptarmiganlabs/butler/issues/599)
+* Verify that all required config file entries exist ([38c42b0](https://github.com/ptarmiganlabs/butler/commit/38c42b0175d7668574fff69fe1ec424350d95e34)), closes [#874](https://github.com/ptarmiganlabs/butler/issues/874)
+* **webhook:** Deal with empty webhook list wo errors ([3f42d02](https://github.com/ptarmiganlabs/butler/commit/3f42d02ba7b0a6a7afd5d03ce7983685cb1adc62)), closes [#944](https://github.com/ptarmiganlabs/butler/issues/944)
+* **win-svc-monitor:** Fix typo in log output from config file sanity check. ([37d02b3](https://github.com/ptarmiganlabs/butler/commit/37d02b3ef6b65c893432951164f249ef7a3ce411)), closes [#708](https://github.com/ptarmiganlabs/butler/issues/708)
+* **winservice:** Better handling of services that don't exist ([56a18de](https://github.com/ptarmiganlabs/butler/commit/56a18de4627b0e45cf25677bee0a5e09b1559a8c))
+* **winsvc:** Bug fixes and better logging for win service monitoring ([dc76b63](https://github.com/ptarmiganlabs/butler/commit/dc76b63875bb6255649c214947694f1153d3afe4))
+* **winsvc:** Don't send Win svc alerts when Butler starts ([d716cfe](https://github.com/ptarmiganlabs/butler/commit/d716cfe2d1241a84be8349f75accd360b28e3978)), closes [#896](https://github.com/ptarmiganlabs/butler/issues/896)
+* **winsvc:** Make Windows service status checks quicker ([001f99f](https://github.com/ptarmiganlabs/butler/commit/001f99fe2bc20d21674868b43133be73e474f77b)), closes [#912](https://github.com/ptarmiganlabs/butler/issues/912)
+* **winsvc:** Optimize windows services checks ([47e08ad](https://github.com/ptarmiganlabs/butler/commit/47e08ad03a2cbff8a653403c111b2f8befcff4e7))
+* **winsvc:** Win service monitoring no longer rely on New Relic ([e47124c](https://github.com/ptarmiganlabs/butler/commit/e47124cd3a5606e4ce308a679cc49ba9267dfdcd)), closes [#967](https://github.com/ptarmiganlabs/butler/issues/967)
+
+
+### Code Refactoring
+
+* Major rewrite, switching to ECMAScript instead of CJS. ([25f0ab2](https://github.com/ptarmiganlabs/butler/commit/25f0ab2a2905e1895162c33bfb54732e526027b0)), closes [#942](https://github.com/ptarmiganlabs/butler/issues/942)
+
 ## [10.0.0](https://github.com/ptarmiganlabs/butler/compare/v9.4.0...v10.0.0) (2024-01-30)
 
 
