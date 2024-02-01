@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.0.1](https://github.com/ptarmiganlabs/butler/compare/v10.0.0...v10.0.1) (2024-02-01)
+
+
+### Bug Fixes
+
+* **smtp:** Add  verbose log of email recipients ([8d4ad93](https://github.com/ptarmiganlabs/butler/commit/8d4ad9308f44c876d2ecb335ee84448a99ae0d57))
+* **winsvc:** Win service monitoring no longer rely on New Relic ([e47124c](https://github.com/ptarmiganlabs/butler/commit/e47124cd3a5606e4ce308a679cc49ba9267dfdcd)), closes [#967](https://github.com/ptarmiganlabs/butler/issues/967)
+
 ## [10.0.0](https://github.com/ptarmiganlabs/butler/compare/v9.4.0...v10.0.0) (2024-01-30)
 
 
