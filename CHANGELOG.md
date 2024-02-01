@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.1](https://github.com/ptarmiganlabs/butler/compare/v11.0.0...v11.0.1) (2024-02-01)
+
+
+### Bug Fixes
+
+* Debugging GH actions ([7f9befd](https://github.com/ptarmiganlabs/butler/commit/7f9befd549541060a9b0e948e9d16e0cf1776dd3))
+
 ## [11.0.0](https://github.com/ptarmiganlabs/butler/compare/v10.0.0...v11.0.0) (2024-02-01)
 
 
