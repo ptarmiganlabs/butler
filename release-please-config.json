@@ -1,6 +1,7 @@
 {
     "release-type": "node",
     "prerelease": false,
+    "last-release-sha": "23c6cf99dfc14d5154f7b7e7dae771afe2adfca0",
     "draft": true,
     "release-search-depth": 10,
     "commit-search-depth": 200,
