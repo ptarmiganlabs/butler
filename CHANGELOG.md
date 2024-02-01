@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.2](https://github.com/ptarmiganlabs/butler/compare/v11.0.1...v11.0.2) (2024-02-01)
+
+
+### Bug Fixes
+
+* Debug GHA ([3d053b8](https://github.com/ptarmiganlabs/butler/commit/3d053b815637dd6f153a3c64dc07a3da94ce7b7c))
+
 ## [11.0.1](https://github.com/ptarmiganlabs/butler/compare/v11.0.0...v11.0.1) (2024-02-01)
 
 
