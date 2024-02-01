@@ -13,8 +13,7 @@ on:
         description: 'Test scenario tags'
         required: false
   release:
-    types:
-      - published
+    types: [published]
 
 jobs:
   build:
