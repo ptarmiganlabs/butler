@@ -111,7 +111,7 @@
         "@babel/plugin-syntax-import-assertions": "^7.23.3",
         "eslint-plugin-import": "^2.29.1",
         "jest": "^29.7.0",
-        "prettier": "^3.2.4",
+        "prettier": "^3.2.5",
         "snyk": "^1.1276.0"
     },
     "pkg": {
