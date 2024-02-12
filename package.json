@@ -54,7 +54,7 @@
         "@fastify/rate-limit": "^9.1.0",
         "@fastify/reply-from": "^9.7.0",
         "@fastify/sensible": "^5.5.0",
-        "@fastify/static": "^6.12.0",
+        "@fastify/static": "^7.0.1",
         "@fastify/swagger": "^8.14.0",
         "@fastify/swagger-ui": "^2.1.0",
         "@keyvhq/core": "^2.1.0",
