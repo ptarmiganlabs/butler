@@ -95,17 +95,17 @@ async function build(opts = {}) {
         globals.logger.info(`Processors        : ${globals.hostInfo.si.cpu.processors}`);
         globals.logger.info(`Physical cores    : ${globals.hostInfo.si.cpu.physicalCores}`);
         globals.logger.info(`Cores             : ${globals.hostInfo.si.cpu.cores}`);
-        globals.logger.info(`Total memory   : ${globals.hostInfo.si.memory.total}`);
+        globals.logger.info(`Total memory      : ${globals.hostInfo.si.memory.total}`);
         globals.logger.info('');
         // Add log line with name of config file
-        globals.logger.info(`Config file    : ${globals.configFileExpanded}`);
-        globals.logger.info(`API rate limit : ${globals.options.apiRateLimit}`);
+        globals.logger.info(`Config file       : ${globals.configFileExpanded}`);
+        globals.logger.info(`API rate limit    : ${globals.options.apiRateLimit} calls per minute`);
         globals.logger.info('--------------------------------------');
 
         // Log info about what Qlik Sense certificates are being used
-        globals.logger.info(`Client cert     : ${certFile}`);
-        globals.logger.info(`Client cert key : ${keyFile}`);
-        globals.logger.info(`Client cert CA  : ${caFile}`);
+        globals.logger.info(`Client cert       : ${certFile}`);
+        globals.logger.info(`Client cert key   : ${keyFile}`);
+        globals.logger.info(`Client cert CA    : ${caFile}`);
 
         // Load approved directories for file system API operations from config file
         await globals.loadApprovedDirectories();
