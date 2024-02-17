@@ -97,6 +97,7 @@ async function build(opts = {}) {
         globals.logger.info(`Cores             : ${globals.hostInfo.si.cpu.cores}`);
         globals.logger.info(`Total memory      : ${globals.hostInfo.si.memory.total}`);
         globals.logger.info('');
+
         // Add log line with name of config file
         globals.logger.info(`Config file       : ${globals.configFileExpanded}`);
         globals.logger.info(`API rate limit    : ${globals.options.apiRateLimit} calls per minute`);
