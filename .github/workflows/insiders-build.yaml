@@ -17,23 +17,45 @@ jobs:
 
               dir
 
-              # Sign the executable
-              New-Item -ItemType directory -Path certificate
-              Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
-              certutil -decode certificate\certificate.txt certificate\certificate.pfx
-              Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
-              certutil -decode certificate\intermediate.txt certificate\intermediate.crt
+              # # Extract signing certificate to files on disk
+              # New-Item -ItemType directory -Path certificate
+              # Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
+              # certutil -decode certificate\certificate.txt certificate\certificate.pfx
+              # Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
+              # certutil -decode certificate\intermediate.txt certificate\intermediate.crt
 
-              $processOptions = @{
+              # # Sign the executable
+              # $processOptions = @{
+                #   FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                #   Wait = $true
+                #   ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
+                #   WorkingDirectory = "."
+                #   NoNewWindow = $true
+                # }
+                # Start-Process @processOptions
+                
+              # Sign the executable
+              # 1st signing
+              $processOptions1 = @{
                 FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
                 Wait = $true
-                ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
+                ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha1", "/v", "./${env:DIST_FILE_NAME}.exe"
                 WorkingDirectory = "."
                 NoNewWindow = $true
               }
-              Start-Process @processOptions
+              Start-Process @processOptions1
 
-              Remove-Item -Recurse -Force certificate
+              # 2nd signing
+              $processOptions2 = @{
+                FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                Wait = $true
+                ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha256", "/v", "./${env:DIST_FILE_NAME}.exe"
+                WorkingDirectory = "."
+                NoNewWindow = $true
+              }
+              Start-Process @processOptions2
+
+              # Remove-Item -Recurse -Force certificate
 
               # # Create release binary
               # mkdir release-binaries-win
@@ -215,9 +237,10 @@ jobs:
           PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
           PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
           PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
-          CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
-          CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
-          CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
+          # CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
+          # CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
+          # CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
+          CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
         run: |
           pwd
           ${{ matrix.build }}
