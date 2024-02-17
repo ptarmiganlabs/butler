@@ -14,7 +14,8 @@ Adapt to your needs - please also consider sharing enhancements with the wider c
 <a href="https://github.com/ptarmiganlabs/butler/actions/workflows/docker-image-build.yaml"><img src="https://github.com/ptarmiganlabs/butler/actions/workflows/docker-image-build.yaml/badge.svg" alt="Continuous Integration"></a>
 <a href="https://www.repostatus.org/#active"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." /></a>
 <a href="https://codeclimate.com/github/ptarmiganlabs/butler/maintainability"><img src="https://api.codeclimate.com/v1/badges/cb33990248ffbaaf7526/maintainability" /></a>
-<a href="https://github.com/ptarmiganlabs/butler/releases"><img src="https://img.shields.io/github/downloads/ptarmiganlabs/butler/total.svg?label=downloads%20since%20April%202022" /></a><br>
+<br>
+<a href="https://github.com/ptarmiganlabs/butler/releases"><img src="https://img.shields.io/github/downloads/ptarmiganlabs/butler/total.svg?label=downloads%20since%20April%202022" /></a>
 <img src="https://hits.dwyl.com/ptarmiganlabs/butler.svg" />
 </p>
 <br>
@@ -24,4 +25,4 @@ Adapt to your needs - please also consider sharing enhancements with the wider c
 
 Documentation is available at [https://butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com).
 
-Commercial getting-started services for Butler are available from Ptarmigan Labs, more info [here](https://ptarmiganlabs.com/butler-assist/).
+Commercial getting-started services for Butler are available from Ptarmigan Labs, more info [here](https://ptarmiganlabs.com/services/).

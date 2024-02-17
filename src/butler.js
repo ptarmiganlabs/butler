@@ -2,8 +2,6 @@
 // Add dependencies
 import dgram from 'dgram';
 
-
-
 // Suppress experimental warnings
 // https://stackoverflow.com/questions/55778283/how-to-disable-warnings-when-node-is-launched-via-a-global-shell-script
 const originalEmit = process.emit;
