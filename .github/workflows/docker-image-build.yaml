@@ -21,6 +21,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    if: |
+      github.event_name != 'pull_request' &&
+      github.repository_owner == 'ptarmiganlabs'
 
     steps:
       # - name: Send job status to MQTT (starting job)
@@ -42,30 +45,18 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
 
       # Login against a Docker registry except on PR
       # https://github.com/marketplace/actions/docker-login
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
       - name: Login to Docker Hub
         uses: docker/login-action@v3
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -83,27 +74,22 @@ jobs:
           # echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Dump GitHub context
-        if: always()
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
       - name: Dump job context
-        if: always()
         env:
           JOB_CONTEXT: ${{ toJSON(job) }}
         run: echo "$JOB_CONTEXT"
       - name: Dump steps context
-        if: always()
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
       - name: Dump runner context
-        if: always()
         env:
           RUNNER_CONTEXT: ${{ toJSON(runner) }}
         run: echo "$RUNNER_CONTEXT"
       - name: Dump strategy context
-        if: always()
         env:
           STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
         run: echo "$STRATEGY_CONTEXT"
@@ -113,9 +99,6 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         with:
           # images: ${{ env.IMAGE_NAME }}
           images: ${{ github.repository }}
@@ -127,23 +110,14 @@ jobs:
             type=semver,pattern={{major}},value=${{ env.TAG }}
 
       - name: Show Docker tags that will be used
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         run: echo '${{ steps.meta.outputs.tags }}'
 
       - name: Show Docker labels that will be used
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         run: echo '${{ steps.meta.outputs.labels }}'
 
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v5
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         with:
           context: .
           platforms: |
@@ -155,9 +129,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Image digest
-        if: |
-          github.event_name != 'pull_request' &&
-          github.repository_owner == 'ptarmiganlabs'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
       # Send MQTT message similar to this:
