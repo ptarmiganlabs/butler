@@ -8,7 +8,7 @@ jobs:
   insiders-build:
     strategy:
       matrix:
-        os: [winsrv-2016, mac-build1, ubuntu-latest]
+        os: [Windows, mac-build1, ubuntu-latest]
         include:
           - os: Windows
             build: |
