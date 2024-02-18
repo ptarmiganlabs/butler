@@ -1,5 +1,20 @@
 # Changelog
 
+## [11.0.3](https://github.com/ptarmiganlabs/butler/compare/butler-v11.0.2...butler-v11.0.3) (2024-02-18)
+
+
+### Bug Fixes
+
+* **startup:** More consistent logging during startup ([e0cce7b](https://github.com/ptarmiganlabs/butler/commit/e0cce7b7b12bbe5136864f8721b9ddcddadc6e29)), closes [#991](https://github.com/ptarmiganlabs/butler/issues/991)
+* Tidy up formatting of startup info written to logs ([c337aa1](https://github.com/ptarmiganlabs/butler/commit/c337aa1f0279f07319523b02e72685c24a83de0b)), closes [#991](https://github.com/ptarmiganlabs/butler/issues/991)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([fc4c34c](https://github.com/ptarmiganlabs/butler/commit/fc4c34cb96a6b9f3bd87ec2e91450e5ddc799e23))
+* Optimize GH Actions for building binaries ([cfc024f](https://github.com/ptarmiganlabs/butler/commit/cfc024f0d4dab7e741eaf884c7b5a2a0deca68cf))
+* Sign Win binaries with new signing solution ([e8e91d5](https://github.com/ptarmiganlabs/butler/commit/e8e91d5e8b260db9d065b55a2d83549961ac8684)), closes [#1004](https://github.com/ptarmiganlabs/butler/issues/1004)
+
 ## [11.0.2](https://github.com/ptarmiganlabs/butler/compare/v11.0.1...v11.0.2) (2024-02-01)
 
 

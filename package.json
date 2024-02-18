@@ -1,6 +1,6 @@
 {
     "name": "butler",
-    "version": "11.0.2",
+    "version": "11.0.3",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "scripts": {
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
