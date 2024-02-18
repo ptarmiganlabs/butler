@@ -219,6 +219,7 @@ jobs:
       - x64
       - windows
       - sp53
+      - win-code-sign
     # timeout-minutes: 15
     if: needs.release-please.outputs.releases_created == 'true'
     env:
