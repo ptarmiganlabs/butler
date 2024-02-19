@@ -65,7 +65,7 @@
         "cron-job-manager": "^2.3.1",
         "email-validator": "^2.0.4",
         "enigma.js": "^2.12.0",
-        "esbuild": "^0.20.0",
+        "esbuild": "^0.20.1",
         "eslint": "^8.56.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^9.1.0",
