@@ -262,7 +262,7 @@ const schedulerAborted = async (msg) => {
 };
 
 // Handler for failed scheduler initiated reloads
-const schedulerFailed = async (msg, legacyFlag) => {
+const schedulerFailed = async (msg) => {
     // Get script log for failed reloads.
     // Only done if Slack, Teams, email or New Relic alerts are enabled
     let scriptLog;
@@ -274,500 +274,279 @@ const schedulerFailed = async (msg, legacyFlag) => {
             globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) ||
         (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
     ) {
-        if (legacyFlag) {
-            scriptLog = await getScriptLog(msg[4], 0, 0);
-            globals.logger.verbose(`Script log for failed reload retrieved (legacy)`);
+        scriptLog = await getScriptLog(msg[5], 0, 0);
+        globals.logger.verbose(`Script log for failed reload retrieved`);
+    }
+
+    globals.logger.verbose(
+        `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+    );
+
+    // First field in message (msg[0]) is message category (this is the modern/recent message format)
+
+    // Check if app/task tags are used by any of the alert destinations.
+    // If so, get those tags once so they can be re-used where needed.
+    let appTags = [];
+    let taskTags = [];
+
+    // Get tags for the app that failed reloading
+    appTags = await getAppTags(msg[6]);
+    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+
+    // Get tags for the task that failed reloading
+    taskTags = await getTaskTags(msg[5]);
+    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
+    // Store script log to disk
+    if (
+        globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
+    ) {
+        failedTaskStoreLogOnDisk({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+            scriptLog,
+        });
+    }
+
+    // Post to Signl4 when a task has failed
+    if (
+        globals.config.has('Butler.incidentTool.signl4.enable') &&
+        globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.incidentTool.signl4.enable') === true &&
+        globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
+    ) {
+        sendReloadTaskFailureNotification({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+        });
+    }
+
+    // Post event to New Relic when a task has failed
+    if (
+        globals.config.has('Butler.incidentTool.newRelic.enable') &&
+        globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+        globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
+    ) {
+        sendReloadTaskFailureEvent({
+            qs_hostName: msg[1],
+            qs_user: msg[4].replace(/\\/g, '/'),
+            qs_taskName: msg[2],
+            qs_taskId: msg[5],
+            qs_appName: msg[3],
+            qs_appId: msg[6],
+            qs_logTimeStamp: msg[7],
+            qs_logLevel: msg[8],
+            qs_executionId: msg[9],
+            qs_logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+        });
+    }
+
+    // Post log to New Relic when a task has failed
+    if (
+        globals.config.has('Butler.incidentTool.newRelic.enable') &&
+        globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
+        globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
+    ) {
+        sendReloadTaskFailureLog({
+            qs_hostName: msg[1],
+            qs_user: msg[4].replace(/\\/g, '/'),
+            qs_taskName: msg[2],
+            qs_taskId: msg[5],
+            qs_appName: msg[3],
+            qs_appId: msg[6],
+            qs_logTimeStamp: msg[7],
+            qs_logLevel: msg[8],
+            qs_executionId: msg[9],
+            qs_logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+            scriptLog,
+        });
+    }
+
+    // Post to InfluxDB when a task has failed
+    if (
+        globals.config.has('Butler.influxDb.enable') &&
+        globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.influxDb.enable') === true &&
+        globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true
+    ) {
+        postReloadTaskFailureNotificationInfluxDb({
+            host: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            appTags,
+            taskTags,
+            scriptLog,
+        });
+    }
+
+    // Post to Slack when a task has failed, if Slack is enabled
+    if (
+        globals.config.has('Butler.slackNotification.enable') &&
+        globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.slackNotification.enable') === true &&
+        globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
+    ) {
+        sendReloadTaskFailureNotificationSlack({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+            scriptLog,
+        });
+    }
+
+    // Post to MS Teams when a task has failed, if Teams is enabled
+    if (
+        globals.config.has('Butler.teamsNotification.enable') &&
+        globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.teamsNotification.enable') === true &&
+        globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
+    ) {
+        sendReloadTaskFailureNotificationTeams({
+            hostName: msg[1],
+            user: msg[4].replace(/\\/g, '/'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+            scriptLog,
+        });
+    }
+
+    // Send notification email when task has failed, if this notification type is enabled
+    if (
+        globals.config.has('Butler.emailNotification.enable') &&
+        globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
+        globals.config.get('Butler.emailNotification.enable') === true &&
+        globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
+    ) {
+        sendReloadTaskFailureNotificationEmail({
+            hostName: msg[1],
+            user: msg[4].replace(/\\\\/g, '\\'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+            scriptLog,
+        });
+    }
+
+    // Call outgoing webhooks when task has failed
+    // Note that there is no enable/disable flag for failed reloads.
+    // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
+    if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
+        sendReloadTaskFailureNotificationWebhook({
+            hostName: msg[1],
+            user: msg[4].replace(/\\\\/g, '\\'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_taskTags: taskTags,
+        });
+    }
+
+    // Publish basic MQTT message containing task name when a task has failed, if MQTT is enabled
+    if (
+        globals.config.has('Butler.mqttConfig.enable') &&
+        globals.config.get('Butler.mqttConfig.enable') === true &&
+        globals.config.has('Butler.mqttConfig.taskFailureTopic')
+    ) {
+        if (globals?.mqttClient?.connected) {
+            globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
         } else {
-            scriptLog = await getScriptLog(msg[5], 0, 0);
-            globals.logger.verbose(`Script log for failed reload retrieved (new)`);
+            globals.logger.warn(
+                `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                    'Butler.mqttConfig.taskFailureTopic'
+                )}`
+            );
         }
     }
 
-    if (legacyFlag) {
-        // First field in message (msg[0]) is host name
-
-        // Store script log to disk
-        if (
-            globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
-        ) {
-            failedTaskStoreLogOnDisk({
-                hostName: msg[0],
-                user: msg[3].replace(/\\/g, '/'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-            });
-        }
-
-        // Post to Signl4 when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.signl4.enable') &&
-            globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.incidentTool.signl4.enable') === true &&
-            globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotification({
-                hostName: msg[0],
-                user: msg[3].replace(/\\/g, '/'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-            });
-        }
-
-        // Post event to New Relic when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
-            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
-        ) {
-            sendReloadTaskFailureEvent({
-                qs_hostName: msg[0],
-                qs_user: msg[3].replace(/\\/g, '/'),
-                qs_taskName: msg[1],
-                qs_taskId: msg[4],
-                qs_appName: msg[2],
-                qs_appId: msg[5],
-                qs_logTimeStamp: msg[6],
-                qs_logLevel: msg[7],
-                qs_executionId: msg[8],
-                qs_logMessage: msg[9],
-            });
-        }
-
-        // Post log to New Relic when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
-            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
-        ) {
-            sendReloadTaskFailureLog({
-                qs_hostName: msg[0],
-                qs_user: msg[3].replace(/\\/g, '/'),
-                qs_taskName: msg[1],
-                qs_taskId: msg[4],
-                qs_appName: msg[2],
-                qs_appId: msg[5],
-                qs_logTimeStamp: msg[6],
-                qs_logLevel: msg[7],
-                qs_executionId: msg[8],
-                qs_logMessage: msg[9],
-                scriptLog,
-            });
-        }
-
-        // Post to Slack when a task has failed, if Slack is enabled
-        if (
-            globals.config.has('Butler.slackNotification.enable') &&
-            globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.slackNotification.enable') === true &&
-            globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationSlack({
-                hostName: msg[0],
-                user: msg[3].replace(/\\/g, '/'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-                scriptLog,
-            });
-        }
-
-        // Post to MS Teams when a task has failed, if Teams is enabled
-        if (
-            globals.config.has('Butler.teamsNotification.enable') &&
-            globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.teamsNotification.enable') === true &&
-            globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationTeams({
-                hostName: msg[0],
-                user: msg[3].replace(/\\/g, '/'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-                scriptLog,
-            });
-        }
-
-        // Send notification email when task has failed, if this notification type is enabled
-        if (
-            globals.config.has('Butler.emailNotification.enable') &&
-            globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.emailNotification.enable') === true &&
-            globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationEmail({
-                hostName: msg[0],
-                user: msg[3].replace(/\\\\/g, '\\'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-                scriptLog,
-            });
-        }
-
-        // Call outgoing webhooks when task has failed
-        // Note that there is no enable/disable flag for failed reloads.
-        // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
-        if (
-            globals.config.has('Butler.webhookNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.webhookNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationWebhook({
-                hostName: msg[0],
-                user: msg[3].replace(/\\\\/g, '\\'),
-                taskName: msg[1],
-                taskId: msg[4],
-                appName: msg[2],
-                appId: msg[5],
-                logTimeStamp: msg[6],
-                logLevel: msg[7],
-                executionId: msg[8],
-                logMessage: msg[9],
-            });
-        }
-
-        // Publish MQTT message when a task has failed, if MQTT enabled
-        if (
-            globals.config.has('Butler.mqttConfig.enable') &&
-            globals.config.get('Butler.mqttConfig.enable') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureTopic')
-        ) {
-            if (globals?.mqttClient?.connected) {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[1]);
-            } else {
-                globals.logger.warn(
-                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskFailureTopic'
-                    )}`
-                );
-            }
-        }
-
-        // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
-        if (
-            globals.config.has('Butler.mqttConfig.enable') &&
-            globals.config.get('Butler.mqttConfig.enable') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
-            globals.config.get('Butler.mqttConfig.taskFailureSendFull') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
-        ) {
-            globals.mqttClient.publish(
-                globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
-                JSON.stringify({
-                    hostName: msg[0],
-                    user: msg[3].replace(/\\\\/g, '\\'),
-                    taskName: msg[1],
-                    taskId: msg[4],
-                    appName: msg[2],
-                    appId: msg[5],
-                    logTimeStamp: msg[6],
-                    logLevel: msg[7],
-                    executionId: msg[8],
-                    logMessage: msg[9],
-                })
-            );
-        }
-    } else {
-        globals.logger.verbose(
-            `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+    // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
+    if (
+        globals.config.has('Butler.mqttConfig.enable') &&
+        globals.config.get('Butler.mqttConfig.enable') === true &&
+        globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
+        globals.config.get('Butler.mqttConfig.taskFailureSendFull') === true &&
+        globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
+    ) {
+        globals.mqttClient.publish(
+            globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
+            JSON.stringify({
+                hostName: msg[1],
+                user: msg[4].replace(/\\\\/g, '\\'),
+                taskName: msg[2],
+                taskId: msg[5],
+                appName: msg[3],
+                appId: msg[6],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_appTags: appTags,
+                qs_taskTags: taskTags,
+            })
         );
-
-        // First field in message (msg[0]) is message category (this is the modern/recent message format)
-
-        // Check if app/task tags are used by any of the alert destinations.
-        // If so, get those tags once so they can be re-used where needed.
-        let appTags = [];
-        let taskTags = [];
-
-        // Get tags for the app that failed reloading
-        appTags = await getAppTags(msg[6]);
-        globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
-
-        // Get tags for the task that failed reloading
-        taskTags = await getTaskTags(msg[5]);
-        globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
-
-        // Store script log to disk
-        if (
-            globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
-        ) {
-            failedTaskStoreLogOnDisk({
-                hostName: msg[1],
-                user: msg[4].replace(/\\/g, '/'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-                scriptLog,
-            });
-        }
-
-        // Post to Signl4 when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.signl4.enable') &&
-            globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.incidentTool.signl4.enable') === true &&
-            globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotification({
-                hostName: msg[1],
-                user: msg[4].replace(/\\/g, '/'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-            });
-        }
-
-        // Post event to New Relic when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
-            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
-        ) {
-            sendReloadTaskFailureEvent({
-                qs_hostName: msg[1],
-                qs_user: msg[4].replace(/\\/g, '/'),
-                qs_taskName: msg[2],
-                qs_taskId: msg[5],
-                qs_appName: msg[3],
-                qs_appId: msg[6],
-                qs_logTimeStamp: msg[7],
-                qs_logLevel: msg[8],
-                qs_executionId: msg[9],
-                qs_logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-            });
-        }
-
-        // Post log to New Relic when a task has failed
-        if (
-            globals.config.has('Butler.incidentTool.newRelic.enable') &&
-            globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
-            globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
-            globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
-        ) {
-            sendReloadTaskFailureLog({
-                qs_hostName: msg[1],
-                qs_user: msg[4].replace(/\\/g, '/'),
-                qs_taskName: msg[2],
-                qs_taskId: msg[5],
-                qs_appName: msg[3],
-                qs_appId: msg[6],
-                qs_logTimeStamp: msg[7],
-                qs_logLevel: msg[8],
-                qs_executionId: msg[9],
-                qs_logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-                scriptLog,
-            });
-        }
-
-        // Post to InfluxDB when a task has failed
-        if (
-            globals.config.has('Butler.influxDb.enable') &&
-            globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.influxDb.enable') === true &&
-            globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true
-        ) {
-            postReloadTaskFailureNotificationInfluxDb({
-                host: msg[1],
-                user: msg[4].replace(/\\/g, '/'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                appTags,
-                taskTags,
-                scriptLog,
-            });
-        }
-
-        // Post to Slack when a task has failed, if Slack is enabled
-        if (
-            globals.config.has('Butler.slackNotification.enable') &&
-            globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.slackNotification.enable') === true &&
-            globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationSlack({
-                hostName: msg[1],
-                user: msg[4].replace(/\\/g, '/'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-                scriptLog,
-            });
-        }
-
-        // Post to MS Teams when a task has failed, if Teams is enabled
-        if (
-            globals.config.has('Butler.teamsNotification.enable') &&
-            globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.teamsNotification.enable') === true &&
-            globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationTeams({
-                hostName: msg[1],
-                user: msg[4].replace(/\\/g, '/'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-                scriptLog,
-            });
-        }
-
-        // Send notification email when task has failed, if this notification type is enabled
-        if (
-            globals.config.has('Butler.emailNotification.enable') &&
-            globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.emailNotification.enable') === true &&
-            globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
-        ) {
-            sendReloadTaskFailureNotificationEmail({
-                hostName: msg[1],
-                user: msg[4].replace(/\\\\/g, '\\'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-                scriptLog,
-            });
-        }
-
-        // Call outgoing webhooks when task has failed
-        // Note that there is no enable/disable flag for failed reloads.
-        // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
-        if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
-            sendReloadTaskFailureNotificationWebhook({
-                hostName: msg[1],
-                user: msg[4].replace(/\\\\/g, '\\'),
-                taskName: msg[2],
-                taskId: msg[5],
-                appName: msg[3],
-                appId: msg[6],
-                logTimeStamp: msg[7],
-                logLevel: msg[8],
-                executionId: msg[9],
-                logMessage: msg[10],
-                qs_appTags: appTags,
-                qs_taskTags: taskTags,
-            });
-        }
-
-        // Publish basic MQTT message containing task name when a task has failed, if MQTT is enabled
-        if (
-            globals.config.has('Butler.mqttConfig.enable') &&
-            globals.config.get('Butler.mqttConfig.enable') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureTopic')
-        ) {
-            if (globals?.mqttClient?.connected) {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
-            } else {
-                globals.logger.warn(
-                    `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskFailureTopic'
-                    )}`
-                );
-            }
-        }
-
-        // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
-        if (
-            globals.config.has('Butler.mqttConfig.enable') &&
-            globals.config.get('Butler.mqttConfig.enable') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
-            globals.config.get('Butler.mqttConfig.taskFailureSendFull') === true &&
-            globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
-        ) {
-            globals.mqttClient.publish(
-                globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
-                JSON.stringify({
-                    hostName: msg[1],
-                    user: msg[4].replace(/\\\\/g, '\\'),
-                    taskName: msg[2],
-                    taskId: msg[5],
-                    appName: msg[3],
-                    appId: msg[6],
-                    logTimeStamp: msg[7],
-                    logLevel: msg[8],
-                    executionId: msg[9],
-                    logMessage: msg[10],
-                    qs_appTags: appTags,
-                    qs_taskTags: taskTags,
-                })
-            );
-        }
     }
 };
 
@@ -975,6 +754,7 @@ const udpInitTaskErrorServer = () => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===
         //
+        // String used in log appender xml file:
         // /scheduler-reload-failed/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message
         // msg[0]  : Identifies the message as coming from scheduler reload failed appender
         // msg[1]  : Host name
@@ -991,8 +771,26 @@ const udpInitTaskErrorServer = () => {
         // ----------------------------------------------------------
         // === Message from Scheduler reload aborted log appender ===
         //
+        // String used in log appender xml file:
         // /scheduler-reload-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message
         // msg[0]  : Identifies the message as coming from scheduler reload aborted appender
+        // msg[1]  : Host name
+        // msg[2]  : Task name
+        // msg[3]  : App name
+        // msg[4]  : User
+        // msg[5]  : Task ID
+        // msg[6]  : App ID
+        // msg[7]  : Log timestamp
+        // msg[8]  : Level of log event
+        // msg[9]  : Execution ID
+        // msg[10] : Message
+
+        // ----------------------------------------------------------
+        // === Message from Scheduler reload task success log appender ===
+        //
+        // String used in log appender xml file:
+        // /scheduler-reloadtask-success/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message
+        // msg[0]  : Identifies the message as coming from scheduler reload task success appender
         // msg[1]  : Host name
         // msg[2]  : Task name
         // msg[3]  : App name
@@ -1007,6 +805,7 @@ const udpInitTaskErrorServer = () => {
         // ----------------------------------------
         // === Message from Engine log appender ===
         //
+        // String used in log appender xml file:
         // /engine-reload-failed/;%hostname;%property{AppId};%property{SessionId};%property{ActiveUserDirectory};%property{ActiveUserId};%date;%level;%message
         // mag[0]  : Identifies the message as coming from engine reload failedlog appender
         // mag[1]  : Host name
@@ -1018,56 +817,78 @@ const udpInitTaskErrorServer = () => {
         // mag[7]  : Level of log event
         // mag[8]  : Message
 
-        // ----------------------------------------
-        // === Default handler ===
-        // This is kept for legacy reasons, to support those systems that still use the (much) older,
-        // original log appender file that was included with early Butler versions.
-        // It's strongly recommended to update the log appender XML to the format used in the most recent Butler version,
-        // as this gives much more flexibility to implement log initiated events in Butler.
-        //
-        // %hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level%property{ExecutionId};%message
-        // msg[0]  : Host name
-        // msg[1]  : Task name
-        // msg[2]  : App name
-        // msg[3]  : User
-        // msg[4]  : Task ID
-        // msg[5]  : App ID
-        // msg[6]  : Log timestamp
-        // msg[7]  : Level of log event
-        // msg[8]  : Execution ID
-        // msg[9]  : Message
-
         try {
+            globals.logger.debug(`UDP HANDLER: UDP message received: ${message.toString()}`);
+
             const msg = message.toString().split(';');
 
             if (msg[0].toLowerCase() === '/engine-reload-failed/') {
                 // Engine log appender detecting failed reload, also ones initiated interactively by users
+
+                // Do some sanity checks on the message
+                // There should be exactly 11 fields in the message
+                if (msg.length !== 9) {
+                    globals.logger.warn(
+                        `UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`
+                    );
+                    globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
+                    return;
+                }
+
                 globals.logger.verbose(
-                    `TASKFAILURE: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`
+                    `UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`
                 );
             } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/') {
                 // Scheduler log appender detecting failed scheduler-started reload
-                // 2nd parameter is used to detemine if the msg parameter is "legacy" (true) or not (false).
-                // Legacy format was the format used before the first field was changed to be used for command passing, i.e. /..../
-                schedulerFailed(msg, false);
+
+                // Do some sanity checks on the message
+                // There should be exactly 11 fields in the message
+                if (msg.length !== 11) {
+                    globals.logger.warn(
+                        `UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                    );
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
+                    return;
+                }
+
+                schedulerFailed(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/') {
                 // Scheduler log appender detecting aborted scheduler-started reload
+
+                // Do some sanity checks on the message
+                // There should be exactly 11 fields in the message
+                if (msg.length !== 11) {
+                    globals.logger.warn(
+                        `UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                    );
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
+                    return;
+                }
+
                 schedulerAborted(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/') {
                 // Scheduler log appender detecting successful scheduler-started reload task
+
+                // Do some sanity checks on the message
+                // There should be exactly 11 fields in the message
+                if (msg.length !== 11) {
+                    globals.logger.warn(
+                        `UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                    );
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Aborting processing of this message.`);
+                    return;
+                }
                 schedulerReloadTaskSuccess(msg);
             } else {
-                // Scheduler log appender detecting failed scheduler-started reload.
-                // This is default to better support legacy Butler installations. See above.
-
-                // This is the "legacy mode" event.
-                // In the early Butler version there was only a single event sent from log4net to Butler.
-                // It was sent when scheduled tasks failed and did not include any message type in the first field.
-                // Instead the first field contained the host name on which the event originated.
-                schedulerFailed(msg, true);
+                globals.logger.warn(`UDP HANDLER: Unknown UDP message format: "${msg[0]}"`);
             }
         } catch (err) {
-            globals.logger.error(`TASKFAILURE: Failed processing log event: ${err}`);
+            globals.logger.error(`UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${err}`);
+            globals.logger.error(`UDP HANDLER: Incoming log message was\n${message}`);
         }
     });
 };
