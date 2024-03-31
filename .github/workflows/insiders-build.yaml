@@ -13,7 +13,7 @@ jobs:
           - os: win-code-sign
             build: |
               ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-              pkg --output "./${env:DIST_FILE_NAME}.exe" -t node18-win-x64 ./build.cjs --config package.json --compress GZip
+              pkg --output "./${env:DIST_FILE_NAME}.exe" -t node18-win-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
 
               dir
 
@@ -96,7 +96,7 @@ jobs:
           - os: mac-build1
             build: |
               ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-              pkg --output "./${DIST_FILE_NAME}" -t node18-macos-x64 ./build.cjs --config package.json --compress GZip
+              pkg --output "./${DIST_FILE_NAME}" -t node18-macos-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
 
               chmod +x "${DIST_FILE_NAME}"
               security delete-keychain build.keychain || true
@@ -163,7 +163,7 @@ jobs:
           - os: ubuntu-latest
             build: |
               ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-              pkg --output "./${DIST_FILE_NAME}" -t node18-linux-x64 ./build.cjs --config package.json --compress GZip
+              pkg --output "./${DIST_FILE_NAME}" -t node18-linux-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
 
               chmod +x ${DIST_FILE_NAME}
 

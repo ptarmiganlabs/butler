@@ -38,7 +38,181 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
         });
 }
 
-// Add function to store windows service status to InfluxDB
+// Function to store Qlik Sense license status to InfluxDB
+// License JSON has the following structure:
+// {
+//     "totalTokens": 0,
+//     "availableTokens": 0,
+//     "tokensEnabled": false,
+//     "userAccess": {
+//         "enabled": false,
+//         "tokenCost": 1,
+//         "allocatedTokens": 0,
+//         "usedTokens": 0,
+//         "quarantinedTokens": 0,
+//         "schemaPath": "AccessTypeOverview.UserAccessDetails"
+//     },
+//     "loginAccess": {
+//         "enabled": false,
+//         "tokenCost": 0.1,
+//         "allocatedTokens": 0,
+//         "usedTokens": 0,
+//         "unavailableTokens": 0,
+//         "schemaPath": "AccessTypeOverview.LoginAccessDetails"
+//     },
+//     "professionalAccess": {
+//         "enabled": true,
+//         "total": 25,
+//         "allocated": 5,
+//         "used": 0,
+//         "quarantined": 0,
+//         "excess": 0,
+//         "available": 20,
+//         "schemaPath": "AccessTypeOverview.Details"
+//     },
+//     "analyzerAccess": {
+//         "enabled": true,
+//         "total": 25,
+//         "allocated": 4,
+//         "used": 0,
+//         "quarantined": 0,
+//         "excess": 0,
+//         "available": 21,
+//         "schemaPath": "AccessTypeOverview.Details"
+//     },
+//     "analyzerTimeAccess": {
+//         "enabled": true,
+//         "allocatedMinutes": 700,
+//         "usedMinutes": 0,
+//         "unavailableMinutes": 0,
+//         "schemaPath": "AccessTypeOverview.AnalyzerTimeAccessDetails"
+//     },
+//     "schemaPath": "AccessTypeOverview"
+// }
+export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatus) {
+    globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE STATUS: Sending Qlik Sense license status to InfluxDB');
+
+    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
+
+    // Build InfluxDB datapoint
+    let datapoint = [];
+
+    // Is there any data for "analyzerAccess" license type?
+    if (qlikSenseLicenseStatus.analyzerAccess.enabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'analyzer_access',
+            },
+            fields: {
+                allocated: qlikSenseLicenseStatus.analyzerAccess.allocated,
+                available: qlikSenseLicenseStatus.analyzerAccess.available,
+                excess: qlikSenseLicenseStatus.analyzerAccess.excess,
+                quarantined: qlikSenseLicenseStatus.analyzerAccess.quarantined,
+                total: qlikSenseLicenseStatus.analyzerAccess.total,
+                used: qlikSenseLicenseStatus.analyzerAccess.used,
+            },
+        });
+    }
+
+    // Is there any data for "analyzerTimeAccess" license type?
+    if (qlikSenseLicenseStatus.analyzerTimeAccess.enabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'analyzer_time_access',
+            },
+            fields: {
+                allocatedMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.allocatedMinutes,
+                unavailableMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.unavailableMinutes,
+                usedMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.usedMinutes,
+            },
+        });
+    }
+
+    // Is there any data for "loginAccess" license type?
+    if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'login_access',
+            },
+            fields: {
+                allocatedTokens: qlikSenseLicenseStatus.loginAccess.allocatedTokens,
+                tokenCost: qlikSenseLicenseStatus.loginAccess.tokenCost,
+                unavailableTokens: qlikSenseLicenseStatus.loginAccess.unavailableTokens,
+                usedTokens: qlikSenseLicenseStatus.loginAccess.usedTokens,
+            },
+        });
+    }
+
+    // Is there any data for "professionalAccess" license type?
+    if (qlikSenseLicenseStatus.professionalAccess.enabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'professional_access',
+            },
+            fields: {
+                allocated: qlikSenseLicenseStatus.professionalAccess.allocated,
+                available: qlikSenseLicenseStatus.professionalAccess.available,
+                excess: qlikSenseLicenseStatus.professionalAccess.excess,
+                quarantined: qlikSenseLicenseStatus.professionalAccess.quarantined,
+                total: qlikSenseLicenseStatus.professionalAccess.total,
+                used: qlikSenseLicenseStatus.professionalAccess.used,
+            },
+        });
+    }
+
+    // Is there any data for "userAccess" license type?
+    if (qlikSenseLicenseStatus.userAccess.enabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'user_access',
+            },
+            fields: {
+                allocatedTokens: qlikSenseLicenseStatus.userAccess.allocatedTokens,
+                quarantinedTokens: qlikSenseLicenseStatus.userAccess.quarantinedTokens,
+                tokenCost: qlikSenseLicenseStatus.userAccess.tokenCost,
+                userTokens: qlikSenseLicenseStatus.userAccess.userTokens,
+            },
+        });
+    }
+
+    // Are tokens available?
+    if (qlikSenseLicenseStatus.tokensEnabled === true) {
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: {
+                butler_instance: instanceTag,
+                license_type: 'tokens_available',
+            },
+            fields: {
+                availableTokens: qlikSenseLicenseStatus.availableTokens,
+                totalTokens: qlikSenseLicenseStatus.totalTokens,
+            },
+        });
+    }
+
+    // Write to InfluxDB
+    const deepClonedDatapoint = _.cloneDeep(datapoint);
+    await globals.influx.writePoints(deepClonedDatapoint);
+
+    globals.logger.silly(
+        `INFLUXDB QLIK SENSE LICENSE STATUS: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`
+    );
+
+    datapoint = null;
+    globals.logger.info('INFLUXDB QLIK SENSE LICENSE STATUS: Sent Qlik Sense license status data to InfluxDB');
+}
+
+// Function to store windows service status to InfluxDB
 export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
     globals.logger.verbose(
         `INFLUXDB WINDOWS SERVICE STATUS: Sending service status to InfluxDB: service="${serviceStatus.serviceFriendlyName}", status="${serviceStatus.serviceStatus}"`
