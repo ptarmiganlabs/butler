@@ -136,6 +136,19 @@ Butler:
     qmc: <Link to Qlik Sense QMC>
     hub: <Link to Qlik Sense Hub>
 
+  # Settings for monitoring Qlik Sense licenses
+  qlikSenseLicense:
+    licenseMonitor:
+      enable: true
+      frequency: every 5 minutes
+      destination:
+        influxDb:                     # Send service alerts to InfluxDB
+          enable: true
+          tag: 
+            static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
+              - name: foo
+                value: bar
+
   # Settings for notifications and messages sent to MS Teams
   teamsNotification:
     enable: false

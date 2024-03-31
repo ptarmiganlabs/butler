@@ -29,6 +29,7 @@ const start = async () => {
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
+    const setupQlikSenseLicenseMonitor = (await import('./lib/qliksense_license_monitor.js')).default;
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;
@@ -172,6 +173,14 @@ const start = async () => {
     // Set up service monitoring, if enabled in the config file
     if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
         setupServiceMonitorTimer(globals.config, globals.logger);
+    }
+
+    // Set up Qlik Sense license monitoring, if enabled in the config file
+    if (
+        globals.config.has('Butler.qlikSenseLicense.licenseMonitor.enable') &&
+        globals.config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true
+    ) {
+        setupQlikSenseLicenseMonitor(globals.config, globals.logger);
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks

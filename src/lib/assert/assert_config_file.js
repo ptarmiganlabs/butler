@@ -748,6 +748,23 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Qlik Sense license monitoring
+    if (!config.has('Butler.qlikSenseLicense.licenseMonitor.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseMonitor.frequency')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.frequency"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enabled"');
+        configFileCorrect = false;
+    }
+
+    // Teams notifications
     if (!config.has('Butler.teamsNotification.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.teamsNotification.enable"');
         configFileCorrect = false;
