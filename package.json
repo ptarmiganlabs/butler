@@ -92,7 +92,7 @@
         "nodemailer": "^6.9.13",
         "nodemailer-express-handlebars": "^6.1.2",
         "os": "^0.1.2",
-        "posthog-node": "^3.6.3",
+        "posthog-node": "^4.0.0",
         "promise": "^8.3.0",
         "qrs-interact": "^6.3.1",
         "rate-limiter-flexible": "^5.0.0",
