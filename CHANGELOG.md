@@ -1,5 +1,14 @@
 # Changelog
 
+## [11.1.4](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.3...butler-v11.1.4) (2024-04-08)
+
+
+### Miscellaneous
+
+* Docker image build ([72ca27e](https://github.com/ptarmiganlabs/butler/commit/72ca27e4c7451ce9a747bf8415351f7c7f304848))
+* Fix broken Docker build ([09ddf62](https://github.com/ptarmiganlabs/butler/commit/09ddf620d1ba04872bee74de060f795d64fcc088))
+* **master:** release butler 11.1.3 ([2fb2075](https://github.com/ptarmiganlabs/butler/commit/2fb2075625bfcbb0e299fb2819d65cb7182c558b))
+
 ## [11.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.3...butler-v11.1.3) (2024-04-08)
 
 
