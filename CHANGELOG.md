@@ -1,5 +1,32 @@
 # Changelog
 
+## [11.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.0.3...butler-v11.1.0) (2024-04-08)
+
+
+### Features
+
+* **license:** Monitor high level Qilk Sense license usage across different license types ([2c925b7](https://github.com/ptarmiganlabs/butler/commit/2c925b70230f0be82f258b11eb8d24c927f12ebb)), closes [#1041](https://github.com/ptarmiganlabs/butler/issues/1041)
+* Scheduled removal of unused user Qlik Sense license ([bac1258](https://github.com/ptarmiganlabs/butler/commit/bac12589f8e147039830cdac4f906a6061d2959f)), closes [#1042](https://github.com/ptarmiganlabs/butler/issues/1042)
+
+
+### Bug Fixes
+
+* Better, more complete check of config when starting Butler ([1e769dd](https://github.com/ptarmiganlabs/butler/commit/1e769ddfe745882ea109f2962c9b7b4986b04cbd))
+* Make handling of reload failed/aborted/succeeded messages more robust ([eaf609e](https://github.com/ptarmiganlabs/butler/commit/eaf609e67a41d3c0020654e26a64c5a7a5c5af2b)), closes [#1034](https://github.com/ptarmiganlabs/butler/issues/1034)
+* Remove Node.js warnings on Butler startup ([e489d4b](https://github.com/ptarmiganlabs/butler/commit/e489d4b56ec57de3ff18be72828ffc65d09f6912)), closes [#1037](https://github.com/ptarmiganlabs/butler/issues/1037)
+* **startup:** More consistent logging during startup ([e0cce7b](https://github.com/ptarmiganlabs/butler/commit/e0cce7b7b12bbe5136864f8721b9ddcddadc6e29)), closes [#991](https://github.com/ptarmiganlabs/butler/issues/991)
+* Tidy up formatting of startup info written to logs ([c337aa1](https://github.com/ptarmiganlabs/butler/commit/c337aa1f0279f07319523b02e72685c24a83de0b)), closes [#991](https://github.com/ptarmiganlabs/butler/issues/991)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([0c5890e](https://github.com/ptarmiganlabs/butler/commit/0c5890e646de0da34ebd2ac9af94828cdbbe761c))
+* **deps:** Update dependencies ([fc4c34c](https://github.com/ptarmiganlabs/butler/commit/fc4c34cb96a6b9f3bd87ec2e91450e5ddc799e23))
+* **master:** release butler 11.0.3 ([f15dfe5](https://github.com/ptarmiganlabs/butler/commit/f15dfe5fbbf81ec1b06164d97747e128b04d4672))
+* Optimize GH Actions for building binaries ([cfc024f](https://github.com/ptarmiganlabs/butler/commit/cfc024f0d4dab7e741eaf884c7b5a2a0deca68cf))
+* Remove udp client from Butler project, move to its own repo ([70817f0](https://github.com/ptarmiganlabs/butler/commit/70817f0a97c9034519cca16b16554d9d077c98a8))
+* Sign Win binaries with new signing solution ([e8e91d5](https://github.com/ptarmiganlabs/butler/commit/e8e91d5e8b260db9d065b55a2d83549961ac8684)), closes [#1004](https://github.com/ptarmiganlabs/butler/issues/1004)
+
 ## [11.0.3](https://github.com/ptarmiganlabs/butler/compare/butler-v11.0.2...butler-v11.0.3) (2024-02-18)
 
 
