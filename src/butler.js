@@ -29,7 +29,7 @@ const start = async () => {
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
-    const setupQlikSenseLicenseMonitor = (await import('./lib/qliksense_license_monitor.js')).default;
+    const { setupQlikSenseLicenseMonitor, setupQlikSenseLicenseRelease } = await import('./lib/qliksense_license_monitor.js');
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;
@@ -41,22 +41,43 @@ const start = async () => {
         './lib/assert/assert_config_file.js'
     );
 
+    // Verify that config file is valid YAML
+    let resAssert = await configFileYamlAssert(globals.configFileExpanded);
+    if (resAssert === false) {
+        globals.logger.error('MAIN: Config file is not valid YAML. Exiting.');
+        process.exit(1);
+    } else {
+        globals.logger.info('MAIN: Config file is valid YAML - all good.');
+    }
+
     // Verify correct structure of config file
-    configFileStructureAssert(globals.config, globals.logger);
-
-    // Verify that config file is valid YAML
-    configFileStructureAssert(globals.config, globals.logger);
-
-    // Verify that config file is valid YAML
-    configFileYamlAssert(globals.configFileExpanded);
+    resAssert = await configFileStructureAssert(globals.config, globals.logger);
+    if (resAssert === false) {
+        globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
+        process.exit(1);
+    } else {
+        globals.logger.info('MAIN: Config file structure is correct - all good.');
+    }
 
     // Verify select parts/values in config file
     if (globals.options.qsConnection) {
         // Verify that the config file contains the required data related to New Relic
-        configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
+        resAssert = await configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
+        if (resAssert === false) {
+            globals.logger.error('MAIN: Config file does not contain required New Relic data. Exiting.');
+            process.exit(1);
+        } else {
+            globals.logger.info('MAIN: Config file contains required New Relic data - all good.');
+        }
 
         // Verify that the config file contains the required data related to InfluxDb
-        configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
+        resAssert = await configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
+        if (resAssert === false) {
+            globals.logger.error('MAIN: Config file does not contain required InfluxDb data. Exiting.');
+            process.exit(1);
+        } else {
+            globals.logger.info('MAIN: Config file contains required InfluxDb data - all good.');
+        }
     }
 
     // Ensure that initialisation of globals is complete
@@ -71,7 +92,7 @@ const start = async () => {
         globals.logger.info('START: Sleeping 5 seconds to allow globals to be initialised.');
         await sleepLocal(5000);
     } else {
-        globals.logger.info('START: Globals initialised, all good.');
+        globals.logger.info('START: Globals initialised - all good.');
     }
 
     const apps = await build({});
@@ -181,6 +202,17 @@ const start = async () => {
         globals.config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true
     ) {
         setupQlikSenseLicenseMonitor(globals.config, globals.logger);
+    }
+
+    // Set up Qlik Sense license release, if enabled in the config file
+    // Enable only if at least one license type is enabled for automatic release
+    if (
+        globals.config.has('Butler.qlikSenseLicense.licenseRelease.enable') &&
+        globals.config.get('Butler.qlikSenseLicense.licenseRelease.enable') === true &&
+        (globals.config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable') === true ||
+            globals.config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable') === true)
+    ) {
+        setupQlikSenseLicenseRelease(globals.config, globals.logger);
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
