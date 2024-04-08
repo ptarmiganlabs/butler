@@ -7,6 +7,20 @@
 
 * Debug Docker image build code in GitHub Actions ([db36afa](https://github.com/ptarmiganlabs/butler/commit/db36afa25c83182c86285aba0aff9f9337e10385))
 * Debug Docker image bulild code ([c9748e1](https://github.com/ptarmiganlabs/butler/commit/c9748e1da2eca65632f8d28f148cc46fc455e28b))
+* **deps:** Update dependencies ([cc7bf2c](https://github.com/ptarmiganlabs/butler/commit/cc7bf2c7e733b4d473f6adec98ca03b8bcf0b12a))
+* Docker build debug ([d4dc1b8](https://github.com/ptarmiganlabs/butler/commit/d4dc1b87fdcae0f4033380686cf165aeb70ba172))
+* Fix broken Docker image build and update versioning to 1.2.3 format ([7e96da5](https://github.com/ptarmiganlabs/butler/commit/7e96da51aea3203c038888b5bb4a8839359d8418))
+* **master:** release butler 11.1.1 ([46707ff](https://github.com/ptarmiganlabs/butler/commit/46707ff84bfd4db54ee1d814ae2add3465946079))
+* **master:** release butler 11.1.2 ([242c347](https://github.com/ptarmiganlabs/butler/commit/242c3477c530ef4a0047a324c84a68388cc23006))
+* **master:** release butler 11.1.2 ([049a938](https://github.com/ptarmiganlabs/butler/commit/049a938a3de07fc7e8983c62851d4cdece67cab4))
+
+## [11.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.2...butler-v11.1.2) (2024-04-08)
+
+
+### Miscellaneous
+
+* Debug Docker image build code in GitHub Actions ([db36afa](https://github.com/ptarmiganlabs/butler/commit/db36afa25c83182c86285aba0aff9f9337e10385))
+* Debug Docker image bulild code ([c9748e1](https://github.com/ptarmiganlabs/butler/commit/c9748e1da2eca65632f8d28f148cc46fc455e28b))
 * Docker build debug ([d4dc1b8](https://github.com/ptarmiganlabs/butler/commit/d4dc1b87fdcae0f4033380686cf165aeb70ba172))
 * **master:** release butler 11.1.1 ([46707ff](https://github.com/ptarmiganlabs/butler/commit/46707ff84bfd4db54ee1d814ae2add3465946079))
 * **master:** release butler 11.1.2 ([049a938](https://github.com/ptarmiganlabs/butler/commit/049a938a3de07fc7e8983c62851d4cdece67cab4))
