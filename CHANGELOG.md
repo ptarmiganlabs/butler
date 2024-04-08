@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.1...butler-v11.1.2) (2024-04-08)
+
+
+### Miscellaneous
+
+* Debug Docker image build code in GitHub Actions ([db36afa](https://github.com/ptarmiganlabs/butler/commit/db36afa25c83182c86285aba0aff9f9337e10385))
+
 ## [11.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.0...butler-v11.1.1) (2024-04-08)
 
 
