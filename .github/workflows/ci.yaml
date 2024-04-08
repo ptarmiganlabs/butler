@@ -10,6 +10,7 @@ jobs:
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       release_tag_name: ${{ steps.release.outputs['tag_name'] }}
+      release_version: ${{ steps.release.outputs['version'] }}
       release_upload_url: ${{ steps.release.outputs['upload_url'] }}
     env:
       GITHUB_REF: ${{ github.ref }}
@@ -113,6 +114,7 @@ jobs:
       - name: Release tag and upload url from previous job
         run: |
           echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+          echo "version    : ${{ needs.release-please.outputs.release_version }}"
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
@@ -173,12 +175,12 @@ jobs:
           # - ./src/config⁄production_template.yaml
           # - ./src/config⁄schedule_template.yaml
           echo "Creating temp notarization archive for release binary"
-          zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
+          zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
           # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}.zip"
           # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip"
 
           cd src
-          zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
+          zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
           cd ..
 
           # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
@@ -186,7 +188,7 @@ jobs:
           # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
           # you're curious
           echo "Notarize release app"
-          xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip" --keychain-profile "notarytool-profile" --wait
+          xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" --keychain-profile "notarytool-profile" --wait
 
           # Delete build keychain
           security delete-keychain build.keychain
@@ -200,8 +202,8 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_tag_name }}-macos.zip
+          tag: ${{ needs.release-please.outputs.release_version }}
+          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos.zip
           token: ${{ github.token }}
 
       - name: Tidy up before existing
@@ -210,7 +212,7 @@ jobs:
           ls -la 
           rm build.cjs
           rm "./${DIST_FILE_NAME}"
-          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip"
+          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
 
   release-win64:
     needs: release-please
@@ -233,6 +235,7 @@ jobs:
       - name: Release tag and upload url from previous job
         run: |
           Write-Output 'tag_name        : ${{ needs.release-please.outputs.release_tag_name }}'
+          Write-Output 'version         : ${{ needs.release-please.outputs.release_version }}'
           Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
 
       - name: Checkout repository
@@ -302,7 +305,7 @@ jobs:
           $compress = @{
             Path = "./${env:DIST_FILE_NAME}.exe"
             CompressionLevel = "Fastest"
-            DestinationPath = "${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+            DestinationPath = "${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
           }
           Compress-Archive @compress
 
@@ -332,8 +335,8 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_tag_name }}-win.zip
+          tag: ${{ needs.release-please.outputs.release_version }}
+          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-win.zip
           token: ${{ github.token }}
 
       - name: Tidy up before existing
@@ -341,7 +344,7 @@ jobs:
           dir
           del build.cjs
           del "./${env:DIST_FILE_NAME}.exe"
-          del "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+          del "./${{ needs.release-please.outputs.release_version }}-win.zip"
 
   release-linux:
     needs: release-please
@@ -356,6 +359,7 @@ jobs:
       - name: Release tag and upload url from previous job
         run: |
           echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+          echo "version    : ${{ needs.release-please.outputs.release_version }}"
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
@@ -399,10 +403,10 @@ jobs:
           # - ./src/config⁄schedule_template.yaml
 
           ls -la
-          zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip" ${DIST_FILE_NAME} 
+          zip -9 -r "./${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
 
           cd src
-          zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
+          zip -9 -u -r "../${{ needs.release-please.outputs.release_version }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
           cd ..
 
       - name: Debug
@@ -418,8 +422,8 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_tag_name }}-linux.zip
+          tag: ${{ needs.release-please.outputs.release_version }}
+          artifacts: ./${{ needs.release-please.outputs.release_version }}-linux.zip
           token: ${{ github.token }}
 
       - name: Tidy up before existing
@@ -428,4 +432,4 @@ jobs:
           ls -la
           rm build.cjs
           rm "./${DIST_FILE_NAME}"
-          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-linux.zip"
+          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip"

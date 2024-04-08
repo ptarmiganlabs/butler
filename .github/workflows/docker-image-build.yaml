@@ -79,12 +79,13 @@ jobs:
       # Store the tag in GITHUB_ENV environment variable
       - name: Create clean tag for Docker
         run: |
-          export TAGTMP1=${{ github.ref }}
-          export TAG=${TAGTMP1##*/}
-          #export TAG=$(echo ${{ github.ref }} | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | cut -c 2-)
+          #export TAGTMP1=${{ github.ref }}
+          #export TAG=${TAGTMP1##*/}
+          export TAG=$(echo ${{ github.ref }} | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | cut -c 2-)
           echo "TAG=$TAG" >> $GITHUB_ENV
+          #
           # Debug
-          echo "TAGTMP1=$TAGTMP1"
+          # echo "TAGTMP1=$TAGTMP1"
           echo "TAG=$TAG"
           echo "GITHUB_ENV=$GITHUB_ENV"
           # export TAGTMP2=${TAGTMP1##*/}
