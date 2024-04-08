@@ -94,17 +94,33 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
 
+    // Get tags from config file
+    // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
+    const configTags = globals.config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static');
+
+    const tags = {
+        license_type: 'analyzer_access',
+        butler_instance: instanceTag,
+    };
+
+    // Add tags from config file
+    if (configTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
     // Build InfluxDB datapoint
     let datapoint = [];
 
     // Is there any data for "analyzerAccess" license type?
     if (qlikSenseLicenseStatus.analyzerAccess.enabled === true) {
+        tags.license_type = 'analyzer_access';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'analyzer_access',
-            },
+            tags,
             fields: {
                 allocated: qlikSenseLicenseStatus.analyzerAccess.allocated,
                 available: qlikSenseLicenseStatus.analyzerAccess.available,
@@ -118,12 +134,11 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "analyzerTimeAccess" license type?
     if (qlikSenseLicenseStatus.analyzerTimeAccess.enabled === true) {
+        tags.license_type = 'analyzer_time_access';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'analyzer_time_access',
-            },
+            tags,
             fields: {
                 allocatedMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.allocatedMinutes,
                 unavailableMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.unavailableMinutes,
@@ -134,12 +149,11 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "loginAccess" license type?
     if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
+        tags.license_type = 'login_access';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'login_access',
-            },
+            tags,
             fields: {
                 allocatedTokens: qlikSenseLicenseStatus.loginAccess.allocatedTokens,
                 tokenCost: qlikSenseLicenseStatus.loginAccess.tokenCost,
@@ -151,12 +165,11 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "professionalAccess" license type?
     if (qlikSenseLicenseStatus.professionalAccess.enabled === true) {
+        tags.license_type = 'professional_access';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'professional_access',
-            },
+            tags,
             fields: {
                 allocated: qlikSenseLicenseStatus.professionalAccess.allocated,
                 available: qlikSenseLicenseStatus.professionalAccess.available,
@@ -170,12 +183,11 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "userAccess" license type?
     if (qlikSenseLicenseStatus.userAccess.enabled === true) {
+        tags.license_type = 'user_access';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'user_access',
-            },
+            tags,
             fields: {
                 allocatedTokens: qlikSenseLicenseStatus.userAccess.allocatedTokens,
                 quarantinedTokens: qlikSenseLicenseStatus.userAccess.quarantinedTokens,
@@ -187,12 +199,11 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Are tokens available?
     if (qlikSenseLicenseStatus.tokensEnabled === true) {
+        tags.license_type = 'tokens_available';
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags: {
-                butler_instance: instanceTag,
-                license_type: 'tokens_available',
-            },
+            tags,
             fields: {
                 availableTokens: qlikSenseLicenseStatus.availableTokens,
                 totalTokens: qlikSenseLicenseStatus.totalTokens,
@@ -209,7 +220,55 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     );
 
     datapoint = null;
-    globals.logger.info('INFLUXDB QLIK SENSE LICENSE STATUS: Sent Qlik Sense license status data to InfluxDB');
+    globals.logger.info('INFLUXDB QLIK SENSE LICENSE STATUS: Sent aggregated Qlik Sense license status to InfluxDB');
+}
+
+// Function to store info about released Qlik Sense licenses to InfluxDB
+export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
+    globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE RELEASE: Sending info on released Qlik Sense license to InfluxDB');
+
+    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
+
+    // Get tags from config file
+    // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
+    const configTags = globals.config.get('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static');
+
+    const tags = {
+        license_type: licenseInfo.licenseType,
+        user: `${licenseInfo.userDir}\\${licenseInfo.userId}`,
+        butler_instance: instanceTag,
+    };
+
+    // Add tags from config file
+    if (configTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Build InfluxDB datapoint
+    let datapoint = [];
+
+    // Add data to InfluxDB datapoint
+    datapoint.push({
+        measurement: 'qlik_sense_license_release',
+        tags,
+        fields: {
+            days_since_last_use: licenseInfo.daysSinceLastUse,
+        },
+    });
+
+    // Write to InfluxDB
+    const deepClonedDatapoint = _.cloneDeep(datapoint);
+    await globals.influx.writePoints(deepClonedDatapoint);
+
+    globals.logger.silly(
+        `INFLUXDB QLIK SENSE LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`
+    );
+
+    datapoint = null;
+    globals.logger.debug('INFLUXDB QLIK SENSE LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB');
 }
 
 // Function to store windows service status to InfluxDB

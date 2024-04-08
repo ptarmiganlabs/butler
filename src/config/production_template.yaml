@@ -140,12 +140,36 @@ Butler:
   qlikSenseLicense:
     licenseMonitor:
       enable: true
-      frequency: every 5 minutes
+      frequency: every 6 hours
       destination:
-        influxDb:                     # Send service alerts to InfluxDB
+        influxDb:                     # Store license data in InfluxDB
           enable: true
           tag: 
-            static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
+              - name: foo
+                value: bar
+    licenseRelease:
+      enable: true
+      frequency: every 6 hours
+      neverReleaseUsers:
+        - userDir: 'INTERNAL'
+          userId: 'sa_repository'
+        - userDir: 'INTERNAL'
+          userId: 'sa_api'
+        - userDir: 'USERDIR'
+          userId: 'qs_admin_account'
+      licenseType:                    # License types to monitor and release
+        analyzer:                     
+          enable: true
+          releaseThresholdDays: 5
+        professional:
+          enable: true
+          releaseThresholdDays: 5
+      destination:
+        influxDb:                     # Store info about released licenses in InfluxDB
+          enable: true
+          tag: 
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
               - name: foo
                 value: bar
 

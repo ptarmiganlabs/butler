@@ -4,22 +4,6 @@ import { getReloadTasksCustomProperties } from '../../qrs_util/task_cp_util.js';
 
 // Veriify InfluxDb related settings in the config file
 export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
-    // Set up shared Sense repository service configuration
-    const cfg = {
-        hostname: config.get('Butler.configQRS.host'),
-        portNumber: 4242,
-        certificates: {
-            certFile: configQRS.certPaths.certPath,
-            keyFile: configQRS.certPaths.keyPath,
-        },
-    };
-
-    cfg.headers = {
-        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-    };
-
-    const qrsInstance = new QrsInteract(cfg);
-
     // ------------------------------------------
     // The custom property specified by
     // Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName
@@ -47,7 +31,7 @@ export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
                         'Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName'
                     )}' not found in Qlik Sense. Aborting.`
                 );
-                process.exit(1);
+                return false;
             }
 
             // Ensure that the CP value specified in the config file is found in the list of available CP values
@@ -72,12 +56,13 @@ export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
                         'Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName'
                     )}'. Aborting.`
                 );
-                process.exit(1);
+                return false;
             }
         } catch (err) {
             logger.error(`ASSERT CONFIG INFLUXDB: ${err}`);
         }
     }
+    return true;
 };
 
 /**
@@ -123,61 +108,57 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                 )}`
             );
-            qrsInstance
-                .Get(
-                    `custompropertydefinition/full?filter=name eq '${config.get(
+
+            const result1 = await qrsInstance.Get(
+                `custompropertydefinition/full?filter=name eq '${config.get(
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                )}'`
+            );
+
+            // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+            // If the custom property doesn't exist that's a problem..
+            if (result1.body.length === 0) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                    )}'`
-                )
-                .then((result1) => {
-                    // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+                    )})' does not exist in Qlik Sense. Aborting.`
+                );
+                return false;
+            }
 
-                    // If the custom property doesn't exist that's a problem..
-                    if (result1.body.length === 0) {
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
-                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                            )})' does not exist in Qlik Sense. Aborting.`
-                        );
-                        process.exit(1);
-                    }
+            // If there are no choiceValues that's a problem..
+            if (
+                result1.body[0].choiceValues === undefined ||
+                result1.body[0].choiceValues === null ||
+                result1.body[0].choiceValues.length === 0
+            ) {
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                    )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                );
+            } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                );
+                return false;
+            } else {
+                // Test each custom property choice value for existence in Butler config file
+                const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // If there are no choiceValues that's a problem..
-                    if (
-                        result1.body[0].choiceValues === undefined ||
-                        result1.body[0].choiceValues === null ||
-                        result1.body[0].choiceValues.length === 0
-                    ) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const value of result1.body[0].choiceValues) {
+                    if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
                         logger.warn(
-                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                            `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
                                 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                            )}' not found in Butler's config file`
                         );
-                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
-                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
-                        logger.warn(
-                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
-                        );
-                        process.exit(1);
-                    } else {
-                        // Test each custom property choice value for existence in Butler config file
-                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const value of result1.body[0].choiceValues) {
-                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                                logger.warn(
-                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                                    )}' not found in Butler's config file`
-                                );
-                            }
-                        }
                     }
-                })
-                .catch((err) => {
-                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
-                });
+                }
+            }
         } catch (err) {
             logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
@@ -193,7 +174,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             logger.error(
                 `ASSERT CONFIG NEW RELIC: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName"`
             );
-            process.exit(1);
+            return false;
         }
     }
 
@@ -220,61 +201,56 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                 )}`
             );
-            qrsInstance
-                .Get(
-                    `custompropertydefinition/full?filter=name eq '${config.get(
+
+            const result1 = await qrsInstance.Get(
+                `custompropertydefinition/full?filter=name eq '${config.get(
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                )}'`
+            );
+            // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+            // If the custom property doesn't exist that's a problem..
+            if (result1.body.length === 0) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
                         'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                    )}'`
-                )
-                .then((result1) => {
-                    // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+                    )})' does not exist in Qlik Sense. Aborting.`
+                );
+                return false;
+            }
 
-                    // If the custom property doesn't exist that's a problem..
-                    if (result1.body.length === 0) {
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
-                                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                            )})' does not exist in Qlik Sense. Aborting.`
-                        );
-                        process.exit(1);
-                    }
+            // If there are no choiceValues that's a problem..
+            if (
+                result1.body[0].choiceValues === undefined ||
+                result1.body[0].choiceValues === null ||
+                result1.body[0].choiceValues.length === 0
+            ) {
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                    )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                );
+            } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                );
+                return false;
+            } else {
+                // Test each custom property choice value for existence in Butler config file
+                const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // If there are no choiceValues that's a problem..
-                    if (
-                        result1.body[0].choiceValues === undefined ||
-                        result1.body[0].choiceValues === null ||
-                        result1.body[0].choiceValues.length === 0
-                    ) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const value of result1.body[0].choiceValues) {
+                    if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
                         logger.warn(
-                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                            `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
                                 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                            )}' not found in Butler's config file`
                         );
-                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
-                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
-                        );
-                        process.exit(1);
-                    } else {
-                        // Test each custom property choice value for existence in Butler config file
-                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const value of result1.body[0].choiceValues) {
-                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                                logger.warn(
-                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                                    )}' not found in Butler's config file`
-                                );
-                            }
-                        }
                     }
-                })
-                .catch((err) => {
-                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
-                });
+                }
+            }
         } catch (err) {
             logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
@@ -288,7 +264,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             logger.error(
                 `ASSERT CONFIG NEW RELIC: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName"`
             );
-            process.exit(1);
+            return false;
         }
     }
 
@@ -315,61 +291,56 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
                 )}`
             );
-            qrsInstance
-                .Get(
-                    `custompropertydefinition/full?filter=name eq '${config.get(
+
+            const result1 = await qrsInstance.Get(
+                `custompropertydefinition/full?filter=name eq '${config.get(
+                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                )}'`
+            );
+            // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+            // If the custom property doesn't exist that's a problem..
+            if (result1.body.length === 0) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                    )}'`
-                )
-                .then((result1) => {
-                    // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+                    )})' does not exist in Qlik Sense. Aborting.`
+                );
+                return false;
+            }
 
-                    // If the custom property doesn't exist that's a problem..
-                    if (result1.body.length === 0) {
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
-                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                            )})' does not exist in Qlik Sense. Aborting.`
-                        );
-                        process.exit(1);
-                    }
+            // If there are no choiceValues that's a problem..
+            if (
+                result1.body[0].choiceValues === undefined ||
+                result1.body[0].choiceValues === null ||
+                result1.body[0].choiceValues.length === 0
+            ) {
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                    )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                );
+            } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                );
+                return false;
+            } else {
+                // Test each custom property choice value for existence in Butler config file
+                const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // If there are no choiceValues that's a problem..
-                    if (
-                        result1.body[0].choiceValues === undefined ||
-                        result1.body[0].choiceValues === null ||
-                        result1.body[0].choiceValues.length === 0
-                    ) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const value of result1.body[0].choiceValues) {
+                    if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
                         logger.warn(
-                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                            `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
                                 'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                            )}' not found in Butler's config file`
                         );
-                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
-                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
-                        logger.warn(
-                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert events, but no New Relic account(s) specified on either command line or in config file. Aborting,`
-                        );
-                        process.exit(1);
-                    } else {
-                        // Test each custom property choice value for existence in Butler config file
-                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const value of result1.body[0].choiceValues) {
-                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                                logger.warn(
-                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
-                                    )}' not found in Butler's config file`
-                                );
-                            }
-                        }
                     }
-                })
-                .catch((err) => {
-                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
-                });
+                }
+            }
         } catch (err) {
             logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
@@ -385,7 +356,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             logger.error(
                 `ASSERT CONFIG NEW RELIC: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName"`
             );
-            process.exit(1);
+            return false;
         }
     }
 
@@ -412,61 +383,56 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
                 )}`
             );
-            qrsInstance
-                .Get(
-                    `custompropertydefinition/full?filter=name eq '${config.get(
+
+            const result1 = await qrsInstance.Get(
+                `custompropertydefinition/full?filter=name eq '${config.get(
+                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                )}'`
+            );
+            // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+
+            // If the custom property doesn't exist that's a problem..
+            if (result1.body.length === 0) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
                         'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                    )}'`
-                )
-                .then((result1) => {
-                    // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
+                    )})' does not exist in Qlik Sense. Aborting.`
+                );
+                return false;
+            }
 
-                    // If the custom property doesn't exist that's a problem..
-                    if (result1.body.length === 0) {
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: Custom property specified in config file ('${config.get(
-                                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                            )})' does not exist in Qlik Sense. Aborting.`
-                        );
-                        process.exit(1);
-                    }
+            // If there are no choiceValues that's a problem..
+            if (
+                result1.body[0].choiceValues === undefined ||
+                result1.body[0].choiceValues === null ||
+                result1.body[0].choiceValues.length === 0
+            ) {
+                logger.warn(
+                    `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                    )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                );
+            } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
+                // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                );
+                return false;
+            } else {
+                // Test each custom property choice value for existence in Butler config file
+                const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
 
-                    // If there are no choiceValues that's a problem..
-                    if (
-                        result1.body[0].choiceValues === undefined ||
-                        result1.body[0].choiceValues === null ||
-                        result1.body[0].choiceValues.length === 0
-                    ) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const value of result1.body[0].choiceValues) {
+                    if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
                         logger.warn(
-                            `ASSERT CONFIG NEW RELIC: Custom property '${config.get(
+                            `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
                                 'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                            )}' does not have any values associated with it. New Relic monitoring may not work as a result of this.`
+                            )}' not found in Butler's config file`
                         );
-                    } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
-                        // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
-                        logger.error(
-                            `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
-                        );
-                        process.exit(1);
-                    } else {
-                        // Test each custom property choice value for existence in Butler config file
-                        const availableNewRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const value of result1.body[0].choiceValues) {
-                            if (availableNewRelicAccounts.findIndex((account) => value === account.accountName) === -1) {
-                                logger.warn(
-                                    `ASSERT CONFIG NEW RELIC: New Relic account name '${value}' of custom property '${config.get(
-                                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
-                                    )}' not found in Butler's config file`
-                                );
-                            }
-                        }
                     }
-                })
-                .catch((err) => {
-                    logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
-                });
+                }
+            }
         } catch (err) {
             logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
         }
@@ -480,25 +446,29 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             logger.error(
                 `ASSERT CONFIG NEW RELIC: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName"`
             );
-            process.exit(1);
+            return false;
         }
     }
+
+    return true;
 };
 
 // Function to verify that config file is valid YAML
 export const configFileYamlAssert = async (configFile) => {
     try {
         const data = await yaml.load(configFile);
-        return true;
     } catch (err) {
         console.error(`ASSERT CONFIG: Config file is not valid YAML: ${err}`);
-        process.exit(1);
+        return false;
     }
+
+    return true;
 };
 
 // Function to verify that config variable have same structure as production.yaml file
 export const configFileStructureAssert = async (config, logger) => {
     let configFileCorrect = true;
+
     if (!config.has('Butler.logLevel')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.logLevel"');
         configFileCorrect = false;
@@ -761,6 +731,46 @@ export const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enabled"');
+        configFileCorrect = false;
+    }
+
+    // Release Qlik Sense licenses
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.frequency')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.frequency"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.releaseThresholdDays')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.releaseThresholdDays"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.releaseThresholdDays')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.licenseType.professional.releaseThresholdDays"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.enable"');
         configFileCorrect = false;
     }
 
@@ -2400,7 +2410,5 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (configFileCorrect === false) {
-        process.exit(1);
-    }
+    return configFileCorrect;
 };
