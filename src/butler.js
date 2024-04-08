@@ -29,7 +29,7 @@ const start = async () => {
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
-    const { setupQlikSenseLicenseMonitor, setupQlikSenseLicenseRelease } = await import('./lib/qliksense_license_monitor.js');
+    const { setupQlikSenseLicenseMonitor, setupQlikSenseLicenseRelease } = await import('./lib/qliksense_license.js');
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;
