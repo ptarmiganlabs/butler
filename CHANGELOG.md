@@ -5,6 +5,13 @@
 
 ### Miscellaneous
 
+* Docker image build ([72ca27e](https://github.com/ptarmiganlabs/butler/commit/72ca27e4c7451ce9a747bf8415351f7c7f304848))
+
+## [11.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.3...butler-v11.1.3) (2024-04-08)
+
+
+### Miscellaneous
+
 * Adopt to new Release-Please version ([0efc975](https://github.com/ptarmiganlabs/butler/commit/0efc97588e05a660a1d67103d5abd0855761f373))
 * **deps:** Update dependencies ([cc7bf2c](https://github.com/ptarmiganlabs/butler/commit/cc7bf2c7e733b4d473f6adec98ca03b8bcf0b12a))
 * Fix broken Docker image build and update versioning to 1.2.3 format ([7e96da5](https://github.com/ptarmiganlabs/butler/commit/7e96da51aea3203c038888b5bb4a8839359d8418))
