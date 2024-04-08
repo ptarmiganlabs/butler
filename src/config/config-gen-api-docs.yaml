@@ -141,6 +141,29 @@ Butler:
             static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
               - name: foo
                 value: bar
+    licenseRelease:
+      enable: false  
+      # frequency: every 3 hours
+      frequency: every 5 minutes
+      neverReleaseUsers:
+        - userDir: 'INTERNAL'
+          userId: 'sa_repository'
+        - userDir: 'INTERNAL'
+          userId: 'sa_api'
+      licenseType:                    # License types to monitor and release
+        analyzer:                     
+          enable: true
+          releaseThresholdDays: 5
+        professional:
+          enable: true
+          releaseThresholdDays: 5
+      destination:
+        influxDb:                     # Store info about released licenses in InfluxDB
+          enable: true
+          tag: 
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
+              - name: foo
+                value: bar
 
   # Settings for notifications and messages sent to MS Teams
   teamsNotification:
