@@ -202,7 +202,7 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_version }}
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
           artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos.zip
           token: ${{ github.token }}
 
@@ -335,7 +335,7 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_version }}
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
           artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-win.zip
           token: ${{ github.token }}
 
@@ -422,7 +422,7 @@ jobs:
           artifactContentType: raw
           # artifactContentType: application/zip
           draft: true
-          tag: ${{ needs.release-please.outputs.release_version }}
+          tag: ${{ needs.release-please.outputs.release_tag_name }}
           artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-linux.zip
           token: ${{ github.token }}
 
