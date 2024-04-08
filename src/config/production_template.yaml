@@ -19,7 +19,7 @@ Butler:
   heartbeat:
     enable: false
     remoteURL: http://my.monitoring.server/some/path/
-    frequency: every 30 seconds         # https://bunkat.github.io/later/parsers.html
+    frequency: every 30 seconds         # https://bunkat.github.io/later/parsers.html#text
 
   # Docker health checks are used when running Butler as a Docker container. 
   # The Docker engine will call the container's health check REST endpoint with a set interval to determine
@@ -32,7 +32,7 @@ Butler:
   # Uptime monitor
   uptimeMonitor:
     enable: false                   # Should uptime messages be written to the console and log files?
-    frequency: every 15 minutes     # https://bunkat.github.io/later/parsers.html
+    frequency: every 15 minutes     # https://bunkat.github.io/later/parsers.html#text
     logLevel: verbose               # Starting at what log level should uptime messages be shown?
     storeInInfluxdb: 
       enable: false                 # Should Butler memory usage be logged to InfluxDB?
@@ -140,7 +140,7 @@ Butler:
   qlikSenseLicense:
     licenseMonitor:
       enable: true
-      frequency: every 6 hours
+      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
       destination:
         influxDb:                     # Store license data in InfluxDB
           enable: true
@@ -150,8 +150,8 @@ Butler:
                 value: bar
     licenseRelease:
       enable: true
-      frequency: every 6 hours
-      neverReleaseUsers:
+      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
+      neverReleaseUsers:              # Users that should never have their license released
         - userDir: 'INTERNAL'
           userId: 'sa_repository'
         - userDir: 'INTERNAL'
@@ -160,11 +160,11 @@ Butler:
           userId: 'qs_admin_account'
       licenseType:                    # License types to monitor and release
         analyzer:                     
-          enable: true
-          releaseThresholdDays: 5
+          enable: true                # Monitor and release Analyzer licenses
+          releaseThresholdDays: 30    # Number of days a license can be unused before it is released
         professional:
-          enable: true
-          releaseThresholdDays: 5
+          enable: true                # Monitor and release Professional licenses
+          releaseThresholdDays: 30    # Number of days a license can be unused before it is released
       destination:
         influxDb:                     # Store info about released licenses in InfluxDB
           enable: true
@@ -771,7 +771,7 @@ Butler:
   # On other OSs service monitoring will be automatically disabled.
   serviceMonitor:
     enable: false                    # Main on/off switch for service monitoring
-    frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html
+    frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html#text
     monitor:
       - host: <hostname or IP>      # Host name of Windows computer where services are running
         services:                   # List of services to monitor
