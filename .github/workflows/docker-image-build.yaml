@@ -81,7 +81,7 @@ jobs:
         run: |
           #export TAGTMP1=${{ github.ref }}
           #export TAG=${TAGTMP1##*/}
-          export TAG=$(echo ${{ github.ref }} | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | cut -c 2-)
+          export TAG=$(echo ${{ github.ref }} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+"
           echo "TAG=$TAG" >> $GITHUB_ENV
           #
           # Debug

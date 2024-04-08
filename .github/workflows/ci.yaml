@@ -344,7 +344,7 @@ jobs:
           dir
           del build.cjs
           del "./${env:DIST_FILE_NAME}.exe"
-          del "./${{ needs.release-please.outputs.release_version }}-win.zip"
+          del "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
 
   release-linux:
     needs: release-please
@@ -403,10 +403,10 @@ jobs:
           # - ./src/config⁄schedule_template.yaml
 
           ls -la
-          zip -9 -r "./${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
+          zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
 
           cd src
-          zip -9 -u -r "../${{ needs.release-please.outputs.release_version }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
+          zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
           cd ..
 
       - name: Debug
@@ -423,7 +423,7 @@ jobs:
           # artifactContentType: application/zip
           draft: true
           tag: ${{ needs.release-please.outputs.release_version }}
-          artifacts: ./${{ needs.release-please.outputs.release_version }}-linux.zip
+          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-linux.zip
           token: ${{ github.token }}
 
       - name: Tidy up before existing
