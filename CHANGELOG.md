@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.0...butler-v11.1.1) (2024-04-08)
+
+
+### Miscellaneous
+
+* Docker build debug ([d4dc1b8](https://github.com/ptarmiganlabs/butler/commit/d4dc1b87fdcae0f4033380686cf165aeb70ba172))
+
 ## [11.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.0.3...butler-v11.1.0) (2024-04-08)
 
 
