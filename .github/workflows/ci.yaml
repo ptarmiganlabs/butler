@@ -324,7 +324,7 @@ jobs:
           Copy-Item -Path ./src/config/production_template.yaml -Destination ./config/
           Copy-Item -Path ./src/config/schedule_template.yaml -Destination ./config/
 
-          Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-win.zip"
+          Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
           
       - name: Upload to existing release
         uses: ncipollo/release-action@v1
