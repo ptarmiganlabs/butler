@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.1.5](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.4...butler-v11.1.5) (2024-04-09)
+
+
+### Bug Fixes
+
+* Add config file template to Windows zip ([2510f55](https://github.com/ptarmiganlabs/butler/commit/2510f55b7eabc68d941f7f46b973f95dca36d2d0))
+
+
+### Miscellaneous
+
+* **deps:** Upgrade dependencies ([243caa3](https://github.com/ptarmiganlabs/butler/commit/243caa3921e46cda57b96dea57335ca2e7dc46c4))
+
 ## [11.1.4](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.3...butler-v11.1.4) (2024-04-08)
 
 
