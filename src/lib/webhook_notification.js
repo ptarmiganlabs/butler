@@ -1,5 +1,8 @@
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import axios from 'axios';
+import fs from 'fs';
+import https from 'https';
+
 import globals from '../globals.js';
 import getAppOwner from '../qrs_util/get_app_owner.js';
 
@@ -154,7 +157,8 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
         if (webhookConfig.webhooks) {
             // eslint-disable-next-line no-restricted-syntax
             for (const webhook of webhookConfig.webhooks) {
-                globals.logger.debug(`WEBHOOKOUT: Processing webhook ${JSON.stringify(webhook)}`);
+                globals.logger.info(`WEBHOOKOUT: Processing webhook "${webhook.description}"`);
+                globals.logger.debug(`WEBHOOKOUT: Webhook details ${JSON.stringify(webhook)}`);
 
                 // Only process the webhook if all required info is available
                 let lowercaseMethod = null;
@@ -171,12 +175,34 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
                         throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
                     }
+
+                    // 3. If a custom certificate is specified, make sure it and related settings are valid
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Make sure webhook.cert.rejectUnauthorized is a boolean
+                        if (typeof webhook.cert.rejectUnauthorized !== 'boolean') {
+                            throw new Error('WEBHOOKOUT: Webhook cert.rejectUnauthorized property should be a boolean ');
+                        }
+
+                        // Make sure CA cert file in webhook.cert.certCA is a string
+                        if (typeof webhook.cert.certCA !== 'string') {
+                            throw new Error('WEBHOOKOUT: Webhook cert.certCA property should be a string');
+                        }
+
+                        // Make sure the CA cert file exists
+                        if (!fs.existsSync(webhook.cert.certCA)) {
+                            throw new Error(`WEBHOOKOUT: CA cert file not found: ${webhook.cert.certCA}`);
+                        }
+                    }
                 } catch (err) {
                     globals.logger.error(`WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`);
                     throw err;
                 }
 
-                globals.logger.silly(`WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
+                globals.logger.debug(`WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+                axiosRequest = {
+                    timeout: 10000,
+                };
 
                 if (lowercaseMethod === 'get') {
                     // Build parameter string for GET call
@@ -201,17 +227,26 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
 
                     globals.logger.silly(`WEBHOOKOUT: Final GET webhook URL: ${url.toString()}`);
 
-                    axiosRequest = {
-                        url: url.toString(),
-                        method: 'get',
-                        timeout: 10000,
-                    };
+                    axiosRequest.method = 'get';
+                    axiosRequest.url = url.toString();
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 } else if (lowercaseMethod === 'put') {
                     // Build body for PUT call
                     axiosRequest = {
-                        url: url.toString(),
                         method: 'put',
-                        timeout: 10000,
+                        url: url.toString(),
                         data: {
                             event: webhookConfig.event,
                             hostName: reloadParams.hostName,
@@ -231,12 +266,24 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                         },
                         headers: { 'Content-Type': 'application/json' },
                     };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 } else if (lowercaseMethod === 'post') {
                     // Build body for POST call
                     axiosRequest = {
-                        url: url.toString(),
                         method: 'post',
-                        timeout: 10000,
+                        url: url.toString(),
                         data: {
                             event: webhookConfig.event,
                             hostName: reloadParams.hostName,
@@ -256,6 +303,19 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                         },
                         headers: { 'Content-Type': 'application/json' },
                     };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 }
 
                 // eslint-disable-next-line no-await-in-loop
@@ -289,7 +349,8 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
         if (webhookConfig.webhooks) {
             // eslint-disable-next-line no-restricted-syntax
             for (const webhook of webhookConfig.webhooks) {
-                globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Processing webhook ${JSON.stringify(webhook)}`);
+                globals.logger.info(`SERVICE MONITOR WEBHOOKOUT: Processing webhook "${webhook.description}"`);
+                globals.logger.debug(`SERVICE MONITOR WEBHOOKOUT: Webhook details ${JSON.stringify(webhook)}`);
 
                 // Only process the webhook if all required info is available
                 let lowercaseMethod = null;
@@ -306,14 +367,36 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                     if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
                         throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
                     }
+
+                    // 3. If a custom certificate is specified, make sure it and related settings are valid
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Make sure webhook.cert.rejectUnauthorized is a boolean
+                        if (typeof webhook.cert.rejectUnauthorized !== 'boolean') {
+                            throw new Error('WEBHOOKOUT: Webhook cert.rejectUnauthorized property should be a boolean ');
+                        }
+
+                        // Make sure CA cert file in webhook.cert.certCA is a string
+                        if (typeof webhook.cert.certCA !== 'string') {
+                            throw new Error('WEBHOOKOUT: Webhook cert.certCA property should be a string');
+                        }
+
+                        // Make sure the CA cert file exists
+                        if (!fs.existsSync(webhook.cert.certCA)) {
+                            throw new Error(`WEBHOOKOUT: CA cert file not found: ${webhook.cert.certCA}`);
+                        }
+                    }
                 } catch (err) {
                     globals.logger.error(
-                        `SERVICE MONITOR SEND WEBHOOK: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
+                        `SERVICE MONITOR WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
                     );
                     throw err;
                 }
 
-                globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Webhook config is valid: ${JSON.stringify(webhook)}`);
+                globals.logger.debug(`SERVICE MONITOR WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+                axiosRequest = {
+                    timeout: 10000,
+                };
 
                 if (lowercaseMethod === 'get') {
                     // Build parameter string for GET call
@@ -330,19 +413,28 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
 
                     url.search = params.toString();
 
-                    globals.logger.silly(`SERVICE MONITOR SEND WEBHOOK: Final GET webhook URL: ${url.toString()}`);
+                    globals.logger.silly(`SERVICE MONITOR WEBHOOKOUT: Final GET webhook URL: ${url.toString()}`);
 
-                    axiosRequest = {
-                        url: url.toString(),
-                        method: 'get',
-                        timeout: 10000,
-                    };
+                    axiosRequest.method = 'get';
+                    axiosRequest.url = url.toString();
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 } else if (lowercaseMethod === 'put') {
                     // Build body for PUT call
                     axiosRequest = {
-                        url: url.toString(),
                         method: 'put',
-                        timeout: 10000,
+                        url: url.toString(),
                         data: {
                             event: webhookConfig.event,
                             host: serviceParams.host,
@@ -356,12 +448,24 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                         },
                         headers: { 'Content-Type': 'application/json' },
                     };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 } else if (lowercaseMethod === 'post') {
                     // Build body for POST call
                     axiosRequest = {
-                        url: url.toString(),
                         method: 'post',
-                        timeout: 10000,
+                        url: url.toString(),
                         data: {
                             event: webhookConfig.event,
                             host: serviceParams.host,
@@ -375,27 +479,40 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                         },
                         headers: { 'Content-Type': 'application/json' },
                     };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
                 }
 
                 // eslint-disable-next-line no-await-in-loop
                 const response = await axios.request(axiosRequest);
-                globals.logger.debug(`SERVICE MONITOR SEND WEBHOOK: Webhook response: ${response}`);
+                globals.logger.debug(`SERVICE MONITOR WEBHOOKOUT: Webhook response: ${response}`);
             }
         } else {
-            globals.logger.info('SERVICE MONITOR SEND WEBHOOK: No outgoing webhooks to process');
+            globals.logger.info('SERVICE MONITOR WEBHOOKOUT: No outgoing webhooks to process');
         }
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1 message: ${err.message}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 message: ${err.message}`);
         }
 
         if (err.stack) {
-            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1 stack: ${err.stack}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 stack: ${err.stack}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`SERVICE MONITOR SEND WEBHOOK 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1: ${JSON.stringify(err, null, 2)}`);
         }
     }
 }
