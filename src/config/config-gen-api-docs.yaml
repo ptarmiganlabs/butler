@@ -564,36 +564,30 @@ Butler:
         - description: 'This outgoing webhook is used to...'
           webhookURL: http://.../butler_post               # outgoing webhook that Butler will call
           httpMethod: POST                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_put               # outgoing webhook that Butler will call
-          httpMethod: PUT                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://../butler_get              # outgoing webhook that Butler will call
-          httpMethod: GET                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     reloadTaskAborted:
       rateLimit: 15              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
         - description: 'This outgoing webhook is used to...'
           webhookURL: http://.../butler_put               # outgoing webhook that Butler will call
           httpMethod: PUT                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_post               # outgoing webhook that Butler will call
-          httpMethod: POST                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_get              # outgoing webhook that Butler will call
-          httpMethod: GET                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     serviceMonitor:
       rateLimit: 5              # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
         - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_post               # outgoing webhook that Butler will call
-          httpMethod: POST                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_put               # outgoing webhook that Butler will call
-          httpMethod: PUT                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
           webhookURL: http://.../butler_get              # outgoing webhook that Butler will call
           httpMethod: GET                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
 
   # Scheduler for Qlik Sense tasks
   scheduler:
