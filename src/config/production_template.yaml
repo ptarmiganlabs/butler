@@ -563,41 +563,49 @@ Butler:
   webhookNotification:
     enable: false
     reloadTaskFailure:
-      rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300                                            # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: POST                                    # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: PUT                                     # GET/POST/PUT.
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: GET                                     # GET/POST/PUT
+        - description: 'This outgoing webhook makes a POST and is used to...'  # Informational only
+          webhookURL: http://host.my.domain:port/some/path      # outgoing webhook that Butler will call
+          httpMethod: POST                                      # GET/POST/PUT
+          cert:
+            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        - description: 'This outgoing webhook makes a PUT and is used to...'  # Informational only
+          webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
+          httpMethod: PUT                                       # GET/POST/PUT.
+          cert:
+            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: false                           # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
+          webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
+          httpMethod: GET                                       # GET/POST/PUT
+          cert:
+            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     reloadTaskAborted:
-      rateLimit: 300              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
+      rateLimit: 300                                            # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: PUT                                     # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: POST                                    # GET/POST/PUT
-        - description: 'This outgoing webhook is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: GET                                     # GET/POST/PUT
+        - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
+          webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
+          httpMethod: GET                                       # GET/POST/PUT
+          cert:
+            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     serviceMonitor:
-      rateLimit: 15               # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      rateLimit: 300                                            # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: POST                                    # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: PUT                                     # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://host.my.domain:port/some/path    # outgoing webhook that Butler will call
-          httpMethod: GET                                     # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        - description: 'This outgoing webhook makes a POST and is used to...' # Informational only
+          webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
+          httpMethod: POST                                      # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
 
   # Scheduler for Qlik Sense tasks
   scheduler:
