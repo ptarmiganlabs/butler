@@ -117,9 +117,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.analyzerAccess.enabled === true) {
         tags.license_type = 'analyzer';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated: qlikSenseLicenseStatus.analyzerAccess.allocated,
                 available: qlikSenseLicenseStatus.analyzerAccess.available,
@@ -135,9 +138,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.analyzerTimeAccess.enabled === true) {
         tags.license_type = 'analyzer_capacity';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated_minutes: qlikSenseLicenseStatus.analyzerTimeAccess.allocatedMinutes,
                 unavailable_minutes: qlikSenseLicenseStatus.analyzerTimeAccess.unavailableMinutes,
@@ -150,9 +156,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.professionalAccess.enabled === true) {
         tags.license_type = 'professional';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated: qlikSenseLicenseStatus.professionalAccess.allocated,
                 available: qlikSenseLicenseStatus.professionalAccess.available,
@@ -168,9 +177,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
         tags.license_type = 'token_login';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated_tokens: qlikSenseLicenseStatus.loginAccess.allocatedTokens,
                 token_cost: qlikSenseLicenseStatus.loginAccess.tokenCost,
@@ -184,9 +196,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.userAccess.enabled === true) {
         tags.license_type = 'token_user';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated_tokens: qlikSenseLicenseStatus.userAccess.allocatedTokens,
                 quarantined_tokens: qlikSenseLicenseStatus.userAccess.quarantinedTokens,
@@ -200,9 +215,12 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.tokensEnabled === true) {
         tags.license_type = 'tokens_available';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 available_tokens: qlikSenseLicenseStatus.availableTokens,
                 total_tokens: qlikSenseLicenseStatus.totalTokens,
