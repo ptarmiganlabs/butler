@@ -318,9 +318,28 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     }
                 }
 
-                // eslint-disable-next-line no-await-in-loop
-                const response = await axios.request(axiosRequest);
-                globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
+                // Capture exception if the webhook call fails, then continue with the next webhook
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    const response = await axios.request(axiosRequest);
+                    globals.logger.debug(`WEBHOOKOUT: Webhook response: ${response}`);
+                } catch (err) {
+                    if (err.message) {
+                        globals.logger.error(`WEBHOOKOUT: Webhook call failed: ${err.message}`);
+
+                        // err.response.status 404 could mean that the webhook URL is incorrect
+                        if (err.response && err.response.status === 404) {
+                            globals.logger.error(`WEBHOOKOUT: 404 error could mean that the webhook URL is incorrect`);
+                        }
+
+                        globals.logger.error(`WEBHOOKOUT: Webhook url: ${axiosRequest.url}`);
+                        globals.logger.error(`WEBHOOKOUT: Webhook config: ${JSON.stringify(webhook, null, 2)}`);
+                    }
+                    // If neither message nor stack is available, just log the error object
+                    if (!err.message && !err.stack) {
+                        globals.logger.error(`WEBHOOKOUT: Webhook call failed: ${JSON.stringify(err, null, 2)}`);
+                    }
+                }
             }
         } else {
             globals.logger.info('WEBHOOKOUT: No outgoing webhooks to process');
