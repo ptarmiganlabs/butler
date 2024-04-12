@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.5...butler-v11.2.0) (2024-04-12)
+
+
+### Features
+
+* **webhook:** add optional https support for outgoing webhooks ([d4cd3dd](https://github.com/ptarmiganlabs/butler/commit/d4cd3dd672950245965cc3ccaecf56fc9b5c44b4)), closes [#1040](https://github.com/ptarmiganlabs/butler/issues/1040)
+
+
+### Bug Fixes
+
+* **webhook:** Added better error logging for failed webhook requests ([1c96ed6](https://github.com/ptarmiganlabs/butler/commit/1c96ed65ddef7827e6486785af8a25837483b4b1)), closes [#1081](https://github.com/ptarmiganlabs/butler/issues/1081)
+
 ## [11.1.5](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.4...butler-v11.1.5) (2024-04-09)
 
 
