@@ -1,5 +1,22 @@
 # Changelog
 
+## [12.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.2.0...butler-v12.0.0) (2024-04-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **qs-license:** Align field names used to store QS license data to existing field names in the database.
+
+### Bug Fixes
+
+* **qs-license:** Align field names used to store QS license data to existing field names in the database. ([2694d12](https://github.com/ptarmiganlabs/butler/commit/2694d125531e20d59aa989a83f9ab31e05b949b1)), closes [#1084](https://github.com/ptarmiganlabs/butler/issues/1084)
+* **qs-license:** Write correct license type tags to InfluxDB ([e550dea](https://github.com/ptarmiganlabs/butler/commit/e550deae88a813bbe8e1a7b17ce2f4bc3e6105ad)), closes [#1085](https://github.com/ptarmiganlabs/butler/issues/1085)
+
+
+### Miscellaneous
+
+* **deps:** update dependencies ([165df1b](https://github.com/ptarmiganlabs/butler/commit/165df1b11f4344442e1a014e84a271f84b946160))
+
 ## [11.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.1.5...butler-v11.2.0) (2024-04-12)
 
 
