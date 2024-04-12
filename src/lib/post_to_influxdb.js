@@ -99,7 +99,6 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     const configTags = globals.config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static');
 
     const tags = {
-        license_type: 'analyzer_access',
         butler_instance: instanceTag,
     };
 
@@ -116,11 +115,14 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "analyzerAccess" license type?
     if (qlikSenseLicenseStatus.analyzerAccess.enabled === true) {
-        tags.license_type = 'analyzer_access';
+        tags.license_type = 'analyzer';
+
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
 
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated: qlikSenseLicenseStatus.analyzerAccess.allocated,
                 available: qlikSenseLicenseStatus.analyzerAccess.available,
@@ -134,42 +136,32 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Is there any data for "analyzerTimeAccess" license type?
     if (qlikSenseLicenseStatus.analyzerTimeAccess.enabled === true) {
-        tags.license_type = 'analyzer_time_access';
+        tags.license_type = 'analyzer_capacity';
+
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
 
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
-                allocatedMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.allocatedMinutes,
-                unavailableMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.unavailableMinutes,
-                usedMinutes: qlikSenseLicenseStatus.analyzerTimeAccess.usedMinutes,
-            },
-        });
-    }
-
-    // Is there any data for "loginAccess" license type?
-    if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
-        tags.license_type = 'login_access';
-
-        datapoint.push({
-            measurement: 'qlik_sense_license',
-            tags,
-            fields: {
-                allocatedTokens: qlikSenseLicenseStatus.loginAccess.allocatedTokens,
-                tokenCost: qlikSenseLicenseStatus.loginAccess.tokenCost,
-                unavailableTokens: qlikSenseLicenseStatus.loginAccess.unavailableTokens,
-                usedTokens: qlikSenseLicenseStatus.loginAccess.usedTokens,
+                allocated_minutes: qlikSenseLicenseStatus.analyzerTimeAccess.allocatedMinutes,
+                unavailable_minutes: qlikSenseLicenseStatus.analyzerTimeAccess.unavailableMinutes,
+                used_minutes: qlikSenseLicenseStatus.analyzerTimeAccess.usedMinutes,
             },
         });
     }
 
     // Is there any data for "professionalAccess" license type?
     if (qlikSenseLicenseStatus.professionalAccess.enabled === true) {
-        tags.license_type = 'professional_access';
+        tags.license_type = 'professional';
+
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
 
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
                 allocated: qlikSenseLicenseStatus.professionalAccess.allocated,
                 available: qlikSenseLicenseStatus.professionalAccess.available,
@@ -181,18 +173,40 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Is there any data for "userAccess" license type?
-    if (qlikSenseLicenseStatus.userAccess.enabled === true) {
-        tags.license_type = 'user_access';
+    // Is there any data for "loginAccess" license type?
+    if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
+        tags.license_type = 'token_login';
+
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
 
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
-                allocatedTokens: qlikSenseLicenseStatus.userAccess.allocatedTokens,
-                quarantinedTokens: qlikSenseLicenseStatus.userAccess.quarantinedTokens,
-                tokenCost: qlikSenseLicenseStatus.userAccess.tokenCost,
-                userTokens: qlikSenseLicenseStatus.userAccess.userTokens,
+                allocated_tokens: qlikSenseLicenseStatus.loginAccess.allocatedTokens,
+                token_cost: qlikSenseLicenseStatus.loginAccess.tokenCost,
+                unavailable_tokens: qlikSenseLicenseStatus.loginAccess.unavailableTokens,
+                used_tokens: qlikSenseLicenseStatus.loginAccess.usedTokens,
+            },
+        });
+    }
+
+    // Is there any data for "userAccess" license type?
+    if (qlikSenseLicenseStatus.userAccess.enabled === true) {
+        tags.license_type = 'token_user';
+
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
+        datapoint.push({
+            measurement: 'qlik_sense_license',
+            tags: tagsCloned,
+            fields: {
+                allocated_tokens: qlikSenseLicenseStatus.userAccess.allocatedTokens,
+                quarantined_tokens: qlikSenseLicenseStatus.userAccess.quarantinedTokens,
+                token_cost: qlikSenseLicenseStatus.userAccess.tokenCost,
+                used_tokens: qlikSenseLicenseStatus.userAccess.userTokens,
             },
         });
     }
@@ -201,12 +215,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     if (qlikSenseLicenseStatus.tokensEnabled === true) {
         tags.license_type = 'tokens_available';
 
+        // Do a deep clone of the tags object
+        const tagsCloned = _.cloneDeep(tags);
+
         datapoint.push({
             measurement: 'qlik_sense_license',
-            tags,
+            tags: tagsCloned,
             fields: {
-                availableTokens: qlikSenseLicenseStatus.availableTokens,
-                totalTokens: qlikSenseLicenseStatus.totalTokens,
+                available_tokens: qlikSenseLicenseStatus.availableTokens,
+                total_tokens: qlikSenseLicenseStatus.totalTokens,
             },
         });
     }
