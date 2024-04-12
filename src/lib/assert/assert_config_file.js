@@ -1921,65 +1921,68 @@ export const configFileStructureAssert = async (config, logger) => {
     // }
     if (config.has('Butler.webhookNotification.reloadTaskFailure.webhooks')) {
         const webhooks = config.get('Butler.webhookNotification.reloadTaskFailure.webhooks');
-        if (!Array.isArray(webhooks)) {
-            logger.error('ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks" must be an array');
-            configFileCorrect = false;
-        } else {
-            webhooks.forEach((webhook, index) => {
-                if (typeof webhook !== 'object') {
-                    logger.error(`ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]" must be an object`);
-                    configFileCorrect = false;
-                } else {
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    } else if (typeof webhook.cert !== 'object') {
-                        logger.error(
-                            `ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert" must be an object`
-                        );
+
+        if (webhooks) {
+            if (!Array.isArray(webhooks)) {
+                logger.error('ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks" must be an array');
+                configFileCorrect = false;
+            } else {
+                webhooks.forEach((webhook, index) => {
+                    if (typeof webhook !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]" must be an object`);
                         configFileCorrect = false;
                     } else {
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof webhook.cert !== 'object') {
+                            logger.error(
+                                `ASSERT CONFIG: "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert" must be an object`
+                            );
+                            configFileCorrect = false;
+                        } else {
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.reloadTaskFailure.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -2006,65 +2009,68 @@ export const configFileStructureAssert = async (config, logger) => {
     // }
     if (config.has('Butler.webhookNotification.reloadTaskAborted.webhooks')) {
         const webhooks = config.get('Butler.webhookNotification.reloadTaskAborted.webhooks');
-        if (!Array.isArray(webhooks)) {
-            logger.error('ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks" must be an array');
-            configFileCorrect = false;
-        } else {
-            webhooks.forEach((webhook, index) => {
-                if (typeof webhook !== 'object') {
-                    logger.error(`ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]" must be an object`);
-                    configFileCorrect = false;
-                } else {
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    } else if (typeof webhook.cert !== 'object') {
-                        logger.error(
-                            `ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert" must be an object`
-                        );
+        // If there is one or more entries in Butler.webhookNotification.reloadTaskAborted.webhooks, verify that they are objects with the correct properties
+        if (webhooks) {
+            if (!Array.isArray(webhooks)) {
+                logger.error('ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks" must be an array');
+                configFileCorrect = false;
+            } else {
+                webhooks.forEach((webhook, index) => {
+                    if (typeof webhook !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]" must be an object`);
                         configFileCorrect = false;
                     } else {
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof webhook.cert !== 'object') {
+                            logger.error(
+                                `ASSERT CONFIG: "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert" must be an object`
+                            );
+                            configFileCorrect = false;
+                        } else {
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.reloadTaskAborted.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -2091,65 +2097,68 @@ export const configFileStructureAssert = async (config, logger) => {
     // }
     if (config.has('Butler.webhookNotification.serviceMonitor.webhooks')) {
         const webhooks = config.get('Butler.webhookNotification.serviceMonitor.webhooks');
-        if (!Array.isArray(webhooks)) {
-            logger.error('ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks" must be an array');
-            configFileCorrect = false;
-        } else {
-            webhooks.forEach((webhook, index) => {
-                if (typeof webhook !== 'object') {
-                    logger.error(`ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks[${index}]" must be an object`);
-                    configFileCorrect = false;
-                } else {
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    }
-                    if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
-                        logger.error(
-                            `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
-                        );
-                        configFileCorrect = false;
-                    } else if (typeof webhook.cert !== 'object') {
-                        logger.error(
-                            `ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert" must be an object`
-                        );
+
+        if (webhooks) {
+            if (!Array.isArray(webhooks)) {
+                logger.error('ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks" must be an array');
+                configFileCorrect = false;
+            } else {
+                webhooks.forEach((webhook, index) => {
+                    if (typeof webhook !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks[${index}]" must be an object`);
                         configFileCorrect = false;
                     } else {
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
                         }
-                        if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
                             );
                             configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof webhook.cert !== 'object') {
+                            logger.error(
+                                `ASSERT CONFIG: "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert" must be an object`
+                            );
+                            configFileCorrect = false;
+                        } else {
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.serviceMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
