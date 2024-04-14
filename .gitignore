@@ -85,3 +85,4 @@ profile*
 src/config/production_2.yaml
 src/config/butler-config.yaml
 src/udp_client/udp-client.exe
+src/config/production_empty_arrays.yaml
