@@ -36,7 +36,7 @@ Butler:
     storeNewRelic:
       enable: false
       destinationAccount:
-        - ...
+        # - ...
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
       # As of this writing the options for the New Relic metrics API are
@@ -44,8 +44,8 @@ Butler:
       # https://metric-api.newrelic.com/metric/v1 
       url: https://insights-collector.eu01.nr-data.net/metric/v1   # Where should uptime data be sent?
       header:                       # Custom http headers
-        - name: X-My-Header
-          value: Header value
+        # - name: X-My-Header
+        #   value: Header value
       metric:
         dynamic:
           butlerMemoryUsage:
@@ -54,12 +54,12 @@ Butler:
             enable: true            # Should Butler's uptime (how long since it was started) be sent to New Relic?
       attribute: 
         static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
-          - name: metricType
-            value: butler-uptime
-          - name: service
-            value: butler
-          - name: environment
-            value: prod
+          # - name: metricType
+          #   value: butler-uptime
+          # - name: service
+          #   value: butler
+          # - name: environment
+          #   value: prod
         dynamic:
           butlerVersion: 
             enable: true            # Should the Butler version be included in the data sent to New Relic?
@@ -69,9 +69,9 @@ Butler:
   # Command line options takes precedence over settings in this config file.
   thirdPartyToolsCredentials:
     newRelic:         # Array of New Relic accounts/insert keys. Any data sent to New Relic will be sent to both accounts. 
-      - accountName: ...
-        insertApiKey: ...
-        accountId: ...
+      # - accountName: ...
+      #   insertApiKey: ...
+      #   accountId: ...
 
   # Settingd for InfluxDB
   influxDb:
@@ -94,8 +94,8 @@ Butler:
       tailScriptLogLines: 20
       tag: 
         static:                 # Static tags to attach to data stored in InflixDB
-          - name: butler_instance
-            value: prod-1
+          # - name: butler_instance
+          #   value: prod-1
         dynamic:
           useAppTags: true      # Should app tags be stored in InfluxDB as tags?
           useTaskTags: true     # Should task tags be stored in InfluxDB as tags?      
@@ -139,17 +139,17 @@ Butler:
           enable: true
           tag: 
             static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
-              - name: foo
-                value: bar
+              # - name: foo
+              #   value: bar
     licenseRelease:
       enable: false  
       # frequency: every 3 hours
       frequency: every 5 minutes
       neverReleaseUsers:
-        - userDir: 'INTERNAL'
-          userId: 'sa_repository'
-        - userDir: 'INTERNAL'
-          userId: 'sa_api'
+        # - userDir: 'INTERNAL'
+        #   userId: 'sa_repository'
+        # - userDir: 'INTERNAL'
+        #   userId: 'sa_api'
       licenseType:                    # License types to monitor and release
         analyzer:                     
           enable: true
@@ -162,8 +162,8 @@ Butler:
           enable: true
           tag: 
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
-              - name: foo
-                value: bar
+              # - name: foo
+              #   value: bar
 
   # Settings for notifications and messages sent to MS Teams
   teamsNotification:
@@ -261,12 +261,12 @@ Butler:
           includeAll: true                            # true = Send notification to all app owners except those in exclude list
                                                       # false = Send notification to app owners in the include list
           user:
-            - directory: ...
-              userId: ...
+            # - directory: ...
+            #   userId: ...
         excludeOwner:
           user:
-            - directory: ...
-              userId: ...
+            # - directory: ...
+            #   userId: ...
             # - directory: LAB
             #   userId: goran
       # Custom property used to control which aborted tasks will cause alert emails to be sent
@@ -289,7 +289,7 @@ Butler:
       htmlTemplateFile: aborted-reload
       fromAdress: ...
       recipients:
-        - ...
+        # - ...
     reloadTaskFailure:
       enable: false
       appOwnerAlert:
@@ -298,12 +298,12 @@ Butler:
           includeAll: true                            # true = Send notification to all app owners except those in exclude list
                                                       # false = Send notification to app owners in the include list
           user:
-            - directory: ...
-              userId: ...
+            # - directory: ...
+            #   userId: ...
         excludeOwner:
           user:
-            - directory: ...
-              userId: ...
+            # - directory: ...
+            #   userId: ...
       # Custom property used to control which task failures will cause alert emails to be sent
       # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
       # If this setting is false, alerts will be sent for all failed reload tasks.
@@ -324,7 +324,7 @@ Butler:
       htmlTemplateFile: failed-reload
       fromAdress: ...
       recipients:
-        - ...
+        # - ...
     serviceStopped:
       rateLimit: 30              # Min seconds between emails for a given service. Defaults to 5 minutes.
       priority: high              # high/normal/low
@@ -333,7 +333,7 @@ Butler:
       htmlTemplateFile: service-stopped
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
-        - ...
+        # - ...
     serviceStarted:
       rateLimit: 30              # Min seconds between emails for a given service. Defaults to 5 minutes.
       priority: high              # high/normal/low
@@ -342,7 +342,7 @@ Butler:
       htmlTemplateFile: service-started
       fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
-        - ...
+        # - ...
     smtp: 
       host: ...
       port: 465
@@ -371,7 +371,7 @@ Butler:
         includeApp:
           includeAll: false
           appId:
-            - ...
+            # - ...
           appNameRegEx:
         excludeApp:
           appId:
@@ -456,10 +456,10 @@ Butler:
             #   value: Header value 1 # Example
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-              - name: service       # Example
-                value: butler       # Example
-              - name: environment   # Example
-                value: prod         # Example
+              # - name: service       # Example
+              #   value: butler       # Example
+              # - name: environment   # Example
+              #   value: prod         # Example
       reloadTaskAborted:
         destination:
           event: 
@@ -471,12 +471,12 @@ Butler:
               always:
                 enable: false            # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: event-specific-attribute 2  # Example
-                  value: abc 123                    # Example
+                # - name: event-specific-attribute 2  # Example
+                #   value: abc 123                    # Example
               dynamic:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
@@ -490,37 +490,37 @@ Butler:
               always:
                 enable: false          # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: log-specific-attribute 2    # Example
-                  value: def 123                    # Example
+                # - name: log-specific-attribute 2    # Example
+                #   value: def 123                    # Example
               dynamic:
                 useAppTags: true      # Should app tags be sent to New Relic as attributes?
                 useTaskTags: true     # Should task tags be sent to New Relic as attributes?
         sharedSettings:
           rateLimit: 15             # Min seconds between events sent to New Relic for a given taskID. Defaults to 5 minutes.
           header:                   # Custom http headers
-            - name: X-My-Header     # Example
-              value: Header value 2 # Example
+            # - name: X-My-Header     # Example
+            #   value: Header value 2 # Example
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-              - name: service       # Example
-                value: butler       # Example
-              - name: environment   # Example
-                value: prod         # Example
+              # - name: service       # Example
+              #   value: butler       # Example
+              # - name: environment   # Example
+              #   value: prod         # Example
       serviceMonitor:
         destination:
           event: 
             enable: false
             sendToAccount:            # Which reload task aborts are sent to New Relic as events
-              - First NR account
+              # - First NR account
               # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: event-specific-attribute
-                  value: abc 123
+                # - name: event-specific-attribute
+                #   value: abc 123
               dynamic:
                 serviceHost: false         # Should host where service is running be sent to New Relic as attribute?
                 serviceName: false         # Should service names be sent to New Relic as attributes?
@@ -529,12 +529,12 @@ Butler:
           log:
             enable: false
             sendToAccount:            # Which reload task aborts are sent to New Relic as log entries
-              - First NR account
+              # - First NR account
               # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-                - name: log-specific-attribute
-                  value: def 456
+                # - name: log-specific-attribute
+                #   value: def 456
               dynamic:
                 serviceHost: true         # Should host where service is running be sent to New Relic as attribute?
                 serviceName: true         # Should service names be sent to New Relic as attributes?
@@ -552,8 +552,8 @@ Butler:
             #   value: Header value 2
           attribute: 
             static:                 # Static attributes/dimensions to attach to events sent to New Relic.
-              - name: service
-                value: butler
+              # - name: service
+              #   value: butler
 
   # Settings for notifications and messages sent using outgoing webhook
   webhookNotification:
@@ -561,33 +561,12 @@ Butler:
     reloadTaskFailure:
       rateLimit: 15              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_post               # outgoing webhook that Butler will call
-          httpMethod: POST                # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     reloadTaskAborted:
       rateLimit: 15              # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_put               # outgoing webhook that Butler will call
-          httpMethod: PUT                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     serviceMonitor:
       rateLimit: 5              # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook is used to...'
-          webhookURL: http://.../butler_get              # outgoing webhook that Butler will call
-          httpMethod: GET                 # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -682,34 +661,34 @@ Butler:
     newRelic:
       postNewRelicMetric:          # Setings used by post metric to New Relic API endpoint
         destinationAccount:
-          - ...
+          # - ...
         # Note that the URL path should *not* be included in the url setting below!
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net
         # https://insights-collector.newrelic.com 
         url: https://insights-collector.eu01.nr-data.net
         header:                   # Custom http headers
-          - name: X-My-Header
-            value: Header value
+          # - name: X-My-Header
+            # value: Header value
         attribute: 
           static:                   # Static attributes/dimensions to attach to the metrics data sent to New Relic.
-            - name: env
-              value: prod
+            # - name: env
+            #   value: prod
       postNewRelicEvent:            # Setings used by post event to New Relic API endpoint
         destinationAccount:
-          - ...
+          # - ...
         # Note that the URL path should *not* be included in the url setting below!
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net
         # https://insights-collector.newrelic.com 
         url: https://insights-collector.eu01.nr-data.net/
         header:                   # Custom http headers
-          - name: X-My-Header
-            value: Header value
+          # - name: X-My-Header
+          #   value: Header value
         attribute: 
           static:                   # Static attributes/dimensions to attach to the metrics data sent to New Relic.
-            - name: env
-              value: prod
+            # - name: env
+            #   value: prod
 
 
   # Controls which tasks can be started via Butler's REST API.
@@ -730,16 +709,16 @@ Butler:
         # Zero or more custom properties name/value pairs used to indicate that a task is approved to be started by Butler.
         # Use the Qlik Sense QMC to set custom properties on tasks.
         # If Butler.startTaskFilter.enable is true, only tasks with the custom property values below will be started by Butler 
-        - name: taskGroup
-          value: tasks2
+        # - name: taskGroup
+        #   value: tasks2
 
   serviceMonitor:
     enable: true
     frequency: every 10 seconds         # https://bunkat.github.io/later/parsers.html
     monitor:
-      - host: ...
-        services: 
-          - ...
+      # - host: ...
+      #   services: 
+      #     - ...
     alertDestination:
       influxDb:                     # Send service alerts to InfluxDB
         enable: false
