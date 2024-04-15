@@ -9,7 +9,7 @@ info:
 
 
     This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com
-  version: 12.0.0
+  version: 12.1.0
 components:
   schemas: {}
 paths:
