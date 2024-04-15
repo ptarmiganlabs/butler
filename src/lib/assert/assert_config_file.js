@@ -549,7 +549,50 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.uptimeMonitor.storeNewRelic.header')) {
+    // Make sure all entries in Butler.uptimeMonitor.storeNewRelic.header array are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.uptimeMonitor.storeNewRelic.header')) {
+        const headers = config.get('Butler.uptimeMonitor.storeNewRelic.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.uptimeMonitor.storeNewRelic.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.uptimeMonitor.storeNewRelic.header[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(`ASSERT CONFIG: Missing "name" property in "Butler.uptimeMonitor.storeNewRelic.header[${index}]"`);
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.uptimeMonitor.storeNewRelic.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.uptimeMonitor.storeNewRelic.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.uptimeMonitor.storeNewRelic.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.uptimeMonitor.storeNewRelic.header"');
         configFileCorrect = false;
     }
@@ -566,7 +609,53 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.uptimeMonitor.storeNewRelic.attribute.static')) {
+    // Make sure all entries in Butler.uptimeMonitor.storeNewRelic.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+
+    if (config.has('Butler.uptimeMonitor.storeNewRelic.attribute.static')) {
+        const staticAttributes = config.get('Butler.uptimeMonitor.storeNewRelic.attribute.static');
+
+        if (staticAttributes) {
+            if (!Array.isArray(staticAttributes)) {
+                logger.error('ASSERT CONFIG: "Butler.uptimeMonitor.storeNewRelic.attribute.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                staticAttributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.uptimeMonitor.storeNewRelic.attribute.static[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.uptimeMonitor.storeNewRelic.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.uptimeMonitor.storeNewRelic.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.uptimeMonitor.storeNewRelic.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.uptimeMonitor.storeNewRelic.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.uptimeMonitor.storeNewRelic.attribute.static"');
         configFileCorrect = false;
     }
@@ -578,7 +667,65 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.thirdPartyToolsCredentials.newRelic')) {
+    // Make sure all entries in Butler.thirdPartyToolsCredentials.newRelic are objects with the following properties:
+    // {
+    //     accountName: 'string',
+    //     insertApiKey: 'string'
+    //     accountId: 123456
+    // }
+    if (config.has('Butler.thirdPartyToolsCredentials.newRelic')) {
+        const newRelicAccounts = config.get('Butler.thirdPartyToolsCredentials.newRelic');
+
+        if (newRelicAccounts) {
+            if (!Array.isArray(newRelicAccounts)) {
+                logger.error('ASSERT CONFIG: "Butler.thirdPartyToolsCredentials.newRelic" is not an array');
+                configFileCorrect = false;
+            } else {
+                newRelicAccounts.forEach((account, index) => {
+                    if (typeof account !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.thirdPartyToolsCredentials.newRelic[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(account, 'accountName')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "accountName" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof account.accountName !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "accountName" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(account, 'insertApiKey')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "insertApiKey" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof account.insertApiKey !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "insertApiKey" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(account, 'accountId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "accountId" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof account.accountId !== 'number') {
+                            logger.error(
+                                `ASSERT CONFIG: "accountId" property in "Butler.thirdPartyToolsCredentials.newRelic[${index}]" is not a number`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.thirdPartyToolsCredentials.newRelic"');
         configFileCorrect = false;
     }
@@ -643,7 +790,52 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.influxDb.reloadTaskFailure.tag.static')) {
+    // Make sure all entries in Butler.influxDb.reloadTaskFailure.tag.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.influxDb.reloadTaskFailure.tag.static')) {
+        const tagsStatic = config.get('Butler.influxDb.reloadTaskFailure.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error('ASSERT CONFIG: "Butler.influxDb.reloadTaskFailure.tag.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.influxDb.reloadTaskFailure.tag.static[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.influxDb.reloadTaskFailure.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.influxDb.reloadTaskFailure.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.influxDb.reloadTaskFailure.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.influxDb.reloadTaskFailure.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskFailure.tag.static"');
         configFileCorrect = false;
     }
@@ -683,7 +875,52 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.influxDb.reloadTaskSuccess.tag.static')) {
+    // Make sure all entries in Butler.influxDb.reloadTaskSuccess.tag.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.influxDb.reloadTaskSuccess.tag.static')) {
+        const tagsStatic = config.get('Butler.influxDb.reloadTaskSuccess.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error('ASSERT CONFIG: "Butler.influxDb.reloadTaskSuccess.tag.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.influxDb.reloadTaskSuccess.tag.static[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.influxDb.reloadTaskSuccess.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.influxDb.reloadTaskSuccess.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.influxDb.reloadTaskSuccess.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.influxDb.reloadTaskSuccess.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.influxDb.reloadTaskSuccess.tag.static"');
         configFileCorrect = false;
     }
@@ -734,6 +971,58 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Make sure all entries in Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static')) {
+        const tagsStatic = config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enabled"');
+        configFileCorrect = false;
+    }
+
     // Release Qlik Sense licenses
     if (!config.has('Butler.qlikSenseLicense.licenseRelease.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.enable"');
@@ -742,6 +1031,58 @@ export const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.qlikSenseLicense.licenseRelease.frequency')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.frequency"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers are objects with the following properties:
+    // {
+    //     userDir: 'string'
+    //     userId: 'string',
+    // }
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers')) {
+        const neverReleaseUsers = config.get('Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers');
+
+        if (neverReleaseUsers) {
+            if (!Array.isArray(neverReleaseUsers)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers" is not an array');
+                configFileCorrect = false;
+            } else {
+                neverReleaseUsers.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userId !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userDir')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userDir !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers"');
         configFileCorrect = false;
     }
 
@@ -771,6 +1112,53 @@ export const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.enable"');
+        configFileCorrect = false;
+    }
+
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static')) {
+        const tagsStatic = config.get('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static"');
         configFileCorrect = false;
     }
 
@@ -1122,14 +1510,108 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user are objects with the following properties:
+    // {
+    //     directory: 'string',
+    //     userId: 'string'
+    // }
+    if (config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user')) {
+        const users = config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user');
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user" is not an array');
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "directory" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.directory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "directory" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userId !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userId" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user are objects with the following properties:
+    // {
+    //     directory: 'string',
+    //     userId: 'string'
+    // }
+    if (config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user')) {
+        const users = config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user" is not an array');
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "directory" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.directory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "directory" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userId !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userId" property in "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user"'
         );
@@ -1204,7 +1686,25 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskAborted.recipients')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskAborted.recipients are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.emailNotification.reloadTaskAborted.recipients')) {
+        const recipients = config.get('Butler.emailNotification.reloadTaskAborted.recipients');
+
+        if (recipients) {
+            if (!Array.isArray(recipients)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.recipients" is not an array');
+                configFileCorrect = false;
+            } else {
+                recipients.forEach((recipient, index) => {
+                    if (typeof recipient !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.emailNotification.reloadTaskAborted.recipients[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskAborted.recipients"');
         configFileCorrect = false;
     }
@@ -1226,14 +1726,108 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user are objects with the following properties:
+    // {
+    //     directory: 'string',
+    //     userId: 'string'
+    // }
+    if (config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user')) {
+        const users = config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user');
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user" is not an array');
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "directory" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.directory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "directory" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userId !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userId" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user are objects with the following properties:
+    // {
+    //     directory: 'string',
+    //     userId: 'string'
+    // }
+    if (config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user')) {
+        const users = config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user" is not an array');
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "directory" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.directory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "directory" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof user.userId !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "userId" property in "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user"'
         );
@@ -1308,7 +1902,25 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.reloadTaskFailure.recipients')) {
+    // Make sure all entries in Butler.emailNotification.reloadTaskFailure.recipients are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.emailNotification.reloadTaskFailure.recipients')) {
+        const recipients = config.get('Butler.emailNotification.reloadTaskFailure.recipients');
+
+        if (recipients) {
+            if (!Array.isArray(recipients)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.recipients" is not an array');
+                configFileCorrect = false;
+            } else {
+                recipients.forEach((recipient, index) => {
+                    if (typeof recipient !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.emailNotification.reloadTaskFailure.recipients[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.emailNotification.reloadTaskFailure.recipients"');
         configFileCorrect = false;
     }
@@ -1343,7 +1955,25 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.serviceStopped.recipients')) {
+    // Make sure all entries in Butler.emailNotification.serviceStopped.recipients are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.emailNotification.serviceStopped.recipients')) {
+        const recipients = config.get('Butler.emailNotification.serviceStopped.recipients');
+
+        if (recipients) {
+            if (!Array.isArray(recipients)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.serviceStopped.recipients" is not an array');
+                configFileCorrect = false;
+            } else {
+                recipients.forEach((recipient, index) => {
+                    if (typeof recipient !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.emailNotification.serviceStopped.recipients[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.emailNotification.serviceStopped.recipients"');
         configFileCorrect = false;
     }
@@ -1378,7 +2008,25 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.emailNotification.serviceStarted.recipients')) {
+    // Make sure all entries in Butler.emailNotification.serviceStarted.recipients are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.emailNotification.serviceStarted.recipients')) {
+        const recipients = config.get('Butler.emailNotification.serviceStarted.recipients');
+
+        if (recipients) {
+            if (!Array.isArray(recipients)) {
+                logger.error('ASSERT CONFIG: "Butler.emailNotification.serviceStarted.recipients" is not an array');
+                configFileCorrect = false;
+            } else {
+                recipients.forEach((recipient, index) => {
+                    if (typeof recipient !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.emailNotification.serviceStarted.recipients[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.emailNotification.serviceStarted.recipients"');
         configFileCorrect = false;
     }
@@ -1463,6 +2111,36 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.incidentTool.signl4.reloadTaskFailure.includeApp.includeAll')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.signl4.reloadTaskFailure.includeApp.includeAll"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId')) {
+        const appIds = config.get('Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId');
+
+        if (appIds) {
+            if (!Array.isArray(appIds)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId" is not an array');
+                configFileCorrect = false;
+            } else {
+                appIds.forEach((appId, index) => {
+                    if (typeof appId !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.signl4.reloadTaskFailure.includeApp.appId"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.incidentTool.signl4.reloadTaskAborted.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.signl4.reloadTaskAborted.enable"');
         configFileCorrect = false;
@@ -1488,12 +2166,48 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.destinationAccount.event')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.destinationAccount.event are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.destinationAccount.event')) {
+        const destinationAccount = config.get('Butler.incidentTool.newRelic.destinationAccount.event');
+
+        if (destinationAccount) {
+            if (!Array.isArray(destinationAccount)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.destinationAccount.event" is not an array');
+                configFileCorrect = false;
+            } else {
+                destinationAccount.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.incidentTool.newRelic.destinationAccount.event[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.destinationAccount.event"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.destinationAccount.log')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.destinationAccount.log are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.destinationAccount.log')) {
+        const destinationAccount = config.get('Butler.incidentTool.newRelic.destinationAccount.log');
+
+        if (destinationAccount) {
+            if (!Array.isArray(destinationAccount)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.destinationAccount.log" is not an array');
+                configFileCorrect = false;
+            } else {
+                destinationAccount.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.incidentTool.newRelic.destinationAccount.log[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.destinationAccount.log"');
         configFileCorrect = false;
     }
@@ -1529,14 +2243,85 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static"'
         );
@@ -1590,14 +2375,58 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static"'
         );
@@ -1623,7 +2452,54 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header')) {
+        const headers = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header"');
         configFileCorrect = false;
     }
@@ -1661,14 +2537,85 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.attribute.static"'
         );
@@ -1722,14 +2669,85 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.attribute.static"'
         );
@@ -1755,12 +2773,108 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header')) {
+        const headers = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.header"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskAborted.sharedSettings.attribute.static"'
         );
@@ -1772,14 +2886,85 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.destination.event.sendToAccount"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.static"'
         );
@@ -1819,14 +3004,83 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount are objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount')) {
+        const accounts = config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount');
+
+        if (accounts) {
+            if (!Array.isArray(accounts)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount" is not an array');
+                configFileCorrect = false;
+            } else {
+                accounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.destination.log.sendToAccount"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.static"'
         );
@@ -1880,12 +3134,108 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header')) {
+        const headers = config.get('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.header"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static')) {
+    // Make sure all entries in Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static')) {
+        const attributes = config.get('Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.serviceMonitor.sharedSettings.attribute.static"'
         );
@@ -1908,7 +3258,7 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    // Make sure all entries in Butler.webhookNotification.reloadTaskFailure.webhooks are objects with the following properties:
+    // Make sure all entries in Butler.webhookNotification.reloadTaskFailure.webhooks array are objects with the following properties:
     // {
     //     "description": "A description of the webhook",
     //     "webhookURL": "https://webhook.site/...",
@@ -1984,6 +3334,9 @@ export const configFileStructureAssert = async (config, logger) => {
                 });
             }
         }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.reloadTaskFailure.webhooks"');
+        configFileCorrect = false;
     }
 
     if (!config.has('Butler.webhookNotification.reloadTaskAborted.rateLimit')) {
@@ -2072,6 +3425,9 @@ export const configFileStructureAssert = async (config, logger) => {
                 });
             }
         }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.reloadTaskAborted.webhooks"');
+        configFileCorrect = false;
     }
 
     if (!config.has('Butler.webhookNotification.serviceMonitor.rateLimit')) {
@@ -2160,6 +3516,9 @@ export const configFileStructureAssert = async (config, logger) => {
                 });
             }
         }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.serviceMonitor.webhooks"');
+        configFileCorrect = false;
     }
 
     if (!config.has('Butler.scheduler.enable')) {
@@ -2297,17 +3656,121 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.fileCopyApprovedDirectories')) {
+    // Make sure all entries in Butler.fileCopyApprovedDirectories are objects with the following properties:
+    // {
+    //     fromDirectory: 'string',
+    //     toDirectory: 'string'
+    // }
+    if (config.has('Butler.fileCopyApprovedDirectories')) {
+        const directories = config.get('Butler.fileCopyApprovedDirectories');
+
+        if (directories) {
+            if (!Array.isArray(directories)) {
+                logger.error('ASSERT CONFIG: "Butler.fileCopyApprovedDirectories" is not an array');
+                configFileCorrect = false;
+            } else {
+                directories.forEach((directory, index) => {
+                    if (typeof directory !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.fileCopyApprovedDirectories[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(directory, 'fromDirectory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "fromDirectory" property in "Butler.fileCopyApprovedDirectories[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof directory.fromDirectory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "fromDirectory" property in "Butler.fileCopyApprovedDirectories[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(directory, 'toDirectory')) {
+                            logger.error(`ASSERT CONFIG: Missing "toDirectory" property in "Butler.fileCopyApprovedDirectories[${index}]"`);
+                            configFileCorrect = false;
+                        } else if (typeof directory.toDirectory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "toDirectory" property in "Butler.fileCopyApprovedDirectories[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.fileCopyApprovedDirectories"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.fileMoveApprovedDirectories')) {
+    // Make sure all entries in Butler.fileMoveApprovedDirectories are objects with the following properties:
+    // {
+    //     fromDirectory: 'string',
+    //     toDirectory: 'string'
+    // }
+    if (config.has('Butler.fileMoveApprovedDirectories')) {
+        const directories = config.get('Butler.fileMoveApprovedDirectories');
+
+        if (directories) {
+            if (!Array.isArray(directories)) {
+                logger.error('ASSERT CONFIG: "Butler.fileMoveApprovedDirectories" is not an array');
+                configFileCorrect = false;
+            } else {
+                directories.forEach((directory, index) => {
+                    if (typeof directory !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.fileMoveApprovedDirectories[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(directory, 'fromDirectory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "fromDirectory" property in "Butler.fileMoveApprovedDirectories[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof directory.fromDirectory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "fromDirectory" property in "Butler.fileMoveApprovedDirectories[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(directory, 'toDirectory')) {
+                            logger.error(`ASSERT CONFIG: Missing "toDirectory" property in "Butler.fileMoveApprovedDirectories[${index}]"`);
+                            configFileCorrect = false;
+                        } else if (typeof directory.toDirectory !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "toDirectory" property in "Butler.fileMoveApprovedDirectories[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.fileMoveApprovedDirectories"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.fileDeleteApprovedDirectories')) {
+    // Make sure all entries in Butler.fileDeleteApprovedDirectories are objects with the following properties:
+    // - name: 'string'
+    if (config.has('Butler.fileDeleteApprovedDirectories')) {
+        const directories = config.get('Butler.fileDeleteApprovedDirectories');
+
+        if (directories) {
+            if (!Array.isArray(directories)) {
+                logger.error('ASSERT CONFIG: "Butler.fileDeleteApprovedDirectories" is not an array');
+                configFileCorrect = false;
+            } else {
+                directories.forEach((directory, index) => {
+                    if (typeof directory !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.fileDeleteApprovedDirectories[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.fileDeleteApprovedDirectories"');
         configFileCorrect = false;
     }
@@ -2442,7 +3905,29 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount are objects with the following properties:
+    // - name: 'string'
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount')) {
+        const destinationAccounts = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount');
+
+        if (destinationAccounts) {
+            if (!Array.isArray(destinationAccounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                destinationAccounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.destinationAccount"'
         );
@@ -2454,19 +3939,137 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header')) {
+        const headers = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.header"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static')) {
+        const attributes = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicMetric.attribute.static"'
         );
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount are objects with the following properties:
+    // - name: 'string'
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount')) {
+        const destinationAccounts = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount');
+
+        if (destinationAccounts) {
+            if (!Array.isArray(destinationAccounts)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                destinationAccounts.forEach((account, index) => {
+                    if (typeof account !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.destinationAccount"'
         );
@@ -2478,12 +4081,108 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header')) {
+        const headers = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header');
+
+        if (headers) {
+            if (!Array.isArray(headers)) {
+                logger.error('ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header" is not an array');
+                configFileCorrect = false;
+            } else {
+                headers.forEach((header, index) => {
+                    if (typeof header !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(header, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(header, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof header.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.header"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static')) {
+    // Make sure all entries in Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static')) {
+        const attributes = config.get('Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static');
+
+        if (attributes) {
+            if (!Array.isArray(attributes)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                attributes.forEach((attribute, index) => {
+                    if (typeof attribute !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.restServerEndpointsConfig.newRelic.postNewRelicEvent.attribute.static"'
         );
@@ -2495,17 +4194,98 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.startTaskFilter.allowTask.taskId')) {
+    // Make sure all entries in Butler.startTaskFilter.allowTask.taskId are objects with the following properties:
+    // - name: 'string'
+    if (config.has('Butler.startTaskFilter.allowTask.taskId')) {
+        const taskIds = config.get('Butler.startTaskFilter.allowTask.taskId');
+
+        if (taskIds) {
+            if (!Array.isArray(taskIds)) {
+                logger.error('ASSERT CONFIG: "Butler.startTaskFilter.allowTask.taskId" is not an array');
+                configFileCorrect = false;
+            } else {
+                taskIds.forEach((taskId, index) => {
+                    if (typeof taskId !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.startTaskFilter.allowTask.taskId[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.startTaskFilter.allowTask.taskId"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.startTaskFilter.allowTask.tag')) {
+    // Make sure all entries in Butler.startTaskFilter.allowTask.tag are objects with the following properties:
+    // - name: 'string'
+    if (config.has('Butler.startTaskFilter.allowTask.tag')) {
+        const tags = config.get('Butler.startTaskFilter.allowTask.tag');
+
+        if (tags) {
+            if (!Array.isArray(tags)) {
+                logger.error('ASSERT CONFIG: "Butler.startTaskFilter.allowTask.tag" is not an array');
+                configFileCorrect = false;
+            } else {
+                tags.forEach((tag, index) => {
+                    if (typeof tag !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.startTaskFilter.allowTask.tag[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.startTaskFilter.allowTask.tag"');
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.startTaskFilter.allowTask.customProperty')) {
+    // Make sure all entries in Butler.startTaskFilter.allowTask.customProperty are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.startTaskFilter.allowTask.customProperty')) {
+        const customProperties = config.get('Butler.startTaskFilter.allowTask.customProperty');
+
+        if (customProperties) {
+            if (!Array.isArray(customProperties)) {
+                logger.error('ASSERT CONFIG: "Butler.startTaskFilter.allowTask.customProperty" is not an array');
+                configFileCorrect = false;
+            } else {
+                customProperties.forEach((customProperty, index) => {
+                    if (typeof customProperty !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.startTaskFilter.allowTask.customProperty[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(customProperty, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.startTaskFilter.allowTask.customProperty[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof customProperty.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.startTaskFilter.allowTask.customProperty[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(customProperty, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.startTaskFilter.allowTask.customProperty[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof customProperty.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.startTaskFilter.allowTask.customProperty[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.startTaskFilter.allowTask.customProperty"');
         configFileCorrect = false;
     }
@@ -2520,7 +4300,80 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.serviceMonitor.monitor')) {
+    // Make sure all entries in Butler.serviceMonitor.monitor are objects with the following properties:
+    // {
+    //     host: 'string',
+    //     services: {
+    //         name: 'string',
+    //         friendlyName: 'string',
+    //      }
+    // }
+    if (config.has('Butler.serviceMonitor.monitor')) {
+        const monitors = config.get('Butler.serviceMonitor.monitor');
+
+        if (monitors) {
+            if (!Array.isArray(monitors)) {
+                logger.error('ASSERT CONFIG: "Butler.serviceMonitor.monitor" is not an array');
+                configFileCorrect = false;
+            } else {
+                monitors.forEach((monitor, index) => {
+                    if (typeof monitor !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.serviceMonitor.monitor[${index}]" is not an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(monitor, 'host')) {
+                            logger.error(`ASSERT CONFIG: Missing "host" property in "Butler.serviceMonitor.monitor[${index}]"`);
+                            configFileCorrect = false;
+                        } else if (typeof monitor.host !== 'string') {
+                            logger.error(`ASSERT CONFIG: "host" property in "Butler.serviceMonitor.monitor[${index}]" is not a string`);
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(monitor, 'services')) {
+                            logger.error(`ASSERT CONFIG: Missing "services" property in "Butler.serviceMonitor.monitor[${index}]"`);
+                            configFileCorrect = false;
+                        } else if (!Array.isArray(monitor.services)) {
+                            logger.error(`ASSERT CONFIG: "services" property in "Butler.serviceMonitor.monitor[${index}]" is not an array`);
+                            configFileCorrect = false;
+                        } else {
+                            monitor.services.forEach((service, serviceIndex) => {
+                                if (typeof service !== 'object') {
+                                    logger.error(
+                                        `ASSERT CONFIG: "Butler.serviceMonitor.monitor[${index}].services[${serviceIndex}]" is not an object`
+                                    );
+                                    configFileCorrect = false;
+                                } else {
+                                    if (!Object.prototype.hasOwnProperty.call(service, 'name')) {
+                                        logger.error(
+                                            `ASSERT CONFIG: Missing "name" property in "Butler.serviceMonitor.monitor[${index}].services[${serviceIndex}]"`
+                                        );
+                                        configFileCorrect = false;
+                                    } else if (typeof service.name !== 'string') {
+                                        logger.error(
+                                            `ASSERT CONFIG: "name" property in "Butler.serviceMonitor.monitor[${index}].services[${serviceIndex}]" is not a string`
+                                        );
+                                        configFileCorrect = false;
+                                    }
+
+                                    if (!Object.prototype.hasOwnProperty.call(service, 'friendlyName')) {
+                                        logger.error(
+                                            `ASSERT CONFIG: Missing "friendlyName" property in "Butler.serviceMonitor.monitor[${index}].services[${serviceIndex}]"`
+                                        );
+                                        configFileCorrect = false;
+                                    } else if (typeof service.friendlyName !== 'string') {
+                                        logger.error(
+                                            `ASSERT CONFIG: "friendlyName" property in "Butler.serviceMonitor.monitor[${index}].services[${serviceIndex}]" is not a string`
+                                        );
+                                        configFileCorrect = false;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+    } else {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.serviceMonitor.monitor"');
         configFileCorrect = false;
     }
