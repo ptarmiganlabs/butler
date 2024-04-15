@@ -1,5 +1,18 @@
 # Changelog
 
+## [12.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.0.0...butler-v12.1.0) (2024-04-15)
+
+
+### Features
+
+* **config:** Much improved verification of config file on startup ([5dc1a23](https://github.com/ptarmiganlabs/butler/commit/5dc1a231b0b79e9aeab4ae4bd120f959a51c8bc7)), closes [#1090](https://github.com/ptarmiganlabs/butler/issues/1090)
+
+
+### Bug Fixes
+
+* Fix api docs config file wrt assert code ([fdd5902](https://github.com/ptarmiganlabs/butler/commit/fdd5902f78fc330cd2e83453cc67e24f002fe27f))
+* **webhook:** Allow empty arrays of webhooks in config file ([4f354b8](https://github.com/ptarmiganlabs/butler/commit/4f354b8f4e829db5cda472b47676b68f339bc5f0)), closes [#1088](https://github.com/ptarmiganlabs/butler/issues/1088)
+
 ## [12.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v11.2.0...butler-v12.0.0) (2024-04-12)
 
 
