@@ -92,7 +92,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance, neverRele
             // If the user is not in the neverReleaseUsers array, and the days since last use is greater than the release threshold, release the license
             if (
                 !doNotRelease &&
-                daysSinceLastUse > config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.releaseThresholdDays')
+                daysSinceLastUse >= config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.releaseThresholdDays')
             ) {
                 releaseProfessional.push({
                     licenseId: license.id,
@@ -131,7 +131,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance, neverRele
         ) {
             // eslint-disable-next-line no-await-in-loop
             await postQlikSenseLicenseReleasedToInfluxDB({
-                licenseType: 'professional_access',
+                licenseType: 'professional',
                 licenseId: licenseRelease.licenseId,
                 userDir: licenseRelease.userDir,
                 userId: licenseRelease.userId,
@@ -181,7 +181,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance, neverReleaseU
             // If the user is not in the neverReleaseUsers array, and the days since last use is greater than the release threshold, release the license
             if (
                 !doNotRelease &&
-                daysSinceLastUse > config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.releaseThresholdDays')
+                daysSinceLastUse >= config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.releaseThresholdDays')
             ) {
                 releaseAnalyzer.push({
                     licenseId: license.id,
@@ -220,7 +220,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance, neverReleaseU
         ) {
             // eslint-disable-next-line no-await-in-loop
             await postQlikSenseLicenseReleasedToInfluxDB({
-                licenseType: 'analyzer_access',
+                licenseType: 'analyzer',
                 licenseId: licenseRelease.licenseId,
                 userDir: licenseRelease.userDir,
                 userId: licenseRelease.userId,
