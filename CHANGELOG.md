@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.1.0...butler-v12.1.1) (2024-04-17)
+
+
+### Bug Fixes
+
+* **qs-license:** Correct license type names written to InfluxDB when releasing QS licenses ([1cd59f2](https://github.com/ptarmiganlabs/butler/commit/1cd59f205b782834b81de11791b99c0489b9a99a)), closes [#1094](https://github.com/ptarmiganlabs/butler/issues/1094)
+
 ## [12.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.0.0...butler-v12.1.0) (2024-04-15)
 
 
