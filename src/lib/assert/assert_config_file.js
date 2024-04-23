@@ -1029,51 +1029,57 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // License release dry run
+    if (!config.has('Butler.qlikSenseLicense.licenseRelease.dryRun')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.dryRun"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.qlikSenseLicense.licenseRelease.frequency')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.frequency"');
         configFileCorrect = false;
     }
 
-    // Make sure all entries in Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers are objects with the following properties:
+    // Make sure all entries in Butler.qlikSenseLicense.licenseRelease.neverRelease.user are objects with the following properties:
     // {
     //     userDir: 'string'
     //     userId: 'string',
     // }
-    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers')) {
-        const neverReleaseUsers = config.get('Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers');
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.user')) {
+        const neverReleaseUsers = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.user');
 
         if (neverReleaseUsers) {
             if (!Array.isArray(neverReleaseUsers)) {
-                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers" is not an array');
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.user" is not an array');
                 configFileCorrect = false;
             } else {
                 neverReleaseUsers.forEach((user, index) => {
                     if (typeof user !== 'object') {
                         logger.error(
-                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not an object`
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.user[${index}]" is not an object`
                         );
                         configFileCorrect = false;
                     } else {
                         if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]"`
+                                `ASSERT CONFIG: Missing "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverRelease.user[${index}]"`
                             );
                             configFileCorrect = false;
                         } else if (typeof user.userId !== 'string') {
                             logger.error(
-                                `ASSERT CONFIG: "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not a string`
+                                `ASSERT CONFIG: "userId" property in "Butler.qlikSenseLicense.licenseRelease.neverRelease.user[${index}]" is not a string`
                             );
                             configFileCorrect = false;
                         }
 
                         if (!Object.prototype.hasOwnProperty.call(user, 'userDir')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]"`
+                                `ASSERT CONFIG: Missing "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverRelease.user[${index}]"`
                             );
                             configFileCorrect = false;
                         } else if (typeof user.userDir !== 'string') {
                             logger.error(
-                                `ASSERT CONFIG: "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers[${index}]" is not a string`
+                                `ASSERT CONFIG: "userDir" property in "Butler.qlikSenseLicense.licenseRelease.neverRelease.user[${index}]" is not a string`
                             );
                             configFileCorrect = false;
                         }
@@ -1082,7 +1088,125 @@ export const configFileStructureAssert = async (config, logger) => {
             }
         }
     } else {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverReleaseUsers"');
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.user"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.qlikSenseLicense.licenseRelease.neverRelease.tag objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.tag')) {
+        const neverReleaseTags = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.tag');
+
+        if (neverReleaseTags) {
+            if (!Array.isArray(neverReleaseTags)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.tag" is not an array');
+                configFileCorrect = false;
+            } else {
+                neverReleaseTags.forEach((tag, index) => {
+                    if (typeof tag !== 'string') {
+                        logger.error(`ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.tag[${index}]" is not a string`);
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.tag"');
+        configFileCorrect = false;
+    }
+
+    // The custom properties specified in the Butler.qlikSenseLicense.licenseRelease.neverRelease.customProperty array
+    // should meet the following requirements:
+    // - Each array item should be an object with the following properties:
+    //   {
+    //       name: 'string',
+    //       value: 'string'
+    //   }
+
+    // Make sure all entries in Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory objects with the following properties:
+    // - 'string'
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory')) {
+        const neverReleaseUserDirectories = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory');
+
+        if (neverReleaseUserDirectories) {
+            if (!Array.isArray(neverReleaseUserDirectories)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory" is not an array');
+                configFileCorrect = false;
+            } else {
+                neverReleaseUserDirectories.forEach((userDirectory, index) => {
+                    if (typeof userDirectory !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory[${index}]" is not a string`
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.userDirectory"');
+        configFileCorrect = false;
+    }
+
+    // Make sure the value of Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive meets the following requirements:
+    // - Value is either Yes or No
+    // - Disregard case
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive')) {
+        const inactive = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive');
+
+        if (inactive) {
+            if (typeof inactive !== 'string') {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive" is not a string');
+                configFileCorrect = false;
+            } else if (!['yes', 'no', 'ignore'].includes(inactive.toLowerCase())) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive" must be either "Yes" or "No"');
+                configFileCorrect = false;
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.inactive"');
+        configFileCorrect = false;
+    }
+
+    // Make sure the value of Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked meets the following requirements:
+    // - Value is either Yes or No
+    // - Disregard case
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked')) {
+        const blocked = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked');
+
+        if (blocked) {
+            if (typeof blocked !== 'string') {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked" is not a string');
+                configFileCorrect = false;
+            } else if (!['yes', 'no', 'ignore'].includes(blocked.toLowerCase())) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked" must be either "Yes" or "No"');
+                configFileCorrect = false;
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.blocked"');
+        configFileCorrect = false;
+    }
+
+    // Make sure the value of Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally meets the following requirements:
+    // - Value is either Yes or No
+    // - Disregard case
+    if (config.has('Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally')) {
+        const removedExternally = config.get('Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally');
+
+        if (removedExternally) {
+            if (typeof removedExternally !== 'string') {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally" is not a string');
+                configFileCorrect = false;
+            } else if (!['yes', 'no', 'ignore'].includes(removedExternally.toLowerCase())) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally" must be either "Yes" or "No"'
+                );
+                configFileCorrect = false;
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseRelease.neverRelease.removedExternally"');
         configFileCorrect = false;
     }
 

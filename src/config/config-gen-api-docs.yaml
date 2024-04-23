@@ -132,31 +132,49 @@ Butler:
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
     licenseMonitor:
-      enable: true
-      frequency: every 5 minutes
+      enable: false
+      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
       destination:
-        influxDb:                     # Send service alerts to InfluxDB
+        influxDb:                     # Store license data in InfluxDB
           enable: true
           tag: 
-            static:                     # Static attributes/dimensions to attach to the data sent to New Relic.
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
               # - name: foo
               #   value: bar
     licenseRelease:
-      enable: false  
-      # frequency: every 3 hours
-      frequency: every 5 minutes
-      neverReleaseUsers:
-        # - userDir: 'INTERNAL'
-        #   userId: 'sa_repository'
-        # - userDir: 'INTERNAL'
-        #   userId: 'sa_api'
+      enable: false                    # true/false. If true, Butler will release unused licenses according to settings below
+      dryRun: true                    # true/false. If true, Butler will not actually release any licenses, just log what it would have done. 
+      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
+      neverRelease:                   # Various ways of defining which users should never have their licenses released
+        user:                         # Users who should never have their licenses released
+          # - userDir: 'INTERNAL'
+          #   userId: 'sa_repository'
+          # - userDir: 'INTERNAL'
+          #   userId: 'sa_api'
+          # - userDir: 'USERDIR'
+          #   userId: 'qs_admin_account'
+        tag:                          # Users with these tags will never have their licenses released
+          # - License do not release
+          # - some other tag
+        customProperty:               # Users with these custom properties will never have their licenses released
+          # - name: LicenseManage
+          #   value: do-not-release
+        userDirectory:                # List of user directories whose users should never have their licenses released
+          # - INTERNAL
+          # - ADMIN
+        inactive: Ignore              # Ignore/Yes/No. The value is case insensitive
+                                      #   No = Don't release licenses for users marked as "Inactive=No" in the QMC
+                                      #   Yes = Don't release licenses for users marked as "Inactive=Yes" in the QMC 
+                                      #   Ignore = Disregard this setting
+        blocked: Ignore               # Ignore/Yes/No, No = Don't release licenses for users marked as "Blocked=No" in the QMC
+        removedExternally: ignore     # Ignore/Yes/No, No = Don't release licenses for users marked as "Removed externally=No" in the QMC
       licenseType:                    # License types to monitor and release
         analyzer:                     
-          enable: true
-          releaseThresholdDays: 5
+          enable: true                # Monitor and release Analyzer licenses
+          releaseThresholdDays: 30    # Number of days a license can be unused before it is released
         professional:
-          enable: true
-          releaseThresholdDays: 5
+          enable: true                # Monitor and release Professional licenses
+          releaseThresholdDays: 30    # Number of days a license can be unused before it is released
       destination:
         influxDb:                     # Store info about released licenses in InfluxDB
           enable: true
