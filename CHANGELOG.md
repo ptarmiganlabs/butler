@@ -1,5 +1,17 @@
 # Changelog
 
+## [12.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.1.1...butler-v12.2.0) (2024-04-23)
+
+
+### Features
+
+* **qs-license:** More options for auto-release of unused Sense access licenses ([8eece16](https://github.com/ptarmiganlabs/butler/commit/8eece163b9feb3e667ba3d5ac64802d7632e6bbd))
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([96cfe34](https://github.com/ptarmiganlabs/butler/commit/96cfe345d2e79b611051e5e4e1d77ed28c6d0779))
+
 ## [12.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.1.0...butler-v12.1.1) (2024-04-17)
 
 
