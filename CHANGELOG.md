@@ -1,5 +1,17 @@
 # Changelog
 
+## [12.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.2.1...butler-v12.3.0) (2024-04-24)
+
+
+### Features
+
+* **config:** Add cmd line option "--skip-config-verification" ([f0795fc](https://github.com/ptarmiganlabs/butler/commit/f0795fcae196bb62c80abd15351f3b228c472900)), closes [#1114](https://github.com/ptarmiganlabs/butler/issues/1114)
+
+
+### Bug Fixes
+
+* **config:** Incorrect startup validation of New Relic tags in config file ([ced7aa9](https://github.com/ptarmiganlabs/butler/commit/ced7aa9c7701f25c632031a2582ae9bb1b16f836)), closes [#1113](https://github.com/ptarmiganlabs/butler/issues/1113)
+
 ## [12.2.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.2.0...butler-v12.2.1) (2024-04-24)
 
 
