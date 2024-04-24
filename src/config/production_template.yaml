@@ -402,11 +402,19 @@ Butler:
         rateLimit: 15             # Min seconds between emails for a given taskID. Defaults to 5 minutes
         serviceName: Qlik Sense   # Signl4 "service name" to use
         severity: 1               # Signl4 severity level for failed reloads
+        includeApp:
+          includeAll: false
+          appId:
+            - 47d38f73-628f-44e1-a62c-841604b123ff
       reloadTaskAborted:
         enable: false             # Enable/disable reload aborted handling in Signl4
         rateLimit: 15             # Min seconds between emails for a given taskID. Defaults to 5 minutes
         serviceName: Qlik Sense   # Signl4 "service name" to use
         severity: 10              # Signl4 severity level for aborted reloads
+        includeApp:
+          includeAll: false
+          appId:
+            - 47d38f73-628f-44e1-a62c-841604b123ff
     newRelic:
       enable: false
       destinationAccount:
