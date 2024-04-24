@@ -2576,12 +2576,12 @@ export const configFileStructureAssert = async (config, logger) => {
                     }
                 });
             }
-        } else {
-            logger.error(
-                'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static"'
-            );
-            configFileCorrect = false;
         }
+    } else {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static"'
+        );
+        configFileCorrect = false;
     }
 
     if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useAppTags')) {
