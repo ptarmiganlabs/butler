@@ -2529,7 +2529,10 @@ export const configFileStructureAssert = async (config, logger) => {
     }
 
     // Make sure all entries in Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static are objects with the following properties:
-    // - 'string'
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
     if (config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static')) {
         const attributes = config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static');
 
@@ -2541,20 +2544,44 @@ export const configFileStructureAssert = async (config, logger) => {
                 configFileCorrect = false;
             } else {
                 attributes.forEach((attribute, index) => {
-                    if (typeof attribute !== 'string') {
+                    if (typeof attribute !== 'object') {
                         logger.error(
-                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]" is not a string`
+                            `ASSERT CONFIG: "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]" is not an object`
                         );
                         configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(attribute, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof attribute.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
                     }
                 });
             }
+        } else {
+            logger.error(
+                'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static"'
+            );
+            configFileCorrect = false;
         }
-    } else {
-        logger.error(
-            'ASSERT CONFIG: Missing config file entry "Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.static"'
-        );
-        configFileCorrect = false;
     }
 
     if (!config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.attribute.dynamic.useAppTags')) {

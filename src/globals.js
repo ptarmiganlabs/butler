@@ -82,7 +82,9 @@ class Settings {
                 '--api-rate-limit',
                 'set the API rate limit, per minute. Default is 100 calls/minute. Set to 0 to disable rate limiting.',
                 100
-            );
+            )
+
+            .option('--skip-config-verification', 'Disable config file verification', false);
 
         // Parse command line params
         program.parse(process.argv);

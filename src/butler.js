@@ -51,32 +51,34 @@ const start = async () => {
     }
 
     // Verify correct structure of config file
-    resAssert = await configFileStructureAssert(globals.config, globals.logger);
-    if (resAssert === false) {
-        globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
-        process.exit(1);
-    } else {
-        globals.logger.info('MAIN: Config file structure is correct - all good.');
-    }
-
-    // Verify select parts/values in config file
-    if (globals.options.qsConnection) {
-        // Verify that the config file contains the required data related to New Relic
-        resAssert = await configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
+    if (!settingsObj.options.skipConfigVerification) {
+        resAssert = await configFileStructureAssert(globals.config, globals.logger);
         if (resAssert === false) {
-            globals.logger.error('MAIN: Config file does not contain required New Relic data. Exiting.');
+            globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
             process.exit(1);
         } else {
-            globals.logger.info('MAIN: Config file contains required New Relic data - all good.');
+            globals.logger.info('MAIN: Config file structure is correct - all good.');
         }
 
-        // Verify that the config file contains the required data related to InfluxDb
-        resAssert = await configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
-        if (resAssert === false) {
-            globals.logger.error('MAIN: Config file does not contain required InfluxDb data. Exiting.');
-            process.exit(1);
-        } else {
-            globals.logger.info('MAIN: Config file contains required InfluxDb data - all good.');
+        // Verify select parts/values in config file
+        if (globals.options.qsConnection) {
+            // Verify that the config file contains the required data related to New Relic
+            resAssert = await configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
+            if (resAssert === false) {
+                globals.logger.error('MAIN: Config file does not contain required New Relic data. Exiting.');
+                process.exit(1);
+            } else {
+                globals.logger.info('MAIN: Config file contains required New Relic data - all good.');
+            }
+
+            // Verify that the config file contains the required data related to InfluxDb
+            resAssert = await configFileInfluxDbAssert(globals.config, globals.configQRS, globals.logger);
+            if (resAssert === false) {
+                globals.logger.error('MAIN: Config file does not contain required InfluxDb data. Exiting.');
+                process.exit(1);
+            } else {
+                globals.logger.info('MAIN: Config file contains required InfluxDb data - all good.');
+            }
         }
     }
 
