@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.2.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.2.0...butler-v12.2.1) (2024-04-24)
+
+
+### Bug Fixes
+
+* **config:** Add missing, mandatory entries to sample config file ([c7c9ac3](https://github.com/ptarmiganlabs/butler/commit/c7c9ac3d6e5e96be2b97309feaa6ceb561572641)), closes [#1108](https://github.com/ptarmiganlabs/butler/issues/1108)
+
 ## [12.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.1.1...butler-v12.2.0) (2024-04-23)
 
 
