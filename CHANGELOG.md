@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.3.0...butler-v12.3.0) (2024-04-25)
+
+
+### Miscellaneous
+
+* Fix broken 12.2.1 build ([032f1f7](https://github.com/ptarmiganlabs/butler/commit/032f1f7f9d07319b8694f0ed1ab88e4c24d2e36f))
+
 ## [12.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.2.1...butler-v12.3.0) (2024-04-24)
 
 
