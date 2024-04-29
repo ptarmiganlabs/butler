@@ -56,7 +56,7 @@
         "@fastify/sensible": "^5.5.0",
         "@fastify/swagger": "^8.14.0",
         "@fastify/swagger-ui": "^3.0.0",
-        "@keyvhq/core": "^2.1.0",
+        "@keyvhq/core": "^2.1.1",
         "@xstate/fsm": "^2.0.1",
         "any-base": "^1.1.0",
         "axios": "^1.6.8",
