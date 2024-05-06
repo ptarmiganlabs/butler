@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import fs from 'fs';
-import { Webhook, SimpleTextCard } from "ms-teams-wrapper";
+// eslint-disable-next-line no-unused-vars
+import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 

@@ -13,7 +13,7 @@ function serviceUptimeStart() {
     const formatter = new Intl.NumberFormat('en-US');
 
     // Log uptime to console
-    // eslint-disable-next-line no-extend-native
+    // eslint-disable-next-line no-extend-native, func-names
     Number.prototype.toTime = function (isSec) {
         const ms = isSec ? this * 1e3 : this;
         // eslint-disable-next-line no-bitwise

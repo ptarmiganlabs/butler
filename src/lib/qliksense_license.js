@@ -362,7 +362,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
         logger.error(
             `QLIKSENSE LICENSE RELEASE ANALYZER: Could not get list of assigned analyzer licenses. HTTP status code ${result3.statusCode}`
         );
-        return;
+        return false;
     }
 
     // Debug log
@@ -390,7 +390,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                     logger.error(
                         `QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`
                     );
-                    return;
+                    return false;
                 }
                 currentUser = res.body;
             } catch (err) {
@@ -402,7 +402,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                         `QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`
                     );
                 }
-                return;
+                return false;
             }
 
             // Get days since last use
@@ -586,7 +586,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // Is status code 204? Error if it's nmt
             if (result4.statusCode !== 204) {
                 logger.error(`QLIKSENSE LICENSE RELEASE ANALYZER: HTTP status code ${result4.statusCode}`);
-                return;
+                return false;
             }
 
             // Debug log
