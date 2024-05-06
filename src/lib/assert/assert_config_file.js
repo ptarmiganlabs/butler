@@ -955,6 +955,84 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Qlik Sense version monitoring
+    if (!config.has('Butler.qlikSenseVersion.versionMonitor.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseVersion.versionMonitor.frequency')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.frequency"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseVersion.versionMonitor.host')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.host"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseVersion.versionMonitor.rejectUnauthorized')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.rejectUnauthorized"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enabled"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static')) {
+        const tagsStatic = config.get('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error('ASSERT CONFIG: "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static" is not an array');
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enabled"');
+        configFileCorrect = false;
+    }
+
     // Qlik Sense license monitoring
     if (!config.has('Butler.qlikSenseLicense.licenseMonitor.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.enable"');

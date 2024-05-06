@@ -30,6 +30,7 @@ const start = async () => {
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
     const { setupQlikSenseLicenseMonitor, setupQlikSenseLicenseRelease } = await import('./lib/qliksense_license.js');
+    const { setupQlikSenseVersionMonitor } = await import('./lib/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;
@@ -196,6 +197,14 @@ const start = async () => {
     // Set up service monitoring, if enabled in the config file
     if (globals.config.has('Butler.serviceMonitor.enable') && globals.config.get('Butler.serviceMonitor.enable') === true) {
         setupServiceMonitorTimer(globals.config, globals.logger);
+    }
+
+    // Set up Qlik Sense version monitoring, if enabled in the config file
+    if (
+        globals.config.has('Butler.qlikSenseVersion.versionMonitor.enable') &&
+        globals.config.get('Butler.qlikSenseVersion.versionMonitor.enable') === true
+    ) {
+        setupQlikSenseVersionMonitor(globals.config, globals.logger);
     }
 
     // Set up Qlik Sense license monitoring, if enabled in the config file
