@@ -699,40 +699,4 @@ class Settings {
     }
 }
 
-// export default {
-//     config,
-//     configEngine,
-//     configFileExpanded,
-//     configQRS,
-//     teamsTaskFailureObj,
-//     teamsTaskAbortedObj,
-//     teamsUserSessionObj,
-//     teamsServiceStoppedMonitorObj,
-//     teamsServiceStartedMonitorObj,
-//     udpServerReloadTaskSocket,
-//     udpHost,
-//     udpPortTaskFailure,
-//     // mqttClient,
-//     qvdFolder,
-//     logger,
-//     logTransports,
-//     appVersion,
-//     getLoggingLevel,
-//     configSchedule,
-//     initInfluxDB,
-//     influx,
-//     fileCopyDirectories,
-//     fileMoveDirectories,
-//     fileDeleteDirectories,
-//     endpointsEnabled,
-//     loadApprovedDirectories,
-//     initHostInfo,
-//     hostInfo,
-//     isPkg,
-//     checkFileExistsSync,
-//     options,
-//     execPath,
-//     sleep,
-// };
-
 export default new Settings();
