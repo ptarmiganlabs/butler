@@ -129,6 +129,31 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
                 daysUntilExpiry,
             });
         }
+
+        // Check if we should send data to MQTT
+        if (config.has('Butler.mqttConfig.enable') && config.get('Butler.mqttConfig.enable') === true) {
+            // Prepare general license payload for MQTT
+            const mqttPayload = {
+                licenseExpired,
+                expiryDateStr,
+                daysUntilExpiry,
+            };
+
+            // Publish to MQTT
+            globals.mqttClient.publish(config.get('Butler.mqttConfig.qlikSenseServerLicenseTopic'), JSON.stringify(mqttPayload));
+
+            // Should we also publish to a specific topic if the license is about to expire, or has already expired?
+            if (licenseExpired === true) {
+                globals.mqttClient.publish(
+                    config.get('Butler.mqttConfig.qlikSenseServerLicenseExpireTopic'),
+                    `Qlik Sense server license expired on ${expiryDateStr}`
+                );
+            } else if (daysUntilExpiry <= config.get('Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays')) {
+                const mqttAlertPayload = `Qlik Sense server license is about to expire in ${daysUntilExpiry} days, on ${expiryDateStr}`;
+
+                globals.mqttClient.publish(config.get('Butler.mqttConfig.qlikSenseServerLicenseExpireTopic'), mqttAlertPayload);
+            }
+        }
     } catch (err) {
         logger.error(`QLIKSENSE SERVER LICENSE MONITOR: ${err}`);
         if (err.stack) {
