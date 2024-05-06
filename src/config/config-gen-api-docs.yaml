@@ -129,6 +129,23 @@ Butler:
     qmc: ...
     hub: ...
 
+  # Settings for monitoring Qlik Sense version info
+  # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
+  qlikSenseVersion:
+    versionMonitor:
+      enable: false                    # Should Qlik Sense version info be retrieved?
+      frequency: every 1 hour         # https://bunkat.github.io/later/parsers.html#text
+      host: 192.168.100.109         
+      rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
+      destination:
+        influxDb:                     # Store version data in InfluxDB.
+                                      # If enabled, version info will be stored as measurements in InfluxDB.
+          enable: false
+          tag: 
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
+              # - name: foo
+              #   value: bar
+
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
     licenseMonitor:
