@@ -29,7 +29,9 @@ const start = async () => {
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
-    const { setupQlikSenseLicenseMonitor, setupQlikSenseLicenseRelease } = await import('./lib/qliksense_license.js');
+    const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
+        './lib/qliksense_license.js'
+    );
     const { setupQlikSenseVersionMonitor } = await import('./lib/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.
@@ -207,15 +209,23 @@ const start = async () => {
         setupQlikSenseVersionMonitor(globals.config, globals.logger);
     }
 
-    // Set up Qlik Sense license monitoring, if enabled in the config file
+    // Set up Qlik Sense server license monitoring, if enabled in the config file
+    if (
+        globals.config.has('Butler.qlikSenseLicense.serverLicenseMonitor.enable') &&
+        globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true
+    ) {
+        setupQlikSenseServerLicenseMonitor(globals.config, globals.logger);
+    }
+
+    // Set up Qlik Sense access license monitoring, if enabled in the config file
     if (
         globals.config.has('Butler.qlikSenseLicense.licenseMonitor.enable') &&
         globals.config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true
     ) {
-        setupQlikSenseLicenseMonitor(globals.config, globals.logger);
+        setupQlikSenseAccessLicenseMonitor(globals.config, globals.logger);
     }
 
-    // Set up Qlik Sense license release, if enabled in the config file
+    // Set up Qlik Sense access license release, if enabled in the config file
     // Enable only if at least one license type is enabled for automatic release
     if (
         globals.config.has('Butler.qlikSenseLicense.licenseRelease.enable') &&

@@ -103,7 +103,68 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
     globals.logger.verbose('INFLUXDB QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
 }
 
-// Function to store Qlik Sense license status to InfluxDB
+// Function to store Qlik Sense server license status to InfluxDB
+// 1st parameter is an object with the following structure:
+// {
+//     "licenseExpired": <boolean>,
+//     "expiryDate": <date>,
+//     "expiryDateStr": "<string>
+//     "daysUntilExpiry": <number>,
+//   }
+export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServerLicenseStatus) {
+    globals.logger.verbose('INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sending Qlik Sense server license status to InfluxDB');
+
+    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
+
+    // Get tags from config file
+    // Stored in array Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag
+    const configTags = globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static');
+
+    const tags = {
+        butler_instance: instanceTag,
+    };
+
+    // Add tags from config file
+    if (configTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Do a deep clone of the tags object
+    const tagsCloned = _.cloneDeep(tags);
+
+    // Build InfluxDB datapoint
+    let datapoint = [
+        {
+            measurement: 'qlik_sense_server_license',
+            tags: tagsCloned,
+            fields: {
+                license_expired: qlikSenseServerLicenseStatus.licenseExpired,
+                expiry_date: qlikSenseServerLicenseStatus.expiryDateStr,
+                days_until_expiry: qlikSenseServerLicenseStatus.daysUntilExpiry,
+            },
+        },
+    ];
+
+    // Write to InfluxDB
+    const deepClonedDatapoint = _.cloneDeep(datapoint);
+    await globals.influx.writePoints(deepClonedDatapoint);
+
+    globals.logger.silly(
+        `INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
+            datapoint,
+            null,
+            2
+        )}`
+    );
+
+    datapoint = null;
+    globals.logger.verbose('INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
+}
+
+// Function to store Qlik Sense access license status to InfluxDB
 // License JSON has the following structure:
 // {
 //     "totalTokens": 0,
