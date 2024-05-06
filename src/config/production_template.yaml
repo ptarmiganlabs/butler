@@ -155,18 +155,32 @@ Butler:
 
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
-    licenseMonitor:
+    serverLicenseMonitor:
       enable: false
-      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
+      frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
+      alert:                          # Alert if the number of days left on the license is below the threshold
+                                      # License expiry alerts on a global level are enabled here, then configured on 
+                                      # a per-destination basis elsewhere in this config file.
+        thresholdDays: 60
       destination:
         influxDb:                     # Store license data in InfluxDB
-          enable: true
+          enable: false
           tag: 
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
               - name: foo
                 value: bar
-    licenseRelease:
-      enable: false                    # true/false. If true, Butler will release unused licenses according to settings below
+    licenseMonitor:                   # Monitor Qlik Sense accesds license usage
+      enable: false
+      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
+      destination:
+        influxDb:                     # Store license data in InfluxDB
+          enable: false
+          tag: 
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
+              - name: foo
+                value: bar
+    licenseRelease:                   # Release unused Qlik Sense access licenses
+      enable: false                   # true/false. If true, Butler will release unused licenses according to settings below
       dryRun: true                    # true/false. If true, Butler will not actually release any licenses, just log what it would have done. 
       frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
       neverRelease:                   # Various ways of defining which users should never have their licenses released
@@ -201,7 +215,7 @@ Butler:
           releaseThresholdDays: 30    # Number of days a license can be unused before it is released
       destination:
         influxDb:                     # Store info about released licenses in InfluxDB
-          enable: true
+          enable: false
           tag: 
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
               - name: foo

@@ -148,6 +148,20 @@ Butler:
 
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
+    serverLicenseMonitor:
+      enable: true
+      frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
+      alert:                          # Alert if the number of days left on the license is below the threshold
+                                      # License expiry alerts on a global level are enabled here, then configured on 
+                                      # a per-destination basis elsewhere in this config file.
+        thresholdDays: 60
+      destination:
+        influxDb:                     # Store license data in InfluxDB
+          enable: true
+          tag: 
+            static:                   # Static attributes/tags to attach to the data sent to InflixDB
+              # - name: foo
+              #   value: bar
     licenseMonitor:
       enable: false
       frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text

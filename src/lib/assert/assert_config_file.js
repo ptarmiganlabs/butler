@@ -1033,7 +1033,86 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    // Qlik Sense license monitoring
+    // Qlik Sense server license monitoring
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.frequency')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.frequency"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enabled"'
+        );
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static are objects with the following properties:
+    // {
+    //     name: 'string',
+    //     value: 'string'
+    // }
+    if (config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static')) {
+        const tagsStatic = config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static');
+
+        if (tagsStatic) {
+            if (!Array.isArray(tagsStatic)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static" is not an array'
+                );
+                configFileCorrect = false;
+            } else {
+                tagsStatic.forEach((tag, index) => {
+                    if (typeof tag !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static[${index}]" is not an object`
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'name')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "name" property in "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.name !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "name" property in "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+
+                        if (!Object.prototype.hasOwnProperty.call(tag, 'value')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing "value" property in "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof tag.value !== 'string') {
+                            logger.error(
+                                `ASSERT CONFIG: "value" property in "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static[${index}]" is not a string`
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enabled"'
+        );
+        configFileCorrect = false;
+    }
+
+    // Qlik Sense access license monitoring
     if (!config.has('Butler.qlikSenseLicense.licenseMonitor.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.licenseMonitor.enable"');
         configFileCorrect = false;

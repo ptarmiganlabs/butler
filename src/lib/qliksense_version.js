@@ -35,6 +35,12 @@ async function checkQlikSenseVersion(config, logger) {
         // Debug log
         logger.debug(`QLIKSENSE VERSION MONITOR: ${JSON.stringify(result.data)}`);
 
+        // Log version info to console log
+        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense product name: ${result.data.productName}`);
+        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense deployment type: ${result.data.deploymentType}`);
+        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense version: ${result.data.version}`);
+        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense release: ${result.data.releaseLabel}`);
+
         // To which destination should we send the version information?
         // Check InfluDB first
         // If InfluxDB is enabled, post the version info to InfluxDB

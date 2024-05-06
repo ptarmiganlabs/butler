@@ -2,10 +2,14 @@ import later from '@breejs/later';
 import QrsInteract from 'qrs-interact';
 
 import globals from '../globals.js';
-import { postQlikSenseLicenseStatusToInfluxDB, postQlikSenseLicenseReleasedToInfluxDB } from './post_to_influxdb.js';
+import {
+    postQlikSenseLicenseStatusToInfluxDB,
+    postQlikSenseLicenseReleasedToInfluxDB,
+    postQlikSenseServerLicenseStatusToInfluxDB,
+} from './post_to_influxdb.js';
 
-// Function to check Qlik Sense license status
-async function checkQlikSenseLicenseStatus(config, logger) {
+// Function to check Qlik Sense server license status
+async function checkQlikSenseServerLicenseStatus(config, logger) {
     try {
         // Set up Sense repository service configuration
         const configQRS = {
@@ -22,7 +26,136 @@ async function checkQlikSenseLicenseStatus(config, logger) {
         };
         const qrsInstance = new QrsInteract(configQRS);
 
-        // Get Qlik Sense license info
+        // Get Qlik Sense server license info
+        const result = await qrsInstance.Get(`license`);
+
+        // Is status code 200 or body is empty?
+        if (result.statusCode !== 200 || !result.body) {
+            logger.error(`QLIKSENSE SERVER LICENSE MONITOR: HTTP status code ${result.statusCode}`);
+            return;
+        }
+
+        // Debug log
+        logger.debug(`QLIKSENSE SERVER LICENSE MONITOR: ${JSON.stringify(result.body)}`);
+
+        // Returned icense JSON has the following structure:
+        // {
+        //     "id": "<uuid>",
+        //     "createdDate": "2000-01-31T03:49:21.745Z",
+        //     "modifiedDate": "2024-01-31T19:44:28.951Z",
+        //     "modifiedByUserName": "<string>",
+        //     "lef": "",
+        //     "serial": "0001 0002 0003 0004",
+        //     "check": "",
+        //     "key": "<signed JWT>",
+        //     "keyDetails": "<string with info about license details, delimited by newlines",
+        //     "name": "<string>",
+        //     "organization": "<string>",
+        //     "product": <Number>,
+        //     "numberOfCores": <Number>,
+        //     "isExpired": <Boolean>,
+        //     "expiredReason": "<string>",
+        //     "isBlacklisted": <Boolean>,
+        //     "isInvalid": <Boolean>,
+        //     "isSubscription": <Boolean>,
+        //     "isCloudServices": <Boolean>,
+        //     "isElastic": <Boolean>,
+        //     "updated": "2024-02-25T09:17:16.366Z",
+        //     "privileges": null,
+        //     "schemaPath": "License"
+        //   }
+
+        // Parse license expiry from server license status
+        let expiryDate = null;
+        let expiryDateStr = null;
+        let daysUntilExpiry = null;
+        let licenseExpired = null;
+
+        // Is license expired flag set?
+        if (result.body.isExpired === true) {
+            licenseExpired = true;
+        } else {
+            licenseExpired = false;
+        }
+
+        // Find license expiration date from keyDatails property, which is string made up of several blocks of information.
+        // The expiration date is found in a line formatted as: "Valid To: <expiration date>"
+        const keyDetailsLines = result.body.keyDetails.split('\n');
+        keyDetailsLines.forEach((line) => {
+            if (line.includes('Valid To:')) {
+                const parts = line.split(':');
+
+                // Format date as string
+                expiryDate = new Date(parts[1].trim());
+                expiryDateStr = parts[1].trim();
+            }
+        });
+
+        // Calculate days until license expiry
+        if (expiryDateStr !== null) {
+            const now = new Date();
+            const diffTime = Math.abs(expiryDate - now);
+            daysUntilExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Log info about license expiration status, date and remaining days to console log.
+        // Use warn logging if days until expiry is less than value specified in config file,
+        // otherwise use info logging
+        if (daysUntilExpiry !== null && expiryDateStr !== null && licenseExpired !== null) {
+            globals.logger.info(`QLIK SENSE SERVER LICENSE: License expired: ${licenseExpired}`);
+
+            if (daysUntilExpiry <= globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays')) {
+                globals.logger.warn(`QLIK SENSE SERVER LICENSE: Qlik Sense server license is about to expire in ${daysUntilExpiry} days!`);
+                globals.logger.warn(`QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
+            } else {
+                globals.logger.info(`QLIK SENSE SERVER LICENSE: Qlik Sense server license expiry in ${daysUntilExpiry} days`);
+                globals.logger.info(`QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
+            }
+        }
+
+        // To which destination should we send the license information?
+        // Check InfluDB first
+        // If InfluxDB is enabled, post the license status to InfluxDB
+        if (
+            config.has('Butler.influxDb.enable') &&
+            config.get('Butler.influxDb.enable') === true &&
+            config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable') &&
+            config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable') === true
+        ) {
+            await postQlikSenseServerLicenseStatusToInfluxDB({
+                licenseExpired,
+                expiryDate,
+                expiryDateStr,
+                daysUntilExpiry,
+            });
+        }
+    } catch (err) {
+        logger.error(`QLIKSENSE SERVER LICENSE MONITOR: ${err}`);
+        if (err.stack) {
+            logger.error(`QLIKSENSE SERVER LICENSE MONITOR: ${err.stack}`);
+        }
+    }
+}
+
+// Function to check Qlik Sense access license status
+async function checkQlikSenseAccessLicenseStatus(config, logger) {
+    try {
+        // Set up Sense repository service configuration
+        const configQRS = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: 4242,
+            certificates: {
+                certFile: globals.configQRS.certPaths.certPath,
+                keyFile: globals.configQRS.certPaths.keyPath,
+            },
+        };
+
+        configQRS.headers = {
+            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        };
+        const qrsInstance = new QrsInteract(configQRS);
+
+        // Get Qlik Sense access license info
         const result1 = await qrsInstance.Get(`license/accesstypeoverview`);
 
         // Is status code 200 or body is empty?
@@ -53,7 +186,7 @@ async function checkQlikSenseLicenseStatus(config, logger) {
     }
 }
 
-// Function to release professional licenses
+// Function to release professional access licenses
 async function licenseReleaseProfessional(config, logger, qrsInstance) {
     // Build date filter to be used when fetching licenses with old lastUsed date
     // Get the current date and time
@@ -134,13 +267,15 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             let doNotRelease = false;
             let doNotReleaseReason = '';
 
-            // Check do-not-release user names
-            // eslint-disable-next-line no-restricted-syntax
-            for (const user of neverReleaseUsers) {
-                if (license.user.userDirectory === user.userDir && license.user.userId === user.userId) {
-                    doNotRelease = true;
-                    doNotReleaseReason = 'User is in the neverRelease.user list';
-                    break;
+            // Check do-not-release user names if there are any
+            if (neverReleaseUsers?.length > 0) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const user of neverReleaseUsers) {
+                    if (license.user.userDirectory === user.userDir && license.user.userId === user.userId) {
+                        doNotRelease = true;
+                        doNotReleaseReason = 'User is in the neverRelease.user list';
+                        break;
+                    }
                 }
             }
 
@@ -148,21 +283,23 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not haven any neverReleaseTags set
-            if (!doNotRelease) {
+            if (!doNotRelease && currentUser.tags?.length > 0) {
                 // Check if the user has any of the neverReleaseTags set
                 // currentUser.tags is an array of tag objects. Each object has properties id and name
                 // eslint-disable-next-line no-restricted-syntax
                 for (const tag of currentUser.tags) {
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const neverReleaseTag of neverReleaseTags) {
-                        if (tag.name === neverReleaseTag) {
-                            doNotRelease = true;
-                            doNotReleaseReason = `User tagged with '${neverReleaseTag}', which is in the neverRelease.tag list`;
+                    if (neverReleaseTags?.length > 0) {
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const neverReleaseTag of neverReleaseTags) {
+                            if (tag.name === neverReleaseTag) {
+                                doNotRelease = true;
+                                doNotReleaseReason = `User tagged with '${neverReleaseTag}', which is in the neverRelease.tag list`;
+                                break;
+                            }
+                        }
+                        if (doNotRelease) {
                             break;
                         }
-                    }
-                    if (doNotRelease) {
-                        break;
                     }
                 }
             }
@@ -171,7 +308,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not have any neverReleaseCustomProperties set
-            if (!doNotRelease) {
+            if (!doNotRelease && currentUser.customProperties?.length > 0) {
                 // currentUser.customProperties is an array of custom property objects.
                 // Each object looks like this:
                 // {
@@ -185,19 +322,21 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                 // }
                 // eslint-disable-next-line no-restricted-syntax
                 for (const customProperty of currentUser.customProperties) {
-                    // eslint-disable-next-line no-restricted-syntax
-                    for (const neverReleaseCustomProperty of neverReleaseCustomProperties) {
-                        if (
-                            customProperty.definition.name === neverReleaseCustomProperty.name &&
-                            customProperty.value === neverReleaseCustomProperty.value
-                        ) {
-                            doNotRelease = true;
-                            doNotReleaseReason = `User has custom property '${neverReleaseCustomProperty.name}' set to '${neverReleaseCustomProperty.value}', which is in the neverRelease.customProperty list`;
+                    if (neverReleaseCustomProperties?.length > 0) {
+                        // eslint-disable-next-line no-restricted-syntax
+                        for (const neverReleaseCustomProperty of neverReleaseCustomProperties) {
+                            if (
+                                customProperty.definition.name === neverReleaseCustomProperty.name &&
+                                customProperty.value === neverReleaseCustomProperty.value
+                            ) {
+                                doNotRelease = true;
+                                doNotReleaseReason = `User has custom property '${neverReleaseCustomProperty.name}' set to '${neverReleaseCustomProperty.value}', which is in the neverRelease.customProperty list`;
+                                break;
+                            }
+                        }
+                        if (doNotRelease) {
                             break;
                         }
-                    }
-                    if (doNotRelease) {
-                        break;
                     }
                 }
             }
@@ -206,7 +345,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not have any neverReleaseUserDirectories set
-            if (!doNotRelease) {
+            if (!doNotRelease && neverReleaseUserDirectories?.length > 0) {
                 // eslint-disable-next-line no-restricted-syntax
                 for (const neverReleaseUserDir of neverReleaseUserDirectories) {
                     if (license.user.userDirectory === neverReleaseUserDir) {
@@ -333,7 +472,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
     return true;
 }
 
-// Function to release analyzer licenses
+// Function to release analyzer access licenses
 async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
     // Build date filter to be used when fetching licenses with old lastUsed date
     // Get the current date and time
@@ -611,7 +750,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
     return true;
 }
 
-// Function to release Qlik Sense licenses
+// Function to release Qlik Sense access licenses
 async function checkQlikSenseLicenseRelease(config, logger) {
     try {
         // Set up Sense repository service configuration
@@ -661,8 +800,8 @@ async function checkQlikSenseLicenseRelease(config, logger) {
     }
 }
 
-// Function to set up the timer used to check Qlik Sense license status
-export async function setupQlikSenseLicenseMonitor(config, logger) {
+// Function to set up the timer used to check Qlik Sense access license status
+export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
     try {
         if (
             !config.has('Butler.qlikSenseLicense.licenseMonitor.enable') ||
@@ -670,12 +809,12 @@ export async function setupQlikSenseLicenseMonitor(config, logger) {
         ) {
             const sched = later.parse.text(config.get('Butler.qlikSenseLicense.licenseMonitor.frequency'));
             later.setInterval(() => {
-                checkQlikSenseLicenseStatus(config, logger, false);
+                checkQlikSenseAccessLicenseStatus(config, logger, false);
             }, sched);
 
             // Do an initial license check
             logger.verbose('Doing initial Qlik Sense license check');
-            checkQlikSenseLicenseStatus(config, logger, true);
+            checkQlikSenseAccessLicenseStatus(config, logger, true);
         }
     } catch (err) {
         logger.error(`QLIKSENSE LICENSE MONITOR INIT: ${err}`);
@@ -685,7 +824,7 @@ export async function setupQlikSenseLicenseMonitor(config, logger) {
     }
 }
 
-// Function to set up the timer used to release Qlik Sense licenses
+// Function to set up the timer used to release Qlik Sense access licenses
 export async function setupQlikSenseLicenseRelease(config, logger) {
     try {
         if (
@@ -705,6 +844,30 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
         logger.error(`QLIKSENSE LICENSE RELEASE INIT: ${err}`);
         if (err.stack) {
             logger.error(`QLIKSENSE LICENSE RELEASE INIT: ${err.stack}`);
+        }
+    }
+}
+
+// Function to set up the timer used to check Qlik Sense server license status
+export async function setupQlikSenseServerLicenseMonitor(config, logger) {
+    try {
+        if (
+            !config.has('Butler.qlikSenseLicense.serverLicenseMonitor.enable') ||
+            config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true
+        ) {
+            const sched = later.parse.text(config.get('Butler.qlikSenseLicense.serverLicenseMonitor.frequency'));
+            later.setInterval(() => {
+                checkQlikSenseServerLicenseStatus(config, logger, false);
+            }, sched);
+
+            // Do an initial license check
+            logger.verbose('Doing initial Qlik Sense server license check');
+            checkQlikSenseServerLicenseStatus(config, logger, true);
+        }
+    } catch (err) {
+        logger.error(`QLIKSENSE SERVER LICENSE MONITOR INIT: ${err}`);
+        if (err.stack) {
+            logger.error(`QLIKSENSE SERVER LICENSE MONITOR INIT: ${err.stack}`);
         }
     }
 }
