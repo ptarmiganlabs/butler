@@ -141,13 +141,13 @@ Butler:
   qlikSenseVersion:
     versionMonitor:
       enable: true                    # Should Qlik Sense version info be retrieved?
-      frequency: every 1 hour         # https://bunkat.github.io/later/parsers.html#text
+      frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
       host: <FQDN or IP of Qlik Sense central node>         
       rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
       destination:
         influxDb:                     # Store version data in InfluxDB.
                                       # If enabled, version info will be stored as measurements in InfluxDB.
-          enable: true
+          enable: false
           tag: 
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
               - name: foo
@@ -156,7 +156,7 @@ Butler:
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
     serverLicenseMonitor:
-      enable: false
+      enable: true
       frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
       alert:                          # Alert if the number of days left on the license is below the threshold
                                       # License expiry alerts on a global level are enabled here, then configured on 
@@ -169,6 +169,19 @@ Butler:
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
               - name: foo
                 value: bar
+        mqtt:
+          enable: false
+          sendRecurring:              # Send license data to the MQTT broker at the frequency specified above
+            enable: true
+          sendAlert:                  # Send an MQTT alert if the number of days left on the license is below the threshold
+            enable: true
+        webhook:
+          enable: false
+          sendRecurring:              # Send license data to webhook(s) at the frequency specified above
+            enable: true
+          sendAlert:                  # Send alert to webhook(s) if the number of days left on the license is below 
+                                      # the threshold or the license has already expired
+            enable: true
     licenseMonitor:                   # Monitor Qlik Sense accesds license usage
       enable: false
       frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
@@ -182,7 +195,7 @@ Butler:
     licenseRelease:                   # Release unused Qlik Sense access licenses
       enable: false                   # true/false. If true, Butler will release unused licenses according to settings below
       dryRun: true                    # true/false. If true, Butler will not actually release any licenses, just log what it would have done. 
-      frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
+      frequency: every 24 hours        # https://bunkat.github.io/later/parsers.html#text
       neverRelease:                   # Various ways of defining which users should never have their licenses released
         user:                         # Users who should never have their licenses released
           - userDir: 'INTERNAL'
@@ -662,6 +675,26 @@ Butler:
             enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
             rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
             certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+    qlikSenseServerLicenseMonitor:          # Outgoing webhook that Butler will call with info on Qlik Sense server license status
+      rateLimit: 300                        # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      webhooks:
+        - description: 'This outgoing webhook makes a PUT and is used to ...'
+          webhookURL: http://host.my.domain:port/some/path
+          httpMethod: PUT                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: false                    # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true        # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: foo
+    qlikSenseServerLicenseExpiryAlert:      # Outgoing webhook that Butler will call when Qlik Sense server license is about to expire
+      rateLimit: 300                        # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      webhooks:
+        - description: 'This outgoing webhook makes a POST and is used to ...'
+          webhookURL: https://host.my.domain:port/some/path
+          httpMethod: POST                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+          cert:
+            enable: true                     # Set to true to use a custom CA certificate when calling the webhookURL
+            rejectUnauthorized: true         # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+            certCA: /path/to/ca-certificate.pem   # Path to the CA certificate file
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -694,6 +727,8 @@ Butler:
     serviceRunningTopic: qliksense/service_running
     serviceStoppedTopic: qliksense/service_stopped
     serviceStatusTopic: qliksense/service_status
+    qlikSenseServerLicenseTopic: qliksense/qliksense_server_license          # Topic to which Sense server license info is published
+    qlikSenseServerLicenseExpireTopic: qliksense/qliksense_server_license_expire # Topic to which Sense server license expiration alerts are published
 
   udpServerConfig:
     enable: false                                     # Should the UDP server responsible for receving task failure/aborted events be started?

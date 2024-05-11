@@ -9,7 +9,36 @@ import getAppOwner from '../qrs_util/get_app_owner.js';
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
 let rateLimiterMemoryServiceMonitor;
+let rateLimiterQlikSenseServerLicenseMonitor;
+let rateLimiterQlikSenseServerLicenseExpiryAlert;
 
+// Rate limiter for server license webhook
+if (globals.config.has('Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit')) {
+    rateLimiterQlikSenseServerLicenseMonitor = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit'),
+    });
+} else {
+    rateLimiterQlikSenseServerLicenseMonitor = new RateLimiterMemory({
+        points: 1,
+        duration: 300,
+    });
+}
+
+// Rate limiter for Qlik Sense server license expiry alert webhook
+if (globals.config.has('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit')) {
+    rateLimiterQlikSenseServerLicenseExpiryAlert = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit'),
+    });
+} else {
+    rateLimiterQlikSenseServerLicenseExpiryAlert = new RateLimiterMemory({
+        points: 1,
+        duration: 300,
+    });
+}
+
+//
 if (globals.config.has('Butler.webhookNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
         points: 1,
@@ -142,6 +171,36 @@ function getOutgoingWebhookServiceMonitorConfig() {
         };
     } catch (err) {
         globals.logger.error(`SERVICE MONITOR WEBHOOK: ${err}`);
+        return false;
+    }
+}
+
+function getOutgoingWebhookQlikSenseServerLicenseMonitorConfig() {
+    try {
+        return {
+            event: 'Qlik Sense server license status',
+            rateLimit: globals.config.has('Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit')
+                ? globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit')
+                : '',
+            webhooks: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks'),
+        };
+    } catch (err) {
+        globals.logger.error(`WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: ${err}`);
+        return false;
+    }
+}
+
+function getOutgoingWebhookQlikSenseServerLicenseExpiryAlertConfig() {
+    try {
+        return {
+            event: 'Qlik Sense server license expiry alert',
+            rateLimit: globals.config.has('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit')
+                ? globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit')
+                : '',
+            webhooks: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks'),
+        };
+    } catch (err) {
+        globals.logger.error(`WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${err}`);
         return false;
     }
 }
@@ -536,6 +595,175 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
     }
 }
 
+async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfo) {
+    try {
+        // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
+
+        // Is webhookConfig.webhooks non-null, i.e. are there any webhooiks to process?
+        if (webhookConfig.webhooks) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const webhook of webhookConfig.webhooks) {
+                globals.logger.info(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Processing webhook "${webhook.description}"`);
+                globals.logger.debug(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook details ${JSON.stringify(webhook)}`);
+
+                // Only process the webhook if all required info is available
+                let lowercaseMethod = null;
+                let url = null;
+                let axiosRequest = null;
+
+                try {
+                    // 1. Make sure the webhook URL is a valid URL.
+                    // If the URL is not valid an error will be thrown
+                    url = new URL(webhook.webhookURL);
+
+                    // 2. Make sure the HTTP method is one of the supported ones
+                    lowercaseMethod = webhook.httpMethod.toLowerCase();
+                    if (lowercaseMethod !== 'get' && lowercaseMethod !== 'post' && lowercaseMethod !== 'put') {
+                        throw new Error(`Invalid HTTP method in outgoing webhook: ${webhook.httpMethod}`);
+                    }
+
+                    // 3. If a custom certificate is specified, make sure it and related settings are valid
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Make sure webhook.cert.rejectUnauthorized is a boolean
+                        if (typeof webhook.cert.rejectUnauthorized !== 'boolean') {
+                            throw new Error(
+                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.rejectUnauthorized property should be a boolean '
+                            );
+                        }
+
+                        // Make sure CA cert file in webhook.cert.certCA is a string
+                        if (typeof webhook.cert.certCA !== 'string') {
+                            throw new Error(
+                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.certCA property should be a string'
+                            );
+                        }
+
+                        // Make sure the CA cert file exists
+                        if (!fs.existsSync(webhook.cert.certCA)) {
+                            throw new Error(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: CA cert file not found: ${webhook.cert.certCA}`);
+                        }
+                    }
+                } catch (err) {
+                    globals.logger.error(
+                        `WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${err}. Invalid outgoing webhook config: ${JSON.stringify(
+                            webhook,
+                            null,
+                            2
+                        )}`
+                    );
+                    throw err;
+                }
+
+                globals.logger.debug(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook config is valid: ${JSON.stringify(webhook)}`);
+
+                axiosRequest = {
+                    timeout: 10000,
+                };
+
+                if (lowercaseMethod === 'get') {
+                    // Build parameter string for GET call
+                    const params = new URLSearchParams();
+                    params.append('event', serverLicenseInfo.event);
+                    params.append('licenseExpired', serverLicenseInfo.licenseExpired);
+                    params.append('expiryDateStr', serverLicenseInfo.expiryDateStr);
+                    params.append('daysUntilExpiry', serverLicenseInfo.daysUntilExpiry);
+
+                    url.search = params.toString();
+
+                    globals.logger.silly(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Final GET webhook URL: ${url.toString()}`);
+
+                    axiosRequest.method = 'get';
+                    axiosRequest.url = url.toString();
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
+                } else if (lowercaseMethod === 'put') {
+                    // Build body for PUT call
+                    axiosRequest = {
+                        method: 'put',
+                        url: url.toString(),
+                        data: {
+                            event: serverLicenseInfo.event,
+                            licenseExpired: serverLicenseInfo.licenseExpired,
+                            expiryDateStr: serverLicenseInfo.expiryDateStr,
+                            daysUntilExpiry: serverLicenseInfo.daysUntilExpiry,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
+                } else if (lowercaseMethod === 'post') {
+                    // Build body for POST call
+                    axiosRequest = {
+                        method: 'post',
+                        url: url.toString(),
+                        data: {
+                            event: serverLicenseInfo.event,
+                            licenseExpired: serverLicenseInfo.licenseExpired,
+                            expiryDateStr: serverLicenseInfo.expiryDateStr,
+                            daysUntilExpiry: serverLicenseInfo.daysUntilExpiry,
+                        },
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+
+                    // If a custom certificate is specified, add it to the axios request
+                    // Create a new https agent with the custom certificate
+                    if (webhook.cert && webhook.cert.enable === true) {
+                        // Read CA cert
+                        const caCert = fs.readFileSync(webhook.cert.certCA);
+
+                        // Creating an HTTPS agent with the CA certificate and rejectUnauthorized flag
+                        const agent = new https.Agent({ ca: caCert, rejectUnauthorized: webhook.cert.rejectUnauthorized });
+
+                        // Add agent to Axios config
+                        axiosRequest.httpsAgent = agent;
+                    }
+                }
+
+                // eslint-disable-next-line no-await-in-loop
+                const response = await axios.request(axiosRequest);
+                globals.logger.debug(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook response: ${response}`);
+            }
+        } else {
+            globals.logger.info('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: No outgoing webhooks to process');
+        }
+    } catch (err) {
+        if (err.message) {
+            globals.logger.error(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message: ${err.message}`);
+        }
+
+        if (err.stack) {
+            globals.logger.error(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack: ${err.stack}`);
+        }
+
+        // If neither message nor stack is available, just log the error object
+        if (!err.message && !err.stack) {
+            globals.logger.error(`WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1: ${JSON.stringify(err, null, 2)}`);
+        }
+    }
+}
+
 export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -638,4 +866,88 @@ export function sendServiceMonitorWebhook(svc) {
             );
             globals.logger.verbose(`WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
+}
+
+// Function to call webhook with Qlik Sense server license info
+// Parameters is an object:
+// {
+//     event: string
+//     licenseExpired: boolean
+//     expiryDateStr: string
+//     daysUntilExpiry: number
+// }
+export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
+    // Do deep copy of serverLicenseInfo
+    const serverLicenseInfoCopy = JSON.parse(JSON.stringify(serverLicenseInfo));
+
+    // Dispatch depending on serverLicenseInfo.event
+    if (serverLicenseInfo.event === 'server license status') {
+        rateLimiterQlikSenseServerLicenseMonitor
+            .consume('license-monitor', 1)
+            .then(async (rateLimiterRes) => {
+                try {
+                    globals.logger.info(
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting check passed for Qlik Sense server license monitor notification`
+                    );
+                    globals.logger.verbose(
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    );
+
+                    // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
+                    const webhookConfig = getOutgoingWebhookQlikSenseServerLicenseMonitorConfig();
+                    if (webhookConfig === false) {
+                        return 1;
+                    }
+
+                    await sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfoCopy);
+                } catch (err) {
+                    globals.logger.error(`WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: ${err}`);
+                }
+                return 0;
+            })
+            .catch((rateLimiterRes) => {
+                globals.logger.verbose(
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting failed. Not sending Qlik Sense server license monitor notification via outgoing webhook`
+                );
+                globals.logger.verbose(
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                );
+            });
+    } else if (
+        serverLicenseInfo.event === 'server license has expired alert' ||
+        serverLicenseInfo.event === 'server license about to expire alert'
+    ) {
+        //
+        rateLimiterQlikSenseServerLicenseExpiryAlert
+            .consume('license-alert', 1)
+            .then(async (rateLimiterRes) => {
+                try {
+                    globals.logger.info(
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting check passed for Qlik Sense server license expiry alert`
+                    );
+                    globals.logger.verbose(
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    );
+
+                    // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
+                    const webhookConfig = getOutgoingWebhookQlikSenseServerLicenseExpiryAlertConfig();
+                    if (webhookConfig === false) {
+                        return 1;
+                    }
+
+                    await sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfoCopy);
+                } catch (err) {
+                    globals.logger.error(`WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${err}`);
+                }
+                return 0;
+            })
+            .catch((rateLimiterRes) => {
+                globals.logger.verbose(
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting failed. Not sending Qlik Sense server license expiry alert via outgoing webhook`
+                );
+                globals.logger.verbose(
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                );
+            });
+    }
 }

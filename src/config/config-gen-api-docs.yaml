@@ -162,6 +162,19 @@ Butler:
             static:                   # Static attributes/tags to attach to the data sent to InflixDB
               # - name: foo
               #   value: bar
+        mqtt:
+          enable: true
+          sendRecurring:              # Send license data to the MQTT broker at the frequency specified above
+            enable: true
+          sendAlert:                  # Send an MQTT alert if the number of days left on the license is below the threshold
+            enable: true
+        webhook:
+          enable: true
+          sendRecurring:              # Send license data to webhook(s) at the frequency specified above
+            enable: true
+          sendAlert:                  # Send alert to webhook(s) if the number of days left on the license is below 
+                                      # the threshold or the license has already expired
+            enable: true
     licenseMonitor:
       enable: false
       frequency: every 6 hours        # https://bunkat.github.io/later/parsers.html#text
@@ -616,6 +629,12 @@ Butler:
     serviceMonitor:
       rateLimit: 5              # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
+    qlikSenseServerLicenseMonitor:          # Outgoing webhook that Butler will call with info on Qlik Sense server license status
+      rateLimit: 300                        # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      webhooks:
+    qlikSenseServerLicenseExpiryAlert:      # Outgoing webhook that Butler will call when Qlik Sense server license is about to expire
+      rateLimit: 300                  # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
+      webhooks:
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -648,6 +667,8 @@ Butler:
     serviceRunningTopic: qliksense/service_running
     serviceStoppedTopic: qliksense/service_stopped
     serviceStatusTopic: qliksense/service_status
+    qlikSenseServerLicenseTopic: qliksense/butler/qliksense_server_license          # Topic to which Sense server license info is published
+    qlikSenseServerLicenseExpireTopic: qliksense/butler/qliksense_server_license_expire # Topic to which Sense server license expiration alerts are published
 
   udpServerConfig:
     enable: false

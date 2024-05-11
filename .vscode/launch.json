@@ -16,9 +16,8 @@
         "NODE_ENV": "production"
       },
       "args": [
-        "--configfile",
-        "config/production.yaml",
-        // "config/config-gen-api-docs.yaml",
+        // "--configfile",
+        // "config/production.yaml",
         // "--new-relic-account-name",
         // "'First NR account'",
         // "--new-relic-account-id",
@@ -26,9 +25,9 @@
         // "--new-relic-api-key",
         // "APIKEY",
 
-        // "-c",
-        // "./config/config-gen-api-docs.yaml",
-        // "--no-qs-connection"
+        "-c",
+        "./config/config-gen-api-docs.yaml",
+        "--no-qs-connection"
       ],
       "outFiles": ["${workspaceFolder}/**/*.js"]
     }

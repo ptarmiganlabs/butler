@@ -1107,7 +1107,45 @@ export const configFileStructureAssert = async (config, logger) => {
         }
     } else {
         logger.error(
-            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enabled"'
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enabled"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.sendRecurring.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.sendRecurring.enable"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.sendAlert.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.sendAlert.enable"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.enabled"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendRecurring.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendRecurring.enable"'
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendAlert.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendAlert.enable"'
         );
         configFileCorrect = false;
     }
@@ -3556,6 +3594,7 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Butler.webhookNotification.reloadTaskFailure
     if (!config.has('Butler.webhookNotification.reloadTaskFailure.rateLimit')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.reloadTaskFailure.rateLimit"');
         configFileCorrect = false;
@@ -3829,6 +3868,181 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Butler.webhookNotification.qlikSenseServerLicenseMonitor
+    if (!config.has('Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.qlikSenseServerLicenseMonitor.rateLimit"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks are objects with the following properties:
+    // {
+    //     "description": "A description of the webhook",
+    //     "webhookURL": "https://webhook.site/...",
+    //     "httpMethod": "POST",
+    //     "cert": {
+    //         "enable": true,
+    //         "rejectUnauthorized": true,
+    //         "certCA": "/path/to/ca-cert.pem",
+    //     },
+    // }
+    if (config.has('Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks')) {
+        const webhooks = config.get('Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks');
+
+        if (webhooks) {
+            if (!Array.isArray(webhooks)) {
+                logger.error('ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks" must be an array');
+                configFileCorrect = false;
+            } else {
+                webhooks.forEach((webhook, index) => {
+                    if (typeof webhook !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}]" must be an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof webhook.cert !== 'object') {
+                            logger.error(
+                                `ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}].cert" must be an object`
+                            );
+                            configFileCorrect = false;
+                        } else {
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks"');
+        configFileCorrect = false;
+    }
+
+    // Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert
+    if (!config.has('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.rateLimit"');
+        configFileCorrect = false;
+    }
+
+    // Make sure all entries in Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks are objects with the following properties:
+    // {
+    //     "description": "A description of the webhook",
+    //     "webhookURL": "https://webhook.site/...",
+    //     "httpMethod": "POST",
+    //     "cert": {
+    //         "enable": true,
+    //         "rejectUnauthorized": true,
+    //         "certCA": "/path/to/ca-cert.pem",
+    //     },
+    // }
+    if (config.has('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks')) {
+        const webhooks = config.get('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks');
+
+        if (webhooks) {
+            if (!Array.isArray(webhooks)) {
+                logger.error('ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks" must be an array');
+                configFileCorrect = false;
+            } else {
+                webhooks.forEach((webhook, index) => {
+                    if (typeof webhook !== 'object') {
+                        logger.error(`ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}]" must be an object`);
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'description')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "description" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'webhookURL')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "webhookURL" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'httpMethod')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "httpMethod" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(webhook, 'cert')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "cert" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}]"`
+                            );
+                            configFileCorrect = false;
+                        } else if (typeof webhook.cert !== 'object') {
+                            logger.error(
+                                `ASSERT CONFIG: "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}].cert" must be an object`
+                            );
+                            configFileCorrect = false;
+                        } else {
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'enable')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "enable" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'rejectUnauthorized')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "rejectUnauthorized" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                            if (!Object.prototype.hasOwnProperty.call(webhook.cert, 'certCA')) {
+                                logger.error(
+                                    `ASSERT CONFIG: Missing property "certCA" in "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks[${index}].cert"`
+                                );
+                                configFileCorrect = false;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    } else {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks"');
+        configFileCorrect = false;
+    }
+
+    // Butler.scheduler
     if (!config.has('Butler.scheduler.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.scheduler.enable"');
         configFileCorrect = false;
@@ -3839,6 +4053,7 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Butler.mqttConfig
     if (!config.has('Butler.mqttConfig.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.enable"');
         configFileCorrect = false;
@@ -3929,6 +4144,17 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    if (!config.has('Butler.mqttConfig.qlikSenseServerLicenseTopic')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.qlikSenseServerLicenseTopic"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.mqttConfig.qlikSenseServerLicenseExpireTopic')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.mqttConfig.qlikSenseServerLicenseExpireTopic"');
+        configFileCorrect = false;
+    }
+
+    // Butler.udpServerConfig
     if (!config.has('Butler.udpServerConfig.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.udpServerConfig.enable"');
         configFileCorrect = false;
