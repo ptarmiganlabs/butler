@@ -202,7 +202,11 @@ const start = async () => {
     }
 
     // Set up Qlik Sense version monitoring, if enabled in the config file
-    if (
+    // Don't start version monitor if Qlik Sense connection is not enabled,
+    // i.e. if the globals.options.qsConnection flag is false
+    if (!globals.options.qsConnection) {
+        globals.logger.info('MAIN: Qlik Sense connection is not enabled. Skipping version monitoring.');
+    } else if (
         globals.config.has('Butler.qlikSenseVersion.versionMonitor.enable') &&
         globals.config.get('Butler.qlikSenseVersion.versionMonitor.enable') === true
     ) {
@@ -210,7 +214,11 @@ const start = async () => {
     }
 
     // Set up Qlik Sense server license monitoring, if enabled in the config file
-    if (
+    // Don't start version monitor if Qlik Sense connection is not enabled,
+    // i.e. if the globals.options.qsConnection flag is false
+    if (!globals.options.qsConnection) {
+        globals.logger.info('MAIN: Qlik Sense connection is not enabled. Skipping server license monitoring.');
+    } else if (
         globals.config.has('Butler.qlikSenseLicense.serverLicenseMonitor.enable') &&
         globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true
     ) {
@@ -218,7 +226,10 @@ const start = async () => {
     }
 
     // Set up Qlik Sense access license monitoring, if enabled in the config file
-    if (
+    // i.e. if the globals.options.qsConnection flag is false
+    if (!globals.options.qsConnection) {
+        globals.logger.info('MAIN: Qlik Sense connection is not enabled. Skipping access license monitoring.');
+    } else if (
         globals.config.has('Butler.qlikSenseLicense.licenseMonitor.enable') &&
         globals.config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true
     ) {
@@ -227,7 +238,10 @@ const start = async () => {
 
     // Set up Qlik Sense access license release, if enabled in the config file
     // Enable only if at least one license type is enabled for automatic release
-    if (
+    // i.e. if the globals.options.qsConnection flag is false
+    if (!globals.options.qsConnection) {
+        globals.logger.info('MAIN: Qlik Sense connection is not enabled. Skipping access license release.');
+    } else if (
         globals.config.has('Butler.qlikSenseLicense.licenseRelease.enable') &&
         globals.config.get('Butler.qlikSenseLicense.licenseRelease.enable') === true &&
         (globals.config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable') === true ||
