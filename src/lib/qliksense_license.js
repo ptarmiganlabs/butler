@@ -7,6 +7,7 @@ import {
     postQlikSenseLicenseReleasedToInfluxDB,
     postQlikSenseServerLicenseStatusToInfluxDB,
 } from './post_to_influxdb.js';
+import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
 
 // Function to check Qlik Sense server license status
 async function checkQlikSenseServerLicenseStatus(config, logger) {
@@ -131,7 +132,12 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
         }
 
         // Check if we should send data to MQTT
-        if (config.has('Butler.mqttConfig.enable') && config.get('Butler.mqttConfig.enable') === true) {
+        if (
+            config.has('Butler.mqttConfig.enable') &&
+            config.get('Butler.mqttConfig.enable') === true &&
+            config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable') &&
+            config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable') === true
+        ) {
             // Prepare general license payload for MQTT
             const mqttPayload = {
                 licenseExpired,
@@ -152,6 +158,42 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
                 const mqttAlertPayload = `Qlik Sense server license is about to expire in ${daysUntilExpiry} days, on ${expiryDateStr}`;
 
                 globals.mqttClient.publish(config.get('Butler.mqttConfig.qlikSenseServerLicenseExpireTopic'), mqttAlertPayload);
+            }
+        }
+
+        // Check if we should send data to webhooks
+        if (
+            config.get('Butler.webhookNotification.enable') === true &&
+            config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.enable') === true
+        ) {
+            // Prepare general license payload for webhooks
+            const webhookPayload = {
+                licenseExpired,
+                expiryDateStr,
+                daysUntilExpiry,
+            };
+
+            // Send recurring webhook notification?
+            if (
+                config.get('Butler.webhookNotification.enable') === true &&
+                config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendRecurring.enable') === true
+            ) {
+                webhookPayload.event = 'server license status';
+                callQlikSenseServerLicenseWebhook(webhookPayload);
+            }
+
+            // Send alert webhook notification?
+            if (
+                config.get('Butler.webhookNotification.enable') === true &&
+                config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendAlert.enable') === true
+            ) {
+                if (licenseExpired === true) {
+                    webhookPayload.event = 'server license has expired alert';
+                    callQlikSenseServerLicenseWebhook(webhookPayload);
+                } else if (daysUntilExpiry <= config.get('Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays')) {
+                    webhookPayload.event = 'server license about to expire alert';
+                    callQlikSenseServerLicenseWebhook(webhookPayload);
+                }
             }
         }
     } catch (err) {
@@ -882,12 +924,12 @@ export async function setupQlikSenseServerLicenseMonitor(config, logger) {
         ) {
             const sched = later.parse.text(config.get('Butler.qlikSenseLicense.serverLicenseMonitor.frequency'));
             later.setInterval(() => {
-                checkQlikSenseServerLicenseStatus(config, logger, false);
+                checkQlikSenseServerLicenseStatus(config, logger);
             }, sched);
 
             // Do an initial license check
             logger.verbose('Doing initial Qlik Sense server license check');
-            checkQlikSenseServerLicenseStatus(config, logger, true);
+            checkQlikSenseServerLicenseStatus(config, logger);
         }
     } catch (err) {
         logger.error(`QLIKSENSE SERVER LICENSE MONITOR INIT: ${err}`);
