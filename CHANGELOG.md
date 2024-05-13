@@ -1,5 +1,35 @@
 # Changelog
 
+## [12.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.3.0...butler-v12.4.0) (2024-05-13)
+
+
+### Features
+
+* **config:** Make it easier to get started with Butler using the provided sample config file ([11007a4](https://github.com/ptarmiganlabs/butler/commit/11007a428aac6af61a745edebb77eca973d10292)), closes [#1143](https://github.com/ptarmiganlabs/butler/issues/1143)
+* **qs-license:** Call webhook when Qlik Sense server license is about to expire ([660a5dc](https://github.com/ptarmiganlabs/butler/commit/660a5dc0ffbe425c636025fa09e28f97414338fb)), closes [#1136](https://github.com/ptarmiganlabs/butler/issues/1136)
+* **qs-license:** Extract Sense server license info ([4cba793](https://github.com/ptarmiganlabs/butler/commit/4cba79304b8b9b1e1e52d1db4473988680ed5fc8)), closes [#805](https://github.com/ptarmiganlabs/butler/issues/805)
+* **qs-license:** Send license expiration info to MQTT ([89684ea](https://github.com/ptarmiganlabs/butler/commit/89684eab916b634f7f14dd252aaa9b2f09509a6f)), closes [#1135](https://github.com/ptarmiganlabs/butler/issues/1135)
+* **qs-version:** Add Qlik Sense version logging to InfluxDb ([19a4eb7](https://github.com/ptarmiganlabs/butler/commit/19a4eb77c32a61f845ab2ede0a080ed0db8d97b7)), closes [#1123](https://github.com/ptarmiganlabs/butler/issues/1123)
+
+
+### Bug Fixes
+
+* **api-doc:** Get rid of errors when generating API docs ([30553f2](https://github.com/ptarmiganlabs/butler/commit/30553f213805f04c244505ef3c0f2a84ede80a54)), closes [#1144](https://github.com/ptarmiganlabs/butler/issues/1144)
+* **qs-version:** Log Sense server version to console every time it is retrieved ([97e965a](https://github.com/ptarmiganlabs/butler/commit/97e965a8cc97cd89b1c8f56ca1b5e4af50f1c976))
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([e3aa05f](https://github.com/ptarmiganlabs/butler/commit/e3aa05f4c5dd64ed49e1a4fbc842a3683a35efde))
+* **deps:** Update dependencies ([ec4e8f0](https://github.com/ptarmiganlabs/butler/commit/ec4e8f0593bff2b42c0c8bc9b551513eba67ff70))
+* Fix broken 12.2.1 build ([032f1f7](https://github.com/ptarmiganlabs/butler/commit/032f1f7f9d07319b8694f0ed1ab88e4c24d2e36f))
+* **master:** release butler 12.3.0 ([31f3251](https://github.com/ptarmiganlabs/butler/commit/31f325102fcce5892530d7ff0ebed900df7afe93))
+
+
+### Refactoring
+
+* Fix various typos, code formatting and style issues ([caf9439](https://github.com/ptarmiganlabs/butler/commit/caf9439d022e8c7ae68a35936301e92a6b826b8e))
+
 ## [12.3.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.3.0...butler-v12.3.0) (2024-04-25)
 
 
