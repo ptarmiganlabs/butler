@@ -3,9 +3,19 @@ Butler:
   # General notes: 
   # - File and directory paths in this sample config file use Linux/Mac syntax, i.e. using forward slashes.
   #   Windows paths work just as well, just make sure to quote them with single or double quotes.
-  # - All entries in the config file are mandatory in the send that they must be present.
+  # - All entries in the config file are mandatory in the sense that they must be present.
   #   However, if a feature is not used the corresponding config entries can contain 
   #   any value (for example the provided default ones).
+  # - Butler will start using the settings in this file if the follwing settings are set first:
+  #   - Butler.cert.clientCert: Set to the path of the client certificate file. If relative paths cause issues, use an absolute path.
+  #   - Butler.cert.clientCertKey: Set to the path of the client key file. If relative paths cause issues, use an absolute path.
+  #   - Butler.cert.clientCertCA: Set to the path of the CA certificate file. If relative paths cause issues, use an absolute path.
+  #   - Butler.configEngine.host: Set to the IP or FQDN of the host where the Sense engine service is running.
+  #   - Butler.configEngine.port: Set to the port where the Sense engine service is listening.
+  #   - Butler.configQRS.host: Set to the IP or FQDN of the host where the Qlik Repository Service (QRS) is running.
+  #   - Butler.configQRS.port: Set to the port where the Qlik Repository Service (QRS) is listening.
+  # - Having set the above settings, Butler will start and run, but it will not do anything useful until you configure
+  #   the various monitoring and notification settings, as described at https://butler.ptarmiganlabs.com.
 
   # Logging configuration
   logLevel: info          # Log level. Possible log levels are silly, debug, verbose, info, warn, error
@@ -73,12 +83,12 @@ Butler:
   # Command line options takes precedence over settings in this config file.
   thirdPartyToolsCredentials:
     newRelic:         # Array of New Relic accounts/insert keys. Any data sent to New Relic will be sent to both accounts. 
-      - accountName: First NR account
-        insertApiKey: <API key 1 (with insert permissions) from New Relic> 
-        accountId: <New Relic account ID 1>
-      - accountName: Second NR account
-        insertApiKey: <API key 2 (with insert permissions) from New Relic> 
-        accountId: <New Relic account ID 2>
+      # - accountName: First NR account
+      #   insertApiKey: <API key 1 (with insert permissions) from New Relic> 
+      #   accountId: <New Relic account ID 1>
+      # - accountName: Second NR account
+      #   insertApiKey: <API key 2 (with insert permissions) from New Relic> 
+      #   accountId: <New Relic account ID 2>
 
   # InfluxDB settings
   influxDb:
@@ -140,7 +150,7 @@ Butler:
   # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
   qlikSenseVersion:
     versionMonitor:
-      enable: true                    # Should Qlik Sense version info be retrieved?
+      enable: false                    # Should Qlik Sense version info be retrieved?
       frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
       host: <FQDN or IP of Qlik Sense central node>         
       rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
@@ -156,7 +166,7 @@ Butler:
   # Settings for monitoring Qlik Sense licenses
   qlikSenseLicense:
     serverLicenseMonitor:
-      enable: true
+      enable: false
       frequency: every 24 hours       # https://bunkat.github.io/later/parsers.html#text
       alert:                          # Alert if the number of days left on the license is below the threshold
                                       # License expiry alerts on a global level are enabled here, then configured on 
@@ -463,11 +473,11 @@ Butler:
       enable: false
       destinationAccount:
         event:                    # Failed/aborted reload tasks are sent as events to these New Relic accounts
-          - First NR account
-          - Second NR account
+          # - First NR account
+          # - Second NR account
         log:                      # Failed/aborted reload tasks are sent as log entries to these New Relic accounts
-          - First NR account
-          - Second NR account
+          # - First NR account
+          # - Second NR account
       # New Relic uses different API URLs for different kinds of data (metrics, events, logs, ...)
       # There are different URLs depending on whther you have an EU or US region New Relic account.
       # The available URLs are listed here: https://docs.newrelic.com/docs/accounts/accounts-billing/account-setup/choose-your-data-center/
@@ -492,8 +502,8 @@ Butler:
               always:
                 enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as events)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute 1  # Example
@@ -511,8 +521,8 @@ Butler:
               always:
                 enable: false            # Controls which New Relic accounts ALL failed reload tasks are sent to (as logs)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute 1    # Example
@@ -542,8 +552,8 @@ Butler:
               always:
                 enable: false            # Controls which New Relic accounts ALL aborted reload tasks are sent to (as events)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute 2  # Example
@@ -556,13 +566,13 @@ Butler:
             tailScriptLogLines: 20
             sendToAccount:              # Which reload task aborts are sent to New Relic as log entries
               byCustomProperty:
-                enable: true            # Control using a task custom property which reload task aborts are sent as log entries
+                enable: false            # Control using a task custom property which reload task aborts are sent as log entries
                 customPropertyName: 'Butler_AbortedTask_Log_NewRelicAccount'
               always:
                 enable: false          # Controls which New Relic accounts ALL aborted reload tasks are sent to (as logs)
                 account: 
-                  - First NR account
-                  - Second NR account
+                  # - First NR account
+                  # - Second NR account
             attribute: 
               static:                 # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute 2    # Example
@@ -586,8 +596,8 @@ Butler:
           event: 
             enable: false
             sendToAccount:                # Windows service events are sent to these New Relic accounts
-              - First NR account
-              - Second NR account
+              # - First NR account
+              # - Second NR account
             attribute: 
               static:                     # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: event-specific-attribute
@@ -600,8 +610,8 @@ Butler:
           log:
             enable: false
             sendToAccount:                # Windows service log entries are sent to these New Relic accounts
-              - First NR account
-              - Second NR account
+              # - First NR account
+              # - Second NR account
             attribute: 
               static:                     # Static attributes/dimensions to attach to events sent to New Relic.
                 - name: log-specific-attribute
@@ -634,67 +644,67 @@ Butler:
     reloadTaskFailure:
       rateLimit: 300                                            # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook makes a POST and is used to...'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path      # outgoing webhook that Butler will call
-          httpMethod: POST                                      # GET/POST/PUT
-          cert:
-            enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
-        - description: 'This outgoing webhook makes a PUT and is used to...'  # Informational only
-          webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
-          httpMethod: PUT                                       # GET/POST/PUT.
-          cert:
-            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: false                           # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
-        - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
-          webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
-          httpMethod: GET                                       # GET/POST/PUT
-          cert:
-            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a POST and is used to...'  # Informational only
+        #   webhookURL: http://host.my.domain:port/some/path      # outgoing webhook that Butler will call
+        #   httpMethod: POST                                      # GET/POST/PUT
+        #   cert:
+        #     enable: false                                       # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a PUT and is used to...'  # Informational only
+        #   webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
+        #   httpMethod: PUT                                       # GET/POST/PUT.
+        #   cert:
+        #     enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: false                           # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
+        #   webhookURL: https://host.my.domain:port/some/path     # Outgoing webhook that Butler will call
+        #   httpMethod: GET                                       # GET/POST/PUT
+        #   cert:
+        #     enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     reloadTaskAborted:
       rateLimit: 300                                            # Min seconds between outgoing webhook calls for a given taskID. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
-          webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
-          httpMethod: GET                                       # GET/POST/PUT
-          cert:
-            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a GET and is used to ..'  # Informational only
+        #   webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
+        #   httpMethod: GET                                       # GET/POST/PUT
+        #   cert:
+        #     enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     serviceMonitor:
       rateLimit: 300                                            # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook makes a POST and is used to...' # Informational only
-          webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
-          httpMethod: POST                                      # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a POST and is used to...' # Informational only
+        #   webhookURL: http://host.my.domain:port/some/path      # Outgoing webhook that Butler will call
+        #   httpMethod: POST                                      # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        #   cert:
+        #     enable: true                                        # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true                            # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem                 # Path to the CA certificate file
     qlikSenseServerLicenseMonitor:          # Outgoing webhook that Butler will call with info on Qlik Sense server license status
       rateLimit: 300                        # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook makes a PUT and is used to ...'
-          webhookURL: http://host.my.domain:port/some/path
-          httpMethod: PUT                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: false                    # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true        # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: foo
+        # - description: 'This outgoing webhook makes a PUT and is used to ...'
+        #   webhookURL: http://host.my.domain:port/some/path
+        #   httpMethod: PUT                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        #   cert:
+        #     enable: false                    # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true        # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: foo
     qlikSenseServerLicenseExpiryAlert:      # Outgoing webhook that Butler will call when Qlik Sense server license is about to expire
       rateLimit: 300                        # Min seconds between outgoing webhook calls, per Windows service that is monitored. Defaults to 5 minutes.
       webhooks:
-        - description: 'This outgoing webhook makes a POST and is used to ...'
-          webhookURL: https://host.my.domain:port/some/path
-          httpMethod: POST                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
-          cert:
-            enable: true                     # Set to true to use a custom CA certificate when calling the webhookURL
-            rejectUnauthorized: true         # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
-            certCA: /path/to/ca-certificate.pem   # Path to the CA certificate file
+        # - description: 'This outgoing webhook makes a POST and is used to ...'
+        #   webhookURL: https://host.my.domain:port/some/path
+        #   httpMethod: POST                   # GET/POST/PUT. Note that the body and URL query parameters differs depending on which method is used
+        #   cert:
+        #     enable: true                     # Set to true to use a custom CA certificate when calling the webhookURL
+        #     rejectUnauthorized: true         # Set to false to ignore warnings/errors caused by self-signed certificates used on the webhooks server.
+        #     certCA: /path/to/ca-certificate.pem   # Path to the CA certificate file
 
   # Scheduler for Qlik Sense tasks
   scheduler:
@@ -745,28 +755,28 @@ Butler:
   # Butler will try to clean up messy paths like this one, which resolves to /Users/goran/butler-test-dir1
   # How? First you have /Users/goran/butler-test-dir1//abc which cleans up to /Users/goran/butler-test-dir1/abc, 
   # then up one level (..).
-  fileCopyApprovedDirectories:                        
-    - fromDirectory: /Users/goran/butler-test-dir1//abc//..     
-      toDirectory: /Users/goran/butler-test-dir2
-    - fromDirectory: /Users/goran/butler-test-dir2
-      toDirectory: /Users/goran/butler-test-dir1
-    - fromDirectory: /from/some/directory2
-      toDirectory: /to/some/directory2
+  fileCopyApprovedDirectories:
+    # - fromDirectory: /Users/goran/butler-test-dir1//abc//..     
+    #   toDirectory: /Users/goran/butler-test-dir2
+    # - fromDirectory: /Users/goran/butler-test-dir2
+    #   toDirectory: /Users/goran/butler-test-dir1
+    # - fromDirectory: /from/some/directory2
+    #   toDirectory: /to/some/directory2
 
   # List of directories between which file moves via the REST API can be done.
-  fileMoveApprovedDirectories:                        
-    - fromDirectory: /Users/goran/butler-test-dir1//abc//..
-      toDirectory: /Users/goran/butler-test-dir2
-    - fromDirectory: /Users/goran/butler-test-dir2
-      toDirectory: /Users/goran/butler-test-dir1
-    - fromDirectory: /from/some/directory2
-      toDirectory: /to/some/directory2
+  fileMoveApprovedDirectories:
+    # - fromDirectory: /Users/goran/butler-test-dir1//abc//..
+    #   toDirectory: /Users/goran/butler-test-dir2
+    # - fromDirectory: /Users/goran/butler-test-dir2
+    #   toDirectory: /Users/goran/butler-test-dir1
+    # - fromDirectory: /from/some/directory2
+    #   toDirectory: /to/some/directory2
 
   # List of directories in which file deletes via the REST API can be done.
-  fileDeleteApprovedDirectories:                      
-    - /Users/goran/butler-test-dir1
-    - /Users/goran/butler-test-dir1//abc//..
-    - /Users/goran/butler-test-dir2
+  fileDeleteApprovedDirectories:
+    # - /Users/goran/butler-test-dir1
+    # - /Users/goran/butler-test-dir1//abc//..
+    # - /Users/goran/butler-test-dir2
   
   # If set to true, Butler will be started with a focus on creating an API documentation file
   # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.
@@ -807,8 +817,8 @@ Butler:
     newRelic:
       postNewRelicMetric:          # Setings used by post metric to New Relic API endpoint
         destinationAccount:
-          - First NR account
-          - Second NR account
+          # - First NR account
+          # - Second NR account
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net/metric/v1
         # https://insights-collector.newrelic.com/metric/v1
@@ -822,8 +832,8 @@ Butler:
               value: prod
       postNewRelicEvent:            # Setings used by post event to New Relic API endpoint
         destinationAccount:
-          - First NR account
-          - Second NR account
+          # - First NR account
+          # - Second NR account
         # Note that the URL path should *not* be included in the url setting below!
         # As of this writing the valid options are
         # https://insights-collector.eu01.nr-data.net
@@ -847,23 +857,23 @@ Butler:
       taskId:
         # Zero or more approved/allowed task IDs
         # If Butler.startTaskFilter.enable is true, only task IDs listed below will be started by Butler 
-        - e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
-        - 7552d9fc-d1bb-4975-9a38-18357de531ea
-        - fb0f317d-da91-4b86-aafa-0174ae1e8c8f
+        # - e3b27f50-b1c0-4879-88fc-c7cdd9c1cf3e
+        # - 7552d9fc-d1bb-4975-9a38-18357de531ea
+        # - fb0f317d-da91-4b86-aafa-0174ae1e8c8f
       tag:
         # Zero or more tags used to indicate that a task is approved to be started by Butler.
         # Use the Qlik Sense QMC to set tags on tasks.
         # If Butler.startTaskFilter.enable is true, only tasks with the tags below will be started by Butler 
-        - startTask1
-        - startTask2
+        # - startTask1
+        # - startTask2
       customProperty:
         # Zero or more custom properties name/value pairs used to indicate that a task is approved to be started by Butler.
         # Use the Qlik Sense QMC to set custom properties on tasks.
         # If Butler.startTaskFilter.enable is true, only tasks with the custom property values below will be started by Butler 
-        - name: taskGroup
-          value: tasks1
-        - name: taskGroup
-          value: tasks2
+        # - name: taskGroup
+        #   value: tasks1
+        # - name: taskGroup
+        #   value: tasks2
 
   # Monitor Windows services.
   # This feature only works when Butler is running on Windows Server or desktop.
@@ -872,22 +882,22 @@ Butler:
     enable: false                    # Main on/off switch for service monitoring
     frequency: every 30 seconds     # https://bunkat.github.io/later/parsers.html#text
     monitor:
-      - host: <hostname or IP>      # Host name of Windows computer where services are running
-        services:                   # List of services to monitor
-          - name: postgresql-x64-12       # Posgress/repository db
-            friendlyName: Repository DB
-          - name: QlikSenseEngineService
-            friendlyName: Engine
-          - name: QlikSensePrintingService
-            friendlyName: Printing
-          - name: QlikSenseProxyService
-            friendlyName: Proxy
-          - name: QlikSenseRepositoryService
-            friendlyName: Repository
-          - name: QlikSenseSchedulerService
-            friendlyName: Scheduler
-          - name: QlikSenseServiceDispatcher
-            friendlyName: Service Dispatcher
+      # - host: <hostname or IP>      # Host name of Windows computer where services are running
+      #   services:                   # List of services to monitor
+      #     - name: postgresql-x64-12       # Posgress/repository db
+      #       friendlyName: Repository DB
+      #     - name: QlikSenseEngineService
+      #       friendlyName: Engine
+      #     - name: QlikSensePrintingService
+      #       friendlyName: Printing
+      #     - name: QlikSenseProxyService
+      #       friendlyName: Proxy
+      #     - name: QlikSenseRepositoryService
+      #       friendlyName: Repository
+      #     - name: QlikSenseSchedulerService
+      #       friendlyName: Scheduler
+      #     - name: QlikSenseServiceDispatcher
+      #       friendlyName: Service Dispatcher
     alertDestination:               # Control to thich destinations service related alerts are sent
       influxDb:                     # Send service alerts to InfluxDB
         enable: true

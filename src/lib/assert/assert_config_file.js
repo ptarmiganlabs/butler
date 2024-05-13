@@ -180,7 +180,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
 
     // ------------------------------------------
     // The custom property specified by
-    // Butler.incidentToo.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName
+    // Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName
     // should only include values present in the Butler.thirdPartyToolsCredentials.newRelic array
 
     // Only test if the feature in question is enabled in the config file
@@ -233,7 +233,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
                 // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
                 logger.error(
-                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for failed reload alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
                 );
                 return false;
             } else {
@@ -415,7 +415,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
             } else if (config.get('Butler.thirdPartyToolsCredentials.newRelic') === null) {
                 // New Relic account specified as destination for events, but no account(s) specified in config file or on command line
                 logger.error(
-                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
+                    `ASSERT CONFIG NEW RELIC: New Relic is set as a destination for aborted reload alert logs, but no New Relic account(s) specified on either command line or in config file. Aborting,`
                 );
                 return false;
             } else {
