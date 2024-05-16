@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.4.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.0...butler-v12.4.1) (2024-05-16)
+
+
+### Miscellaneous
+
+* Add auto-closing of issues in GitHub repo ([7e529d1](https://github.com/ptarmiganlabs/butler/commit/7e529d11da12aa8f976456691c18724dbcaedf22))
+
 ## [12.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.3.0...butler-v12.4.0) (2024-05-13)
 
 
