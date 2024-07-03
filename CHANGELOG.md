@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.4.2](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.1...butler-v12.4.2) (2024-07-03)
+
+
+### Bug Fixes
+
+* **host-info:** Correctly handle cases where there is no MAC addr available ([3aa250e](https://github.com/ptarmiganlabs/butler/commit/3aa250e3ad22be21986d702c653536a11ef00f52)), closes [#1183](https://github.com/ptarmiganlabs/butler/issues/1183)
+
 ## [12.4.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.0...butler-v12.4.1) (2024-07-03)
 
 
