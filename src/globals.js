@@ -563,7 +563,8 @@ class Settings {
                 } else {
                     idSrc = this.config.get('Butler.configQRS.host') + siSystem.uuid;
                 }
-                const salt = siMem.total;
+                // Add underscore to salt to make sure it's a string
+                const salt = `${siMem.total}_`;
                 const hash = crypto.createHmac('sha256', salt);
                 hash.update(idSrc);
                 id = hash.digest('hex');
