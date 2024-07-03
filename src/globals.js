@@ -606,6 +606,7 @@ class Settings {
             return hostInfo;
         } catch (err) {
             this.logger.error(`CONFIG: Getting host info: ${err}`);
+            this.logger.error(`CONFIG: Getting host info, stack trace: ${err.stack}`);
             return null;
         }
     }

@@ -148,6 +148,7 @@ async function build(opts = {}) {
         }
     } catch (err) {
         globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
+        globals.logger.error(`CONFIG: Error initiating host info, stack trace: ${err.stack}`);
     }
 
     // Set up REST server, if enabled
