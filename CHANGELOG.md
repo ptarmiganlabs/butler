@@ -1,5 +1,18 @@
 # Changelog
 
+## [12.4.1](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.0...butler-v12.4.1) (2024-07-03)
+
+
+### Bug Fixes
+
+* **host-info:** Add more verbose logging when getting host info fails ([41082ab](https://github.com/ptarmiganlabs/butler/commit/41082abfe3a3526cedc0ac21e789037df0e287fc))
+
+
+### Miscellaneous
+
+* Add auto-closing of issues in GitHub repo ([7e529d1](https://github.com/ptarmiganlabs/butler/commit/7e529d11da12aa8f976456691c18724dbcaedf22))
+* **deps:** Upgrade dependencies ([8d8a68b](https://github.com/ptarmiganlabs/butler/commit/8d8a68b1df3dd74011d8d50797cfec074e88decf))
+
 ## [12.4.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.3.0...butler-v12.4.0) (2024-05-13)
 
 
