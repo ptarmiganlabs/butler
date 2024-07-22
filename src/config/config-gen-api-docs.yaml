@@ -805,6 +805,13 @@ Butler:
       webhook:
         enable: false
 
+  # Should Butler start a web server that serves an obfuscated view of the Butler config file?
+  configVisualisation:
+    enable: false
+    host: localhost       # Hostname or IP address where the web server will listen. Should be localhost in most cases.
+    port: 3100            # Port where the web server will listen. Change if port 3100 is already in use.
+    obfuscate: true       # Should the config file shown in the web UI be obfuscated?
+
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:
     clientCert: ...
