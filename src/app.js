@@ -54,9 +54,10 @@ async function build(opts = {}) {
     const certFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCert'));
     const keyFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertKey'));
     const caFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertCA'));
+    globals.logger.verbose(`----------------1: ${dirname}`);
 
-    globals.logger.verbose(`MAIN: Executing JS filename: ${filename}`);
     globals.logger.verbose(`MAIN: Executing JS dirname: ${dirname}`);
+    globals.logger.verbose(`MAIN: Executing JS filename: ${filename}`);
     globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
     globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
     globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
@@ -75,9 +76,11 @@ async function build(opts = {}) {
         if (currLogLevel === 'debug' || currLogLevel === 'silly') {
             restServer.log.level = 'info';
             proxyRestServer.log.level = 'info';
+            configVisServer.log.level = 'info';
         } else {
             restServer.log.level = 'silent';
             proxyRestServer.log.level = 'silent';
+            configVisServer.log.level = 'silent';
         }
 
         // Get host info
@@ -332,7 +335,16 @@ async function build(opts = {}) {
         await configVisServer.register(import('./plugins/support.js'), { options: Object.assign({}, opts) });
 
         // Create absolute path to the html directory
-        const htmlDir = path.resolve(dirname, '../static/configvis');
+        // dirname points to the directory where this file (app.js) is located, taking into account
+        // if the app is running as a packaged app or as a Node.js app.
+        globals.logger.verbose(`----------------2: ${globals.appBasePath}`);
+
+        // Get directory contents of dirname
+        const dirContents = fs.readdirSync(globals.appBasePath);
+        globals.logger.verbose(`CONFIG VIS: Directory contents of "${globals.appBasePath}": ${dirContents}`);
+
+
+        const htmlDir = path.resolve(globals.appBasePath, 'static/configvis');
         globals.logger.info(`CONFIG VIS: Serving static files from ${htmlDir}`);
 
         await configVisServer.register(FastifyStatic, {
@@ -359,7 +371,10 @@ async function build(opts = {}) {
             const butlerConfigYaml = yaml.dump(newConfig);
 
             // Read index.html from disk
-            const filePath = path.join(htmlDir, 'index.html');
+            // dirname points to the directory where this file (app.js) is located, taking into account
+            // if the app is running as a packaged app or as a Node.js app.
+            globals.logger.verbose(`----------------3: ${globals.appBasePath}`);
+            const filePath = path.resolve(globals.appBasePath, 'static/configvis', 'index.html');
             const template = fs.readFileSync(filePath, 'utf8');
 
             // Compile handlebars template

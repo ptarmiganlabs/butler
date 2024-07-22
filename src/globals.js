@@ -42,6 +42,9 @@ class Settings {
 
             // Add path to package.json file
             c = upath.join(b, filenamePackage);
+
+            // Set base path of the executable
+            this.appBasePath = upath.join(b);
         } else {
             // Get path to JS file
             a = fileURLToPath(import.meta.url);
@@ -51,6 +54,9 @@ class Settings {
 
             // Add path to package.json file
             c = upath.join(b, '..', filenamePackage);
+
+            // Set base path of the executable
+            this.appBasePath = upath.join(b, '..');
         }
 
         const { version } = JSON.parse(readFileSync(c));
