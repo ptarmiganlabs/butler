@@ -1,15 +1,15 @@
 import httpErrors from 'http-errors';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import doesTaskExist from '../qrs_util/does_task_exist.js';
-import senseStartTask from '../qrs_util/sense_start_task.js';
-import getTasks from '../qrs_util/get_tasks.js';
-import { logRESTCall } from '../lib/log_rest_call.js';
-import { addKeyValuePair } from '../lib/key_value_store.js';
-import apiPutStartTask from '../api/sense_start_task.js';
-import { verifyTaskId } from '../lib/config_util.js';
+import doesTaskExist from '../../qrs_util/does_task_exist.js';
+import senseStartTask from '../../qrs_util/sense_start_task.js';
+import getTasks from '../../qrs_util/get_tasks.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import { addKeyValuePair } from '../../lib/key_value_store.js';
+import apiPutStartTask from '../../api/sense_start_task.js';
+import { verifyTaskId } from '../../lib/config_util.js';
 
 // Get array of allowed task IDs
 function getTaskIdAllowed() {
@@ -126,12 +126,12 @@ async function handlerPutStartTask(request, reply) {
                     if (taskExists.exists) {
                         tasksToStartTaskId.push(taskExists.task);
                         globals.logger.silly(
-                            `STARTTASK: Added task to taskId start array, now ${tasksToStartTaskId.length} entries in that array`
+                            `STARTTASK: Added task to taskId start array, now ${tasksToStartTaskId.length} entries in that array`,
                         );
                     } else {
                         tasksInvalid.push({ taskId: request.params.taskId });
                         globals.logger.silly(
-                            `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
+                            `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`,
                         );
                     }
                 } else {
@@ -182,12 +182,12 @@ async function handlerPutStartTask(request, reply) {
                                 if (taskExists.exists) {
                                     tasksToStartTaskId.push(taskExists.task);
                                     globals.logger.silly(
-                                        `STARTTASK: Added task to start array, now ${tasksToStartTaskId.length} entries in that array`
+                                        `STARTTASK: Added task to start array, now ${tasksToStartTaskId.length} entries in that array`,
                                     );
                                 } else {
                                     tasksInvalid.push({ taskId: item.payload.taskId });
                                     globals.logger.silly(
-                                        `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`
+                                        `STARTTASK: Added task to invalid taskId array, now ${tasksInvalid.length} entries in that array`,
                                     );
                                 }
                             } else {
@@ -246,7 +246,7 @@ async function handlerPutStartTask(request, reply) {
                         } else {
                             // Task filtering is enabled and task ID is not on allowed list
                             globals.logger.warn(
-                                `STARTTASK: Task custom property is not allowed. Name: ${item.payload.customPropertyName}, value: ${item.payload.customPropertyValue}`
+                                `STARTTASK: Task custom property is not allowed. Name: ${item.payload.customPropertyName}, value: ${item.payload.customPropertyValue}`,
                             );
                             tasksCPDenied.push({
                                 name: item.payload.customPropertyName,

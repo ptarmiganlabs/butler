@@ -1,0 +1,247 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <title>Ctrl-Q</title>
+
+        <link rel="stylesheet" href="jsontree.js.css" />
+        <script src="jsontree.js"></script>
+
+        <!-- Include Prism CSS -->
+        <link rel="stylesheet" href="prism.css" />
+        <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" rel="stylesheet" /> -->
+        <!-- Include Prism JS -->
+        <script src="prism.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script> -->
+
+        <style>
+            #header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+                background-color: #fff; /* Add a background color to ensure text is readable */
+            }
+            #headerLeft {
+                display: flex;
+                align-items: center;
+                width: 50%;
+            }
+            #headerRight {
+                display: flex;
+                align-items: center;
+                width: 50%;
+                text-align: right;
+            }
+            #logo,
+            #pageTitle,
+            #buttons {
+                display: flex;
+                align-items: center; /* Center align the contents of logo and buttons */
+            }
+            #logo {
+                /* Ensure there's no right margin or padding that could push the title to the right */
+                margin-right: 0;
+                padding-right: 0;
+            }
+            #pageTitle h1 {
+                text-align: left; /* Align the title to the left */
+                margin: 0; /* Remove default margin */
+                padding-left: 20px; /* Add some space between the logo and the title */
+                font-size: 32px; /* Adjust font size as needed */
+                font-family: Arial, sans-serif; /* Use Arial font */
+            }
+            #buttons {
+                justify-content: flex-end;
+            }
+            #downloadYaml {
+                font-size: 20px;
+                padding: 10px;
+                margin-right: 20px;
+                background-color: #007bff; /* Blue background */
+                color: white; /* White text */
+                border: none; /* Remove border */
+                cursor: pointer; /* Pointer cursor on hover */
+                border-radius: 5px; /* Rounded corners */
+                box-shadow: 0 4px #0056b3; /* Darker blue shadow for 3D effect */
+                transition: all 0.3s; /* Smooth transition for press effect */
+            }
+            #downloadYaml:hover {
+                background-color: #0056b3; /* Darker shade on hover */
+                cursor: pointer; /* Change cursor to pointer to indicate it's clickable */
+            }
+            #downloadYaml:active {
+                box-shadow: 0 2px #0056b3; /* Adjust shadow for pressed effect */
+                transform: translateY(4px); /* Move button down to mimic press */
+            }
+
+            body {
+                padding-top: 100px; /* Add padding to the top of the body to prevent content from being hidden behind the fixed header */
+            }
+
+            /* Style the tab */
+            .tab {
+                overflow: hidden;
+                border: 1px solid #ccc;
+                background-color: #f1f1f1;
+            }
+
+            /* Style the buttons inside the tab */
+            .tab button {
+                background-color: inherit;
+                float: left;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                padding: 14px 16px;
+                transition: 0.3s;
+                font-size: 17px;
+            }
+
+            /* Change background color of buttons on hover */
+            .tab button:hover {
+                background-color: #ddd;
+            }
+
+            /* Create an active/current tablink class */
+            .tab button.active {
+                background-color: #ccc;
+            }
+
+            /* Style the tab content */
+            .tabcontent {
+                display: none;
+                padding: 6px 12px;
+                border: 1px solid #ccc;
+                border-top: none;
+            }
+
+            /* Style for preformatted text */
+            pre {
+                background-color: #f4f4f4;
+                border: 1px solid #ddd;
+                padding: 10px;
+                border-radius: 5px;
+                overflow: auto;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="header">
+            <div id="headerLeft">
+                <div id="logo">
+                    <a href="https://butler.ptarmiganlabs.com" target="_blank">
+                        <img src="butler.png" alt="Butler logo" height="100px" />
+                    </a>
+                </div>
+                <div id="pageTitle">
+                    <h1>
+                        Current Butler configuration (docs
+                        <a href="https://butler.ptarmiganlabs.com/docs/reference/config-file/" target="_blank">here</a>)
+                    </h1>
+                </div>
+            </div>
+            <div id="headerRight">
+                <div id="buttons">
+                    <button id="downloadYaml">
+                        <img
+                            src="download-solid.svg"
+                            alt="Download icon"
+                            style="vertical-align: middle; margin-right: 5px; height: 32px; width: 32px"
+                        />
+                        Download obfuscated YAML
+                    </button>
+                </div>
+                <!-- Tab links -->
+                <div class="tab">
+                    <button class="tablinks" onclick="openTab(event, 'YAML')">YAML</button>
+                    <button class="tablinks" onclick="openTab(event, 'JSONTree')">JSON tree view</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab content -->
+        <div id="YAML" class="tabcontent">
+            <h3>YAML configuration</h3>
+            <pre class="line-numbers"><code class="language-yaml">{{butlerConfigYaml}}</code></pre>
+        </div>
+
+        <div id="JSONTree" class="tabcontent">
+            <h3>JSON tree view</h3>
+            <div
+                id="tree-1"
+                data-jsontree-js="{
+                title: {
+                    show: false,
+                    showTreeControls: true,
+                    showCopyButton: true
+                },
+                showCounts: true, 
+                sortPropertyNames: false, 
+                sortPropertyNamesInAlphabeticalOrder: false, 
+                data: {{butlerConfigJsonEncoded}} }"
+                style="width: 100%"
+            >
+                Your HTML.
+            </div>
+        </div>
+
+        <script>
+            // Function that gets data from handlebars template butlerConfigYamlObfuscated and returns it
+            function getYamlFromHandlebars() {
+                try {
+                    const yamlData = `{{butlerConfigYaml}}`;
+                    return yamlData;
+                } catch (error) {
+                    console.error('There was a problem getting YAML config data from Handlebars template:', error);
+                }
+            }
+
+            document.getElementById('downloadYaml').addEventListener('click', function () {
+                var butlerConfigYaml = getYamlFromHandlebars();
+
+                var blob = new Blob([butlerConfigYaml], { type: 'text/yaml' });
+                var url = URL.createObjectURL(blob);
+
+                // Create a temporary link to trigger the download
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'config.yaml'; // The default file name for downloading
+                document.body.appendChild(a); // Append to the document
+                a.click(); // Simulate click to trigger download
+                document.body.removeChild(a); // Remove the element after download
+                URL.revokeObjectURL(url); // Clean up the URL object
+            });
+
+            function openTab(evt, tabName) {
+                // Declare all variables
+                var i, tabcontent, tablinks;
+
+                // Get all elements with class="tabcontent" and hide them
+                tabcontent = document.getElementsByClassName('tabcontent');
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = 'none';
+                }
+
+                // Get all elements with class="tablinks" and remove the class "active"
+                tablinks = document.getElementsByClassName('tablinks');
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(' active', '');
+                }
+
+                // Show the current tab, and add an "active" class to the button that opened the tab
+                document.getElementById(tabName).style.display = 'block';
+                evt.currentTarget.className += ' active';
+            }
+
+            // Optionally, auto-open the first tab when the page loads
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementsByClassName('tablinks')[0].click();
+            });
+        </script>
+    </body>
+</html>

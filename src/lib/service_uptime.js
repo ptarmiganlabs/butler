@@ -61,8 +61,8 @@ function serviceUptimeStart() {
         globals.logger.log(
             uptimeLogLevel,
             `Iteration # ${formatter.format(
-                startIterations
-            )}, Uptime: ${uptimeString}, Heap used ${heapUsedMByte} MB of total heap ${heapTotalMByte} MB. External (off-heap): ${externalMemoryMByte} MB. Memory allocated to process: ${processMemoryMByte} MB.`
+                startIterations,
+            )}, Uptime: ${uptimeString}, Heap used ${heapUsedMByte} MB of total heap ${heapTotalMByte} MB. External (off-heap): ${externalMemoryMByte} MB. Memory allocated to process: ${processMemoryMByte} MB.`,
         );
 
         // Store to Influxdb if enabled

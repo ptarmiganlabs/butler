@@ -2,15 +2,19 @@
 /* eslint-disable global-require */
 
 import path from 'path';
+import fs from 'fs';
+import handlebars from 'handlebars';
 import { fileURLToPath } from 'url';
-import Fastify from 'fastify';
+import yaml from 'js-yaml';
 
+import Fastify from 'fastify';
 // import AutoLoad from '@fastify/autoload';
 import FastifySwagger from '@fastify/swagger';
 import FastifySwaggerUi from '@fastify/swagger-ui';
 import FastifyReplyFrom from '@fastify/reply-from';
 import FastifyHealthcheck from 'fastify-healthcheck';
 import FastifyRateLimit from '@fastify/rate-limit';
+import FastifyStatic from '@fastify/static';
 
 import globals from './globals.js';
 import setupHeartbeatTimer from './lib/heartbeat.js';
@@ -19,6 +23,7 @@ import serviceUptimeStart from './lib/service_uptime.js';
 import setupAnonUsageReportTimer from './lib/telemetry.js';
 import { configVerifyAllTaskId } from './lib/config_util.js';
 import sendTestEmail from './lib/testemail.js';
+import configObfuscate from './lib/config_obfuscate.js';
 
 async function build(opts = {}) {
     // Create two Fastify servers. One server is a REST server and the other is a reverse proxy server.
@@ -28,6 +33,7 @@ async function build(opts = {}) {
     const restServer = Fastify({ logger: true });
     const proxyRestServer = Fastify({ logger: true });
     const dockerHealthCheckServer = Fastify({ logger: false });
+    const configVisServer = Fastify({ logger: true });
 
     // Set up connection to Influxdb (if enabled)
     globals.initInfluxDB();
@@ -138,11 +144,11 @@ async function build(opts = {}) {
         if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
             globals.logger.info(
                 `REST API documentation available at http://${globals.config.get(
-                    'Butler.restServerConfig.serverHost'
-                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
+                    'Butler.restServerConfig.serverHost',
+                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`,
             );
             globals.logger.info(
-                '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
+                '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.',
             );
             globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
@@ -171,7 +177,7 @@ async function build(opts = {}) {
         restServer.setErrorHandler((error, request, reply) => {
             if (error.statusCode === 429) {
                 globals.logger.warn(
-                    `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`
+                    `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`,
                 );
             }
             reply.send(error);
@@ -198,7 +204,7 @@ async function build(opts = {}) {
                 servers: [
                     {
                         url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                            'Butler.restServerConfig.serverPort'
+                            'Butler.restServerConfig.serverPort',
                         )}`,
                     },
                 ],
@@ -217,27 +223,27 @@ async function build(opts = {}) {
         });
 
         // Loads all plugins defined in routes
-        await restServer.register(import('./routes/api.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/base_conversion.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/butler_ping.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/disk_utils.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/key_value_store.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/mqtt_publish_message.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/newrelic_event.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/newrelic_metric.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/scheduler.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/sense_app.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/sense_app_dump.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/sense_list_apps.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/sense_start_task.js'), { options: Object.assign({}, opts) });
-        await restServer.register(import('./routes/slack_post_message.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/api.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/base_conversion.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/butler_ping.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/disk_utils.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/key_value_store.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/mqtt_publish_message.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/newrelic_event.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/newrelic_metric.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/scheduler.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/sense_app.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/sense_app_dump.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/sense_list_apps.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/sense_start_task.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/slack_post_message.js'), { options: Object.assign({}, opts) });
 
         // ---------------------------------------------------
         // Configure X-HTTP-Method-Override handling
         await proxyRestServer.register(FastifyReplyFrom, {
             // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
             base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                'Butler.restServerConfig.backgroundServerPort'
+                'Butler.restServerConfig.backgroundServerPort',
             )}`,
             http: true,
         });
@@ -294,6 +300,84 @@ async function build(opts = {}) {
         globals.logger.info('MAIN: Will not set up REST server as it is disabled in the config file.');
     }
 
+    // Set up config server, if enabled
+    if (globals.config.get('Butler.configVisualisation.enable') === true) {
+        // Register rate limit for API
+        // 0 means no rate limit
+
+        // This code registers the FastifyRateLimit plugin.
+        // The plugin limits the number of API requests that
+        // can be made from a given IP address within a given
+        // time window.
+
+        // 30 requests per minute
+        await configVisServer.register(FastifyRateLimit, {
+            max: 300,
+            timeWindow: '1 minute',
+        });
+
+        // Add custom error handler for 429 errors (rate limit exceeded)
+        configVisServer.setErrorHandler((error, request, reply) => {
+            if (error.statusCode === 429) {
+                globals.logger.warn(
+                    `CONFIG VIS: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`,
+                );
+            }
+            reply.send(error);
+        });
+
+        // This loads all plugins defined in plugins.
+        // Those should be support plugins that are reused through your application
+        await configVisServer.register(import('./plugins/sensible.js'), { options: Object.assign({}, opts) });
+        await configVisServer.register(import('./plugins/support.js'), { options: Object.assign({}, opts) });
+
+        // Create absolute path to the html directory
+        const htmlDir = path.resolve(dirname, '../static/configvis');
+        globals.logger.info(`CONFIG VIS: Serving static files from ${htmlDir}`);
+
+        await configVisServer.register(FastifyStatic, {
+            root: htmlDir,
+            constraints: {}, // optional: default {}. Example: { host: 'example.com' }
+            redirect: true, // Redirect to trailing '/' when the pathname is a dir
+        });
+
+        configVisServer.get('/', async (request, reply) => {
+            // Obfuscate the config object before sending it to the client
+            // First get clean copy of the config object
+            let newConfig = JSON.parse(JSON.stringify(globals.config));
+
+            if (globals.config.get('Butler.configVisualisation.obfuscate')) {
+                // Obfuscate config file before presenting it to the user
+                // This is done to avoid leaking sensitive information
+                // to users who should not have access to it.
+                // The obfuscation is done by replacing parts of the
+                // config file with masked strings.
+                newConfig = configObfuscate(newConfig);
+            }
+
+            // Convert the (potentially obfuscated) config object to YAML format (=string)
+            const butlerConfigYaml = yaml.dump(newConfig);
+
+            // Read index.html from disk
+            const filePath = path.join(htmlDir, 'index.html');
+            const template = fs.readFileSync(filePath, 'utf8');
+
+            // Compile handlebars template
+            const compiledTemplate = handlebars.compile(template);
+
+            // Get config as HTML encoded JSON string
+            const butlerConfigJsonEncoded = JSON.stringify(newConfig);
+
+            // Render the template
+            const renderedText = compiledTemplate({ butlerConfigJsonEncoded, butlerConfigYaml });
+
+            globals.logger.debug(`CONFIG VIS: Rendered text: ${renderedText}`);
+
+            // Send reply as HTML
+            reply.code(200).header('Content-Type', 'text/html; charset=utf-8').send(renderedText);
+        });
+    }
+
     // Load already defined schedules
     if (globals.config.has('Butler.scheduler')) {
         if (globals.config.get('Butler.scheduler.enable') === true) {
@@ -307,7 +391,7 @@ async function build(opts = {}) {
 
     await dockerHealthCheckServer.register(FastifyHealthcheck);
 
-    return { restServer, proxyRestServer, dockerHealthCheckServer };
+    return { restServer, proxyRestServer, dockerHealthCheckServer, configVisServer };
 }
 
 export default build;

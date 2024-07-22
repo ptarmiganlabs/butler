@@ -4,9 +4,9 @@ import httpErrors from 'http-errors';
 import anyBase from 'any-base';
 
 // Load global variables and functions
-import globals from '../globals.js';
-import { logRESTCall } from '../lib/log_rest_call.js';
-import { apiGetBase16ToBase62, apiGetBase62ToBase16 } from '../api/base_conversion.js';
+import globals from '../../globals.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import { apiGetBase16ToBase62, apiGetBase62ToBase16 } from '../../api/base_conversion.js';
 
 const base62_to_Hex = anyBase('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789abcdef');
 const hex_to_base62 = anyBase('0123456789abcdef', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
@@ -26,7 +26,7 @@ async function handlerGetBase62ToBase16(request, reply) {
         return null;
     } catch (err) {
         globals.logger.error(
-            `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`
+            `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed converting from base62 to base16'));
         return null;
@@ -48,7 +48,7 @@ async function handlerGetBase16ToBase62(request, reply) {
         return null;
     } catch (err) {
         globals.logger.error(
-            `BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(err, null, 2)}`
+            `BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed converting from base16 to base62'));
         return null;

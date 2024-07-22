@@ -112,7 +112,7 @@ export function exists(logger, serviceName, host = null) {
                 }
 
                 rejectExists(err);
-            }
+            },
         );
     });
 }
@@ -391,17 +391,17 @@ export function details(logger, serviceName, host = null) {
             logger.verbose(
                 `WINSVC DETAILS: Service ${serviceName} has exe path ${lines
                     .find((line) => line.indexOf('BINARY_PATH_NAME') !== -1)
-                    .replace(/\s*BINARY_PATH_NAME\s*: /, '')}`
+                    .replace(/\s*BINARY_PATH_NAME\s*: /, '')}`,
             );
             logger.verbose(
                 `WINSVC DETAILS: Service ${serviceName} has display name ${lines
                     .find((line) => line.indexOf('DISPLAY_NAME') !== -1)
-                    .replace(/\s*DISPLAY_NAME\s*: /, '')}`
+                    .replace(/\s*DISPLAY_NAME\s*: /, '')}`,
             );
             logger.verbose(
                 `WINSVC DETAILS: Service ${serviceName} has name ${lines
                     .find((line) => line.indexOf('SERVICE_NAME: ') !== -1)
-                    .replace('SERVICE_NAME: ', '')}`
+                    .replace('SERVICE_NAME: ', '')}`,
             );
 
             resolve({

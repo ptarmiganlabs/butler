@@ -1,10 +1,10 @@
 import httpErrors from 'http-errors';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import apiPutMqttMessage from '../api/mqtt_publish_message.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import apiPutMqttMessage from '../../api/mqtt_publish_message.js';
 
 // eslint-disable-next-line consistent-return
 function handlerPutMqttMessage(request, reply) {
@@ -28,8 +28,8 @@ function handlerPutMqttMessage(request, reply) {
                     `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
                         err,
                         null,
-                        2
-                    )}`
+                        2,
+                    )}`,
                 );
                 reply.send(httpErrors(500, 'Failed publishing MQTT message'));
             }
@@ -39,8 +39,8 @@ function handlerPutMqttMessage(request, reply) {
             `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
         reply.send(httpErrors(500, 'Failed publishing MQTT message'));
     }

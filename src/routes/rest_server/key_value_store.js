@@ -2,10 +2,17 @@
 import httpErrors from 'http-errors';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import { getNamespaceList, getNamespace, deleteNamespace, addKeyValuePair, deleteKeyValuePair, getValue } from '../lib/key_value_store.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import {
+    getNamespaceList,
+    getNamespace,
+    deleteNamespace,
+    addKeyValuePair,
+    deleteKeyValuePair,
+    getValue,
+} from '../../lib/key_value_store.js';
 import {
     apiGetAllNamespaces,
     apiGetKVPair,
@@ -14,7 +21,7 @@ import {
     apiDeleteKVPair,
     apiDeleteNamespace,
     apiGetKeysInNamespace,
-} from '../api/key_value_store.js';
+} from '../../api/key_value_store.js';
 
 async function handlerGetNamespaceList(request, reply) {
     try {
@@ -75,8 +82,8 @@ async function handlerGetKeyValueInNamespace(request, reply) {
             `KEYVALUE: Failed getting key '${request.query.key}' in namespace: ${request.params.namespace}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
         reply.send(httpErrors(500, 'Failed getting key-value data'));
     }
@@ -130,7 +137,7 @@ async function handlerKeyExists(request, reply) {
         globals.logger.error(
             `KEYVALUE: Failed checking if key '${request.query.key}' exists in namespace: ${
                 request.params.namespace
-            }, error is: ${JSON.stringify(err, null, 2)}`
+            }, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed getting key-value data'));
     }
@@ -162,7 +169,7 @@ async function handlerPostKeyValueInNamespace(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `KEYVALUE: Failed adding key-value to namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`
+            `KEYVALUE: Failed adding key-value to namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed adding key-value to namespace'));
     }
@@ -212,8 +219,8 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
             `KEYVALUE: Failed deleting key '${request.params.key}' in namespace: ${request.params.namespace}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
         reply.send(httpErrors(500, 'Failed deleting key-value data'));
     }
@@ -303,7 +310,7 @@ async function handlerGetKeyList(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `KEYVALUE: Failed getting list of keys in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`
+            `KEYVALUE: Failed getting list of keys in namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed getting list of keys in namespace'));
     }

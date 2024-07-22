@@ -1,11 +1,11 @@
 import httpErrors from 'http-errors';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import slackSend from '../lib/slack_api.js';
-import apiPutSlackPostMessage from '../api/slack_post_message.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import slackSend from '../../lib/slack_api.js';
+import apiPutSlackPostMessage from '../../api/slack_post_message.js';
 
 async function handlerPutSlackPostMessage(request, reply) {
     try {
@@ -40,7 +40,7 @@ async function handlerPutSlackPostMessage(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`
+            `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed sending Slack message'));
     }

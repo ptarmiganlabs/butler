@@ -6,9 +6,9 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import upath from 'upath';
 
-import globals from '../globals.js';
-import { logRESTCall } from '../lib/log_rest_call.js';
-import { apiGetSenseAppDump, apiGetAppDump } from '../api/sense_app_dump.js';
+import globals from '../../globals.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import { apiGetSenseAppDump, apiGetAppDump } from '../../api/sense_app_dump.js';
 
 async function handlerGetSenseAppDump(request, reply) {
     try {

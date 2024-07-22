@@ -30,11 +30,11 @@ export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) 
         // Get info about the task
         try {
             localLogger.debug(
-                `ISCPVALUESET: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
+                `ISCPVALUESET: task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`,
             );
 
             const result = await qrsInstance.Get(
-                `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`
+                `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`,
             );
             localLogger.debug(`ISCPVALUESET: Got response: ${result.statusCode} for CP ${cpName}`);
 

@@ -26,7 +26,7 @@ function addCronEntry(newSchedule) {
                 // eslint-disable-next-line no-unneeded-ternary
                 newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? true : false,
             timeZone: newSchedule.timeZone,
-        }
+        },
     );
 }
 
@@ -50,7 +50,7 @@ export function addSchedule(newSchedule) {
         globals.logger.verbose(`SCHEDULER: Added new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
     } catch (err) {
         globals.logger.error(
-            `SCHEDULER: Failed adding new schedule ${JSON.stringify(newSchedule, null, 2)}: ${JSON.stringify(err, null, 2)}`
+            `SCHEDULER: Failed adding new schedule ${JSON.stringify(newSchedule, null, 2)}: ${JSON.stringify(err, null, 2)}`,
         );
     }
 }

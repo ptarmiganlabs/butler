@@ -64,7 +64,7 @@ function getSlackReloadFailedNotificationConfigOk() {
         if (!globals.config.get('Butler.slackNotification.reloadTaskFailure.enable')) {
             // Slack task falure notifications are disabled
             globals.logger.error(
-                "SLACK RELOAD TASK FAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message"
+                "SLACK RELOAD TASK FAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message",
             );
             return false;
         }
@@ -76,8 +76,8 @@ function getSlackReloadFailedNotificationConfigOk() {
             // Invalid Slack message type
             globals.logger.error(
                 `SLACK RELOAD TASK FAILED: Invalid Slack message type: ${globals.config.get(
-                    'Butler.slackNotification.reloadTaskFailure.messageType'
-                )}`
+                    'Butler.slackNotification.reloadTaskFailure.messageType',
+                )}`,
             );
             return false;
         }
@@ -146,7 +146,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
         if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
             // Slack task aborted notifications are disabled
             globals.logger.error(
-                "SLACK RELOAD TASK ABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message"
+                "SLACK RELOAD TASK ABORTED: Reload aborted Slack notifications are disabled in config file - won't send Slack message",
             );
             return false;
         }
@@ -158,8 +158,8 @@ function getSlackReloadAbortedNotificationConfigOk() {
             // Invalid Slack message type
             globals.logger.error(
                 `SLACK RELOAD TASK ABORTED: Invalid Slack message type: ${globals.config.get(
-                    'Butler.slackNotification.reloadTaskAborted.messageType'
-                )}`
+                    'Butler.slackNotification.reloadTaskAborted.messageType',
+                )}`,
             );
             return false;
         }
@@ -230,7 +230,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable')) {
             // Slack notifications are disabled
             globals.logger.error(
-                "SLACK SERVICE MONITOR: SLACK SERVICE MONITOR notifications are disabled in config file - won't send Slack message"
+                "SLACK SERVICE MONITOR: SLACK SERVICE MONITOR notifications are disabled in config file - won't send Slack message",
             );
             return false;
         }
@@ -242,8 +242,8 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
             // Invalid Slack message type
             globals.logger.error(
                 `SLACK SERVICE MONITOR: Invalid Slack message type: ${globals.config.get(
-                    'Butler.slackNotification.serviceStopped.messageType'
-                )}`
+                    'Butler.slackNotification.serviceStopped.messageType',
+                )}`,
             );
             return false;
         }
@@ -255,8 +255,8 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
             // Invalid Slack message type
             globals.logger.error(
                 `SLACK SERVICE MONITOR: Invalid Slack message type: ${globals.config.get(
-                    'Butler.slackNotification.serviceStarted.messageType'
-                )}`
+                    'Butler.slackNotification.serviceStarted.messageType',
+                )}`,
             );
             return false;
         }
@@ -466,7 +466,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SLACK RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `SLACK RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(`SLACK RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -562,7 +562,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 // https://api.slack.com/reference/block-kit/blocks#section_fields
                 if (templateContext.scriptLogHead.length >= 3000) {
                     globals.logger.warn(
-                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&', '&amp;')
@@ -586,7 +586,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
 
                 if (templateContext.scriptLogTail.length >= 3000) {
                     globals.logger.warn(
-                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&', '&amp;')
@@ -616,7 +616,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
         })
         .catch((err) => {
             globals.logger.warn(
-                `SLACK RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+                `SLACK RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`,
             );
             globals.logger.debug(`SLACK RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
@@ -628,7 +628,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SLACK RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `SLACK RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(`SLACK RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -709,7 +709,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 // https://api.slack.com/reference/block-kit/blocks#section_fields
                 if (templateContext.scriptLogHead.length >= 3000) {
                     globals.logger.warn(
-                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&', '&amp;')
@@ -733,7 +733,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
 
                 if (templateContext.scriptLogTail.length >= 3000) {
                     globals.logger.warn(
-                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&', '&amp;')
@@ -763,7 +763,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         })
         .catch((err) => {
             globals.logger.verbose(
-                `SLACK RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`
+                `SLACK RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Slack for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`SLACK RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });
@@ -775,7 +775,7 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SLACK SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
+                    `SLACK SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`,
                 );
                 globals.logger.verbose(`SLACK SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -809,7 +809,7 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
         })
         .catch((err) => {
             globals.logger.warn(
-                `SLACK SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
+                `SLACK SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`,
             );
             globals.logger.debug(`SLACK SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
         });

@@ -333,7 +333,7 @@ describe('F6: POST /v4/keyvalues/:namespace', () => {
                 },
                 {
                     headers: { Expect: '100-Continue' },
-                }
+                },
             );
         } catch (err) {
             // eslint-disable-next-line no-console

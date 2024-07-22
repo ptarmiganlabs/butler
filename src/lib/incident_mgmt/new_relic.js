@@ -433,7 +433,7 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.request(axiosRequest);
                 globals.logger.debug(
-                    `NEW RELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEW RELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                 );
 
                 if (res.status === 200 || res.status === 202) {
@@ -441,7 +441,7 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
                     globals.logger.verbose(`NEW RELIC EVENT: Sent event New Relic account ${newRelicConfig[0].accountId}`);
                 } else {
                     globals.logger.error(
-                        `NEW RELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                        `NEW RELIC EVENT: Error code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                     );
                 }
             }
@@ -481,7 +481,7 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
             // Reduce script log lines to only the ones we want to send to New Relic
             scriptLogData.scriptLogHeadCount = 0;
             scriptLogData.scriptLogTailCount = globals.config.get(
-                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines'
+                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines',
             );
 
             scriptLogData.scriptLogHead = '';
@@ -568,7 +568,7 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.request(axiosRequest);
                 globals.logger.debug(
-                    `NEW RELIC LOG: Result code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEW RELIC LOG: Result code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                 );
 
                 if (res.status === 200 || res.status === 202) {
@@ -576,7 +576,7 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
                     globals.logger.verbose(`NEW RELIC LOG: Sent log New Relic account ${newRelicConfig[0].accountId}`);
                 } else {
                     globals.logger.error(
-                        `NEW RELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                        `NEW RELIC LOG: Error code from posting log to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                     );
                 }
             }
@@ -605,7 +605,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task event. Task name: "${params.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task event. Task name: "${params.qs_taskName}"`,
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -661,7 +661,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const acct of globals.config.get(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.account',
                     )) {
                         tmpDestNewRelicAccounts.push(acct);
                     }
@@ -670,10 +670,10 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                 // Send event to NR accounts specified by reload task custom property
                 if (
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable',
                     ) &&
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                     )
                 ) {
                     // Get values of custom property
@@ -685,7 +685,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                             if (
                                 cp.definition.name ===
                                 globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                                 )
                             ) {
                                 tmpDestNewRelicAccounts.push(cp.value);
@@ -733,7 +733,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${params.qs_taskName}"`
+                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${params.qs_taskName}"`,
             );
             globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -747,7 +747,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task log entry. Task name: "${params.qs_taskName}"`
+                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task log entry. Task name: "${params.qs_taskName}"`,
                 );
                 globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -801,7 +801,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const acct of globals.config.get(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.always.account',
                     )) {
                         tmpDestNewRelicAccounts.push(acct);
                     }
@@ -810,10 +810,10 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                 // Send log entry to NR accounts specified by reload task custom property
                 if (
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.enable'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.enable',
                     ) &&
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                     )
                 ) {
                     // Get values of custom property
@@ -825,7 +825,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                             if (
                                 cp.definition.name ===
                                 globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                                 )
                             ) {
                                 tmpDestNewRelicAccounts.push(cp.value);
@@ -873,7 +873,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${params.qs_taskName}"`
+                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${params.qs_taskName}"`,
             );
             globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -887,7 +887,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task event. Task name: "${params.qs_taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task event. Task name: "${params.qs_taskName}"`,
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -943,7 +943,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const acct of globals.config.get(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.always.account',
                     )) {
                         tmpDestNewRelicAccounts.push(acct);
                     }
@@ -952,10 +952,10 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                 // Send event to NR accounts specified by reload task custom property
                 if (
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.enable'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.enable',
                     ) &&
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                     )
                 ) {
                     // Get values of custom property
@@ -967,7 +967,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                             if (
                                 cp.definition.name ===
                                 globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName'
+                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                                 )
                             ) {
                                 tmpDestNewRelicAccounts.push(cp.value);
@@ -1015,7 +1015,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${params.qs_taskName}"`
+                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${params.qs_taskName}"`,
             );
             globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -1029,7 +1029,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task log entry. Task name: "${params.qs_taskName}"`
+                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task log entry. Task name: "${params.qs_taskName}"`,
                 );
                 globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -1085,7 +1085,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                 ) {
                     // eslint-disable-next-line no-restricted-syntax
                     for (const acct of globals.config.get(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.always.account',
                     )) {
                         tmpDestNewRelicAccounts.push(acct);
                     }
@@ -1094,10 +1094,10 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                 // Send log entry to NR accounts specified by reload task custom property
                 if (
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.enable'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.enable',
                     ) &&
                     globals.config.has(
-                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                        'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                     )
                 ) {
                     // Get values of custom property
@@ -1109,7 +1109,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                             if (
                                 cp.definition.name ===
                                 globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName'
+                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                                 )
                             ) {
                                 tmpDestNewRelicAccounts.push(cp.value);
@@ -1157,7 +1157,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${params.qs_taskName}"`
+                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${params.qs_taskName}"`,
             );
             globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });

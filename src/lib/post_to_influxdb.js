@@ -27,7 +27,7 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
 
         .then(() => {
             globals.logger.silly(
-                `INFLUXDB MEMORY USAGE: Influxdb datapoint for Butler INFLUXDB MEMORY USAGE: ${JSON.stringify(datapoint, null, 2)}`
+                `INFLUXDB MEMORY USAGE: Influxdb datapoint for Butler INFLUXDB MEMORY USAGE: ${JSON.stringify(datapoint, null, 2)}`,
             );
 
             datapoint = null;
@@ -156,8 +156,8 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
         `INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
             datapoint,
             null,
-            2
-        )}`
+            2,
+        )}`,
     );
 
     datapoint = null;
@@ -359,7 +359,7 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     await globals.influx.writePoints(deepClonedDatapoint);
 
     globals.logger.silly(
-        `INFLUXDB QLIK SENSE LICENSE STATUS: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`
+        `INFLUXDB QLIK SENSE LICENSE STATUS: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
     );
 
     datapoint = null;
@@ -407,7 +407,7 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
     await globals.influx.writePoints(deepClonedDatapoint);
 
     globals.logger.silly(
-        `INFLUXDB QLIK SENSE LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`
+        `INFLUXDB QLIK SENSE LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`,
     );
 
     datapoint = null;
@@ -417,7 +417,7 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
 // Function to store windows service status to InfluxDB
 export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
     globals.logger.verbose(
-        `INFLUXDB WINDOWS SERVICE STATUS: Sending service status to InfluxDB: service="${serviceStatus.serviceFriendlyName}", status="${serviceStatus.serviceStatus}"`
+        `INFLUXDB WINDOWS SERVICE STATUS: Sending service status to InfluxDB: service="${serviceStatus.serviceFriendlyName}", status="${serviceStatus.serviceStatus}"`,
     );
 
     // Create lookup table for Windows service state to numeric value, starting with 1 for stopped
@@ -471,8 +471,8 @@ export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
                 `INFLUXDB WINDOWS SERVICE STATUS: Influxdb datapoint for INFLUXDB WINDOWS SERVICE STATUS: ${JSON.stringify(
                     datapoint,
                     null,
-                    2
-                )}`
+                    2,
+                )}`,
             );
 
             datapoint = null;
@@ -571,7 +571,7 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `INFLUXDB RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                    `INFLUXDB RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
                 datapoint = null;
@@ -696,7 +696,7 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `INFLUXDB RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`
+                    `INFLUXDB RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
                 datapoint = null;

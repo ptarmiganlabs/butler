@@ -64,7 +64,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
         if (!globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable')) {
             // Teams task falure notifications are disabled
             globals.logger.error(
-                "TEAMS RELOAD TASK FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message"
+                "TEAMS RELOAD TASK FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message",
             );
             return false;
         }
@@ -76,8 +76,8 @@ function getTeamsReloadFailedNotificationConfigOk() {
             // Invalid Teams message type
             globals.logger.error(
                 `TEAMS RELOAD TASK FAILED: Invalid Teams message type: ${globals.config.get(
-                    'Butler.teamsNotification.reloadTaskFailure.messageType'
-                )}`
+                    'Butler.teamsNotification.reloadTaskFailure.messageType',
+                )}`,
             );
             return false;
         }
@@ -137,7 +137,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
         if (!globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable')) {
             // Teams task aborted notifications are disabled
             globals.logger.error(
-                "TEAMS RELOAD TASK ABORTED: Reload aborted Teams notifications are disabled in config file - won't send Teams message"
+                "TEAMS RELOAD TASK ABORTED: Reload aborted Teams notifications are disabled in config file - won't send Teams message",
             );
             return false;
         }
@@ -149,8 +149,8 @@ function getTeamsReloadAbortedNotificationConfigOk() {
             // Invalid Teams message type
             globals.logger.error(
                 `TEAMS RELOAD TASK ABORTED: Invalid Teams message type: ${globals.config.get(
-                    'Butler.teamsNotification.reloadTaskAborted.messageType'
-                )}`
+                    'Butler.teamsNotification.reloadTaskAborted.messageType',
+                )}`,
             );
             return false;
         }
@@ -215,7 +215,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable')) {
             // Teams notifications are disabled
             globals.logger.error(
-                "TEAMS SERVICE MONITOR: TEAMS SERVICE MONITOR notifications are disabled in config file - won't send Teams message"
+                "TEAMS SERVICE MONITOR: TEAMS SERVICE MONITOR notifications are disabled in config file - won't send Teams message",
             );
             return false;
         }
@@ -227,8 +227,8 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             // Invalid Teams message type
             globals.logger.error(
                 `TEAMS SERVICE MONITOR: Invalid Teams message type: ${globals.config.get(
-                    'Butler.teamsNotification.serviceStopped.messageType'
-                )}`
+                    'Butler.teamsNotification.serviceStopped.messageType',
+                )}`,
             );
             return false;
         }
@@ -240,8 +240,8 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
             // Invalid Teams message type
             globals.logger.error(
                 `TEAMS SERVICE MONITOR: Invalid Teams message type: ${globals.config.get(
-                    'Butler.teamsNotification.serviceStopped.messageType'
-                )}`
+                    'Butler.teamsNotification.serviceStopped.messageType',
+                )}`,
             );
             return false;
         }
@@ -427,7 +427,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TEAMS RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `TEAMS RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(`TEAMS RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -507,7 +507,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 // Check if script log is longer than 3000 characters. Truncate if so.
                 if (templateContext.scriptLogHead.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`,
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&', '&amp;')
@@ -531,7 +531,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
 
                 if (templateContext.scriptLogTail.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`,
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&', '&amp;')
@@ -562,7 +562,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.warn(
-                `TEAMS RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
+                `TEAMS RELOAD TASK FAILED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`,
             );
             globals.logger.debug(`TEAMS RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -574,7 +574,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TEAMS RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `TEAMS RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(`TEAMS RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -653,7 +653,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 // Check if script log is longer than 3000 characters. Truncate if so.
                 if (templateContext.scriptLogHead.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`,
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&', '&amp;')
@@ -677,7 +677,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
 
                 if (templateContext.scriptLogTail.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`
+                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`,
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&', '&amp;')
@@ -708,7 +708,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TEAMS RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`
+                `TEAMS RELOAD TASK ABORTED: Rate limiting failed. Not sending reload notification Teams for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`TEAMS RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -720,7 +720,7 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TEAMS SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`
+                    `TEAMS SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`,
                 );
                 globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -756,7 +756,7 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TEAMS SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`
+                `TEAMS SERVICE MONITOR: Rate limiting failed. Not sending service monitor notification for service "${serviceParams.serviceName}" on host "${serviceParams.host}"`,
             );
             globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });

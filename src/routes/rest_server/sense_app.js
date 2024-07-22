@@ -7,11 +7,11 @@ import { fileURLToPath } from 'url';
 import upath from 'upath';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import senseStartTask from '../qrs_util/sense_start_task.js';
-import { logRESTCall } from '../lib/log_rest_call.js';
-import apiPutAppReload from '../api/sense_app.js';
+import senseStartTask from '../../qrs_util/sense_start_task.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import apiPutAppReload from '../../api/sense_app.js';
 
 async function handlerPutAppReload(request, reply) {
     try {
@@ -110,7 +110,7 @@ async function handlerPutAppReload(request, reply) {
 
             const engineVersion = await global.engineVersion();
             globals.logger.verbose(
-                `APPRELOAD: Starting reload of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
+                `APPRELOAD: Starting reload of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
             );
 
             const app = await global.openDoc(request.params.appId, '', '', '', false);
@@ -121,28 +121,28 @@ async function handlerPutAppReload(request, reply) {
                 await app.doSave();
 
                 globals.logger.verbose(
-                    `APPRELOAD: Reload success of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
+                    `APPRELOAD: Reload success of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
                 );
                 // Start downstream tasks, if such were specified in the request body
 
                 // eslint-disable-next-line no-restricted-syntax
                 for (const taskId of startQSEoWTaskOnSuccess) {
                     globals.logger.verbose(
-                        `APPRELOAD: Starting task ${taskId} after reloading success of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
+                        `APPRELOAD: Starting task ${taskId} after reloading success of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
                     );
 
                     senseStartTask(taskId);
                 }
             } else {
                 globals.logger.warn(
-                    `APPRELOAD: Reload failure of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
+                    `APPRELOAD: Reload failure of app ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
                 );
 
                 // Start downstream tasks, if such were specified in the request body
                 // eslint-disable-next-line no-restricted-syntax
                 for (const taskId of startQSEoWTaskOnFailure) {
                     globals.logger.verbose(
-                        `APPRELOAD: Starting task ${taskId} after reloading failure of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`
+                        `APPRELOAD: Starting task ${taskId} after reloading failure of ${request.params.appId} on host ${globals.configEngine.host}, engine version is ${engineVersion.qComponentVersion}.`,
                     );
 
                     senseStartTask(taskId);
@@ -152,11 +152,11 @@ async function handlerPutAppReload(request, reply) {
             try {
                 if ((await session.close()) === true) {
                     globals.logger.debug(
-                        `APPRELOAD: Closed session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`
+                        `APPRELOAD: Closed session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`,
                     );
                 } else {
                     globals.logger.error(
-                        `APPRELOAD: Error closing session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`
+                        `APPRELOAD: Error closing session after reloading app ${request.params.appId} on host ${globals.configEngine.host}`,
                     );
                 }
             } catch (err) {
@@ -169,8 +169,8 @@ async function handlerPutAppReload(request, reply) {
             `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}, stack: ${err.stack}.`
+                2,
+            )}, stack: ${err.stack}.`,
         );
         reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }

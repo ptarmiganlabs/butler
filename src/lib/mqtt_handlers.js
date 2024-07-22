@@ -85,7 +85,7 @@ function mqttInitHandlers() {
                 // Connect to MQTT broker
                 mqttClient = mqtt.connect(
                     `mqtts://${config.get('Butler.mqttConfig.brokerHost')}:${config.get('Butler.mqttConfig.brokerPort')}`,
-                    mqttOptions
+                    mqttOptions,
                 );
 
                 globals.mqttClient = mqttClient;
@@ -96,8 +96,8 @@ function mqttInitHandlers() {
             if (!mqttClient.connected) {
                 logger.verbose(
                     `MQTT INIT HANDLERS: Created (but not yet connected) MQTT object for ${config.get(
-                        'Butler.mqttConfig.brokerHost'
-                    )}:${config.get('Butler.mqttConfig.brokerPort')}`
+                        'Butler.mqttConfig.brokerHost',
+                    )}:${config.get('Butler.mqttConfig.brokerPort')}`,
                 );
             }
 
@@ -107,8 +107,8 @@ function mqttInitHandlers() {
                     try {
                         logger.info(
                             `Connected to MQTT server ${config.get('Butler.mqttConfig.brokerHost')}:${config.get(
-                                'Butler.mqttConfig.brokerPort'
-                            )}, with client ID ${mqttClient.options.clientId}`
+                                'Butler.mqttConfig.brokerPort',
+                            )}, with client ID ${mqttClient.options.clientId}`,
                         );
 
                         // Let the world know that Butler is connected to MQTT
@@ -116,8 +116,8 @@ function mqttInitHandlers() {
                         mqttClient.publish(
                             'qliksense/butler/mqtt/status',
                             `Connected to MQTT broker ${config.get('Butler.mqttConfig.brokerHost')}:${config.get(
-                                'Butler.mqttConfig.brokerPort'
-                            )} with client ID ${mqttClient.options.clientId}`
+                                'Butler.mqttConfig.brokerPort',
+                            )} with client ID ${mqttClient.options.clientId}`,
                         );
 
                         // Have Butler listen to all messages in the topic subtree specified in the config file

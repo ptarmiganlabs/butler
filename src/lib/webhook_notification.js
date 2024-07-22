@@ -84,7 +84,7 @@ function getOutgoingWebhookReloadFailedNotificationConfigOk() {
         ) {
             // Not enough info in config file
             globals.logger.error(
-                'WEBHOOK OUT RELOAD TASK FAILED: Reload failure outgoing webhook config info missing in Butler config file'
+                'WEBHOOK OUT RELOAD TASK FAILED: Reload failure outgoing webhook config info missing in Butler config file',
             );
             return false;
         }
@@ -111,7 +111,7 @@ function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
         ) {
             // Not enough info in config file
             globals.logger.error(
-                'WEBHOOK OUT RELOAD TASK ABORTED: Reload aborted outgoing webhook config info missing in Butler config file'
+                'WEBHOOK OUT RELOAD TASK ABORTED: Reload aborted outgoing webhook config info missing in Butler config file',
             );
             return false;
         }
@@ -155,7 +155,7 @@ function getOutgoingWebhookServiceMonitorConfig() {
 
             if (!globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable')) {
                 globals.logger.error(
-                    'SERVICE MONITOR WEBHOOK: Missing config entry "Butler.serviceMonitor.alertDestination.webhook.enable"'
+                    'SERVICE MONITOR WEBHOOK: Missing config entry "Butler.serviceMonitor.alertDestination.webhook.enable"',
                 );
             }
 
@@ -465,7 +465,7 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                     }
                 } catch (err) {
                     globals.logger.error(
-                        `SERVICE MONITOR WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`
+                        `SERVICE MONITOR WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`,
                     );
                     throw err;
                 }
@@ -627,14 +627,14 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
                         // Make sure webhook.cert.rejectUnauthorized is a boolean
                         if (typeof webhook.cert.rejectUnauthorized !== 'boolean') {
                             throw new Error(
-                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.rejectUnauthorized property should be a boolean '
+                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.rejectUnauthorized property should be a boolean ',
                             );
                         }
 
                         // Make sure CA cert file in webhook.cert.certCA is a string
                         if (typeof webhook.cert.certCA !== 'string') {
                             throw new Error(
-                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.certCA property should be a string'
+                                'WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: Webhook cert.certCA property should be a string',
                             );
                         }
 
@@ -648,8 +648,8 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
                         `WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${err}. Invalid outgoing webhook config: ${JSON.stringify(
                             webhook,
                             null,
-                            2
-                        )}`
+                            2,
+                        )}`,
                     );
                     throw err;
                 }
@@ -770,10 +770,10 @@ export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(
-                    `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
@@ -790,7 +790,7 @@ export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting failed. Not sending reload failure notification via outgoing webhook for task "${reloadParams.taskName}"`
+                `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting failed. Not sending reload failure notification via outgoing webhook for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -802,10 +802,10 @@ export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(
-                    `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -822,7 +822,7 @@ export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting failed. Not sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`
+                `WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting failed. Not sending reload aborted notification via outgoing webhook for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`WEBHOOK OUT RELOAD TASK ABORTED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -834,7 +834,7 @@ export function sendServiceMonitorWebhook(svc) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SERVICE MONITOR WEBHOOK: Rate limiting check passed for service monitor notification. Service name: "${svc.serviceName}"`
+                    `SERVICE MONITOR WEBHOOK: Rate limiting check passed for service monitor notification. Service name: "${svc.serviceName}"`,
                 );
                 globals.logger.verbose(`SERVICE MONITOR WEBHOOK: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -862,7 +862,7 @@ export function sendServiceMonitorWebhook(svc) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting failed. Not sending service monitor notification via outgoing webhook for service "${svc.serviceName}"`
+                `WEBHOOK OUT RELOAD TASK FAILED: Rate limiting failed. Not sending service monitor notification via outgoing webhook for service "${svc.serviceName}"`,
             );
             globals.logger.verbose(`WEBHOOK OUT RELOAD TASK FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -887,10 +887,10 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting check passed for Qlik Sense server license monitor notification`
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting check passed for Qlik Sense server license monitor notification`,
                     );
                     globals.logger.verbose(
-                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -907,10 +907,10 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
             })
             .catch((rateLimiterRes) => {
                 globals.logger.verbose(
-                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting failed. Not sending Qlik Sense server license monitor notification via outgoing webhook`
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting failed. Not sending Qlik Sense server license monitor notification via outgoing webhook`,
                 );
                 globals.logger.verbose(
-                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
             });
     } else if (
@@ -923,10 +923,10 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting check passed for Qlik Sense server license expiry alert`
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting check passed for Qlik Sense server license expiry alert`,
                     );
                     globals.logger.verbose(
-                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -943,10 +943,10 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
             })
             .catch((rateLimiterRes) => {
                 globals.logger.verbose(
-                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting failed. Not sending Qlik Sense server license expiry alert via outgoing webhook`
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting failed. Not sending Qlik Sense server license expiry alert via outgoing webhook`,
                 );
                 globals.logger.verbose(
-                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `WEBHOOK OUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
             });
     }

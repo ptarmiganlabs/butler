@@ -130,10 +130,10 @@ export function sendReloadTaskFailureNotification(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`
+                    `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(
-                    `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
@@ -151,7 +151,7 @@ export function sendReloadTaskFailureNotification(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`
+                `SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload failure notification to Signl4 for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`SIGNL4 RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -163,10 +163,10 @@ export function sendReloadTaskAbortedNotification(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`
+                    `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}"`,
                 );
                 globals.logger.verbose(
-                    `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                    `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure outgoing webhooks are enabled in the config file and that we have all required settings
@@ -184,7 +184,7 @@ export function sendReloadTaskAbortedNotification(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`
+                `SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload aborted notification to Signl4 for task "${reloadParams.taskName}"`,
             );
             globals.logger.verbose(`SIGNL4 RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
