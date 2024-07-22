@@ -1,5 +1,24 @@
 # Changelog
 
+## [12.5.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.2...butler-v12.5.0) (2024-07-22)
+
+
+### Features
+
+* **config-vis:** Show current config in web page ([b53eaf7](https://github.com/ptarmiganlabs/butler/commit/b53eaf7053e0319273c685afd6a400b370d1c7af)), closes [#1199](https://github.com/ptarmiganlabs/butler/issues/1199)
+
+
+### Bug Fixes
+
+* **test:** Fix broken test of `buterping` API endpoint ([39827c8](https://github.com/ptarmiganlabs/butler/commit/39827c82852c5dc0eb0c54943279aa6f14c36c51))
+
+
+### Miscellaneous
+
+* Bump Docker build action to v6 ([6793cae](https://github.com/ptarmiganlabs/butler/commit/6793caea16a09f3c58b76659181dd05f64576d03))
+* **deps:** Update dependencies ([e18ce59](https://github.com/ptarmiganlabs/butler/commit/e18ce59fa4f5485c62e668c699545a4191199d69))
+* Update to use latest release-please action ([d0d8a62](https://github.com/ptarmiganlabs/butler/commit/d0d8a624b946f2eeee8bd0fac643cdb883fcb776))
+
 ## [12.4.2](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.1...butler-v12.4.2) (2024-07-03)
 
 
