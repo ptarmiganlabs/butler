@@ -1,15 +1,16 @@
 import axios from 'axios';
 import config from 'config';
 
-// Load global variables and functions
-import globals from '../../globals.js';
-
 const instance = axios.create({
     baseURL: `http://localhost:${config.get('Butler.restServerConfig.serverPort')}`,
     timeout: 15000,
 });
 
 let result;
+
+// Load globals dynamically/async to ensure singleton pattern works
+const settingsObj = (await import('../../globals.js')).default;
+const globals = await settingsObj.init();
 
 // Get app version from package.json
 const { appVersion } = globals;
