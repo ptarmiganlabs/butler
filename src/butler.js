@@ -105,6 +105,27 @@ const start = async () => {
     const { restServer } = apps;
     const { proxyRestServer } = apps;
     const { dockerHealthCheckServer } = apps;
+    const { configVisServer } = apps;
+
+    configVisServer.listen(
+        {
+            host: globals.config.get('Butler.configVisualisation.host'),
+            port: globals.config.get('Butler.configVisualisation.port'),
+        },
+        (err, address) => {
+            if (err) {
+                globals.logger.error(`MAIN: Could not set up config visualisation server on ${address}`);
+                globals.logger.error(`MAIN: ${err.stack}`);
+                configVisServer.log.error(err);
+                process.exit(1);
+            }
+            globals.logger.verbose(`MAIN: Config visualisation server listening on ${address}`);
+
+            configVisServer.ready((err2) => {
+                if (err2) throw err;
+            });
+        },
+    );
 
     // ---------------------------------------------------
     // Start REST server on port 8080
@@ -131,7 +152,7 @@ const start = async () => {
                     if (err2) throw err;
                     restServer.swagger();
                 });
-            }
+            },
         );
 
         proxyRestServer.listen(
@@ -151,7 +172,7 @@ const start = async () => {
                 proxyRestServer.ready((err2) => {
                     if (err2) throw err;
                 });
-            }
+            },
         );
     }
 
@@ -170,7 +191,7 @@ const start = async () => {
             globals.logger.info(`MAIN: Started Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`);
         } catch (err) {
             globals.logger.error(
-                `MAIN: Error while starting Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`
+                `MAIN: Error while starting Docker healthcheck server on port ${globals.config.get('Butler.dockerHealthCheck.port')}.`,
             );
             dockerHealthCheckServer.log.error(err);
             process.exit(1);

@@ -167,7 +167,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SERVICE MONITOR NEWRELIC: Rate limiting check passed for service state event. Service name: "${params.serviceName}"`
+                    `SERVICE MONITOR NEWRELIC: Rate limiting check passed for service state event. Service name: "${params.serviceName}"`,
                 );
                 globals.logger.verbose(`SERVICE MONITOR NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -192,7 +192,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
                 }
                 if (
                     globals.config.get(
-                        'Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.dynamic.serviceDisplayName'
+                        'Butler.incidentTool.newRelic.serviceMonitor.destination.event.attribute.dynamic.serviceDisplayName',
                     ) === true
                 ) {
                     serviceStateConfig.attributes.butler_serviceDisplayName = serviceStatusParams.serviceDetails.displayName;
@@ -226,7 +226,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
                 globals.logger.verbose(
                     `SERVICE MONITOR NEWRELIC: Sending service state event to New Relic for service "${
                         params.serviceName
-                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`
+                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`,
                 );
 
                 sendNewRelicEvent(
@@ -240,7 +240,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
                         serviceExePath: params.serviceDetails.exePath,
                         serviceDependencies: params.serviceDetails.dependencies,
                     },
-                    destNewRelicAccounts
+                    destNewRelicAccounts,
                 );
                 return null;
             } catch (err) {
@@ -250,7 +250,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `SERVICE MONITOR NEWRELIC: Rate limiting failed. Not sending service state event to New Relic for service "${params.serviceName}"`
+                `SERVICE MONITOR NEWRELIC: Rate limiting failed. Not sending service state event to New Relic for service "${params.serviceName}"`,
             );
             globals.logger.verbose(`SERVICE MONITOR NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
@@ -264,7 +264,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SERVICE MONITOR NEWRELIC: Rate limiting check passed for service state log entry. Service name: "${params.serviceName}"`
+                    `SERVICE MONITOR NEWRELIC: Rate limiting check passed for service state log entry. Service name: "${params.serviceName}"`,
                 );
                 globals.logger.verbose(`SERVICE MONITOR NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -287,7 +287,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
                 }
                 if (
                     globals.config.get(
-                        'Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.dynamic.serviceDisplayName'
+                        'Butler.incidentTool.newRelic.serviceMonitor.destination.log.attribute.dynamic.serviceDisplayName',
                     ) === true
                 ) {
                     serviceStateConfig.attributes.butler_serviceDisplayName = serviceStatusParams.serviceDetails.displayName;
@@ -321,7 +321,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
                 globals.logger.verbose(
                     `SERVICE MONITOR NEWRELIC: Sending service state log to New Relic for service "${
                         params.serviceName
-                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`
+                    }" to accounts: ${JSON.stringify(destNewRelicAccounts, null, 2)}`,
                 );
 
                 sendNewRelicLog(
@@ -335,7 +335,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
                         serviceExePath: params.serviceDetails.exePath,
                         serviceDependencies: params.serviceDetails.dependencies,
                     },
-                    destNewRelicAccounts
+                    destNewRelicAccounts,
                 );
                 return null;
             } catch (err) {
@@ -345,7 +345,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `SERVICE MONITOR NEWRELIC: Rate limiting failed. Not sending service state log entry to New Relic for service "${params.serviceName}"`
+                `SERVICE MONITOR NEWRELIC: Rate limiting failed. Not sending service state log entry to New Relic for service "${params.serviceName}"`,
             );
             globals.logger.verbose(`SERVICE MONITOR NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });

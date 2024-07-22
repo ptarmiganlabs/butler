@@ -2,9 +2,9 @@ import httpErrors from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
 import {
     getSchedulesStatus,
     existsSchedule,
@@ -16,7 +16,7 @@ import {
     getSchedule,
     startAllSchedules,
     stopAllSchedules,
-} from '../lib/scheduler.js';
+} from '../../lib/scheduler.js';
 
 import {
     apiGETSchedules,
@@ -27,7 +27,7 @@ import {
     apiPUTSchedulesStop,
     apiPUTSchedulesStopAll,
     apiGETSchedulerStatus,
-} from '../api/scheduler.js';
+} from '../../api/scheduler.js';
 
 async function handlerGETSchedules(request, reply) {
     try {
@@ -50,7 +50,7 @@ async function handlerGETSchedules(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed retrieving schedule with ID ${request.query.id}, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed retrieving schedule with ID ${request.query.id}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed retrieving schedule'));
     }
@@ -70,7 +70,7 @@ async function handlerPOSTSchedules(request, reply) {
         reply.code(201).send(JSON.stringify(newSchedule));
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed adding new schedule ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed adding new schedule ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed adding new schedule'));
     }
@@ -90,7 +90,7 @@ async function handlerDELETESchedules(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed deleting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed deleting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed deleting schedule'));
     }
@@ -125,7 +125,7 @@ async function handlerPUTSchedulesStart(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed starting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed starting schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed starting schedule'));
     }
@@ -157,7 +157,7 @@ async function handlerPUTSchedulesStop(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `REST SCHEDULER: Failed stopping schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`
+            `REST SCHEDULER: Failed stopping schedule ${request.params.scheduleId}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed stopping schedule'));
     }

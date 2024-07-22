@@ -212,7 +212,7 @@ describe('H4: PUT /v4/schedules/:scheduleId/start', () => {
         expect(typeof result.data).toBe('object');
     });
 
-    test('Response should contain correct fields', () => {       
+    test('Response should contain correct fields', () => {
         expect(result.data[0].name).toEqual(scheduleName1);
         expect(result.data[0].cronSchedule).toEqual(scheduleCron1);
         expect(result.data[0].timezone).toEqual(scheduleTimezone1);
@@ -272,7 +272,7 @@ describe('H5: PUT /v4/schedules/startall', () => {
                 expect.objectContaining({
                     lastKnownState: 'stopped',
                 }),
-            ])
+            ]),
         );
     });
 });
@@ -386,7 +386,7 @@ describe('H7: PUT /v4/schedules/stopall', () => {
                 expect.objectContaining({
                     lastKnownState: 'started',
                 }),
-            ])
+            ]),
         );
     });
 });

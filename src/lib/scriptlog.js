@@ -301,7 +301,7 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
             reloadLogDir,
             `${reloadParams.logTimeStamp.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-')}_appId=${reloadParams.appId}_taskId=${
                 reloadParams.taskId
-            }.log`
+            }.log`,
         );
 
         globals.logger.info(`SCRIPTLOG STORE: Writing failed task script log: ${fileName}`);

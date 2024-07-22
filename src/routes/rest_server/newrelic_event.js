@@ -2,10 +2,10 @@ import httpErrors from 'http-errors';
 import axios from 'axios';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import apiPostNewRelicEvent from '../api/newrelic_event.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import apiPostNewRelicEvent from '../../api/newrelic_event.js';
 
 // eslint-disable-next-line consistent-return
 async function handlerPostNewRelicEvent(request, reply) {
@@ -109,7 +109,7 @@ async function handlerPostNewRelicEvent(request, reply) {
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.request(axiosRequest);
                 globals.logger.debug(
-                    `NEWRELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEWRELIC EVENT: Result code from posting event to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                 );
 
                 if (res.status === 200 || res.status === 202) {
@@ -127,8 +127,8 @@ async function handlerPostNewRelicEvent(request, reply) {
             `NEWRELIC EVENT: Failed posting event to New Relic: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
         reply.send(httpErrors(500, 'Failed posting event to New Relic'));
     }

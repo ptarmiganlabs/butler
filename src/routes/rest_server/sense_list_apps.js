@@ -6,9 +6,9 @@ import { fileURLToPath } from 'url';
 import upath from 'upath';
 
 // Load global variables and functions
-import globals from '../globals.js';
-import { logRESTCall } from '../lib/log_rest_call.js';
-import { apiGetSenseListApps, apiGetAppsList } from '../api/sense_list_apps.js';
+import globals from '../../globals.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import { apiGetSenseListApps, apiGetAppsList } from '../../api/sense_list_apps.js';
 
 async function handlerGetSenseListApps(request, reply) {
     try {

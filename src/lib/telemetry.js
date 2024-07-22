@@ -451,7 +451,7 @@ const callRemoteURL = async () => {
         globals.logger.error('     While not mandatory the telemetry data greatly helps the Butler developers.');
         globals.logger.error('     It provides insights into which features are used most and what hardware/OSs are used out there.');
         globals.logger.error(
-            '     This information makes it possible to focus development efforts where they will make most impact and be most valuable.'
+            '     This information makes it possible to focus development efforts where they will make most impact and be most valuable.',
         );
         if (err.response) {
             globals.logger.error(`     Error: ${err.response.status} (${err.response.statusText}).`);
@@ -477,7 +477,7 @@ export default function setupAnonUsageReportTimer(logger, hostInfo) {
             () => {
                 callRemoteURL(logger, hostInfo);
             },
-            1000 * 60 * 60 * 12
+            1000 * 60 * 60 * 12,
         ); // Report anon telemetry every 12 hours
 
         // Do an initial report to the remote URL

@@ -5,11 +5,11 @@ import { mkdirp } from 'mkdirp';
 import isUncPath from 'is-unc-path';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import isDirectoryChildOf from '../lib/disk_utils.js';
-import { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } from '../api/disk_utils.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import isDirectoryChildOf from '../../lib/disk_utils.js';
+import { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } from '../../api/disk_utils.js';
 
 async function handlerFileCopy(request, reply) {
     try {
@@ -40,24 +40,24 @@ async function handlerFileCopy(request, reply) {
             if (globals.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                 if (isUncPath(request.body.fromFile) === true) {
                     globals.logger.warn(
-                        `FILE COPY FROM: UNC paths not supported work on non-Windows OSs ("${request.body.fromFile}"). OS is "${globals.hostInfo.si.os.platform}".`
+                        `FILE COPY FROM: UNC paths not supported work on non-Windows OSs ("${request.body.fromFile}"). OS is "${globals.hostInfo.si.os.platform}".`,
                     );
                     reply.send(
                         httpErrors(
                             400,
-                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`
-                        )
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`,
+                        ),
                     );
                 }
                 if (isUncPath(request.body.toFile) === true) {
                     globals.logger.warn(
-                        `FILE COPY TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${globals.hostInfo.si.os.platform}".`
+                        `FILE COPY TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${globals.hostInfo.si.os.platform}".`,
                     );
                     reply.send(
                         httpErrors(
                             400,
-                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`
-                        )
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`,
+                        ),
                     );
                 }
             }
@@ -88,7 +88,7 @@ async function handlerFileCopy(request, reply) {
 
                 if (copyIsOk) {
                     globals.logger.debug(
-                        `FILECOPY: About to copy file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`
+                        `FILECOPY: About to copy file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`,
                     );
 
                     await fs.copySync(fromFile, toFile, {
@@ -97,7 +97,7 @@ async function handlerFileCopy(request, reply) {
                     });
 
                     globals.logger.verbose(
-                        `FILECOPY: Copied file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`
+                        `FILECOPY: Copied file from ${fromFile} to ${toFile}, overwrite=${overwrite}, preserve timestamp=${preserveTimestamp}`,
                     );
 
                     reply.code(201).send({
@@ -108,7 +108,7 @@ async function handlerFileCopy(request, reply) {
                     });
                 } else {
                     globals.logger.error(
-                        `FILECOPY: No approved fromDir/toDir for file copy ${request.body.fromFile} to ${request.body.toFile}`
+                        `FILECOPY: No approved fromDir/toDir for file copy ${request.body.fromFile} to ${request.body.toFile}`,
                     );
                     reply.send(httpErrors(403, 'No approved fromDir/toDir for file copy'));
                 }
@@ -120,7 +120,7 @@ async function handlerFileCopy(request, reply) {
         }
     } catch (err) {
         globals.logger.error(
-            `FILECOPY: Failed copying file ${request.body.fromFile} to ${request.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`
+            `FILECOPY: Failed copying file ${request.body.fromFile} to ${request.body.toFile}, error is: ${JSON.stringify(err, null, 2)}`,
         );
         reply.send(httpErrors(500, 'Failed copying file'));
     }
@@ -149,24 +149,24 @@ async function handlerFileMove(request, reply) {
             if (globals.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                 if (isUncPath(request.body.fromFile) === true) {
                     globals.logger.warn(
-                        `FILE MOVE FROM: UNC paths not supported work on non-Windows OSs ("${request.body.fromFile}"). OS is "${globals.hostInfo.si.os.platform}".`
+                        `FILE MOVE FROM: UNC paths not supported work on non-Windows OSs ("${request.body.fromFile}"). OS is "${globals.hostInfo.si.os.platform}".`,
                     );
                     reply.send(
                         httpErrors(
                             400,
-                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`
-                        )
+                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.fromFile}`,
+                        ),
                     );
                 }
                 if (isUncPath(request.body.toFile) === true) {
                     globals.logger.warn(
-                        `FILE MOVE TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${globals.hostInfo.si.os.platform}".`
+                        `FILE MOVE TO: UNC paths not supported on non-Windows OSs ("${request.body.toFile}"). OS is "${globals.hostInfo.si.os.platform}".`,
                     );
                     reply.send(
                         httpErrors(
                             400,
-                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`
-                        )
+                            `UNC paths not supported for file move operations when running Butler on non-Windows OS. Path: ${request.body.toFile}`,
+                        ),
                     );
                 }
             }
@@ -203,7 +203,7 @@ async function handlerFileMove(request, reply) {
                     reply.code(201).send({ fromFile, toFile, overwrite });
                 } else {
                     globals.logger.error(
-                        `FILEMOVE: No approved fromDir/toDir for file move ${request.body.fromFile} to ${request.body.toFile}`
+                        `FILEMOVE: No approved fromDir/toDir for file move ${request.body.fromFile} to ${request.body.toFile}`,
                     );
                     reply.send(httpErrors(403, 'No approved fromDir/toDir for file move'));
                 }
@@ -232,13 +232,13 @@ async function handlerFileDelete(request, reply) {
             if (globals.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                 if (isUncPath(request.body.deleteFile) === true) {
                     globals.logger.warn(
-                        `FILE DELETE: UNC paths not supported work on non-Windows OSs ("${request.body.deleteFile}"). OS is "${globals.hostInfo.si.os.platform}".`
+                        `FILE DELETE: UNC paths not supported work on non-Windows OSs ("${request.body.deleteFile}"). OS is "${globals.hostInfo.si.os.platform}".`,
                     );
                     reply.send(
                         httpErrors(
                             400,
-                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.deleteFile}`
-                        )
+                            `UNC paths not supported for file copy operations when running Butler on non-Windows OS. Path: ${request.body.deleteFile}`,
+                        ),
                     );
 
                     return;

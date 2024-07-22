@@ -256,7 +256,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: false,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -310,7 +310,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: true,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -363,7 +363,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: false,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -872,7 +872,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: true,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -929,7 +929,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: true,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -986,7 +986,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                     params: {
                         allTaskIdsMustExist: false,
                     },
-                }
+                },
             );
 
             expect(result.status).toBe(200);
@@ -1066,7 +1066,7 @@ if (config.get('Butler.startTaskFilter.enable') === true) {
                 ],
                 {
                     headers: { Expect: '100-Continue' },
-                }
+                },
             );
 
             expect(result.status).toBe(200);

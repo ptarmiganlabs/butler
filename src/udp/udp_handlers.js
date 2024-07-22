@@ -22,7 +22,7 @@ import { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotific
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
     globals.logger.verbose(
-        `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+        `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     // Get script log for failed reloads.
@@ -227,8 +227,8 @@ const schedulerAborted = async (msg) => {
         } else {
             globals.logger.warn(
                 `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                    'Butler.mqttConfig.taskAbortedTopic'
-                )}`
+                    'Butler.mqttConfig.taskAbortedTopic',
+                )}`,
             );
         }
     }
@@ -256,7 +256,7 @@ const schedulerAborted = async (msg) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
-            })
+            }),
         );
     }
 };
@@ -279,7 +279,7 @@ const schedulerFailed = async (msg) => {
     }
 
     globals.logger.verbose(
-        `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+        `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
@@ -516,8 +516,8 @@ const schedulerFailed = async (msg) => {
         } else {
             globals.logger.warn(
                 `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                    'Butler.mqttConfig.taskFailureTopic'
-                )}`
+                    'Butler.mqttConfig.taskFailureTopic',
+                )}`,
             );
         }
     }
@@ -545,7 +545,7 @@ const schedulerFailed = async (msg) => {
                 logMessage: msg[10],
                 qs_appTags: appTags,
                 qs_taskTags: taskTags,
-            })
+            }),
         );
     }
 };
@@ -555,7 +555,7 @@ const schedulerFailed = async (msg) => {
 // --------------------------------------------------------
 const schedulerReloadTaskSuccess = async (msg) => {
     globals.logger.verbose(
-        `RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`
+        `RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     const reloadTaskId = msg[5];
@@ -591,7 +591,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
             reloadTaskId,
             customPropertyName,
             customPropertyValue,
-            globals.logger
+            globals.logger,
         );
 
         if (customPropertyValueForTask) {
@@ -626,12 +626,12 @@ const schedulerReloadTaskSuccess = async (msg) => {
                     taskInfo.executionDuration.seconds === 0
                 ) {
                     globals.logger.warn(
-                        `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`
+                        `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`,
                     );
                 }
 
                 globals.logger.debug(
-                    `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts`
+                    `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts`,
                 );
                 break;
             }
@@ -639,7 +639,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
             retryCount += 1;
 
             globals.logger.verbose(
-                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`
+                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
             );
 
             // eslint-disable-next-line no-await-in-loop
@@ -648,7 +648,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
 
         if (!taskInfo) {
             globals.logger.warn(
-                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`
+                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`,
             );
             return false;
         }
@@ -717,8 +717,8 @@ const udpInitTaskErrorServer = () => {
             } else {
                 globals.logger.warn(
                     `UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskFailureServerStatusTopic'
-                    )}`
+                        'Butler.mqttConfig.taskFailureServerStatusTopic',
+                    )}`,
                 );
             }
         }
@@ -738,8 +738,8 @@ const udpInitTaskErrorServer = () => {
                 } else {
                     globals.logger.warn(
                         `UDP SERVER ERROR: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                            'Butler.mqttConfig.taskFailureServerStatusTopic'
-                        )}`
+                            'Butler.mqttConfig.taskFailureServerStatusTopic',
+                        )}`,
                     );
                 }
             }
@@ -829,7 +829,7 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 9) {
                     globals.logger.warn(
-                        `UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`
+                        `UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,
                     );
                     globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
                     globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
@@ -837,7 +837,7 @@ const udpInitTaskErrorServer = () => {
                 }
 
                 globals.logger.verbose(
-                    `UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`
+                    `UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
                 );
             } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/') {
                 // Scheduler log appender detecting failed scheduler-started reload
@@ -846,7 +846,7 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                        `UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
@@ -861,7 +861,7 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                        `UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
@@ -876,7 +876,7 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`
+                        `UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Incoming log message was:\n${message.toString()}`);
                     globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Aborting processing of this message.`);

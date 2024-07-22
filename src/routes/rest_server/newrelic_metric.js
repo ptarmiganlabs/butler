@@ -2,10 +2,10 @@ import httpErrors from 'http-errors';
 import axios from 'axios';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import apiPostNewRelicMetric from '../api/newrelic_metric.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import apiPostNewRelicMetric from '../../api/newrelic_metric.js';
 
 // eslint-disable-next-line consistent-return
 async function handlerPostNewRelicMetric(request, reply) {
@@ -102,7 +102,7 @@ async function handlerPostNewRelicMetric(request, reply) {
                 // eslint-disable-next-line no-await-in-loop
                 const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
                 globals.logger.debug(
-                    `NEWRELIC METRIC: Result code from posting metric to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`
+                    `NEWRELIC METRIC: Result code from posting metric to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                 );
 
                 if (res.status === 202) {
@@ -122,8 +122,8 @@ async function handlerPostNewRelicMetric(request, reply) {
             `NEWRELIC METRIC: Failed posting metric to New Relic: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
                 err,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
         reply.send(httpErrors(500, 'Failed posting metric to New Relic'));
     }

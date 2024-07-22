@@ -41,10 +41,10 @@ const getTasks = async (filter) => {
             // Handle custom properties filter
             if (filter.customProperty) {
                 globals.logger.debug(
-                    `GETTASKS 2: task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`
+                    `GETTASKS 2: task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`,
                 );
                 const result = await qrsInstance.Get(
-                    `task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`
+                    `task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`,
                 );
                 globals.logger.debug(`GETTASKS: Got response: ${result.statusCode} for tag filter ${filter.customProperty.name}`);
 

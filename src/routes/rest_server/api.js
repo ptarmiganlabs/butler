@@ -1,10 +1,10 @@
 import httpErrors from 'http-errors';
 
 // Load global variables and functions
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
-import { logRESTCall } from '../lib/log_rest_call.js';
-import apiGetAPIEndpointsEnabled from '../api/api.js';
+import { logRESTCall } from '../../lib/log_rest_call.js';
+import apiGetAPIEndpointsEnabled from '../../api/api.js';
 
 async function handlerGetAPIEndpointsEnabled(request, reply) {
     try {

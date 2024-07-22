@@ -360,13 +360,13 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // 4 Remove any duplicate recipients in send list
 
     const emailAlertCpName = globals.config.get(
-        'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName'
+        'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName',
     );
     const emailAlertCpEnabledValue = globals.config.get(
-        'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue'
+        'Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue',
     );
     const emailAlertCpTaskSpecificEmailAddressName = globals.config.get(
-        'Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName'
+        'Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName',
     );
     const globalSendList = globals.config.get('Butler.emailNotification.reloadTaskFailure.recipients');
 
@@ -376,12 +376,12 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
     const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
         reloadParams.taskId,
-        emailAlertCpTaskSpecificEmailAddressName
+        emailAlertCpTaskSpecificEmailAddressName,
     );
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
-            `EMAIL RELOAD TASK FAILED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`
+            `EMAIL RELOAD TASK FAILED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
@@ -395,7 +395,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
         if (globalSendList?.length > 0) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK FAILED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
+                `EMAIL RELOAD TASK FAILED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             mainSendList = mainSendList.concat(globalSendList);
             emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
@@ -404,14 +404,14 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // Only send alert email if the failed task has email alerts enabled
         // 2.2 No : Does the failed reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `EMAIL RELOAD TASK FAILED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
+            `EMAIL RELOAD TASK FAILED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
         );
 
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK FAILED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`
+                `EMAIL RELOAD TASK FAILED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
@@ -457,7 +457,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 } else {
                     // No app owners on include list. Warn about this.
                     globals.logger.warn(
-                        `EMAIL RELOAD TASK FAILED ALERT: No app owners on include list for failed task. No app owners will receive notification emails.`
+                        `EMAIL RELOAD TASK FAILED ALERT: No app owners on include list for failed task. No app owners will receive notification emails.`,
                     );
                 }
             }
@@ -466,14 +466,14 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             // 3.2 Is there an app owner exclude list?
             const excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user');
             const matchExcludedUsers = excludeUsers?.filter(
-                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
+                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId,
             );
             if (matchExcludedUsers?.length > 0) {
                 // App owner is in list of app owners that should NOT receive notification emails
                 // Remove app owner email address from app owner send list (if it's already there)
                 // 3.2.1 Yes: Remove entries on the exclude list from app owner send list
                 appOwnerSendList = appOwnerSendList?.filter(
-                    (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId
+                    (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId,
                 );
             }
             // 3.3 Add app owner send list to main send list
@@ -486,12 +486,12 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             // Does the main sendlist contain any email addresses? Warn if not
             if (mainSendList?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for app owner's alert email for app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                    `EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for app owner's alert email for app "${reloadParams.appName}", ID=${reloadParams.appId}`,
                 );
             }
         } else {
             globals.logger.warn(
-                `EMAIL RELOAD TASK FAILED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                `EMAIL RELOAD TASK FAILED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
             );
         }
     }
@@ -504,8 +504,8 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         `EMAIL RELOAD TASK FAILED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
             mainSendListUnique,
             null,
-            2
-        )}`
+            2,
+        )}`,
     );
     globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
     globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
@@ -581,10 +581,10 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`
+                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -596,7 +596,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                             globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
                             globals.config.get('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory'),
                             globals.config.get('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile'),
-                            templateContext
+                            templateContext,
                         );
                     } else {
                         globals.logger.warn(`EMAIL RELOAD TASK FAILED ALERT: No recipients to send alert email to.`);
@@ -607,7 +607,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                    `EMAIL RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
                 );
                 globals.logger.debug(`EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
@@ -638,13 +638,13 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // 4 Remove any duplicate recipients in send list
 
     const emailAlertCpName = globals.config.get(
-        'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName'
+        'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName',
     );
     const emailAlertCpEnabledValue = globals.config.get(
-        'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enabledValue'
+        'Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enabledValue',
     );
     const emailAlertCpTaskSpecificEmailAddressName = globals.config.get(
-        'Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName'
+        'Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName',
     );
     const globalSendList = globals.config.get('Butler.emailNotification.reloadTaskAborted.recipients');
 
@@ -654,12 +654,12 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // 1. Add task-specific notfication email adressess (set via custom property on reload tasks) to send list.
     const taskSpecificAlertEmailAddresses = await getTaskCustomPropertyValues(
         reloadParams.taskId,
-        emailAlertCpTaskSpecificEmailAddressName
+        emailAlertCpTaskSpecificEmailAddressName,
     );
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
-            `EMAIL RELOAD TASK ABORTED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`
+            `EMAIL RELOAD TASK ABORTED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
@@ -673,7 +673,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
         if (globalSendList?.length > 0) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK ABORTED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`
+                `EMAIL RELOAD TASK ABORTED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             mainSendList = mainSendList.concat(globalSendList);
             emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
@@ -682,14 +682,14 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         // Only send alert email if the aborted task has email alerts enabled
         // 2.2 No : Does the aborted reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `EMAIL RELOAD TASK ABORTED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`
+            `EMAIL RELOAD TASK ABORTED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
         );
 
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK ABORTED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`
+                `EMAIL RELOAD TASK ABORTED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
@@ -739,14 +739,14 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             // 3.2 Is there an app owner exclude list?
             const excludeUsers = globals.config.get('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user');
             const matchExcludedUsers = excludeUsers?.filter(
-                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId
+                (user) => user.directory === appOwner.directory && user.userId === appOwner.userId,
             );
             if (matchExcludedUsers?.length > 0) {
                 // App owner is in list of app owners that should NOT receive notification emails
                 // Remove app owner email address from app owner send list (if it's already there)
                 // 3.2.1 Yes: Remove entries on the exclude list from app owner send list
                 appOwnerSendList = appOwnerSendList?.filter(
-                    (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId
+                    (user) => user.directory !== appOwner.directory && user.userId !== appOwner.userId,
                 );
             }
             // 3.3 Add app owner send list to main send list
@@ -759,12 +759,12 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             // Does the main sendlist contain any email addresses? Warn if not
             if (mainSendList?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK ABORTED ALERT: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                    `EMAIL RELOAD TASK ABORTED ALERT: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`,
                 );
             }
         } else {
             globals.logger.warn(
-                `EMAIL RELOAD TASK ABORTED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`
+                `EMAIL RELOAD TASK ABORTED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
             );
         }
     }
@@ -777,8 +777,8 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         `EMAIL RELOAD TASK ABORTED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
             mainSendListUnique,
             null,
-            2
-        )}`
+            2,
+        )}`,
     );
     globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
     globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
@@ -854,10 +854,10 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`
+                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`
+                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -869,7 +869,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                             globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
                             globals.config.get('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory'),
                             globals.config.get('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile'),
-                            templateContext
+                            templateContext,
                         );
                     } else {
                         globals.logger.warn(`EMAIL RELOAD TASK ABORTED ALERT: No recipients to send alert email to.`);
@@ -880,7 +880,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`
+                    `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
                 );
                 globals.logger.debug(`EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
@@ -935,7 +935,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`
+                        `EMAIL SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(`EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
@@ -949,7 +949,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                                 globals.config.get('Butler.emailNotification.serviceStopped.subject'),
                                 globals.config.get('Butler.emailNotification.serviceStopped.bodyFileDirectory'),
                                 globals.config.get('Butler.emailNotification.serviceStopped.htmlTemplateFile'),
-                                templateContext
+                                templateContext,
                             );
                         } else if (serviceParams.serviceStatus === 'RUNNING') {
                             sendEmail(
@@ -959,7 +959,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                                 globals.config.get('Butler.emailNotification.serviceStarted.subject'),
                                 globals.config.get('Butler.emailNotification.serviceStarted.bodyFileDirectory'),
                                 globals.config.get('Butler.emailNotification.serviceStarted.htmlTemplateFile'),
-                                templateContext
+                                templateContext,
                             );
                         }
                     } else {
@@ -972,7 +972,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
             // eslint-disable-next-line no-loop-func
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`
+                    `EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`,
                 );
                 globals.logger.debug(`EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
