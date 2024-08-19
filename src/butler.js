@@ -30,9 +30,9 @@ const start = async () => {
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
-        './lib/qliksense_license.js'
+        './lib/qseow/qliksense_license.js'
     );
-    const { setupQlikSenseVersionMonitor } = await import('./lib/qliksense_version.js');
+    const { setupQlikSenseVersionMonitor } = await import('./lib/qseow/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;

@@ -42,6 +42,9 @@ class Settings {
 
             // Add path to package.json file
             c = upath.join(b, filenamePackage);
+
+            // Set base path of the executable
+            this.appBasePath = upath.join(b);
         } else {
             // Get path to JS file
             a = fileURLToPath(import.meta.url);
@@ -51,6 +54,9 @@ class Settings {
 
             // Add path to package.json file
             c = upath.join(b, '..', filenamePackage);
+
+            // Set base path of the executable
+            this.appBasePath = upath.join(b, '..');
         }
 
         const { version } = JSON.parse(readFileSync(c));
@@ -62,26 +68,26 @@ class Settings {
             .version(this.appVersion)
             .name('butler')
             .description(
-                'Butler gives superpowers to client-managed Qlik Sense Enterprise on Windows!\nAdvanced reload failure alerts, task scheduler, key-value store, file system access and much more.'
+                'Butler gives superpowers to client-managed Qlik Sense Enterprise on Windows!\nAdvanced reload failure alerts, task scheduler, key-value store, file system access and much more.',
             )
             .option('-c, --configfile <file>', 'path to config file')
             .addOption(new Option('-l, --loglevel <level>', 'log level').choices(['error', 'warn', 'info', 'verbose', 'debug', 'silly']))
             .option(
                 '--new-relic-account-name  <name...>',
-                'New Relic account name. Used within Butler to differentiate between different target New Relic accounts'
+                'New Relic account name. Used within Butler to differentiate between different target New Relic accounts',
             )
             .option('--new-relic-api-key <key...>', 'insert API key to use with New Relic')
             .option('--new-relic-account-id <id...>', 'New Relic account ID')
             .option('--test-email-address <address>', 'send test email to this address. Used to verify email settings in the config file.')
             .option(
                 '--test-email-from-address <address>',
-                'send test email from this address. Only relevant when SMTP server allows from address to be set.'
+                'send test email from this address. Only relevant when SMTP server allows from address to be set.',
             )
             .option('--no-qs-connection', "don't connect to Qlik Sense server at all. Run in isolated mode")
             .option(
                 '--api-rate-limit',
                 'set the API rate limit, per minute. Default is 100 calls/minute. Set to 0 to disable rate limiting.',
-                100
+                100,
             )
 
             .option('--skip-config-verification', 'Disable config file verification', false);
@@ -188,9 +194,9 @@ class Settings {
                     winston.format.timestamp(),
                     winston.format.colorize(),
                     winston.format.simple(),
-                    winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
+                    winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
                 ),
-            })
+            }),
         );
 
         if (
@@ -227,7 +233,7 @@ class Settings {
                     level: this.config.get('Butler.logLevel'),
                     datePattern: 'YYYY-MM-DD',
                     maxFiles: '30d',
-                })
+                }),
             );
         }
 
@@ -235,7 +241,7 @@ class Settings {
             transports: this.logTransports,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
+                winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
             ),
         });
 
@@ -251,8 +257,8 @@ class Settings {
             `New Relic account names/API keys/account IDs (via command line or config file): ${JSON.stringify(
                 this.config.Butler.thirdPartyToolsCredentials.newRelic,
                 null,
-                2
-            )}`
+                2,
+            )}`,
         );
 
         // Get certificate file paths for QRS connection
@@ -384,14 +390,7 @@ class Settings {
         // UDP server connection parameters
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
         this.udpServerReloadTaskSocket = null;
-        // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-        // const udpServerReloadTaskSocket = dgram.createSocket({
-        //     type: 'udp4',
-        //     reuseAddr: true,
-        // });
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
-
-        // this.mqttClient,
 
         // Indicate that we have finished initialising
         this.initialised = true;
@@ -426,12 +425,12 @@ class Settings {
                     if (this.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                         if (isUncPath(element.fromDirectory) === true) {
                             this.logger.warn(
-                                `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${this.hostInfo.si.os.platform}".`
+                                `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${this.hostInfo.si.os.platform}".`,
                             );
                         }
                         if (isUncPath(element.toDirectory) === true) {
                             this.logger.warn(
-                                `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${this.hostInfo.si.os.platform}".`
+                                `FILE COPY CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${this.hostInfo.si.os.platform}".`,
                             );
                         }
                     }
@@ -460,12 +459,12 @@ class Settings {
                     if (this.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                         if (isUncPath(element.fromDirectory) === true) {
                             this.logger.warn(
-                                `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${this.hostInfo.si.os.platform}".`
+                                `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.fromDirectory}"). OS is "${this.hostInfo.si.os.platform}".`,
                             );
                         }
                         if (isUncPath(element.toDirectory) === true) {
                             this.logger.warn(
-                                `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${this.hostInfo.si.os.platform}".`
+                                `FILE MOVE CONFIG: UNC paths won't work on non-Windows OSs ("${element.toDirectory}"). OS is "${this.hostInfo.si.os.platform}".`,
                             );
                         }
                     }
@@ -498,7 +497,7 @@ class Settings {
                     if (this.hostInfo.si.os.platform.toLowerCase() !== 'windows') {
                         if (isUncPath(element) === true) {
                             this.logger.warn(
-                                `FILE DELETE CONFIG: UNC paths won't work on non-Windows OSs ("${element}"). OS is "${this.hostInfo.si.os.platform}".`
+                                `FILE DELETE CONFIG: UNC paths won't work on non-Windows OSs ("${element}"). OS is "${this.hostInfo.si.os.platform}".`,
                             );
                         }
                     }
@@ -647,7 +646,7 @@ class Settings {
                                     })
                                     .catch((err) => {
                                         this.logger.error(
-                                            `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.stack}`
+                                            `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.stack}`,
                                         );
                                     });
                             })

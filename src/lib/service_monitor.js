@@ -1,7 +1,7 @@
 import later from '@breejs/later';
 import { createMachine, createActor } from 'xstate';
 
-import { statusAll, status, details } from './winsvc.js';
+import { statusAll, status, details } from './qseow/winsvc.js';
 import globals from '../globals.js';
 import newRelic from './incident_mgmt/new_relic_service_monitor.js';
 import { sendServiceMonitorWebhook } from './webhook_notification.js';
@@ -43,7 +43,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
             config.get('Butler.mqttConfig.serviceStoppedTopic').length === 0
         ) {
             logger.verbose(
-                `"${svc.serviceName}" Windows service on host "${svc.host}" stopped. No MQTT topic defined in config entry "Butler.mqttConfig.serviceStoppedTopic"`
+                `"${svc.serviceName}" Windows service on host "${svc.host}" stopped. No MQTT topic defined in config entry "Butler.mqttConfig.serviceStoppedTopic"`,
             );
         } else {
             logger.verbose(`Sending service stopped alert to MQTT for service "${svc.serviceName}" on host "${svc.host}"`);
@@ -60,7 +60,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
                     serviceStatus: svc.serviceStatus,
                     servicePrevStatus: svc.prevState,
                     serviceStatusChanged: svc.stateChanged,
-                })
+                }),
             );
         }
     } else if (svc.serviceStatus === 'RUNNING') {
@@ -70,7 +70,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
             config.get('Butler.mqttConfig.serviceRunningTopic').length === 0
         ) {
             logger.verbose(
-                `"${svc.serviceName}" Windows service on host "${svc.host}" is running. No MQTT topic defined in config entry "Butler.mqttConfig.serviceRunningTopic"`
+                `"${svc.serviceName}" Windows service on host "${svc.host}" is running. No MQTT topic defined in config entry "Butler.mqttConfig.serviceRunningTopic"`,
             );
         } else {
             logger.verbose(`Sending service running message to MQTT for service "${svc.serviceName}" on host "${svc.host}"`);
@@ -87,7 +87,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
                     serviceStatus: svc.serviceStatus,
                     servicePrevStatus: svc.prevState,
                     serviceStatusChanged: svc.stateChanged,
-                })
+                }),
             );
         }
     }
@@ -102,7 +102,7 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
         logger.verbose(`"${svc.serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
     } else {
         logger.verbose(
-            `MQTT WINDOWS SERVICE STATUS: Sending service status to MQTT: service="${svc.serviceDetails.displayName}", status="${svc.serviceStatus}"`
+            `MQTT WINDOWS SERVICE STATUS: Sending service status to MQTT: service="${svc.serviceDetails.displayName}", status="${svc.serviceStatus}"`,
         );
 
         globals.mqttClient.publish(
@@ -116,7 +116,7 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
                 serviceStartType: svc.serviceDetails.startType,
                 serviceExePath: svc.serviceDetails.exePath,
                 serviceStatus: svc.serviceStatus,
-            })
+            }),
         );
     }
 };
@@ -141,7 +141,7 @@ const verifyServicesExist = async (config, logger) => {
         // eslint-disable-next-line no-restricted-syntax
         for (const service of servicesToCheck) {
             logger.verbose(
-                `VERIFY WIN SERVICES EXIST: Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`
+                `VERIFY WIN SERVICES EXIST: Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`,
             );
             let serviceExists;
 
@@ -150,18 +150,18 @@ const verifyServicesExist = async (config, logger) => {
                 serviceExists = serviceStatusAll.find((svc) => svc.name === service.name);
             } catch (err) {
                 logger.error(
-                    `VERIFY WIN SERVICES EXIST: Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`
+                    `VERIFY WIN SERVICES EXIST: Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`,
                 );
                 result = false;
             }
 
             if (serviceExists) {
                 logger.verbose(
-                    `VERIFY WIN SERVICES EXIST: Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists.`
+                    `VERIFY WIN SERVICES EXIST: Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} exists.`,
                 );
             } else {
                 logger.error(
-                    `VERIFY WIN SERVICES EXIST:  Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
+                    `VERIFY WIN SERVICES EXIST:  Windows service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`,
                 );
                 result = false;
             }
@@ -195,7 +195,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             if (svcMonitored === undefined) {
                 logger.error(
-                    `Service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`
+                    `Service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`,
                 );
                 return;
             }
@@ -602,12 +602,12 @@ async function setupServiceMonitorTimer(config, logger) {
                     }
                 } else {
                     logger.error(
-                        'At least one Windows service does not exist or could not be reached. Monitoring of Windows services is disabled.'
+                        'At least one Windows service does not exist or could not be reached. Monitoring of Windows services is disabled.',
                     );
                 }
             } else {
                 logger.warn(
-                    `Not running on Windows, service monitoring will not work. Current platform is: ${hostInfo.si.os.platform}, distro: ${hostInfo.si.os.distro}, release: ${hostInfo.si.os.release}`
+                    `Not running on Windows, service monitoring will not work. Current platform is: ${hostInfo.si.os.platform}, distro: ${hostInfo.si.os.distro}, release: ${hostInfo.si.os.release}`,
                 );
             }
         }

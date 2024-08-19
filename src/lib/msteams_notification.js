@@ -761,3 +761,8 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
             globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
+
+// Function to send Qlik Sense Cloud app reload failed alert
+export function sendQSCloudAppReloadFailedNotificationTeams(reloadParams) {
+    //
+}

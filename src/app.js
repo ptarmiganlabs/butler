@@ -138,11 +138,11 @@ async function build(opts = {}) {
         if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
             globals.logger.info(
                 `REST API documentation available at http://${globals.config.get(
-                    'Butler.restServerConfig.serverHost'
-                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`
+                    'Butler.restServerConfig.serverHost',
+                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`,
             );
             globals.logger.info(
-                '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.'
+                '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.',
             );
             globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
@@ -171,7 +171,7 @@ async function build(opts = {}) {
         restServer.setErrorHandler((error, request, reply) => {
             if (error.statusCode === 429) {
                 globals.logger.warn(
-                    `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`
+                    `API: Rate limit exceeded for source IP address ${request.ip}. Method=${request.method}, endpoint=${request.url}`,
                 );
             }
             reply.send(error);
@@ -198,7 +198,7 @@ async function build(opts = {}) {
                 servers: [
                     {
                         url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                            'Butler.restServerConfig.serverPort'
+                            'Butler.restServerConfig.serverPort',
                         )}`,
                     },
                 ],
@@ -237,7 +237,7 @@ async function build(opts = {}) {
         await proxyRestServer.register(FastifyReplyFrom, {
             // base: `http://localhost:${globals.config.get('Butler.restServerConfig.backgroundServerPort')}`,
             base: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                'Butler.restServerConfig.backgroundServerPort'
+                'Butler.restServerConfig.backgroundServerPort',
             )}`,
             http: true,
         });
