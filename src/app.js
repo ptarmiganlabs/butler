@@ -343,7 +343,6 @@ async function build(opts = {}) {
         const dirContents = fs.readdirSync(globals.appBasePath);
         globals.logger.verbose(`CONFIG VIS: Directory contents of "${globals.appBasePath}": ${dirContents}`);
 
-
         const htmlDir = path.resolve(globals.appBasePath, 'static/configvis');
         globals.logger.info(`CONFIG VIS: Serving static files from ${htmlDir}`);
 
