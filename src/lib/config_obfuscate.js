@@ -4,6 +4,10 @@ function configObfuscate(config) {
     try {
         const obfuscatedConfig = { ...config };
 
+        // Obfuscate Butler.configVisualisation.host, keep first 3 chars, mask the rest with *
+        obfuscatedConfig.Butler.configVisualisation.host =
+            obfuscatedConfig.Butler.configVisualisation.host.substring(0, 3) + '*'.repeat(10);
+
         // Keep first 10 chars of remote URL, mask the rest with *
         obfuscatedConfig.Butler.heartbeat.remoteURL = obfuscatedConfig.Butler.heartbeat.remoteURL.substring(0, 10) + '*'.repeat(10);
 

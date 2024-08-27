@@ -489,6 +489,27 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // Config visualisation setttings
+    if (!config.has('Butler.configVisualisation.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.configVisualisation.host')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.host"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.configVisualisation.port')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.port"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.configVisualisation.obfuscate')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.obfuscate"');
+        configFileCorrect = false;
+    }
+
     if (!config.has('Butler.heartbeat.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.heartbeat.enable"');
         configFileCorrect = false;
@@ -4948,27 +4969,6 @@ export const configFileStructureAssert = async (config, logger) => {
 
     if (!config.has('Butler.serviceMonitor.alertDestination.webhook.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.serviceMonitor.alertDestination.webhook.enable"');
-        configFileCorrect = false;
-    }
-
-    // Config visualisation setttings
-    if (!config.has('Butler.configVisualisation.enable')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.enable"');
-        configFileCorrect = false;
-    }
-
-    if (!config.has('Butler.configVisualisation.host')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.host"');
-        configFileCorrect = false;
-    }
-
-    if (!config.has('Butler.configVisualisation.port')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.port"');
-        configFileCorrect = false;
-    }
-
-    if (!config.has('Butler.configVisualisation.obfuscate')) {
-        logger.error('ASSERT CONFIG: Missing config file entry "Butler.configVisualisation.obfuscate"');
         configFileCorrect = false;
     }
 
