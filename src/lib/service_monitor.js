@@ -1,7 +1,7 @@
 import later from '@breejs/later';
 import { createMachine, createActor } from 'xstate';
 
-import { statusAll, status, details } from './winsvc.js';
+import { statusAll, status, details } from './qseow/winsvc.js';
 import globals from '../globals.js';
 import newRelic from './incident_mgmt/new_relic_service_monitor.js';
 import { sendServiceMonitorWebhook } from './webhook_notification.js';

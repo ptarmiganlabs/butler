@@ -1,13 +1,13 @@
 import later from '@breejs/later';
 import QrsInteract from 'qrs-interact';
 
-import globals from '../globals.js';
+import globals from '../../globals.js';
 import {
     postQlikSenseLicenseStatusToInfluxDB,
     postQlikSenseLicenseReleasedToInfluxDB,
     postQlikSenseServerLicenseStatusToInfluxDB,
-} from './post_to_influxdb.js';
-import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
+} from '../post_to_influxdb.js';
+import { callQlikSenseServerLicenseWebhook } from '../webhook_notification.js';
 
 // Function to check Qlik Sense server license status
 async function checkQlikSenseServerLicenseStatus(config, logger) {

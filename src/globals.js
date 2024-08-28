@@ -390,14 +390,7 @@ class Settings {
         // UDP server connection parameters
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
         this.udpServerReloadTaskSocket = null;
-        // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-        // const udpServerReloadTaskSocket = dgram.createSocket({
-        //     type: 'udp4',
-        //     reuseAddr: true,
-        // });
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
-
-        // this.mqttClient,
 
         // Indicate that we have finished initialising
         this.initialised = true;

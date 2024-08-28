@@ -4,7 +4,7 @@ import https from 'https';
 import { Duration, DateTime } from 'luxon';
 import path from 'path';
 import fs from 'fs';
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
 const taskStatusLookup = {
     0: 'NeverStarted',
