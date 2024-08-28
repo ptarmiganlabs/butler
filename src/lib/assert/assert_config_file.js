@@ -4179,6 +4179,398 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
+    // QS Cloud settings
+    if (!config.has('Butler.qlikSenseCloud.enable')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.enable"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.id')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.id"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.authType')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.authType"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.comment')) {
+        logger.error('ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.comment"');
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicMsgTemplate')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicMsgTemplate"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.rateLimit')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.rateLimit"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.templateFile')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.templateFile"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.webhookURL')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.webhookURL"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicMsgTemplate')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicMsgTemplate"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.templateFile')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.templateFile"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.fromUser')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.fromUser"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.iconEmoji')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.iconEmoji"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.basicContentOnly')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.basicContentOnly"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.enable')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.enable"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (
+        !config.has(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.includeAll',
+        )
+    ) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.includeAll"',
+        );
+        configFileCorrect = false;
+    }
+
+    // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user is an array of objects with the following properties:
+    // - directory: 'string'
+    // - userId: 'string'
+    if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user')) {
+        const users = config.get(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user',
+        );
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user" must be an array',
+                );
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]" must be an object`,
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "directory" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]"`,
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "userId" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]"`,
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        } else {
+            logger.error(
+                'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user"',
+            );
+            configFileCorrect = false;
+        }
+    }
+
+    // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user is an array of objects with the following properties:
+    // - directory: 'string'
+    // - userId: 'string'
+    if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user')) {
+        const users = config.get(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user',
+        );
+
+        if (users) {
+            if (!Array.isArray(users)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user" must be an array',
+                );
+                configFileCorrect = false;
+            } else {
+                users.forEach((user, index) => {
+                    if (typeof user !== 'object') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]" must be an object`,
+                        );
+                        configFileCorrect = false;
+                    } else {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "directory" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]"`,
+                            );
+                            configFileCorrect = false;
+                        }
+                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
+                            logger.error(
+                                `ASSERT CONFIG: Missing property "userId" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]"`,
+                            );
+                            configFileCorrect = false;
+                        }
+                    }
+                });
+            }
+        } else {
+            logger.error(
+                'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user"',
+            );
+            configFileCorrect = false;
+        }
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.rateLimit')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.rateLimit"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.priority')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.priority"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.subject')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.subject"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.bodyFileDirectory')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.bodyFileDirectory"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.htmlTemplateFile')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.htmlTemplateFile"',
+        );
+        configFileCorrect = false;
+    }
+
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress')) {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress"',
+        );
+        configFileCorrect = false;
+    }
+
+    // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients is an array of strings
+    if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients')) {
+        const recipients = config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients');
+
+        if (recipients) {
+            if (!Array.isArray(recipients)) {
+                logger.error(
+                    'ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients" must be an array',
+                );
+                configFileCorrect = false;
+            } else {
+                recipients.forEach((recipient, index) => {
+                    if (typeof recipient !== 'string') {
+                        logger.error(
+                            `ASSERT CONFIG: "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[${index}]" must be a string`,
+                        );
+                        configFileCorrect = false;
+                    }
+                });
+            }
+        } else {
+            logger.error(
+                'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients"',
+            );
+            configFileCorrect = false;
+        }
+    } else {
+        logger.error(
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients"',
+        );
+        configFileCorrect = false;
+    }
+
     // Butler.udpServerConfig
     if (!config.has('Butler.udpServerConfig.enable')) {
         logger.error('ASSERT CONFIG: Missing config file entry "Butler.udpServerConfig.enable"');

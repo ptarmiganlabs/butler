@@ -39,6 +39,26 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     warnings,
                 } = message.data;
 
+                // Create array of monitored tenants (id + free text comment)
+                const monitoredTenants = [];
+                monitoredTenants.push({
+                    id: config.get('Butler.qlikSenseCloud.event.mqtt.tenant.id'),
+                    comment: config.get('Butler.qlikSenseCloud.event.mqtt.tenant.comment'),
+                });
+
+                // Make sure incoming message is from a Qlik Sense Cloud tenant that we are monitoring
+                // If the tenant ID is not in the list of monitored tenants, skip the event and warn about it
+                // Valid tenant ID is defined in the Butler configuration file
+                if (!monitoredTenants.some((tenant) => tenant.id === tenantId)) {
+                    logger.warn(
+                        `QLIK SENSE CLOUD: Incoming MQTT event from Qlik Sense Cloud, but tenant ID "${tenantId}" is not defined in the Butler configuration file. Skipping event.`,
+                    );
+                    return false;
+                }
+
+                // Get tenant comment based on tenant ID
+                const tenantComment = monitoredTenants.find((tenant) => tenant.id === tenantId).comment;
+
                 const appName = message.data.name;
                 const sizeMemory = message.data?.size?.memory;
 
@@ -67,10 +87,10 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // If extended info is disabled, we can use the basic info provided in the event/MQTT message
                         if (
                             globals.config.has(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly'
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
                             ) &&
                             globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly'
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
                             ) === false
                         ) {
                             // Get extended info about the event
@@ -83,11 +103,11 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
                             try {
                                 const headLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines'
+                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
                                 );
 
                                 const tailLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines'
+                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
                                 );
 
                                 scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headLineCount, tailLineCount);
@@ -95,17 +115,17 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                                 // If return value is false, the script log could not be obtained
                                 if (scriptLog === false) {
                                     logger.warn(
-                                        `QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`
+                                        `QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`,
                                     );
                                 } else {
                                     logger.verbose(
-                                        `QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`
+                                        `QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`,
                                     );
                                 }
                                 logger.debug(`QLIK SENSE CLOUD: App reload script log: ${scriptLog}`);
                             } catch (err) {
                                 logger.error(
-                                    `QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`
+                                    `QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`,
                                 );
                             }
 
@@ -140,6 +160,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                         sendQlikSenseCloudAppReloadFailureNotificationTeams({
                             tenantId,
+                            tenantComment,
                             userId,
                             ownerId,
                             appId,

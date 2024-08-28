@@ -252,15 +252,34 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
+                    tenantComment: reloadParams.tenantComment,
                     userId: reloadParams.userId,
                     userName: appOwner === undefined ? 'Unknown' : appOwner.name,
-                    appName: reloadParams.appName,
                     appId: reloadParams.appId,
+                    appName: reloadParams.appName,
+
+                    reloadTrigger: reloadParams.reloadTrigger,
+                    source: reloadParams.source,
+                    eventType: reloadParams.eventType,
+                    eventTypeVersion: reloadParams.eventTypeVersion,
+                    endedWithMemoryConstraint: reloadParams.endedWithMemoryConstraint,
+                    isDirectQueryMode: reloadParams.isDirectQueryMode,
+                    isPartialReload: reloadParams.isPartialReload,
+                    isSessionApp: reloadParams.isSessionApp,
+                    isSkipStore: reloadParams.isSkipStore,
+                    peakMemoryBytes: reloadParams.peakMemoryBytes,
+                    reloadId: reloadParams.reloadId,
+                    rowLimit: reloadParams.rowLimit,
+                    statements: reloadParams.statements,
+                    status: reloadParams.status,
+                    usageDuration: reloadParams.duration,
+                    sizeMemoryBytes: reloadParams.sizeMemory,
+
                     errorCode: reloadParams.reloadInfo.errorCode,
                     errorMessage: reloadParams.reloadInfo.errorMessage,
                     logMessage: reloadParams.reloadInfo.log
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     executionDuration: reloadParams.reloadInfo.executionDuration,
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
@@ -269,11 +288,11 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     scriptLogSize: scriptLogData.scriptLogSize,
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTail: scriptLogData.scriptLogTail
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
@@ -283,6 +302,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     appOwnerUserId: appOwner.id,
                     appOwnerPicture: appOwner.picture,
                     appOwnerEmail: appOwner.email,
+
+                    
                 };
 
                 // Check if script log is longer than 3000 characters. Truncate if so.

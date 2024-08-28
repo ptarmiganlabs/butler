@@ -746,6 +746,18 @@ Butler:
     serviceStatusTopic: qliksense/service_status
     qlikSenseServerLicenseTopic: qliksense/qliksense_server_license          # Topic to which Sense server license info is published
     qlikSenseServerLicenseExpireTopic: qliksense/qliksense_server_license_expire # Topic to which Sense server license expiration alerts are published
+    qlikSenseCloud:                                                   # MQTT settings for Qlik Sense Cloud integration
+      event:                                                          
+        mqttForward:                                                  # QS Cloud events forwarded to MQTT topics, which Butler will subscribe to
+          enable: false
+          broker:                                                     # Settings for MQTT broker to which QS Cloud events are forwarded
+            host: mqttbroker.company.com
+            port: <port>
+            username: <username>
+            password: <password>
+          topic:
+            subscriptionRoot: qscloud/#                     # Topic that Butler will subscribe to
+            appReload: qscloud/app/reload
 
   udpServerConfig:
     enable: false                                     # Should the UDP server responsible for receving task failure/aborted events be started?
@@ -920,6 +932,83 @@ Butler:
         enable: true
       webhook:                      # Send service alerts as outbound webhooks/http calls
         enable: true
+
+  qlikSenseCloud:                   # Settings for Qlik Sense Cloud integration
+    enable: false
+    event:
+      mqtt:                         # Which QS Cloud tenant should Butler SOS receive events from, in the form of MQTT messages?
+        tenant:
+          id: tenant.region.qlikcloud.com
+          tenantUrl: https://tenant.region.qlikcloud.com
+          authType: jwt             # Authentication type used to connect to the tenant. Valid options are "jwt"  
+          auth:
+            jwt:
+              token: <JWT token>    # JWT token used to authenticate Butler SOS when connecting to the tenant
+          # Qlik Sense Cloud related links used in notification messages
+          qlikSenseUrls:
+            qmc: <URL to QMC in Qlik Sense Cloud>
+            hub: <URL to Hub in Qlik Sense Cloud>
+          comment: This is a comment describing the tenant and its settings # Informational only
+          alert:
+            # Settings for notifications and messages sent to MS Teams
+            teamsNotification:
+              reloadAppFailure:
+                enable: false
+                basicContentOnly: false
+                webhookURL: <URL to MS Teams webhook>
+
+                messageType: formatted     # formatted / basic
+                basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
+                rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 15
+                tailScriptLogLines: 15
+                templateFile: /path/to/teams_templates/failed-reload-qscloud-workflow.handlebars
+
+            # Settings for notifications and messages sent to Slack
+            slackNotification:
+              reloadAppFailure:
+                enable: false
+                basicContentOnly: false
+                webhookURL: <URL to Slack webhook>
+                channel: sense-task-failure     # Slack channel to which task failure notifications are sent
+                messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+                basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
+                rateLimit: 60                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 10
+                tailScriptLogLines: 20
+                templateFile: /path/to/slack_templates/failed-reload-qscloud.handlebars
+                fromUser: Qlik Sense
+                iconEmoji: ':ghost:'
+              
+            # Settings needed to send email notifications when for example reload tasks fail.
+            # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
+            emailNotification:
+              reloadAppFailure:
+                enable: false
+                basicContentOnly: false
+                appOwnerAlert:
+                  enable: false              # Should app owner get notification email (assuming email address is available in Sense user directory)
+                  includeOwner:
+                    includeAll: true                            # true = Send notification to all app owners except those in exclude list
+                                                                # false = Send notification to app owners in the include list
+                    user:
+                      - directory: <directory>
+                        userId: <userId>
+                  excludeOwner:
+                    user:
+                      - directory: <directory>
+                        userId: <userId>
+                rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 15
+                tailScriptLogLines: 25
+                priority: high              # high/normal/low
+                subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
+                bodyFileDirectory: /path/to//email_templates
+                htmlTemplateFile: failed-reload-qs-cloud
+                fromAdress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
+                recipients:
+                  - user.joe@company.com
+                  - user.anna@company.com
 
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:
