@@ -1,21 +1,19 @@
-/* eslint-disable import/prefer-default-export */
 import fs from 'fs';
-
-import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 import globals from '../../globals.js';
+import slackSend from '../slack_api.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 // import getAppOwner from '../../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
 
-if (globals.config.has('Butler.teamsNotification.reloadTaskFailure.rateLimit')) {
+if (globals.config.has('Butler.slackNotification.reloadTaskFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
         points: 1,
-        duration: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.rateLimit'),
+        duration: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit'),
     });
 } else {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
@@ -24,51 +22,74 @@ if (globals.config.has('Butler.teamsNotification.reloadTaskFailure.rateLimit')) 
     });
 }
 
-function getAppReloadFailedTeamsConfig() {
+function getAppReloadFailedSlackConfig() {
     try {
-        if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
-            // Teams task falure notifications are disabled
+        if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
+            // Slack task falure notifications are disabled
             globals.logger.error(
-                "TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message",
+                "SLACK ALERT - QS CLOUD APP RELOAD FAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message",
             );
             return false;
         }
 
         if (
-            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType') !==
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType') !==
                 'basic' &&
-            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType') !==
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType') !==
                 'formatted'
         ) {
-            // Invalid Teams message type
+            // Invalid Slack message type
             globals.logger.error(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Invalid Teams message type: ${globals.config.get(
-                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType',
+                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Invalid Slack message type: ${globals.config.get(
+                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType',
                 )}`,
             );
             return false;
         }
 
+        if (
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType') === 'basic'
+        ) {
+            // Basic formatting. Make sure requried parameters are present
+            if (!globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicMsgTemplate')) {
+                // No message text in config file.
+                globals.logger.error('SLACK ALERT - QS CLOUD APP RELOAD FAILED: No message text in config file.');
+                return false;
+            }
+        } else if (
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType') ===
+            'formatted'
+        ) {
+            // Extended formatting using Slack blocks. Make sure requried parameters are present
+            if (!globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.templateFile')) {
+                globals.logger.error('SLACK ALERT - QS CLOUD APP RELOAD FAILED: Message template file not specified in config file.');
+                return false;
+            }
+        }
+
         return {
-            webhookUrl: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL'),
-            messageType: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType'),
+            webhookUrl: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.webhookURL'),
+            messageType: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType'),
             templateFile: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.templateFile',
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.templateFile',
             ),
 
             headScriptLogLines: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines',
             ),
             tailScriptLogLines: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
             ),
-            rateLimit: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.rateLimit'),
+            fromUser: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.fromUser'),
+            iconEmoji: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.iconEmoji'),
+            rateLimit: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit'),
             basicMsgTemplate: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicMsgTemplate',
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicMsgTemplate',
             ),
+            channel: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.channel'),
         };
     } catch (err) {
-        globals.logger.error(`TEAMS ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`SLACK ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
         return false;
     }
 }
@@ -91,121 +112,123 @@ function getQlikSenseCloudUrls() {
     };
 }
 
-async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType) {
+async function sendSlack(slackConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
         let renderedText = null;
-        let msg = null;
+        let slackMsg = null;
+        const msg = slackConfig;
 
-        if (teamsConfig.messageType === 'basic') {
-            compiledTemplate = handlebars.compile(teamsConfig.basicMsgTemplate);
+        if (slackConfig.messageType === 'basic') {
+            compiledTemplate = handlebars.compile(slackConfig.basicMsgTemplate);
             renderedText = compiledTemplate(templateContext);
 
-            msg = {
-                type: 'message',
-                attachments: [
+            slackMsg = {
+                blocks: [
                     {
-                        contentType: 'application/vnd.microsoft.card.adaptive',
-                        contentUrl: null,
-                        content: {
-                            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-                            type: 'AdaptiveCard',
-                            version: '1.3',
-                            body: [
-                                {
-                                    type: 'TextBlock',
-                                    size: 'large',
-                                    weight: 'bolder',
-                                    text: renderedText,
-                                    style: 'heading',
-                                    wrap: true,
-                                },
-                                {
-                                    type: 'ActionSet',
-                                    spacing: 'extraLarge',
-                                    separator: true,
-                                    actions: [
-                                        {
-                                            type: 'Action.OpenUrl',
-                                            title: 'Open QMC',
-                                            tooltip: 'Open management console in Qlik Sense Cloud',
-                                            url: templateContext.qlikSenseQMC,
-                                            role: 'button',
-                                        },
-                                    ],
-                                },
-                            ],
+                        type: 'header',
+                        text: {
+                            type: 'plain_text',
+                            text: renderedText,
                         },
+                    },
+                    {
+                        type: 'divider',
+                    },
+                    {
+                        type: 'actions',
+                        elements: [
+                            {
+                                type: 'button',
+                                text: {
+                                    type: 'plain_text',
+                                    emoji: true,
+                                    text: 'Open QMC',
+                                },
+                                style: 'primary',
+                                url: templateContext.qlikSenseQMC,
+                            },
+                            {
+                                type: 'button',
+                                text: {
+                                    type: 'plain_text',
+                                    emoji: true,
+                                    text: 'Open Hub',
+                                },
+                                style: 'primary',
+                                url: templateContext.qlikSenseHub,
+                            },
+                        ],
                     },
                 ],
             };
-        } else if (teamsConfig.messageType === 'formatted') {
+        } else if (slackConfig.messageType === 'formatted') {
             try {
-                if (fs.existsSync(teamsConfig.templateFile) === true) {
-                    const template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
+                if (fs.existsSync(slackConfig.templateFile) === true) {
+                    // Read template file
+                    const template = fs.readFileSync(slackConfig.templateFile, 'utf8');
+
+                    // Compile the template
                     compiledTemplate = handlebars.compile(template);
 
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(`SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                        globals.logger.debug(`SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
                     } else if (msgType === 'qscloud-app-reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(`SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
+                        globals.logger.debug(`SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
                     }
 
-                    renderedText = compiledTemplate(templateContext);
+                    slackMsg = compiledTemplate(templateContext);
 
-                    globals.logger.debug(`TEAMS SEND: Rendered message:\n${renderedText}`);
-
-                    // Parse the JSON string to get rid of extra linebreaks etc.
-                    msg = JSON.parse(renderedText);
+                    globals.logger.debug(`SLACK SEND: Rendered message:\n${slackMsg}`);
                 } else {
-                    globals.logger.error(`TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
+                    globals.logger.error(`SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`TEAMS SEND: Error processing Teams template file: ${err}`);
+                globals.logger.error(`SLACK SEND: Error processing Slack template file: ${err}`);
             }
         }
 
-        if (msg !== null) {
-            const webhook = new Webhook(teamsWebhookUrl, msg);
-            const res = await webhook.sendMessage();
+        if (slackMsg !== null) {
+            slackConfig.text = slackMsg;
+            const res = await slackSend(slackConfig, globals.logger);
 
             if (res !== undefined) {
-                globals.logger.debug(`TEAMS SEND: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(`SLACK SEND: Result from calling SlackApi.SlackSend: ${res.statusText} (${res.status}): ${res.data}`);
             }
         }
     } catch (err) {
-        globals.logger.error(`TEAMS SEND: ${err}`);
+        globals.logger.error(`SLACK SEND: ${err}`);
     }
 }
 
 // Function to send Qlik Sense Cloud app reload failed alert
-export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams) {
+export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.reloadId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
+                    `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
                 );
                 globals.logger.verbose(
-                    `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                    `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
-                // Make sure Teams sending is enabled in the config file and that we have all required settings
-                const teamsConfig = getAppReloadFailedTeamsConfig();
-                if (teamsConfig === false) {
+                // Make sure Slack sending is enabled in the config file and that we have all required settings
+                const slackConfig = getAppReloadFailedSlackConfig();
+                if (slackConfig === false) {
                     return 1;
                 }
 
@@ -226,15 +249,19 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                         scriptLogTailCount: 0,
                     };
                 } else {
-                    // Reduce script log lines to only the ones we want to send to Teams
+                    // Reduce script log lines to only the ones we want to send to Slack
                     scriptLogData.scriptLogHeadCount = globals.config.get(
-                        'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
+                        'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines',
                     );
                     scriptLogData.scriptLogTailCount = globals.config.get(
-                        'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
+                        'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
                     );
 
                     if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
+                        // Get length of script log (character count)
+                        scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
+
+                        // Get the first and last n lines of the script log
                         scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull
                             .slice(0, reloadParams.scriptLog.scriptLogHeadCount)
                             .join('\r\n');
@@ -245,20 +272,18 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     } else {
                         scriptLogData.scriptLogHead = '';
                         scriptLogData.scriptLogTail = '';
+                        scriptLogData.scriptLogSize = 0;
                     }
 
-                    // Get length of script log (character count)
-                    scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
-
                     globals.logger.debug(
-                        `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
+                        `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
                     );
                 }
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseCloudUrls();
 
-                // These are the template fields that can be used in Teams body
+                // These are the template fields that can be used in Slack body
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
                     tenantComment: reloadParams.tenantComment,
@@ -313,10 +338,21 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     appOwnerEmail: appOwner.email,
                 };
 
+                // Replace all single and double quotes in scriptLogHead and scriptLogTail with escaped dittos
+                // This is needed to avoid breaking the Slack message JSON
+                const regExpSingle = /'/gm;
+                const regExpDouble = /"/gm;
+                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+
+                // Replace all single and double quotes in logMessage with escaped ditto
+                // This is needed to avoid breaking the Slack message JSON
+                templateContext.logMessage = templateContext.logMessage.replace(regExpSingle, "\\'").replace(regExpDouble, "\\'");
+
                 // Check if script log is longer than 3000 characters. Truncate if so.
                 if (templateContext.scriptLogHead.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`,
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogHead = templateContext.scriptLogHead
                         .replaceAll('&', '&amp;')
@@ -340,7 +376,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
 
                 if (templateContext.scriptLogTail.length >= 3000) {
                     globals.logger.warn(
-                        `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`,
+                        `SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`,
                     );
                     templateContext.scriptLogTail = templateContext.scriptLogTail
                         .replaceAll('&', '&amp;')
@@ -362,19 +398,18 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                const { webhookUrl } = teamsConfig;
-                sendTeams(webhookUrl, teamsConfig, templateContext, 'qscloud-app-reload');
+                sendSlack(slackConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
-                globals.logger.error(`TEAMS ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+                globals.logger.error(`SLACK ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.warn(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Teams for app [${reloadParams.appId}] "${reloadParams.appName}"`,
+                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Slack for app [${reloadParams.appId}] "${reloadParams.appName}"`,
             );
             globals.logger.debug(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
             );
         });
 }

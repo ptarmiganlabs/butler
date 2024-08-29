@@ -1,5 +1,24 @@
 import axios from 'axios';
 
+/**
+ * 
+ * @param {*} slackConfig 
+ * slackConfig = {
+ *   webhookUrl: 'https://hooks.slack.com/services/...',
+ *   messageType: 'basic', // basic, formatted, restmsg
+ *   templateFile: 'slack_template.json',
+ *   headScriptLogLines: 'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. Nullam nec purus.',
+ *   tailScriptLogLines: 'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. Nullam nec purus.',
+ *   fromUser: 'MyBot',
+ *   iconEmoji: ':ghost:',
+ *   rateLimit: 30,
+ *   basicMsgTemplate: 'abc123...',
+ *   channel: '#general',
+ *   text: 'Hello, world!'
+ * }
+ * @param {*} logger 
+ * @returns 
+ */
 async function slackSend(slackConfig, logger) {
     // TODO Sanity check Slack config
     if (slackConfig.text === undefined) {
