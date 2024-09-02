@@ -60,7 +60,7 @@
         "@keyvhq/core": "^2.1.1",
         "@xstate/fsm": "^2.0.1",
         "any-base": "^1.1.0",
-        "axios": "^1.7.5",
+        "axios": "^1.7.7",
         "commander": "^12.1.0",
         "config": "^3.3.12",
         "cron-job-manager": "^2.3.1",
