@@ -206,9 +206,9 @@ function configObfuscate(config) {
                 }),
             );
 
-        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress, keep first 5 chars, mask the rest with *
-        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress =
-            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress.substring(0, 5) +
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress, keep first 5 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress.substring(0, 5) +
             '*'.repeat(10);
 
         // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients

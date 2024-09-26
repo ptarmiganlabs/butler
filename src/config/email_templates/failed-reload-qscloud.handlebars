@@ -1,0 +1,175 @@
+<h1>Qlik Sense Cloud app reload failed</h1>
+<p>
+
+
+<table>
+  <tbody>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App name</strong><br>
+        {{appName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>App ID</strong><br>
+        {{appId}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App description</strong><br>
+        {{appDescription}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Link to app</strong><br>
+        {{appUrl}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App owner</strong><br>
+        {{appOwnerName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>App owner email</strong><br>
+        {{appOwnerEmail}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Tenant ID</strong><br>
+        {{tenantId}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Tenant comment</strong><br>
+        {{tenantComment}}
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Reload started</strong><br>
+        {{executionStartTime.startTimeLocal1}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Reload ended</strong><br>
+        {{executionStopTime.stopTimeLocal1}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Duration</strong><br>
+        {{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds
+      </td>
+      <td style="padding-left: 20px;">
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Trigger</strong><br>
+        {{reloadTrigger}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Reload ID</strong><br>
+        {{reloadId}}
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr></tr>
+      <td style="padding-right: 20px;">
+        <strong>Error message</strong><br>
+        {{errorMessage}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Error code</strong><br>
+        {{errorCode}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Execution result</strong><br>
+        {{executionStatusText}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong></strong><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Peak memory bytes</strong><br>
+        {{peakMemoryBytes}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Failed due to memory constraint</strong><br>
+        {{endedWithMemoryConstraint}}
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <a href="{{qlikSenseQMC}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense QMC</a> 
+        <a href="{{qlikSenseHub}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense Hub</a>
+        <a href="{{appUrl}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Open app</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <strong>Log message</strong>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <pre>{{logMessage}}</pre>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        The script log contains {{scriptLogSize}} rows in total. Here are the first ones:
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <pre>{{scriptLogHead}}</pre>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        Here are the last {{scriptLogTailCount}} rows:
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <pre>{{scriptLogTail}}</pre>
+      </td>
+    </tr>
+
+
+  </tbody>
+</table>

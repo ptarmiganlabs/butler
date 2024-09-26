@@ -984,31 +984,29 @@ Butler:
             # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
             emailNotification:
               reloadAppFailure:
-                enable: false
-                basicContentOnly: false
+                enable: false                # Enable/disable app reload failed notifications via email
                 appOwnerAlert:
-                  enable: false              # Should app owner get notification email (assuming email address is available in Sense user directory)
+                  enable: false              # Should app owner get notification email (assuming email address is available in Sense)?
                   includeOwner:
                     includeAll: true                            # true = Send notification to all app owners except those in exclude list
                                                                 # false = Send notification to app owners in the include list
-                    user:
-                      - directory: <directory>
-                        userId: <userId>
+                    user:                    # Array of app owner email addresses that should get notifications
+                      # - email: anna@somecompany.com
+                      # - email: joe@somecompany.com
                   excludeOwner:
                     user:
-                      - directory: <directory>
-                        userId: <userId>
+                      # - email: daniel@somecompany.com
                 rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
                 headScriptLogLines: 15
                 tailScriptLogLines: 25
                 priority: high              # high/normal/low
                 subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
                 bodyFileDirectory: /path/to//email_templates
-                htmlTemplateFile: failed-reload-qs-cloud
+                htmlTemplateFile: failed-reload-qscloud
                 fromAdress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
                 recipients:
-                  - user.joe@company.com
-                  - user.anna@company.com
+                  # - emma@somecompany.com
+                  # - patrick@somecompany.com
 
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:

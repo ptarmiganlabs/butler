@@ -6,11 +6,11 @@ import globals from '../../globals.js';
 import slackSend from '../slack_api.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
-// import getAppOwner from '../../qrs_util/get_app_owner.js';
+import { getQlikSenseCloudUrls } from './util.js';
 
 let rateLimiterMemoryFailedReloads;
 
-if (globals.config.has('Butler.slackNotification.reloadTaskFailure.rateLimit')) {
+if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit')) {
     rateLimiterMemoryFailedReloads = new RateLimiterMemory({
         points: 1,
         duration: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.rateLimit'),
@@ -92,24 +92,6 @@ function getAppReloadFailedSlackConfig() {
         globals.logger.error(`SLACK ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
         return false;
     }
-}
-
-function getQlikSenseCloudUrls() {
-    let qmcUrl = '';
-    let hubUrl = '';
-
-    if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc')) {
-        qmcUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc');
-    }
-
-    if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub')) {
-        hubUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub');
-    }
-
-    return {
-        qmcUrl,
-        hubUrl,
-    };
 }
 
 async function sendSlack(slackConfig, templateContext, msgType) {
@@ -287,10 +269,19 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
                     tenantComment: reloadParams.tenantComment,
+                    tenantUrl: reloadParams.tenantUrl,
+
                     userId: reloadParams.userId,
                     userName: appOwner === undefined ? 'Unknown' : appOwner.name,
+
                     appId: reloadParams.appId,
                     appName: reloadParams.appName,
+                    appDescription: reloadParams.appInfo.attributes.description,
+                    appUrl: reloadParams.appUrl,
+                    appHasSectionAccess: reloadParams.appInfo.attributes.hasSectionAccess,
+                    appIsPublished: reloadParams.appInfo.attributes.published,
+                    appPublishTime: reloadParams.appInfo.attributes.publishTime,
+                    appThumbnail: reloadParams.appInfo.attributes.thumbnail,
 
                     reloadTrigger: reloadParams.reloadTrigger,
                     source: reloadParams.source,
@@ -301,13 +292,15 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     isPartialReload: reloadParams.isPartialReload,
                     isSessionApp: reloadParams.isSessionApp,
                     isSkipStore: reloadParams.isSkipStore,
-                    peakMemoryBytes: reloadParams.peakMemoryBytes,
+
+                    peakMemoryBytes: reloadParams.peakMemoryBytes.toLocaleString(),
                     reloadId: reloadParams.reloadId,
-                    rowLimit: reloadParams.rowLimit,
+                    rowLimit: reloadParams.rowLimit.toLocaleString(),
                     statements: reloadParams.statements,
                     status: reloadParams.status,
                     usageDuration: reloadParams.duration,
-                    sizeMemoryBytes: reloadParams.sizeMemory,
+                    sizeMemoryBytes: reloadParams.sizeMemory.toLocaleString(),
+                    appFileSize: reloadParams.appItems.resourceSize.appFile.toLocaleString(),
 
                     errorCode: reloadParams.reloadInfo.errorCode,
                     errorMessage: reloadParams.reloadInfo.errorMessage,
@@ -319,7 +312,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
                     executionStopTime: reloadParams.reloadInfo.executionStopTime,
                     executionStatusText: reloadParams.reloadInfo.status,
-                    scriptLogSize: scriptLogData.scriptLogSize,
+                    scriptLogSize: scriptLogData.scriptLogSize.toLocaleString(),
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
@@ -330,8 +323,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
+
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+
                     appOwnerName: appOwner.name,
                     appOwnerUserId: appOwner.id,
                     appOwnerPicture: appOwner.picture,

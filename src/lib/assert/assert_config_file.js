@@ -4367,13 +4367,6 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.basicContentOnly')) {
-        logger.error(
-            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.basicContentOnly"',
-        );
-        configFileCorrect = false;
-    }
-
     if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.enable')) {
         logger.error(
             'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.enable"',
@@ -4393,8 +4386,7 @@ export const configFileStructureAssert = async (config, logger) => {
     }
 
     // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user is an array of objects with the following properties:
-    // - directory: 'string'
-    // - userId: 'string'
+    // - email: 'string'
     if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user')) {
         const users = config.get(
             'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user',
@@ -4414,15 +4406,9 @@ export const configFileStructureAssert = async (config, logger) => {
                         );
                         configFileCorrect = false;
                     } else {
-                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'email')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "directory" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]"`,
-                            );
-                            configFileCorrect = false;
-                        }
-                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
-                            logger.error(
-                                `ASSERT CONFIG: Missing property "userId" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]"`,
+                                `ASSERT CONFIG: Missing property "email" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[${index}]"`,
                             );
                             configFileCorrect = false;
                         }
@@ -4438,8 +4424,7 @@ export const configFileStructureAssert = async (config, logger) => {
     }
 
     // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user is an array of objects with the following properties:
-    // - directory: 'string'
-    // - userId: 'string'
+    // - email: 'string'
     if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user')) {
         const users = config.get(
             'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user',
@@ -4459,15 +4444,9 @@ export const configFileStructureAssert = async (config, logger) => {
                         );
                         configFileCorrect = false;
                     } else {
-                        if (!Object.prototype.hasOwnProperty.call(user, 'directory')) {
+                        if (!Object.prototype.hasOwnProperty.call(user, 'email')) {
                             logger.error(
-                                `ASSERT CONFIG: Missing property "directory" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]"`,
-                            );
-                            configFileCorrect = false;
-                        }
-                        if (!Object.prototype.hasOwnProperty.call(user, 'userId')) {
-                            logger.error(
-                                `ASSERT CONFIG: Missing property "userId" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]"`,
+                                `ASSERT CONFIG: Missing property "email" in "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[${index}]"`,
                             );
                             configFileCorrect = false;
                         }
@@ -4531,14 +4510,15 @@ export const configFileStructureAssert = async (config, logger) => {
         configFileCorrect = false;
     }
 
-    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress')) {
+    if (!config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress')) {
         logger.error(
-            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAdress"',
+            'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress"',
         );
         configFileCorrect = false;
     }
 
     // Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients is an array of strings
+    // It is ok for the array to be empty
     if (config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients')) {
         const recipients = config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients');
 
@@ -4558,6 +4538,10 @@ export const configFileStructureAssert = async (config, logger) => {
                     }
                 });
             }
+        } else if (recipients === null) {
+            logger.warn(
+                'ASSERT CONFIG: No recipients defined for Qlik Sense cloud alert emails, "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients" is empty.',
+            );
         } else {
             logger.error(
                 'ASSERT CONFIG: Missing config file entry "Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients"',

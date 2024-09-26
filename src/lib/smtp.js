@@ -41,7 +41,7 @@ if (globals.config.has('Butler.emailNotification.serviceStopped.rateLimit')) {
     rateLimiterMemoryServiceMonitor = new RateLimiterMemory({ points: 1, duration: 300 });
 }
 
-function isSmtpConfigOk() {
+export function isSmtpConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
         if (
@@ -224,7 +224,7 @@ function getQlikSenseUrls() {
     return { qmcUrl, hubUrl };
 }
 
-async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
+export async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
         if (isSmtpConfigOk() === false) {
