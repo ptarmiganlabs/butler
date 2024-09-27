@@ -291,7 +291,7 @@ Butler:
     enable: false
     restMessage:                      
       webhookURL: <web hook URL from Slack>   # Webhook to use when sending basic Slack messages via Butler's REST API 
-    reloadTaskFailure:
+    reloadTaskFailure:                # Reload task failed in QSEoW
       enable: false
       webhookURL: <web hook URL from Slack>
       channel: sense-task-failure     # Slack channel to which task failure notifications are sent
@@ -300,10 +300,10 @@ Butler:
       rateLimit: 300                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      templateFile: /path/to/slack/template/directory/failed-reload.handlebars
+      templateFile: /path/to/slack/template/directory/failed-reload-qseow.handlebars
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
-    reloadTaskAborted:
+    reloadTaskAborted:                # Reload task aborted in QSEoW
       enable: false
       webhookURL: <web hook URL from Slack>
       channel: sense-task-aborted     # Slack channel to which task stopped notifications are sent
@@ -312,7 +312,7 @@ Butler:
       rateLimit: 300                  # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      templateFile: /path/to/slack/template/directory/aborted-reload.handlebars
+      templateFile: /path/to/slack/template/directory/aborted-reload-qseow.handlebars
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
     serviceStopped:
