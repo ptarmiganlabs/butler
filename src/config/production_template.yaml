@@ -954,6 +954,9 @@ Butler:
             teamsNotification:
               reloadAppFailure:
                 enable: false
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send Teams alert if app reload fails
                 basicContentOnly: false
                 webhookURL: <URL to MS Teams webhook>
 
@@ -968,6 +971,9 @@ Butler:
             slackNotification:
               reloadAppFailure:
                 enable: false
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send Slack alert if app reload fails
                 basicContentOnly: false
                 webhookURL: <URL to Slack webhook>
                 channel: sense-task-failure     # Slack channel to which task failure notifications are sent
@@ -985,6 +991,9 @@ Butler:
             emailNotification:
               reloadAppFailure:
                 enable: false                # Enable/disable app reload failed notifications via email
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send email if app reload fails
                 appOwnerAlert:
                   enable: false              # Should app owner get notification email (assuming email address is available in Sense)?
                   includeOwner:

@@ -40,22 +40,15 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileStructureAssert, configFileYamlAssert, configFileNewRelicAssert, configFileInfluxDbAssert } = await import(
+    const { configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert } = await import(
         './lib/assert/assert_config_file.js'
     );
 
-    // Verify that config file is valid YAML
-    let resAssert = await configFileYamlAssert(globals.configFileExpanded);
-    if (resAssert === false) {
-        globals.logger.error('MAIN: Config file is not valid YAML. Exiting.');
-        process.exit(1);
-    } else {
-        globals.logger.info('MAIN: Config file is valid YAML - all good.');
-    }
+    let resAssert;
 
     // Verify correct structure of config file
     if (!settingsObj.options.skipConfigVerification) {
-        resAssert = await configFileStructureAssert(globals.config, globals.logger);
+        resAssert = await configFileStructureAssert();
         if (resAssert === false) {
             globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
             process.exit(1);
