@@ -88,7 +88,7 @@
         "mqtt": "^5.10.1",
         "ms-teams-wrapper": "^1.0.2",
         "nodemailer": "^6.9.15",
-        "nodemailer-express-handlebars": "^6.1.2",
+        "nodemailer-express-handlebars": "^7.0.0",
         "os": "^0.1.2",
         "posthog-node": "^4.2.0",
         "promise": "^8.3.0",
