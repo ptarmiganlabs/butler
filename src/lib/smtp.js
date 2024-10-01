@@ -88,7 +88,7 @@ function isEmailReloadFailedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.subject') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAdress') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAddress') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty') ||
             !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable') ||
@@ -128,7 +128,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.subject') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAdress') ||
+            !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAddress') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty') ||
             !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable') ||
@@ -163,7 +163,7 @@ function isEmailServiceMonitorNotificationConfig() {
             !globals.config.has('Butler.emailNotification.serviceStopped.subject') ||
             !globals.config.has('Butler.emailNotification.serviceStopped.bodyFileDirectory') ||
             !globals.config.has('Butler.emailNotification.serviceStopped.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.fromAdress') ||
+            !globals.config.has('Butler.emailNotification.serviceStopped.fromAddress') ||
             !globals.config.has('Butler.emailNotification.serviceStopped.recipients')
         ) {
             // Not enough info in config file
@@ -590,7 +590,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                     // Only send email if there is at least one recipient
                     if (recipientEmailAddress.length > 0) {
                         sendEmail(
-                            globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAdress'),
+                            globals.config.get('Butler.emailNotification.reloadTaskFailure.fromAddress'),
                             [recipientEmailAddress],
                             globals.config.get('Butler.emailNotification.reloadTaskFailure.priority'),
                             globals.config.get('Butler.emailNotification.reloadTaskFailure.subject'),
@@ -863,7 +863,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                     // Only send email if there is at least one recipient
                     if (recipientEmailAddress.length > 0) {
                         sendEmail(
-                            globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAdress'),
+                            globals.config.get('Butler.emailNotification.reloadTaskAborted.fromAddress'),
                             [recipientEmailAddress],
                             globals.config.get('Butler.emailNotification.reloadTaskAborted.priority'),
                             globals.config.get('Butler.emailNotification.reloadTaskAborted.subject'),
@@ -943,7 +943,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                     if (recipientEmailAddress.length > 0) {
                         if (serviceParams.serviceStatus === 'STOPPED') {
                             sendEmail(
-                                globals.config.get('Butler.emailNotification.serviceStopped.fromAdress'),
+                                globals.config.get('Butler.emailNotification.serviceStopped.fromAddress'),
                                 [recipientEmailAddress],
                                 globals.config.get('Butler.emailNotification.serviceStopped.priority'),
                                 globals.config.get('Butler.emailNotification.serviceStopped.subject'),
@@ -953,7 +953,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                             );
                         } else if (serviceParams.serviceStatus === 'RUNNING') {
                             sendEmail(
-                                globals.config.get('Butler.emailNotification.serviceStarted.fromAdress'),
+                                globals.config.get('Butler.emailNotification.serviceStarted.fromAddress'),
                                 [recipientEmailAddress],
                                 globals.config.get('Butler.emailNotification.serviceStarted.priority'),
                                 globals.config.get('Butler.emailNotification.serviceStarted.subject'),

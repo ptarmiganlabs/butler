@@ -4,12 +4,13 @@ import globals from '../globals.js';
 // Function for starting Sense task, given its task ID (as it appears in the QMC task list)
 async function senseStartTask(taskId) {
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,

@@ -45,7 +45,10 @@ async function handlerGetSenseListApps(request, reply) {
 
         logRESTCall(request);
 
-        // create a new session
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getEngineHttpHeaders();
+
+        // Create a new session
         const configEnigma = {
             schema: qixSchema,
             url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
@@ -53,9 +56,7 @@ async function handlerGetSenseListApps(request, reply) {
                 new WebSocket(url, {
                     key: globals.configEngine.key,
                     cert: globals.configEngine.cert,
-                    headers: {
-                        'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
-                    },
+                    headers: httpHeaders,
                     rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                 }),
         };

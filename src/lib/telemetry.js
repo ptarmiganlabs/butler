@@ -14,7 +14,7 @@ const callRemoteURL = async () => {
         let uptimeMonitorStoreInInfluxdb = 'null';
         let uptimeMonitorStoreInNewRelic = 'null';
 
-        let api_apiListEnbledEndpoints = 'null';
+        let api_apiListEnabledEndpoints = 'null';
         let api_base62ToBase16 = 'null';
         let api_base16ToBase62 = 'null';
         let api_butlerPing = 'null';
@@ -99,8 +99,8 @@ const callRemoteURL = async () => {
             uptimeMonitorStoreInNewRelic = globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable');
         }
 
-        if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
-            api_apiListEnbledEndpoints = globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints');
+        if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnabledEndpoints')) {
+            api_apiListEnabledEndpoints = globals.config.get('Butler.restServerEndpointsEnable.apiListEnabledEndpoints');
         }
 
         if (globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16')) {
@@ -346,7 +346,7 @@ const callRemoteURL = async () => {
                 feature_uptimeMonitoStoreInInfluxdb: uptimeMonitorStoreInInfluxdb,
                 feature_uptimeMonitoStoreInNewRelic: uptimeMonitorStoreInNewRelic,
 
-                feature_apiListEnbledEndpoints: api_apiListEnbledEndpoints,
+                feature_apiListEnabledEndpoints: api_apiListEnabledEndpoints,
                 feature_apiBase62ToBase16: api_base62ToBase16,
                 feature_apiBase16ToBase62: api_base16ToBase62,
                 feature_apiButlerPing: api_butlerPing,
@@ -426,7 +426,7 @@ const callRemoteURL = async () => {
                             uptimeMonitor_storeInInfluxdb: uptimeMonitorStoreInInfluxdb,
                             uptimeMonitor_storeInNewRelic: uptimeMonitorStoreInNewRelic,
 
-                            apiEnbledEndpoints: globals.config.has('Butler.restServerEndpointsEnable')
+                            apiEnabledEndpoints: globals.config.has('Butler.restServerEndpointsEnable')
                                 ? globals.config.get('Butler.restServerEndpointsEnable')
                                 : {},
 

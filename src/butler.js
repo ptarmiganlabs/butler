@@ -40,7 +40,7 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert } = await import(
+    const { configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert } = await import(
         './lib/assert/assert_config_file.js'
     );
 
@@ -74,6 +74,15 @@ const start = async () => {
                 process.exit(1);
             } else {
                 globals.logger.info('MAIN: Config file contains required InfluxDb data - all good.');
+            }
+
+            // Verify that QS specific config settings are valid
+            resAssert = await configFileQsAssert(globals.config, globals.logger);
+            if (resAssert === false) {
+                globals.logger.error('MAIN: Config file does not contain required Qlik Sense data. Exiting.');
+                process.exit(1);
+            } else {
+                globals.logger.info('MAIN: Config file contains required Qlik Sense data - all good.');
             }
         }
     }

@@ -211,7 +211,6 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                         dbName: { type: 'string' },
-                        instanceTag: { type: 'string' },
                         retentionPolicy: {
                             type: 'object',
                             properties: {
@@ -219,6 +218,25 @@ export const confifgFileSchema = {
                                 duration: { type: 'string' },
                             },
                             required: ['name', 'duration'],
+                            additionalProperties: false,
+                        },
+                        tag: {
+                            type: 'object',
+                            properties: {
+                                static: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            name: { type: 'string' },
+                                            value: { type: 'string' },
+                                        },
+                                        required: ['name', 'value'],
+                                        additionalProperties: false,
+                                    },
+                                },
+                            },
+                            required: ['static'],
                             additionalProperties: false,
                         },
                         reloadTaskFailure: {
@@ -315,8 +333,8 @@ export const confifgFileSchema = {
                         'hostPort',
                         'auth',
                         'dbName',
-                        'instanceTag',
                         'retentionPolicy',
+                        'tag',
                         'reloadTaskFailure',
                         'reloadTaskSuccess',
                     ],
@@ -1052,7 +1070,7 @@ export const confifgFileSchema = {
                                 subject: { type: 'string' },
                                 bodyFileDirectory: { type: 'string' },
                                 htmlTemplateFile: { type: 'string' },
-                                fromAdress: { type: 'string' },
+                                fromAddress: { type: 'string' },
                                 recipients: {
                                     type: ['array', 'null'],
                                     items: {
@@ -1072,7 +1090,7 @@ export const confifgFileSchema = {
                                 'subject',
                                 'bodyFileDirectory',
                                 'htmlTemplateFile',
-                                'fromAdress',
+                                'fromAddress',
                                 'recipients',
                             ],
                             additionalProperties: false,
@@ -1157,7 +1175,7 @@ export const confifgFileSchema = {
                                 subject: { type: 'string' },
                                 bodyFileDirectory: { type: 'string' },
                                 htmlTemplateFile: { type: 'string' },
-                                fromAdress: { type: 'string' },
+                                fromAddress: { type: 'string' },
                                 recipients: {
                                     type: ['array', 'null'],
                                     items: {
@@ -1177,7 +1195,7 @@ export const confifgFileSchema = {
                                 'subject',
                                 'bodyFileDirectory',
                                 'htmlTemplateFile',
-                                'fromAdress',
+                                'fromAddress',
                                 'recipients',
                             ],
                             additionalProperties: false,
@@ -1194,7 +1212,7 @@ export const confifgFileSchema = {
                                 subject: { type: 'string' },
                                 bodyFileDirectory: { type: 'string' },
                                 htmlTemplateFile: { type: 'string' },
-                                fromAdress: { type: 'string' },
+                                fromAddress: { type: 'string' },
                                 recipients: {
                                     type: ['array', 'null'],
                                     items: {
@@ -1208,7 +1226,7 @@ export const confifgFileSchema = {
                                 'subject',
                                 'bodyFileDirectory',
                                 'htmlTemplateFile',
-                                'fromAdress',
+                                'fromAddress',
                                 'recipients',
                             ],
                             additionalProperties: false,
@@ -1225,7 +1243,7 @@ export const confifgFileSchema = {
                                 subject: { type: 'string' },
                                 bodyFileDirectory: { type: 'string' },
                                 htmlTemplateFile: { type: 'string' },
-                                fromAdress: { type: 'string' },
+                                fromAddress: { type: 'string' },
                                 recipients: {
                                     type: ['array', 'null'],
                                     items: {
@@ -1239,7 +1257,7 @@ export const confifgFileSchema = {
                                 'subject',
                                 'bodyFileDirectory',
                                 'htmlTemplateFile',
-                                'fromAdress',
+                                'fromAddress',
                                 'recipients',
                             ],
                             additionalProperties: false,
@@ -2333,7 +2351,7 @@ export const confifgFileSchema = {
                 restServerEndpointsEnable: {
                     type: 'object',
                     properties: {
-                        apiListEnbledEndpoints: { type: 'boolean' },
+                        apiListEnabledEndpoints: { type: 'boolean' },
                         base62ToBase16: { type: 'boolean' },
                         base16ToBase62: { type: 'boolean' },
                         butlerping: { type: 'boolean' },
@@ -2382,7 +2400,7 @@ export const confifgFileSchema = {
                         slackPostMessage: { type: 'boolean' },
                     },
                     required: [
-                        'apiListEnbledEndpoints',
+                        'apiListEnabledEndpoints',
                         'base62ToBase16',
                         'base16ToBase62',
                         'butlerping',
@@ -2949,9 +2967,22 @@ export const confifgFileSchema = {
                         useSSL: { type: 'boolean' },
                         headers: {
                             type: 'object',
-                            properties: {},
-                            required: [],
-                            additionalProperties: true,
+                            properties: {
+                                static: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            name: { type: 'string' },
+                                            value: { type: 'string' },
+                                        },
+                                        required: ['name', 'value'],
+                                        additionalProperties: false,
+                                    },
+                                },
+                            },
+                            required: ['static'],
+                            additionalProperties: false,
                         },
                         rejectUnauthorized: { type: 'boolean' },
                     },
@@ -2969,11 +3000,28 @@ export const confifgFileSchema = {
                         },
                         port: { type: 'number' },
                         useSSL: { type: 'boolean' },
-                        headerKey: { type: 'string' },
-                        headerValue: { type: 'string' },
+                        headers: {
+                            type: 'object',
+                            properties: {
+                                static: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            name: { type: 'string' },
+                                            value: { type: 'string' },
+                                        },
+                                        required: ['name', 'value'],
+                                        additionalProperties: false,
+                                    },
+                                },
+                            },
+                            required: ['static'],
+                            additionalProperties: false,
+                        },
                         rejectUnauthorized: { type: 'boolean' },
                     },
-                    required: ['authentication', 'host', 'useSSL', 'port', 'headerKey', 'headerValue', 'rejectUnauthorized'],
+                    required: ['authentication', 'host', 'useSSL', 'port', 'headers', 'rejectUnauthorized'],
                     additionalProperties: false,
                 },
 

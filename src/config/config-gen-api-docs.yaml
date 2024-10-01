@@ -90,12 +90,15 @@ Butler:
       username: ...
       password: ...
     dbName: ...
-    instanceTag: ...              # Tag that can be used to differentiate data from multiple Butler instances
     # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
     # Any data older than retention policy threshold will be purged from InfluxDB.
     retentionPolicy:
       name: 10d
       duration: 10d
+    tag:
+      static:
+        # - name: butler_instance
+        #   value: dev
     reloadTaskFailure:
       enable: true
       tailScriptLogLines: 20
@@ -356,7 +359,7 @@ Butler:
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: aborted-reload
-      fromAdress: ...
+      fromAddress: ...
       recipients:
         # - ...
     reloadTaskFailure:
@@ -391,7 +394,7 @@ Butler:
       subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: failed-reload
-      fromAdress: ...
+      fromAddress: ...
       recipients:
         # - ...
     serviceStopped:
@@ -400,7 +403,7 @@ Butler:
       subject: '❌ Windows service stopped on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: service-stopped
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
         # - ...
     serviceStarted:
@@ -409,7 +412,7 @@ Butler:
       subject: '✅ Windows service started on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: service-started
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
         # - ...
     smtp: 
@@ -710,7 +713,7 @@ Butler:
 
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
-    apiListEnbledEndpoints: true
+    apiListEnabledEndpoints: true
     base62ToBase16: true
     base16ToBase62: true
     butlerping: true
@@ -912,7 +915,9 @@ Butler:
     port: 4747
     useSSL: true
     headers:
-      X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
+      static:
+        - name: X-Qlik-User                                   # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository  # What user connection to QRS is made as
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
@@ -921,8 +926,10 @@ Butler:
     host: 10.11.12.13
     useSSL: true
     port: 4242
-    headerKey: X-Qlik-User                                      # Header used to identify what user connection to QRS is made as
-    headerValue: UserDirectory=Internal; UserId=sa_repository   # What user connection to QRS is made as
+    headers:
+      static:
+        - name: X-Qlik-User                                   # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository  # What user connection to QRS is made as
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 

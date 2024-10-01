@@ -20,10 +20,7 @@ async function handlerGetAPIEndpointsEnabled(request, reply) {
 
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
-    if (
-        globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints') &&
-        globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')
-    ) {
+    if (globals.config.get('Butler.restServerEndpointsEnable.apiListEnabledEndpoints')) {
         globals.logger.debug('Registering REST endpoint GET /v4/configfile/endpointsenabled');
 
         fastify.get('/v4/configfile/endpointsenabled', apiGetAPIEndpointsEnabled, handlerGetAPIEndpointsEnabled);

@@ -4,12 +4,13 @@ import globals from '../globals.js';
 // Function for getting info about owner of Qlik Sense apps
 const getAppOwner = async (appId) => {
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,

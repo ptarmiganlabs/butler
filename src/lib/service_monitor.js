@@ -38,7 +38,6 @@ const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
 const serviceMonitorMqttSend1 = (config, logger, svc) => {
     if (svc.serviceStatus === 'STOPPED') {
         if (
-            !config.has('Butler.mqttConfig.serviceStoppedTopic') ||
             config.get('Butler.mqttConfig.serviceStoppedTopic') === null ||
             config.get('Butler.mqttConfig.serviceStoppedTopic').length === 0
         ) {
@@ -65,7 +64,6 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
         }
     } else if (svc.serviceStatus === 'RUNNING') {
         if (
-            !config.has('Butler.mqttConfig.serviceRunningTopic') ||
             config.get('Butler.mqttConfig.serviceRunningTopic') === null ||
             config.get('Butler.mqttConfig.serviceRunningTopic').length === 0
         ) {
@@ -94,11 +92,7 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
 };
 
 const serviceMonitorMqttSend2 = (config, logger, svc) => {
-    if (
-        !config.has('Butler.mqttConfig.serviceStatusTopic') ||
-        config.get('Butler.mqttConfig.serviceStatusTopic') === null ||
-        config.get('Butler.mqttConfig.serviceStatusTopic').length === 0
-    ) {
+    if (config.get('Butler.mqttConfig.serviceStatusTopic') === null || config.get('Butler.mqttConfig.serviceStatusTopic').length === 0) {
         logger.verbose(`"${svc.serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
     } else {
         logger.verbose(
@@ -231,9 +225,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // New Relic
                     if (
-                        config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') &&
                         config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true &&
-                        config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
                         serviceMonitorNewRelicSend1(config, logger, {
@@ -250,9 +242,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // MQTT
                     if (
-                        config.has('Butler.mqttConfig.enable') &&
                         config.get('Butler.mqttConfig.enable') === true &&
-                        config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
                         serviceMonitorMqttSend1(config, logger, {
@@ -268,10 +258,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                     }
 
                     // Outgoing webhooks
-                    if (
-                        globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
-                        globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
-                    ) {
+                    if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
                         sendServiceMonitorWebhook({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
@@ -286,8 +273,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Post to Slack
                     if (
-                        globals.config.has('Butler.slackNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') &&
                         globals.config.get('Butler.slackNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
@@ -305,8 +290,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Post to Teams
                     if (
-                        globals.config.has('Butler.teamsNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
                         globals.config.get('Butler.teamsNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
@@ -324,8 +307,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Send email
                     if (
-                        globals.config.has('Butler.emailNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') &&
                         globals.config.get('Butler.emailNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
@@ -371,9 +352,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // New Relic
                     if (
-                        config.has('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') &&
                         config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true &&
-                        config.has('Butler.serviceMonitor.alertDestination.newRelic.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
                     ) {
                         serviceMonitorNewRelicSend1(config, logger, {
@@ -390,9 +369,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // MQTT
                     if (
-                        config.has('Butler.mqttConfig.enable') &&
                         config.get('Butler.mqttConfig.enable') === true &&
-                        config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                         config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
                     ) {
                         serviceMonitorMqttSend1(config, logger, {
@@ -408,10 +385,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                     }
 
                     // Outgoing webhooks
-                    if (
-                        globals.config.has('Butler.serviceMonitor.alertDestination.webhook.enable') &&
-                        globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true
-                    ) {
+                    if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
                         sendServiceMonitorWebhook({
                             serviceName: service.name,
                             serviceFriendlyName: service.friendlyName,
@@ -426,8 +400,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Post to Slack
                     if (
-                        globals.config.has('Butler.slackNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') &&
                         globals.config.get('Butler.slackNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
                     ) {
@@ -445,8 +417,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Post to Teams
                     if (
-                        globals.config.has('Butler.teamsNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') &&
                         globals.config.get('Butler.teamsNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
                     ) {
@@ -464,8 +434,6 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
                     // Send email
                     if (
-                        globals.config.has('Butler.emailNotification.enable') &&
-                        globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') &&
                         globals.config.get('Butler.emailNotification.enable') === true &&
                         globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
                     ) {
@@ -486,9 +454,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
             // Messages sent no matter what the service status is
             // MQTT
             if (
-                config.has('Butler.mqttConfig.enable') &&
                 config.get('Butler.mqttConfig.enable') === true &&
-                config.has('Butler.serviceMonitor.alertDestination.mqtt.enable') &&
                 config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
             ) {
                 serviceMonitorMqttSend2(config, logger, {
@@ -502,17 +468,10 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // InfluDB
             if (
-                globals.config.has('Butler.influxDb.enable') &&
-                globals.config.has('Butler.serviceMonitor.alertDestination.influxDb.enable') &&
                 globals.config.get('Butler.influxDb.enable') === true &&
                 globals.config.get('Butler.serviceMonitor.alertDestination.influxDb.enable') === true
             ) {
-                const instanceTag = globals.config.has('Butler.influxDb.instanceTag')
-                    ? globals.config.get('Butler.influxDb.instanceTag')
-                    : '';
-
                 postWindowsServiceStatusToInfluxDB({
-                    instanceTag,
                     serviceName: service.name,
                     serviceFriendlyName: service.friendlyName,
                     serviceStatus,

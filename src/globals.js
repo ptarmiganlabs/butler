@@ -290,8 +290,7 @@ class Settings {
                 host: this.config.get('Butler.configQRS.host'),
                 port: this.config.get('Butler.configQRS.port'),
                 useSSL: this.config.get('Butler.configQRS.useSSL'),
-                headerKey: this.config.get('Butler.configQRS.headerKey'),
-                headerValue: this.config.get('Butler.configQRS.headerValue'),
+                headers: this.config.get('Butler.configQRS.headers'),
                 rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
                 cert: this.readCert(certPath),
                 key: this.readCert(keyPath),
@@ -697,6 +696,32 @@ class Settings {
         } catch (_) {
             return false;
         }
+    }
+
+    // Function to get engine http headers, ready for use with axios
+    getEngineHttpHeaders() {
+        const headersConfig = this.configEngine.headers;
+
+        // headers variable is an array of objects, each object has "name" and "value" properties
+        const headersObj = {};
+        headersConfig.forEach((element) => {
+            headersObj[element.name] = element.value;
+        });
+
+        return headersObj;
+    }
+
+    // Function to get QRS http headers, ready for use with axios
+    getQRSHttpHeaders() {
+        const headersConfig = this.configQRS.headers;
+
+        // headers variable is an array of objects, each object has "name" and "value" properties
+        const headersObj = {};
+        headersConfig.forEach((element) => {
+            headersObj[element.name] = element.value;
+        });
+
+        return headersObj;
     }
 }
 

@@ -5,12 +5,13 @@ import globals from '../globals.js';
 // filter: { tag: 'abc', customProperty: { name: 'def', value: 'ghi' } }
 const getTasks = async (filter) => {
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,

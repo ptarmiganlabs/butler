@@ -51,6 +51,9 @@ async function handlerGetSenseAppDump(request, reply) {
         } else {
             globals.logger.info(`APPDUMP: Dumping app: ${request.params.appId}`);
 
+            // Get http headers from Butler config file
+            const httpHeaders = globals.getEngineHttpHeaders();
+
             // create a new session
             // TODO Maybe should use https://github.com/qlik-oss/enigma.js/blob/master/docs/api.md#senseutilitiesbuildurlconfig ?
             const configEnigma = {
@@ -60,9 +63,7 @@ async function handlerGetSenseAppDump(request, reply) {
                     new WebSocket(url, {
                         key: globals.configEngine.key,
                         cert: globals.configEngine.cert,
-                        headers: {
-                            'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
-                        },
+                        headers: httpHeaders,
                         rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                     }),
             };

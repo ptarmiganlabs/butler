@@ -107,12 +107,15 @@ Butler:
       username: user_joe      
       password: joesecret
     dbName: butler                  # Name of database in InfluxDB to which Butler's data is written
-    instanceTag: DEV                # Tag that can be used to differentiate data from multiple Butler instances
     # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
     # Any data older than retention policy threshold will be purged from InfluxDB.
     retentionPolicy:
       name: 10d
       duration: 10d
+    tag:
+      static:                   # Static tags to attach to all data stored in InflixDB
+        # - name: butler_instance
+        #   value: dev
     reloadTaskFailure:
       enable: true
       tailScriptLogLines: 20
@@ -374,7 +377,7 @@ Butler:
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'  # Email subject. Can use template fields
       bodyFileDirectory: path/to/email_templates      # Directory where email body template files are stored
       htmlTemplateFile: aborted-reload                # Name of email body template file to use
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:                                     # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
@@ -414,7 +417,7 @@ Butler:
       subject: 'Qlik Sense reload failed: "{{taskName}}"'   # Email subject. Can use template fields
       bodyFileDirectory: path/to/email_templates      # Directory where email body template files are stored
       htmlTemplateFile: failed-reload                 # Name of email body template file to use
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:                                       # Array of email addresses to which the notification email will be sent
         - <Email address 1>
         - <Email address 2>
@@ -424,7 +427,7 @@ Butler:
       subject: '❌ Windows service stopped on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: path/to/email_templates/email_templates
       htmlTemplateFile: service-stopped
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:
         - <Email address 1>
         - <Email address 2>
@@ -434,7 +437,7 @@ Butler:
       subject: '✅ Windows service started on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: path/to/email_templates/email_templates
       htmlTemplateFile: service-started
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
       recipients:
         - <Email address 1>
         - <Email address 2>
@@ -1012,7 +1015,7 @@ Butler:
                 subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
                 bodyFileDirectory: /path/to//email_templates
                 htmlTemplateFile: failed-reload-qscloud
-                fromAdress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
+                fromAddress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
                 recipients:
                   # - emma@somecompany.com
                   # - patrick@somecompany.com
@@ -1033,7 +1036,9 @@ Butler:
     port: <Port to connect to, usually 4747>
     useSSL: true
     headers:
-      X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
+      static:                                                   # http headers that are sent with every request to QRS. The "X-Qlik-User" is mandatory.
+        - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
@@ -1042,8 +1047,10 @@ Butler:
     host: <FQDN or IP of Sense server where QRS is running>
     useSSL: true
     port: <Port to connect to, usually 4242>
-    headerKey: X-Qlik-User                                      # Header used to identify what user connection to QRS is made as
-    headerValue: UserDirectory=Internal; UserId=sa_repository   # What user connection to QRS is made as
+    headers:
+      static:                                                   # http headers that are sent with every request to QRS. The "X-Qlik-User" is mandatory.
+        - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 

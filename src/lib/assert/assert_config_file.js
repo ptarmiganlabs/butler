@@ -7,6 +7,44 @@ import { getReloadTasksCustomProperties } from '../../qrs_util/task_cp_util.js';
 import { confifgFileSchema } from './config-file-schema.js';
 import globals from '../../globals.js';
 
+// Verify QS related settings in the config file
+export const configFileQsAssert = async (config, configQRS, logger) => {
+    // The array Butler.configEngine.headers.static must contain
+    // - at least one object
+    // - one object with the property "X-Qlik-User" with a value on the format "UserDirectory=<userdir>>; UserId=<userid>"
+    //
+    // The array consists of objets with the following properties:
+    // - name
+    // - value
+
+    if (config.get('Butler.configEngine.headers.static').length === 0) {
+        logger.error('ASSERT CONFIG QS: Butler.configEngine.headers.static is an empty array in the config file. Aborting.');
+        return false;
+    }
+
+    if (config.get('Butler.configEngine.headers.static').filter((header) => header.name === 'X-Qlik-User').length === 0) {
+        logger.error(
+            'ASSERT CONFIG QS: Butler.configEngine.headers.static does not contain an object with the property "X-Qlik-User" in the config file. Aborting.',
+        );
+        return false;
+    }
+
+    // Same check as above, but for the Butler.configQRS.headers.static array
+    if (config.get('Butler.configQRS.headers.static').length === 0) {
+        logger.error('ASSERT CONFIG QS: Butler.configQRS.headers.static is an empty array in the config file. Aborting.');
+        return false;
+    }
+
+    if (config.get('Butler.configQRS.headers.static').filter((header) => header.name === 'X-Qlik-User').length === 0) {
+        logger.error(
+            'ASSERT CONFIG QS: Butler.configQRS.headers.static does not contain an object with the property "X-Qlik-User" in the config file. Aborting.',
+        );
+        return false;
+    }
+
+    return true;
+};
+
 // Veriify InfluxDb related settings in the config file
 export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
     // ------------------------------------------
