@@ -170,10 +170,7 @@ const start = async () => {
     }
 
     // Start Docker healthcheck REST server on port set in config file
-    if (
-        (globals.config.has('Butler.dockerHealthCheck.enabled') && globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
-        (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true)
-    ) {
+    if (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true) {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 

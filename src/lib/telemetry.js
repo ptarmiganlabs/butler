@@ -70,32 +70,21 @@ const callRemoteURL = async () => {
         let restServer = 'null';
 
         // Gather info on what features are enabled/disabled
-        if (
-            (globals.config.has('Butler.heartbeat.enabled') && globals.config.get('Butler.heartbeat.enabled') === true) ||
-            (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true)
-        ) {
+        if (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true) {
             heartbeat = true;
         }
 
-        if (
-            (globals.config.has('Butler.dockerHealthCheck.enabled') && globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
-            (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true)
-        ) {
+        if (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true) {
             dockerHealthCheck = true;
         }
 
-        if (
-            (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
-            (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
-        ) {
+        if (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true) {
             uptimeMonitor = true;
         }
 
         if (
-            (globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enabled') &&
-                globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enabled') === true) ||
-            (globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
-                globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true)
+            globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
+            globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true
         ) {
             uptimeMonitorStoreInInfluxdb = true;
         }
