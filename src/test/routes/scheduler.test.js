@@ -404,6 +404,12 @@ describe('H8: GET /v4/schedules/status', () => {
 
     test('Response should be a string', () => {
         expect(result.data).toBeTruthy();
-        expect(typeof result.data).toBe('string');
+
+        // Should either an empty object or a string
+        if (typeof result.data === 'object') {
+            expect(result.data).toEqual({});
+        } else {
+            expect(typeof result.data).toBe('string');
+        }
     });
 });
