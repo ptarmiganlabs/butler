@@ -62,6 +62,11 @@ const callRemoteURL = async () => {
         let newRelicNotification_reloadTaskFailure = 'null';
         let newRelicNotification_reloadTaskAborted = 'null';
 
+        let qlikSenseCloud = 'null';
+        let qlikSenseCloudReloadAppFailureTeamsNotification = 'null';
+        let qlikSenseCloudReloadAppFailureSlackNotification = 'null';
+        let qlikSenseCloudReloadAppFailureEmailNotification = 'null';
+
         let scheduler = 'null';
         let mqtt = 'null';
         let serviceMonitor = 'null';
@@ -294,6 +299,28 @@ const callRemoteURL = async () => {
             restServer = globals.config.get('Butler.restServerConfig.enable');
         }
 
+        if (globals.config.has('Butler.qlikSenseCloud.enable')) {
+            qlikSenseCloud = globals.config.get('Butler.qlikSenseCloud.enable');
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureTeamsNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable',
+            );
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureSlackNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable',
+            );
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureEmailNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable',
+            );
+        }
+
         // Build body that can be sent to PostHog
         const body = {
             distinctId: globals.hostInfo.id,
@@ -367,6 +394,11 @@ const callRemoteURL = async () => {
                 feature_webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
                 feature_webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
 
+                feature_qliksensecloud: qlikSenseCloud,
+                feature_qliksensecloudReloadAppFailureTeamsNotification: qlikSenseCloudReloadAppFailureTeamsNotification,
+                feature_qliksensecloudReloadAppFailureSlackNotification: qlikSenseCloudReloadAppFailureSlackNotification,
+                feature_qliksensecloudReloadAppFailureEmailNotification: qlikSenseCloudReloadAppFailureEmailNotification,
+
                 feature_mqtt: mqtt,
                 feature_scheduler: scheduler,
                 feature_serviceMonitor: serviceMonitor,
@@ -418,6 +450,13 @@ const callRemoteURL = async () => {
                             webhookNotificationReloadTaskFailure: webhookNotification_reloadTaskFailure,
                             webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
                             webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
+
+                            qlikSenseCloud: {
+                                enabled: qlikSenseCloud,
+                                reloadAppFailureTeamsNotification: qlikSenseCloudReloadAppFailureTeamsNotification,
+                                reloadAppFailureSlackNotification: qlikSenseCloudReloadAppFailureSlackNotification,
+                                reloadAppFailureEmailNotification: qlikSenseCloudReloadAppFailureEmailNotification,
+                            },
 
                             mqtt,
                             scheduler,
