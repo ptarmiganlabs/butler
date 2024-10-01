@@ -14,7 +14,7 @@ const callRemoteURL = async () => {
         let uptimeMonitorStoreInInfluxdb = 'null';
         let uptimeMonitorStoreInNewRelic = 'null';
 
-        let api_apiListEnbledEndpoints = 'null';
+        let api_apiListEnabledEndpoints = 'null';
         let api_base62ToBase16 = 'null';
         let api_base16ToBase62 = 'null';
         let api_butlerPing = 'null';
@@ -62,6 +62,11 @@ const callRemoteURL = async () => {
         let newRelicNotification_reloadTaskFailure = 'null';
         let newRelicNotification_reloadTaskAborted = 'null';
 
+        let qlikSenseCloud = 'null';
+        let qlikSenseCloudReloadAppFailureTeamsNotification = 'null';
+        let qlikSenseCloudReloadAppFailureSlackNotification = 'null';
+        let qlikSenseCloudReloadAppFailureEmailNotification = 'null';
+
         let scheduler = 'null';
         let mqtt = 'null';
         let serviceMonitor = 'null';
@@ -70,32 +75,21 @@ const callRemoteURL = async () => {
         let restServer = 'null';
 
         // Gather info on what features are enabled/disabled
-        if (
-            (globals.config.has('Butler.heartbeat.enabled') && globals.config.get('Butler.heartbeat.enabled') === true) ||
-            (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true)
-        ) {
+        if (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true) {
             heartbeat = true;
         }
 
-        if (
-            (globals.config.has('Butler.dockerHealthCheck.enabled') && globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
-            (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true)
-        ) {
+        if (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true) {
             dockerHealthCheck = true;
         }
 
-        if (
-            (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
-            (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
-        ) {
+        if (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true) {
             uptimeMonitor = true;
         }
 
         if (
-            (globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enabled') &&
-                globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enabled') === true) ||
-            (globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
-                globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true)
+            globals.config.has('Butler.uptimeMonitor.storeInInfluxdb.enable') &&
+            globals.config.get('Butler.uptimeMonitor.storeInInfluxdb.enable') === true
         ) {
             uptimeMonitorStoreInInfluxdb = true;
         }
@@ -105,8 +99,8 @@ const callRemoteURL = async () => {
             uptimeMonitorStoreInNewRelic = globals.config.get('Butler.uptimeMonitor.storeNewRelic.enable');
         }
 
-        if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnbledEndpoints')) {
-            api_apiListEnbledEndpoints = globals.config.get('Butler.restServerEndpointsEnable.apiListEnbledEndpoints');
+        if (globals.config.has('Butler.restServerEndpointsEnable.apiListEnabledEndpoints')) {
+            api_apiListEnabledEndpoints = globals.config.get('Butler.restServerEndpointsEnable.apiListEnabledEndpoints');
         }
 
         if (globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16')) {
@@ -305,6 +299,28 @@ const callRemoteURL = async () => {
             restServer = globals.config.get('Butler.restServerConfig.enable');
         }
 
+        if (globals.config.has('Butler.qlikSenseCloud.enable')) {
+            qlikSenseCloud = globals.config.get('Butler.qlikSenseCloud.enable');
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureTeamsNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable',
+            );
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureSlackNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable',
+            );
+        }
+
+        if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable')) {
+            qlikSenseCloudReloadAppFailureEmailNotification = globals.config.get(
+                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable',
+            );
+        }
+
         // Build body that can be sent to PostHog
         const body = {
             distinctId: globals.hostInfo.id,
@@ -330,7 +346,7 @@ const callRemoteURL = async () => {
                 feature_uptimeMonitoStoreInInfluxdb: uptimeMonitorStoreInInfluxdb,
                 feature_uptimeMonitoStoreInNewRelic: uptimeMonitorStoreInNewRelic,
 
-                feature_apiListEnbledEndpoints: api_apiListEnbledEndpoints,
+                feature_apiListEnabledEndpoints: api_apiListEnabledEndpoints,
                 feature_apiBase62ToBase16: api_base62ToBase16,
                 feature_apiBase16ToBase62: api_base16ToBase62,
                 feature_apiButlerPing: api_butlerPing,
@@ -378,6 +394,11 @@ const callRemoteURL = async () => {
                 feature_webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
                 feature_webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
 
+                feature_qliksensecloud: qlikSenseCloud,
+                feature_qliksensecloudReloadAppFailureTeamsNotification: qlikSenseCloudReloadAppFailureTeamsNotification,
+                feature_qliksensecloudReloadAppFailureSlackNotification: qlikSenseCloudReloadAppFailureSlackNotification,
+                feature_qliksensecloudReloadAppFailureEmailNotification: qlikSenseCloudReloadAppFailureEmailNotification,
+
                 feature_mqtt: mqtt,
                 feature_scheduler: scheduler,
                 feature_serviceMonitor: serviceMonitor,
@@ -405,7 +426,7 @@ const callRemoteURL = async () => {
                             uptimeMonitor_storeInInfluxdb: uptimeMonitorStoreInInfluxdb,
                             uptimeMonitor_storeInNewRelic: uptimeMonitorStoreInNewRelic,
 
-                            apiEnbledEndpoints: globals.config.has('Butler.restServerEndpointsEnable')
+                            apiEnabledEndpoints: globals.config.has('Butler.restServerEndpointsEnable')
                                 ? globals.config.get('Butler.restServerEndpointsEnable')
                                 : {},
 
@@ -429,6 +450,13 @@ const callRemoteURL = async () => {
                             webhookNotificationReloadTaskFailure: webhookNotification_reloadTaskFailure,
                             webhookNotificationReloadTaskAborted: webhookNotification_reloadTaskAborted,
                             webhookNotificationServiceMonitor: webhookNotification_serviceMonitor,
+
+                            qlikSenseCloud: {
+                                enabled: qlikSenseCloud,
+                                reloadAppFailureTeamsNotification: qlikSenseCloudReloadAppFailureTeamsNotification,
+                                reloadAppFailureSlackNotification: qlikSenseCloudReloadAppFailureSlackNotification,
+                                reloadAppFailureEmailNotification: qlikSenseCloudReloadAppFailureEmailNotification,
+                            },
 
                             mqtt,
                             scheduler,

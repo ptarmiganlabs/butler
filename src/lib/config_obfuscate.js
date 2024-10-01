@@ -126,6 +126,17 @@ function configObfuscate(config) {
         obfuscatedConfig.Butler.mqttConfig.azureEventGrid.clientId =
             obfuscatedConfig.Butler.mqttConfig.azureEventGrid.clientId.substring(0, 3) + '*'.repeat(10);
 
+        // Obfuscate Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.host, keep first 3 chars, mask the rest with *
+        obfuscatedConfig.Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.host =
+            obfuscatedConfig.Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.host.substring(0, 3) + '*'.repeat(10);
+
+        // Obfuscate Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.auth.username, keep first 3 chars, mask the rest with *
+        obfuscatedConfig.Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.username =
+            obfuscatedConfig.Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.username.substring(0, 3) + '*'.repeat(10);
+
+        // Obfuscate Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.auth.password, keep first 0 chars, mask the rest with *
+        obfuscatedConfig.Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.password = '*'.repeat(10);
+
         // Obfuscate Butler.udpServerConfig.serverHost, keep first 3 chars, mask the rest with *
         obfuscatedConfig.Butler.udpServerConfig.serverHost =
             obfuscatedConfig.Butler.udpServerConfig.serverHost.substring(0, 3) + '*'.repeat(10);
@@ -140,6 +151,73 @@ function configObfuscate(config) {
             ...element,
             host: element.host.substring(0, 3) + '*'.repeat(10),
         }));
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.id, keep first 3 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.id =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.id.substring(0, 3) + '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl, keep first 10 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl.substring(0, 10) + '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token, keep first 5 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token.substring(0, 5) + '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc, keep first 10 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc.substring(0, 10) + '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub, keep first 10 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.hub.substring(0, 10) + '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL, keep first 10 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.webhookURL.substring(0, 10) +
+            '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppAFailure.webhookURL, keep first 10 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.webhookURL =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.webhookURL.substring(0, 10) +
+            '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user
+        // This is an array of objects, each object has a property "directory" and "userId".
+        // Obfuscateboth properties, keep first 0 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user?.map(
+                (element) => ({
+                    ...element,
+                    directory: '*'.repeat(10),
+                    userId: '*'.repeat(10),
+                }),
+            );
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user
+        // This is an array of objects, each object has a property "directory" and "userId".
+        // Obfuscateboth properties, keep first 0 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user?.map(
+                (element) => ({
+                    ...element,
+                    directory: '*'.repeat(10),
+                    userId: '*'.repeat(10),
+                }),
+            );
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress, keep first 5 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress.substring(0, 5) +
+            '*'.repeat(10);
+
+        // Obfuscate Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients
+        // This is an array of strings, each string is an email address
+        // Obfuscate each email address, keep first 5 chars, mask the rest with *
+        obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients =
+            obfuscatedConfig.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients?.map(
+                (element) => element.substring(0, 5) + '*'.repeat(10),
+            );
 
         // Obfuscate Butler.configEngine.host, keep first 3 chars, mask the rest with *
         obfuscatedConfig.Butler.configEngine.host = obfuscatedConfig.Butler.configEngine.host.substring(0, 3) + '*'.repeat(10);

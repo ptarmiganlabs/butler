@@ -5,13 +5,26 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
     // Get Butler version
     const butlerVersion = globals.appVersion;
 
+    // Add version to tags
+    let tags = {};
+
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    tags.version = butlerVersion;
+
     let datapoint = [
         {
             measurement: 'butler_memory_usage',
-            tags: {
-                butler_instance: memory.instanceTag,
-                version: butlerVersion,
-            },
+            tags: tags,
             fields: {
                 heap_used: memory.heapUsedMByte,
                 heap_total: memory.heapTotalMByte,
@@ -54,17 +67,25 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
 export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
     globals.logger.verbose('INFLUXDB QLIK SENSE VERSION: Sending Qlik Sense version to InfluxDB');
 
-    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
-
     // Get tags from config file
     // Stored in array Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static');
 
-    const tags = {
-        butler_instance: instanceTag,
-    };
+    // Add tags
+    let tags = {};
 
-    // Add tags from config file
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Add feature specific tags in configTags variable
     if (configTags) {
         // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
@@ -114,17 +135,25 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
 export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServerLicenseStatus) {
     globals.logger.verbose('INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sending Qlik Sense server license status to InfluxDB');
 
-    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
-
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static');
 
-    const tags = {
-        butler_instance: instanceTag,
-    };
+    // Add tags
+    let tags = {};
 
-    // Add tags from config file
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Add feature specific tags in configTags variable
     if (configTags) {
         // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
@@ -218,17 +247,25 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
 export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatus) {
     globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE STATUS: Sending Qlik Sense license status to InfluxDB');
 
-    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
-
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static');
 
-    const tags = {
-        butler_instance: instanceTag,
-    };
+    // Add tags
+    let tags = {};
 
-    // Add tags from config file
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Add feature specific tags in configTags variable
     if (configTags) {
         // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
@@ -370,19 +407,28 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
     globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE RELEASE: Sending info on released Qlik Sense license to InfluxDB');
 
-    const instanceTag = globals.config.has('Butler.influxDb.instanceTag') ? globals.config.get('Butler.influxDb.instanceTag') : '';
-
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static');
 
-    const tags = {
-        license_type: licenseInfo.licenseType,
-        user: `${licenseInfo.userDir}\\${licenseInfo.userId}`,
-        butler_instance: instanceTag,
-    };
+    // Add tags
+    let tags = {};
 
-    // Add tags from config file
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    tags.license_type = licenseInfo.licenseType;
+    tags.user = `${licenseInfo.userDir}\\${licenseInfo.userId}`;
+
+    // Add feature specific tags in configTags variable
     if (configTags) {
         // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
@@ -439,16 +485,30 @@ export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
         Disabled: 3,
     };
 
+    // Add tags
+    let tags = {};
+
+    // Get static tags as array from config file
+    const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+    // Add static tags to tags object
+    if (configStaticTags) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of configStaticTags) {
+            tags[item.name] = item.value;
+        }
+    }
+
+    // Add additional tags
+    tags.host = serviceStatus.host;
+    tags.service_name = serviceStatus.serviceName;
+    tags.display_name = serviceStatus.serviceDetails.displayName;
+    tags.friendly_name = serviceStatus.serviceFriendlyName;
+
     let datapoint = [
         {
             measurement: 'win_service_state',
-            tags: {
-                butler_instance: serviceStatus.instanceTag,
-                host: serviceStatus.host,
-                service_name: serviceStatus.serviceName,
-                display_name: serviceStatus.serviceDetails.displayName,
-                friendly_name: serviceStatus.serviceFriendlyName,
-            },
+            tags: tags,
             fields: {
                 state_num:
                     serviceStateLookup[serviceStatus.serviceStatus] !== undefined ? serviceStateLookup[serviceStatus.serviceStatus] : -1,
@@ -488,19 +548,34 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
     try {
         globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
 
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = reloadParams.host;
+        tags.user = reloadParams.user;
+        tags.task_id = reloadParams.taskId;
+        tags.task_name = reloadParams.taskName;
+        tags.app_id = reloadParams.appId;
+        tags.app_name = reloadParams.appName;
+        tags.log_level = reloadParams.logLevel;
+
         // Build InfluxDB datapoint
         let datapoint = [
             {
                 measurement: 'reload_task_success',
-                tags: {
-                    host: reloadParams.host,
-                    user: reloadParams.user,
-                    task_id: reloadParams.taskId,
-                    task_name: reloadParams.taskName,
-                    app_id: reloadParams.appId,
-                    app_name: reloadParams.appName,
-                    log_level: reloadParams.logLevel,
-                },
+                tags: tags,
                 fields: {
                     log_timestamp: reloadParams.logTimeStamp,
                     execution_id: reloadParams.executionId,
@@ -589,19 +664,35 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     try {
         globals.logger.info('INFLUXDB RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = reloadParams.host;
+        tags.user = reloadParams.user;
+        tags.task_id = reloadParams.taskId;
+        tags.task_name = reloadParams.taskName;
+        tags.app_id = reloadParams.appId;
+        tags.app_name = reloadParams.appName;
+        tags.log_level = reloadParams.logLevel;
+
         // Build InfluxDB datapoint
         let datapoint = [
             {
                 measurement: 'reload_task_failed',
-                tags: {
-                    host: reloadParams.host,
-                    user: reloadParams.user,
-                    task_id: reloadParams.taskId,
-                    task_name: reloadParams.taskName,
-                    app_id: reloadParams.appId,
-                    app_name: reloadParams.appName,
-                    log_level: reloadParams.logLevel,
-                },
+                tags: tags,
                 fields: {
                     log_timestamp: reloadParams.logTimeStamp,
                     execution_id: reloadParams.executionId,

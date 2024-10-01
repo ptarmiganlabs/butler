@@ -22,7 +22,7 @@ Butler:
   # Heartbeats can be used to send "I'm alive" messages to any other tool, e.g. an infrastructure monitoring tool
   heartbeat:
     enable: false
-    remoteURL: ...
+    remoteURL: http://10.11.12.13
     frequency: every 30 seconds         # https://bunkat.github.io/later/parsers.html
 
   # Docker health checks are used when running Butler as a Docker container. 
@@ -83,19 +83,22 @@ Butler:
   # Settingd for InfluxDB
   influxDb:
     enable: false
-    hostIP: ...
+    hostIP: 10.11.12.13
     hostPort: 8086
     auth:
       enable: false
       username: ...
       password: ...
     dbName: ...
-    instanceTag: ...              # Tag that can be used to differentiate data from multiple Butler instances
     # Default retention policy that should be created in InfluxDB when Butler creates a new database there. 
     # Any data older than retention policy threshold will be purged from InfluxDB.
     retentionPolicy:
       name: 10d
       duration: 10d
+    tag:
+      static:
+        # - name: butler_instance
+        #   value: dev
     reloadTaskFailure:
       enable: true
       tailScriptLogLines: 20
@@ -133,8 +136,8 @@ Butler:
 
   # Qlik Sense related links used in notification messages
   qlikSenseUrls:
-    qmc: ...
-    hub: ...
+    qmc: http://10.11.12.13
+    hub: http://10.11.12.13
 
   # Settings for monitoring Qlik Sense version info
   # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
@@ -239,7 +242,7 @@ Butler:
     enable: false
     reloadTaskFailure:
       enable: false
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       messageType: formatted     # formatted / basic
       basicMsgTemplate: 'Qlik Sense reload failed: "{{taskName}}"'      # Only needed if message type = basic
       rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
@@ -248,7 +251,7 @@ Butler:
       templateFile: ...
     reloadTaskAborted:
       enable: false
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       messageType: formatted     # formatted / basic
       basicMsgTemplate: 'Qlik Sense reload aborted: "{{taskName}}"'       # Only needed if message type = basic
       rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
@@ -256,13 +259,13 @@ Butler:
       tailScriptLogLines: 10
       templateFile: ...
     serviceStopped:
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Windows service stopped: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
       rateLimit: 5                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
       templateFile: ...
     serviceStarted:
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Windows service started: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
       rateLimit: 5                   # Min seconds between messages for a given Windows service. Defaults to 5 minutes.
@@ -272,10 +275,10 @@ Butler:
   slackNotification:
     enable: false
     restMessage:                      
-      webhookURL: <web hook URL from Slack>   # Webhook to use when sending basic Slack messages via Butler's REST API 
+      webhookURL: http://10.11.12.13   # Webhook to use when sending basic Slack messages via Butler's REST API 
     reloadTaskFailure:
       enable: false
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       # channel: sense-task-failure     # Slack channel to which task failure notifications are sent
       channel: ...     # Slack channel to which task failure notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
@@ -289,7 +292,7 @@ Butler:
       iconEmoji: ':ghost:'
     reloadTaskAborted:
       enable: false
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       channel: sense-task-aborted     # Slack channel to which task stopped notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Qlik Sense PROD reload aborted: "{{taskName}}"'       # Only needed if message type = basic
@@ -300,7 +303,7 @@ Butler:
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
     serviceStopped:
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       channel: qliksense-service-alert  # Slack channel to which Windows service stopped notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Windows service stopped: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
@@ -309,7 +312,7 @@ Butler:
       fromUser: Qlik Sense
       iconEmoji: ':ghost:'
     serviceStarted:
-      webhookURL: ...
+      webhookURL: http://10.11.12.13
       channel: qliksense-service-alert  # Slack channel to which Windows service stopped notifications are sent
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
       basicMsgTemplate: 'Windows service started: "{{serviceName}}" on host "{{host}}"'       # Only needed if message type = basic
@@ -356,7 +359,7 @@ Butler:
       subject: 'Qlik Sense reload aborted: "{{taskName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: aborted-reload
-      fromAdress: ...
+      fromAddress: ...
       recipients:
         # - ...
     reloadTaskFailure:
@@ -391,7 +394,7 @@ Butler:
       subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: failed-reload
-      fromAdress: ...
+      fromAddress: ...
       recipients:
         # - ...
     serviceStopped:
@@ -400,7 +403,7 @@ Butler:
       subject: '❌ Windows service stopped on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: service-stopped
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
         # - ...
     serviceStarted:
@@ -409,11 +412,11 @@ Butler:
       subject: '✅ Windows service started on host {{host}}: "{{serviceDisplayName}}"'
       bodyFileDirectory: ...
       htmlTemplateFile: service-started
-      fromAdress: Qlik Sense (no-reply) <qliksense-noreply@...>
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
       recipients:
         # - ...
     smtp: 
-      host: ...
+      host: 10.11.12.13
       port: 465
       secure: true
       tls: 
@@ -431,7 +434,7 @@ Butler:
   incidentTool:
     signl4:
       enable: false
-      url: ...
+      url: http://10.11.12.13
       reloadTaskFailure:
         enable: true
         rateLimit: 15              # Min seconds between alerts for a given taskID. Defaults to 5 minutes.
@@ -441,10 +444,6 @@ Butler:
           includeAll: false
           appId:
             # - ...
-          appNameRegEx:
-        excludeApp:
-          appId:
-          appNameRegEx:
       reloadTaskAborted:
         enable: true
         rateLimit: 15              # Min seconds between alerts for a given taskID. Defaults to 5 minutes.
@@ -453,10 +452,6 @@ Butler:
         includeApp:
           includeAll: true
           appId:
-          appNameRegEx:
-        excludeApp:
-          appId:
-          appNameRegEx:
     newRelic:
       enable: false
       destinationAccount:
@@ -655,7 +650,7 @@ Butler:
 
   mqttConfig:
     enable: false
-    brokerHost: ...
+    brokerHost: 10.11.12.13
     brokerPort: 1883
     azureEventGrid:
       enable: false              # If set to true, Butler will connect to an Azure Event Grid MQTT Broker, using brokerHost and brokerPort above 
@@ -676,10 +671,22 @@ Butler:
     serviceStatusTopic: qliksense/service_status
     qlikSenseServerLicenseTopic: qliksense/butler/qliksense_server_license          # Topic to which Sense server license info is published
     qlikSenseServerLicenseExpireTopic: qliksense/butler/qliksense_server_license_expire # Topic to which Sense server license expiration alerts are published
+    qlikSenseCloud:                                                   # MQTT settings for Qlik Sense Cloud integration
+      event:                                                          
+        mqttForward:                                                  # QS Cloud events forwarded to MQTT topics, which Butler will subscribe to
+          enable: false
+          broker:                                                     # Settings for MQTT broker to which QS Cloud events are forwarded
+            host: mqttbroker.company.com
+            port: 1234
+            username: <username>
+            password: <password>
+          topic:
+            subscriptionRoot: qscloud/#                     # Topic that Butler will subscribe to
+            appReload: qscloud/app/reload
 
   udpServerConfig:
     enable: false
-    serverHost: ...
+    serverHost: 10.11.12.13
     portTaskFailure: 9998
 
   restServerConfig:
@@ -706,7 +713,7 @@ Butler:
 
   # Enable/disable individual REST API endpoints. Set config item below to true to enable that endpoint.
   restServerEndpointsEnable:
-    apiListEnbledEndpoints: true
+    apiListEnabledEndpoints: true
     base62ToBase16: true
     base16ToBase62: true
     butlerping: true
@@ -812,6 +819,90 @@ Butler:
       webhook:
         enable: false
 
+  qlikSenseCloud:                   # Settings for Qlik Sense Cloud integration
+    enable: false
+    event:
+      mqtt:                         # Which QS Cloud tenant should Butler SOS receive events from, in the form of MQTT messages?
+        tenant:
+          id: sometenant.qlikcloud.com
+          tenantUrl: https://sometenant.qlikcloud.com
+          authType: jwt             # Authentication type used to connect to the tenant. Valid options are "jwt"  
+          auth:
+            jwt:
+              token: <JWT token>    # JWT token used to authenticate Butler SOS when connecting to the tenant
+          # Qlik Sense Cloud related links used in notification messages
+          qlikSenseUrls:
+            qmc: http://someurl.mycompany.com
+            hub: http://someurl.mycompany.com
+          comment: This is a comment describing the tenant and its settings # Informational only
+          alert:
+            # Settings for notifications and messages sent to MS Teams
+            teamsNotification:
+              reloadAppFailure:
+                enable: false
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send Teams alert if app reload fails
+                basicContentOnly: false
+                webhookURL: http://10.11.12.13
+
+                messageType: formatted     # formatted / basic
+                basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
+                rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 15
+                tailScriptLogLines: 15
+                templateFile: /path/to/teams_templates/failed-reload-qscloud-workflow.handlebars
+
+            # Settings for notifications and messages sent to Slack
+            slackNotification:
+              reloadAppFailure:
+                enable: false
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send Slack alert if app reload fails
+                basicContentOnly: false
+                webhookURL: http://10.11.12.13
+                channel: sense-task-failure     # Slack channel to which task failure notifications are sent
+                messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
+                basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
+                rateLimit: 60                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 10
+                tailScriptLogLines: 20
+                templateFile: /path/to/slack_templates/failed-reload-qscloud.handlebars
+                fromUser: Qlik Sense
+                iconEmoji: ':ghost:'
+              
+            # Settings needed to send email notifications when for example reload tasks fail.
+            # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
+            emailNotification:
+              reloadAppFailure:
+                enable: false                # Enable/disable app reload failed notifications via email
+                alertEnableByTag:
+                  enable: false
+                  tag: Butler - Send email if app reload fails
+                appOwnerAlert:
+                  enable: false              # Should app owner get notification email (assuming email address is available in Sense)?
+                  includeOwner:
+                    includeAll: true                            # true = Send notification to all app owners except those in exclude list
+                                                                # false = Send notification to app owners in the include list
+                    user:                    # Array of app owner email addresses that should get notifications
+                      # - email: anna@somecompany.com
+                      # - email: joe@somecompany.com
+                  excludeOwner:
+                    user:
+                      # - email: daniel@somecompany.com
+                rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                headScriptLogLines: 15
+                tailScriptLogLines: 25
+                priority: high              # high/normal/low
+                subject: '❌ Qlik Sense reload failed: "{{taskName}}"'
+                bodyFileDirectory: /path/to//email_templates
+                htmlTemplateFile: failed-reload-qscloud
+                fromAddress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
+                recipients:
+                  # - emma@somecompany.com
+                  # - patrick@somecompany.com
+
   # Certificates to use when connecting to Sense. Get these from the Certificate Export in QMC.
   cert:
     clientCert: ...
@@ -820,21 +911,25 @@ Butler:
 
   configEngine:
     engineVersion: 12.612.0         # Qlik Associative Engine version to use with Enigma.js. Works with Feb 2020 and others
-    host: ...
+    host: 10.11.12.13
     port: 4747
     useSSL: true
     headers:
-      X-Qlik-User: UserDirectory=Internal;UserId=sa_repository
+      static:
+        - name: X-Qlik-User                                   # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository  # What user connection to QRS is made as
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 
   configQRS: 
     authentication: certificates
-    host: ...
+    host: 10.11.12.13
     useSSL: true
     port: 4242
-    headerKey: X-Qlik-User                                      # Header used to identify what user connection to QRS is made as
-    headerValue: UserDirectory=Internal; UserId=sa_repository   # What user connection to QRS is made as
+    headers:
+      static:
+        - name: X-Qlik-User                                   # Header used to identify what user connection to QRS is made as
+          value: UserDirectory=Internal;UserId=sa_repository  # What user connection to QRS is made as
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
                                     # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
 

@@ -9,6 +9,7 @@ import upath from 'upath';
 import globals from '../../globals.js';
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import { apiGetSenseAppDump, apiGetAppDump } from '../../api/sense_app_dump.js';
+import SenseUtilities from 'enigma.js/sense-utilities.js';
 
 async function handlerGetSenseAppDump(request, reply) {
     try {
@@ -37,7 +38,7 @@ async function handlerGetSenseAppDump(request, reply) {
             b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, '..', '..', schemaFile);
+            c = upath.join(b, '..', '..', '..', schemaFile);
         }
 
         globals.logger.verbose(`APPDUMP: Using engine schema in file: ${c}`);
@@ -51,18 +52,23 @@ async function handlerGetSenseAppDump(request, reply) {
         } else {
             globals.logger.info(`APPDUMP: Dumping app: ${request.params.appId}`);
 
+            // Get http headers from Butler config file
+            const httpHeaders = globals.getEngineHttpHeaders();
+
             // create a new session
-            // TODO Maybe should use https://github.com/qlik-oss/enigma.js/blob/master/docs/api.md#senseutilitiesbuildurlconfig ?
             const configEnigma = {
                 schema: qixSchema,
-                url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
+                url: SenseUtilities.buildUrl({
+                    host: globals.configEngine.host,
+                    port: globals.configEngine.port,
+                    prefix: '',
+                    secure: true,
+                }),
                 createSocket: (url) =>
                     new WebSocket(url, {
                         key: globals.configEngine.key,
                         cert: globals.configEngine.cert,
-                        headers: {
-                            'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
-                        },
+                        headers: httpHeaders,
                         rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                     }),
             };

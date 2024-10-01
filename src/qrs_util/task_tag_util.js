@@ -11,12 +11,13 @@ async function getTaskTags(taskId) {
     globals.logger.debug(`GETTASKTAGS: Retrieving all tags of reload task ${taskId}`);
 
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: path.resolve(globals.configQRS.certPaths.certPath),
                 keyFile: path.resolve(globals.configQRS.certPaths.keyPath),

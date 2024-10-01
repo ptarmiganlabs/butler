@@ -4,7 +4,7 @@ import https from 'https';
 import { Duration, DateTime } from 'luxon';
 import path from 'path';
 import fs from 'fs';
-import globals from '../globals.js';
+import globals from '../../globals.js';
 
 const taskStatusLookup = {
     0: 'NeverStarted',
@@ -208,14 +208,17 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 key: globals.configQRS.key,
             });
 
+            // Get http headers from Butler config file
+            const httpHeaders = globals.getEngineHttpHeaders();
+
+            // Add x-qlik-xrfkey to headers
+            httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
+
             const axiosConfig = {
                 url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
                 method: 'get',
                 baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
-                headers: {
-                    'x-qlik-xrfkey': 'abcdefghijklmnop',
-                    'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-                },
+                headers: httpHeaders,
                 timeout: 10000,
                 responseType: 'text',
                 httpsAgent,

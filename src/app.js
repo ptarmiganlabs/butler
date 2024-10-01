@@ -39,10 +39,7 @@ async function build(opts = {}) {
     globals.initInfluxDB();
 
     // Start the uptime monitor if it is enabled in the config
-    if (
-        (globals.config.has('Butler.uptimeMonitor.enabled') && globals.config.get('Butler.uptimeMonitor.enabled') === true) ||
-        (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true)
-    ) {
+    if (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true) {
         serviceUptimeStart();
     }
 
@@ -63,10 +60,7 @@ async function build(opts = {}) {
     globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
 
     // Set up heartbeats, if enabled in the config file
-    if (
-        (globals.config.has('Butler.heartbeat.enabled') && globals.config.get('Butler.heartbeat.enabled') === true) ||
-        (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true)
-    ) {
+    if (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true) {
         setupHeartbeatTimer(globals.config, globals.logger);
     }
 

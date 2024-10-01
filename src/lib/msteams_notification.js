@@ -483,16 +483,16 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     executionDetails: scriptLogData.executionDetails,
                     executionDetailsConcatenated: scriptLogData.executionDetailsConcatenated
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogSize: scriptLogData.scriptLogSize,
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTail: scriptLogData.scriptLogTail
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
@@ -629,16 +629,16 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     executionDetails: scriptLogData.executionDetails,
                     executionDetailsConcatenated: scriptLogData.executionDetailsConcatenated
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogSize: scriptLogData.scriptLogSize,
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTail: scriptLogData.scriptLogTail
                         .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n\\n')
+                        .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogTailCount: scriptLogData.scriptLogTailCount,
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
@@ -760,4 +760,9 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
             );
             globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
+}
+
+// Function to send Qlik Sense Cloud app reload failed alert
+export function sendQSCloudAppReloadFailedNotificationTeams(reloadParams) {
+    //
 }

@@ -2,8 +2,8 @@ import later from '@breejs/later';
 import axios from 'axios';
 import https from 'https';
 
-import globals from '../globals.js';
-import { postQlikSenseVersionToInfluxDB } from './post_to_influxdb.js';
+import globals from '../../globals.js';
+import { postQlikSenseVersionToInfluxDB } from '../post_to_influxdb.js';
 
 // Function to check Qlik Sense version
 async function checkQlikSenseVersion(config, logger) {

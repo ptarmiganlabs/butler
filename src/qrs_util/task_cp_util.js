@@ -15,12 +15,13 @@ export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) 
     localLogger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
 
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: path.resolve(globals.configQRS.certPaths.certPath),
                 keyFile: path.resolve(globals.configQRS.certPaths.keyPath),
@@ -65,12 +66,13 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
     globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const qrsInstance = new QrsInteract({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
-            headers: {
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
+            headers: httpHeaders,
             certificates: {
                 certFile: path.resolve(globals.configQRS.certPaths.certPath),
                 keyFile: path.resolve(globals.configQRS.certPaths.keyPath),

@@ -1,0 +1,203 @@
+{
+    "type": "message", 
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.3",
+                "msteams": {  
+                    "width": "Full"  
+                },  
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "large",
+                        "weight": "bolder",
+                        "text": "Qlik Sense reload task failed",
+                        "style": "heading",
+                        "wrap": true
+                    },
+                    {
+                        "type": "ColumnSet",
+                        "columns": [
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "Image",
+                                        "style": "person",
+                                        "url": "https://raw.githubusercontent.com/ptarmiganlabs/butler/master/icon.png",
+                                        "altText": "Butler the Bot",
+                                        "size": "medium"
+                                    }
+                                ],
+                                "width": "auto"
+                            },
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "TextBlock",
+                                        "weight": "bolder",
+                                        "text": "Butler the Bot",
+                                        "wrap": true
+                                    },
+                                    {
+                                        "type": "TextBlock",
+                                        "spacing": "none",
+                                        "text": "",
+                                        "isSubtle": true,
+                                        "wrap": true
+                                    }
+                                ],
+                                "width": "stretch"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "FactSet",
+                        "spacing": "large",
+                        "facts": [
+                            {
+                                "title": "App name:",
+                                "value": "{{appName}}"
+                            },
+                            {
+                                "title": "App ID:",
+                                "value": "{{appId}}"
+                            },
+                            {
+                                "title": "Task name:",
+                                "value": "{{taskName}}"
+                            },
+                            {
+                                "title": "Task ID:",
+                                "value": "{{tasId}}"
+                            },
+                            {
+                                "title": "App owner:",
+                                "value": "{{appOwnerName}}"
+                            },
+                            {
+                                "title": "App owner user:",
+                                "value": "{{appOwnerUserDirectory}}/{{appOwnerUserId}}"
+                            },
+                            {
+                                "title": "App owner email:",
+                                "value": "{{appOwnerEmail}}"
+                            },
+                            {
+                                "title": "Reload started:",
+                                "value": "{{executionStartTime.startTimeLocal1}}"
+                            },
+                            {
+                                "title": "Duration:",
+                                "value": "{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+                            },
+                            {
+                                "title": "Reload ended:",
+                                "value": "{{executionStopTime.stopTimeLocal1}}"
+                            },
+                            {
+                                "title": "User starting the reload:",
+                                "value": "{{executionStartTime.startTimeLocal1}}"
+                            }
+                        ]
+                    },
+
+                    {
+                        "type": "ActionSet",
+                        "spacing": "extraLarge",
+                        "separator": true,
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open QMC",
+                                "tooltip": "Open management console in Qlik Sense",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            },
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open hub",
+                                "tooltip": "Open hub Qlik Sense",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            }
+                        ]
+                    },
+
+
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
+                                "text": "Details",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "FactSet",
+                                "separator": true,
+                                "facts": [
+                                    {
+                                        "title": "Execution result:",
+                                        "value": "{{executionStatusText}}"
+                                    },
+                                    {
+                                        "title": "Execution result code:",
+                                        "value": "{{executionStatusNum}}"
+                                    },
+                                    {
+                                        "title": "Log timestamp:",
+                                        "value": "{{logTimeStamp}}"
+                                    },
+                                    {
+                                        "title": "Log message:",
+                                        "value": "{{logMessage}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{executionDetailsConcatenated}}"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
+                                "text": "End of script log",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "size": "small",
+                                "weight": "normal",
+                                "text": "Last {{scriptLogTailCount}} rows shown. The script log contains {{scriptLogSize}} rows in total.",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{scriptLogTail}}"
+                            }
+                        ]
+                    }
+                ]                                
+            }
+        }
+    ]
+}

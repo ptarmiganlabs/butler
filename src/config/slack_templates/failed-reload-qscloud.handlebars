@@ -1,0 +1,160 @@
+{
+    "blocks": [{
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Qlik Sense Cloud app reload failed"
+            }            
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*App name:*\n{{appName}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*App ID:*\n{{{appId}}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*App owner:*\n{{{appOwnerName}}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*App owner email:*\n{{{appOwnerEmail}}}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Reload started:*\n{{executionStartTime.startTimeLocal1}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Reload ended:*\n{{executionStopTime.stopTimeLocal1}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Duration:*\n{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": " "
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Trigger:*\n{{reloadTrigger}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Reload ID:*\n{{reloadId}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Tenant ID:*\n{{tenantId}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Tenant comment:*\n{{tenantComment}}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Error message:*\n{{errorMessage}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Error code:*\n{{errorCode}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Peak memory bytes:*\n{{peakMemoryBytes}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Failed due to memory constraint:*\n{{endedWithMemoryConstraint}}"
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Open QMC"
+                    },
+                    "style": "primary",
+                    "url": "{{qlikSenseQMC}}"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Open Hub"
+                    },
+                    "style": "primary",
+                    "url": "{{qlikSenseHub}}"
+                }                
+            ]
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "```{{ logMessage }}```"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "The script log contains {{scriptLogSize}} rows in total. Here are the first ones:"
+            }
+        },
+                {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "```{{{ scriptLogHead }}}```"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Here are the last {{scriptLogTailCount}} rows:"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "```{{{ scriptLogTail }}}```"
+            }
+        }
+    ]
+}

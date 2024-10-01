@@ -40,7 +40,7 @@ async function handlerPutAppReload(request, reply) {
             b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, '..', '..', schemaFile);
+            c = upath.join(b, '..', '..', '..', schemaFile);
         }
 
         globals.logger.verbose(`APPDUMP: Using engine schema in file: ${c}`);
@@ -56,7 +56,10 @@ async function handlerPutAppReload(request, reply) {
             // Use data in request to start Qlik Sense app reload
             globals.logger.verbose(`APPRELOAD: Reloading app: ${request.params.appId}`);
 
-            // create a new session
+            // Get http headers from Butler config file
+            const httpHeaders = globals.getEngineHttpHeaders();
+
+            // Create a new session
             const configEnigma = {
                 schema: qixSchema,
                 url: SenseUtilities.buildUrl({
@@ -70,9 +73,7 @@ async function handlerPutAppReload(request, reply) {
                     new WebSocket(url, {
                         key: globals.configEngine.key,
                         cert: globals.configEngine.cert,
-                        headers: {
-                            'X-Qlik-User': 'UserDirectory=Internal;UserId=sa_repository',
-                        },
+                        headers: httpHeaders,
                         rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                     }),
             };

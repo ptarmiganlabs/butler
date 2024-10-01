@@ -1,0 +1,200 @@
+{
+    "type": "message", 
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.3",
+                "msteams": {  
+                    "width": "Full"  
+                },  
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "large",
+                        "weight": "bolder",
+                        "text": "Qlik Sense Cloud app reload failed",
+                        "style": "heading",
+                        "wrap": true
+                    },
+                    {
+                        "type": "ColumnSet",
+                        "columns": [
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "Image",
+                                        "style": "person",
+                                        "url": "https://raw.githubusercontent.com/ptarmiganlabs/butler/master/icon.png",
+                                        "altText": "Butler the Bot",
+                                        "size": "medium"
+                                    }
+                                ],
+                                "width": "auto"
+                            },
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "TextBlock",
+                                        "weight": "bolder",
+                                        "text": "Butler the Bot",
+                                        "wrap": true
+                                    },
+                                    {
+                                        "type": "TextBlock",
+                                        "spacing": "none",
+                                        "text": "",
+                                        "isSubtle": true,
+                                        "wrap": true
+                                    }
+                                ],
+                                "width": "stretch"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "FactSet",
+                        "spacing": "large",
+                        "facts": [
+                            {
+                                "title": "App name:",
+                                "value": "{{appName}}"
+                            },
+                            {
+                                "title": "App ID:",
+                                "value": "{{appId}}"
+                            },
+                            {
+                                "title": "App owner:",
+                                "value": "{{appOwnerName}}"
+                            },
+                            {
+                                "title": "App owner email:",
+                                "value": "{{appOwnerEmail}}"
+                            },
+                            {
+                                "title": "Reload trigger:",
+                                "value": "{{reloadTrigger}}"
+                            },
+                            {
+                                "title": "Reload started:",
+                                "value": "{{executionStartTime.startTimeLocal1}}"
+                            },
+                            {
+                                "title": "Reload ended:",
+                                "value": "{{executionStopTime.stopTimeLocal1}}"
+                            },
+                            {
+                                "title": "Duration:",
+                                "value": "{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+                            },
+                            {
+                                "title": "Reload ID:",
+                                "value": "{{reloadId}}"
+                            },
+                            {
+                                "title": "Tenant ID:",
+                                "value": "{{tenantId}}"
+                            },
+                            {
+                                "title": "Tenant comment:",
+                                "value": "{{tenantComment}}"
+                            }
+                        ]
+                    },
+
+                    {
+                        "type": "ActionSet",
+                        "spacing": "extraLarge",
+                        "separator": true,
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open QMC",
+                                "tooltip": "Open management console in Qlik Sense Cloud",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            }
+                        ]
+                    },
+
+
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
+                                "text": "Details",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "FactSet",
+                                "separator": true,
+                                "facts": [
+                                    {
+                                        "title": "Error message:",
+                                        "value": "{{errorMessage}}"
+                                    },
+                                    {
+                                        "title": "Error code:",
+                                        "value": "{{errorCode}}"
+                                    },
+                                    {
+                                        "title": "Peak memory (bytes):",
+                                        "value": "{{peakMemoryBytes}}"
+                                    },
+                                    {
+                                        "title": "Failed due to memory constraint:",
+                                        "value": "{{endedWithMemoryConstraint}}"
+                                    },
+                                    {
+                                        "title": "Log message:",
+                                        "value": ""
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{logMessage}}"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
+                                "text": "End of script log",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "size": "small",
+                                "weight": "normal",
+                                "text": "Last {{scriptLogTailCount}} rows shown. The script log contains {{scriptLogSize}} rows in total.",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{scriptLogTail}}"
+                            }
+                        ]
+                    }
+                ]                                
+            }
+        }
+    ]
+}

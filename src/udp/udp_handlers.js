@@ -11,7 +11,7 @@ import {
     sendReloadTaskAbortedLog,
     sendReloadTaskAbortedEvent,
 } from '../lib/incident_mgmt/new_relic.js';
-import { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } from '../lib/scriptlog.js';
+import { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } from '../lib/qseow/scriptlog.js';
 import getTaskTags from '../qrs_util/task_tag_util.js';
 import getAppTags from '../qrs_util/app_tag_util.js';
 import doesTaskExist from '../qrs_util/does_task_exist.js';

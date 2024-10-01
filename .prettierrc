@@ -6,5 +6,5 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   
-  "useTabs": false
+  "useTabs": false,
 }

@@ -2,6 +2,7 @@ src/node_modules/*
 src/config/production.json
 src/config/production.yaml
 src/config/production-test1.yaml
+src/config/production_template_filledin.yaml
 src/config/prod.yaml
 **/schedule.yaml
 src/config/schedule.json

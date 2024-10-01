@@ -545,7 +545,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
-                // Replace all single and dpouble quotes in scriptLogHead and scriptLogTail with escaped dittos
+                // Replace all single and double quotes in scriptLogHead and scriptLogTail with escaped dittos
                 // This is needed to avoid breaking the Slack message JSON
                 const regExpSingle = /'/gm;
                 const regExpDouble = /"/gm;

@@ -30,9 +30,9 @@ const start = async () => {
 
     const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
-        './lib/qliksense_license.js'
+        './lib/qseow/qliksense_license.js'
     );
-    const { setupQlikSenseVersionMonitor } = await import('./lib/qliksense_version.js');
+    const { setupQlikSenseVersionMonitor } = await import('./lib/qseow/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.
     const build = (await import('./app.js')).default;
@@ -40,22 +40,15 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileStructureAssert, configFileYamlAssert, configFileNewRelicAssert, configFileInfluxDbAssert } = await import(
+    const { configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert } = await import(
         './lib/assert/assert_config_file.js'
     );
 
-    // Verify that config file is valid YAML
-    let resAssert = await configFileYamlAssert(globals.configFileExpanded);
-    if (resAssert === false) {
-        globals.logger.error('MAIN: Config file is not valid YAML. Exiting.');
-        process.exit(1);
-    } else {
-        globals.logger.info('MAIN: Config file is valid YAML - all good.');
-    }
+    let resAssert;
 
     // Verify correct structure of config file
     if (!settingsObj.options.skipConfigVerification) {
-        resAssert = await configFileStructureAssert(globals.config, globals.logger);
+        resAssert = await configFileStructureAssert();
         if (resAssert === false) {
             globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
             process.exit(1);
@@ -81,6 +74,15 @@ const start = async () => {
                 process.exit(1);
             } else {
                 globals.logger.info('MAIN: Config file contains required InfluxDb data - all good.');
+            }
+
+            // Verify that QS specific config settings are valid
+            resAssert = await configFileQsAssert(globals.config, globals.logger);
+            if (resAssert === false) {
+                globals.logger.error('MAIN: Config file does not contain required Qlik Sense data. Exiting.');
+                process.exit(1);
+            } else {
+                globals.logger.info('MAIN: Config file contains required Qlik Sense data - all good.');
             }
         }
     }
@@ -177,10 +179,7 @@ const start = async () => {
     }
 
     // Start Docker healthcheck REST server on port set in config file
-    if (
-        (globals.config.has('Butler.dockerHealthCheck.enabled') && globals.config.get('Butler.dockerHealthCheck.enabled') === true) ||
-        (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true)
-    ) {
+    if (globals.config.has('Butler.dockerHealthCheck.enable') && globals.config.get('Butler.dockerHealthCheck.enable') === true) {
         try {
             globals.logger.verbose('MAIN: Starting Docker healthcheck server...');
 

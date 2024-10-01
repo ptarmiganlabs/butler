@@ -7,11 +7,12 @@ import { fileURLToPath } from 'url';
 // Load global variables and functions
 // import { globals, config, logger } from '../globals.js';
 import globals from '../globals.js';
-import senseStartTask from '../qrs_util/sense_start_task.js';
+import { handleQlikSenseCloudAppReloadFinished } from './qscloud/mqtt_event_app_reload_finished.js';
 
 const { config, logger } = globals;
 
 function mqttInitHandlers() {
+    // Set up MQTT handlers related to QSEoW
     try {
         let mqttClient;
         let mqttOptions;
@@ -73,10 +74,6 @@ function mqttInitHandlers() {
                 mqttOptions = {
                     clientId: config.get('Butler.mqttConfig.azureEventGrid.clientId'),
                     username: config.get('Butler.mqttConfig.azureEventGrid.clientId'),
-                    // protocolVersion: 4,
-                    // protocol: 'mqtts',
-                    // host: config.get('Butler.mqttConfig.brokerHost'),
-                    // port: config.get('Butler.mqttConfig.brokerPort'),
                     key: readCert(keyFile),
                     cert: readCert(certFile),
                     rejectUnauthorized: true,
@@ -168,7 +165,92 @@ function mqttInitHandlers() {
             }
         }
     } catch (err) {
-        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT: ${err}`);
+        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for QSEoW: ${err}`);
+    }
+
+    // ----------------------------
+    // Set up MQTT handlers related to Qlik Sense Cloud events
+    try {
+        let mqttClient;
+        let mqttOptions;
+
+        // MQTT is enabled in config file and specifically for Qlik Sense Cloud events
+        if (config.get('Butler.mqttConfig.enable') && config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.enable')) {
+            mqttOptions = {
+                host: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.host'),
+                port: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.port'),
+                username: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.username'),
+                password: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.password'),
+                connectTimeout: 30000, // 30 sec connection timeout
+            };
+
+            const brokerUrl = `mqtts://${mqttOptions.host}:${mqttOptions.port}`;
+            logger.verbose(`MQTT INIT HANDLERS: Connecting to MQTT broker for Qlik Sense Cloud events. URL is "${brokerUrl}"`);
+
+            mqttClient = mqtt.connect(brokerUrl, mqttOptions);
+            globals.mqttClientQlikSenseCloudEvent = mqttClient;
+
+            if (!globals.mqttClientQlikSenseCloudEvent.connected) {
+                logger.verbose(
+                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT client for Qlik Sense Cloud events. Host is "${brokerUrl}"`
+                );
+            }
+
+            if (globals.mqttClientQlikSenseCloudEvent) {
+                // Handler for MQTT connect messages. Called when connection to MQTT broker has been established
+                globals.mqttClientQlikSenseCloudEvent.on('connect', () => {
+                    try {
+                        logger.info(
+                            `MQTT QS CLOUD EVENT CONNECT: Connected to MQTT broker "${brokerUrl}", with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`
+                        );
+
+                        // Let the world know that Butler is connected to MQTT, ready to receive Qlik Sense Cloud events
+                        globals.mqttClientQlikSenseCloudEvent.publish(
+                            'butler/qscloud/event/mqttforward/status',
+                            `Connected to MQTT broker "${brokerUrl}" with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`
+                        );
+
+                        // Have Butler listen to all messages in the topic subtree specified in the config file
+                        globals.mqttClientQlikSenseCloudEvent.subscribe(
+                            config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.subscriptionRoot')
+                        );
+                    } catch (err) {
+                        logger.error(`MQTT QS CLOUD EVENT CONNECT: Error=${JSON.stringify(err, null, 2)}`);
+                    }
+                });
+
+                // Handler for MQTT messages matching the previously set up subscription
+                globals.mqttClientQlikSenseCloudEvent.on('message', async (topic, message) => {
+                    try {
+                        const topicStr = topic.toString();
+                        // message is a JSON string. Convert to object and formatted JSON string
+                        const messageObj = JSON.parse(message.toString());
+                        const messageStr = JSON.stringify(messageObj, null, 2);
+                        logger.verbose(`MQTT QS CLOUD MESSAGE: Message received. Topic=${topicStr},  Message=${messageStr}`);
+
+                        // **MQTT message dispatch**
+                        // Compare the first part of the topic to the configured topic for app reload events
+                        // Event: App reload
+                        // messageObj.eventType should be "com.qlik.v1.app.reload.finished"
+                        if (
+                            topicStr.startsWith(config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.appReload')) &&
+                            messageObj.eventType === 'com.qlik.v1.app.reload.finished'
+                        ) {
+                            logger.debug(`MQTT QS CLOUD EVENT IN: ${messageStr}`);
+
+                            // Handle app reload finished event
+                            const appReloadResult = await handleQlikSenseCloudAppReloadFinished(messageObj);
+
+
+                        }
+                    } catch (err) {
+                        logger.error(`MQTT QS CLOUD MESSAGE: Error=${JSON.stringify(err, null, 2)}`);
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for Qlik Sense Cloud: ${err}`);
     }
 }
 
