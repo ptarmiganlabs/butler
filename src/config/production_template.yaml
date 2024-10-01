@@ -262,7 +262,7 @@ Butler:
       rateLimit: 300             # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      templateFile: /path/to/teams/template/directory/failed-reload.handlebars
+      templateFile: /path/to/teams/template/directory/failed-reload-qseow.handlebars
     reloadTaskAborted:
       enable: false
       webhookURL: <web hook URL from MS Teams>
@@ -271,7 +271,7 @@ Butler:
       rateLimit: 300             # Min seconds between emails for a given taskID. Defaults to 5 minutes.
       headScriptLogLines: 10
       tailScriptLogLines: 10
-      templateFile: /path/to/teams/template/directory/aborted-reload.handlebars
+      templateFile: /path/to/teams/template/directory/aborted-reload-qseow.handlebars
     serviceStopped:
       webhookURL: <web hook URL from MS Teams>
       messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
