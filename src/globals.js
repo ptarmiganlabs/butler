@@ -272,25 +272,31 @@ class Settings {
         this.configQRS = null;
         if (this.config.has('Butler.restServerApiDocGenerate') === false || this.config.get('Butler.restServerApiDocGenerate') === false) {
             this.logger.debug('CONFIG: API doc mode=off');
+            // Deep copy of headers object
+            const httpHeadersEngine = JSON.parse(JSON.stringify(this.config.get('Butler.configEngine.headers')));
+            
             //  Engine config
             this.configEngine = {
                 engineVersion: this.config.get('Butler.configEngine.engineVersion'),
                 host: this.config.get('Butler.configEngine.host'),
                 port: this.config.get('Butler.configEngine.port'),
                 isSecure: this.config.get('Butler.configEngine.useSSL'),
-                headers: this.config.get('Butler.configEngine.headers'),
+                headers: httpHeadersEngine,
                 cert: this.readCert(this.config.get('Butler.cert.clientCert')),
                 key: this.readCert(this.config.get('Butler.cert.clientCertKey')),
                 rejectUnauthorized: this.config.get('Butler.configEngine.rejectUnauthorized'),
             };
 
+            // Deep copy of headers object
+            const httpHeadersQRS = JSON.parse(JSON.stringify(this.config.get('Butler.configQRS.headers')));
+            
             // QRS config
             this.configQRS = {
                 authentication: this.config.get('Butler.configQRS.authentication'),
                 host: this.config.get('Butler.configQRS.host'),
                 port: this.config.get('Butler.configQRS.port'),
                 useSSL: this.config.get('Butler.configQRS.useSSL'),
-                headers: this.config.get('Butler.configQRS.headers'),
+                headers: httpHeadersQRS,
                 rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
                 cert: this.readCert(certPath),
                 key: this.readCert(keyPath),
@@ -698,9 +704,9 @@ class Settings {
         }
     }
 
-    // Function to get engine http headers, ready for use with axios
+    // Function to get static engine http headers, ready for use with axios
     getEngineHttpHeaders() {
-        const headersConfig = this.configEngine.headers;
+        const headersConfig = this.configEngine.headers.static;
 
         // headers variable is an array of objects, each object has "name" and "value" properties
         const headersObj = {};
@@ -711,9 +717,9 @@ class Settings {
         return headersObj;
     }
 
-    // Function to get QRS http headers, ready for use with axios
+    // Function to get static QRS http headers, ready for use with axios
     getQRSHttpHeaders() {
-        const headersConfig = this.configQRS.headers;
+        const headersConfig = this.configQRS.headers.static;
 
         // headers variable is an array of objects, each object has "name" and "value" properties
         const headersObj = {};

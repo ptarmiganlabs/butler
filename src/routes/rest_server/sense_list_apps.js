@@ -37,7 +37,7 @@ async function handlerGetSenseListApps(request, reply) {
             b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, '..', '..', schemaFile);
+            c = upath.join(b, '..', '..', '..', schemaFile);
         }
 
         globals.logger.verbose(`APPDUMP: Using engine schema in file: ${c}`);
