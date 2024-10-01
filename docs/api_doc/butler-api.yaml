@@ -35,7 +35,7 @@ paths:
               example:
                 - activeUserCount
                 - activeUsers
-                - apiListEnbledEndpoints
+                - apiListEnabledEndpoints
   /v4/base62tobase16:
     get:
       summary: Converts strings from base62 to base16.
