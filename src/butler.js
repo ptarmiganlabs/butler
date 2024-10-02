@@ -28,7 +28,7 @@ const start = async () => {
     const globals = await settingsObj.init();
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
-    const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
+    const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
         './lib/qseow/qliksense_license.js'
     );

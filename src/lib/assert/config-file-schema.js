@@ -376,8 +376,12 @@ export const confifgFileSchema = {
                             type: 'string',
                             format: 'uri',
                         },
+                        appBaseUrl: {
+                            type: 'string',
+                            format: 'uri',
+                        },
                     },
-                    required: ['qmc', 'hub'],
+                    required: ['qmc', 'hub', 'appBaseUrl'],
                     additionalProperties: false,
                 },
 

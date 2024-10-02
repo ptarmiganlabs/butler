@@ -78,12 +78,11 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 logger.info(`QLIK SENSE CLOUD: App reload failed. App ID=[${appId}] name="${message.data.name}"`);
 
                 // Are notifications from QS Cloud enabled?
-                if (globals.config.has('Butler.qlikSenseCloud.enable') && globals.config.get('Butler.qlikSenseCloud.enable') === true) {
+                if (globals.config.get('Butler.qlikSenseCloud.enable') === true) {
                     // Post to Teams when an app reload has failed, if enabled
                     if (
-                        globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable') &&
                         globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable') ===
-                            true
+                        true
                     ) {
                         logger.verbose(`QLIK SENSE CLOUD: Sending Teams notification about app reload failure`);
 
@@ -91,9 +90,6 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // If extended info is enabled, we need to make API calls to get the extended info
                         // If extended info is disabled, we can use the basic info provided in the event/MQTT message
                         if (
-                            globals.config.has(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
-                            ) &&
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
                             ) === false
@@ -248,9 +244,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                     // Post to Slack when an app reload has failed, if enabled
                     if (
-                        globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable') &&
                         globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable') ===
-                            true
+                        true
                     ) {
                         logger.verbose(`QLIK SENSE CLOUD: Sending Slack notification about app reload failure`);
 
@@ -258,9 +253,6 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // If extended info is enabled, we need to make API calls to get the extended info
                         // If extended info is disabled, we can use the basic info provided in the event/MQTT message
                         if (
-                            globals.config.has(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly',
-                            ) &&
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly',
                             ) === false
@@ -416,9 +408,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                     // Send email when an app reload has failed, if enabled
                     if (
-                        globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable') &&
                         globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable') ===
-                            true
+                        true
                     ) {
                         logger.verbose(`QLIK SENSE CLOUD: Sending email notification about app reload failure`);
 

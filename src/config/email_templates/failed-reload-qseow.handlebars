@@ -52,7 +52,34 @@
       <td style="padding-left: 20px;">
       </td>
     </tr>
-
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>App tags</strong><br>
+        {{#each appTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>App custom properties</strong><br>
+        {{#each appCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>Reload task tags</strong><br>
+        {{#each taskTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>Reload task custom properties</strong><br>
+        {{#each taskCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
     <tr>
       <td colspan="2"><hr></td>
     </tr>
@@ -83,10 +110,10 @@
         {{user}}
       </td>
       <td style="padding-left: 20px;">
-        <strong></strong><br>
+        <strong>Next execution</strong><br>
+        {{taskNextExecution}}
       </td>
     </tr>
-
 
     <tr>
       <td colspan="2"><hr></td>
@@ -108,7 +135,7 @@
         <strong>Log timestamp</strong><br>
         {{logTimeStamp}}
       </td>
-      <td style="padding-right: 20px;">
+      <td style="padding-left: 20px;">
         <strong>Log message</strong><br>
         {{logMessage}}
       </td>

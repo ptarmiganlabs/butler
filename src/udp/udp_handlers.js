@@ -1,9 +1,9 @@
 // Load global variables and functions
 import globals from '../globals.js';
 import { sendReloadTaskAbortedNotificationEmail, sendReloadTaskFailureNotificationEmail } from '../lib/smtp.js';
-import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/slack_notification.js';
+import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/qseow/slack_notification.js';
 import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/webhook_notification.js';
-import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/msteams_notification.js';
+import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/qseow/msteams_notification.js';
 import { sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification } from '../lib/incident_mgmt/signl4.js';
 import {
     sendReloadTaskFailureLog,
@@ -14,10 +14,12 @@ import {
 import { failedTaskStoreLogOnDisk, getScriptLog, getReloadTaskExecutionResults } from '../lib/qseow/scriptlog.js';
 import getTaskTags from '../qrs_util/task_tag_util.js';
 import getAppTags from '../qrs_util/app_tag_util.js';
+import getAppMetadata from '../qrs_util/app_metadata.js';
 import doesTaskExist from '../qrs_util/does_task_exist.js';
 import { isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
 
 import { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } from '../lib/post_to_influxdb.js';
+import getTaskMetadata from '../qrs_util/task_metadata.js';
 
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
@@ -29,35 +31,57 @@ const schedulerAborted = async (msg) => {
     // Only done if Slack, Teams, email or New Relic alerts are enabled
     let scriptLog;
     if (
-        (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
-        (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
-        (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
-        (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true ||
+        globals.config.get('Butler.slackNotification.enable') === true ||
+        globals.config.get('Butler.teamsNotification.enable') === true ||
+        globals.config.get('Butler.emailNotification.enable') === true
     ) {
         scriptLog = await getScriptLog(msg[5], 1, 1);
 
         globals.logger.verbose(`Script log for aborted reload retrieved`);
     }
 
-    // First field in message (msg[0]) is message category (this is the modern/recent message format)
-
-    // Check if app/task tags are used by any of the alert destinations.
-    // If so, get those tags once so they can be re-used where needed.
-    let appTags = [];
-    let taskTags = [];
+    // TOOD: Add check if task exists in QRS
+    // Get app metadata from QRS
+    const appMetadata = await getAppMetadata(msg[6]);
 
     // Get tags for the app that failed reloading
-    appTags = await getAppTags(msg[6]);
+    // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
+    // - id
+    // - name
+    //
+    // Create an array of tag names only
+    const appTags = appMetadata.tags.map((tag) => tag.name);
     globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
+    // Get app custom properties
+    // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
+    // - id
+    // - definition
+    //   - name
+    // - value
+    //
+    // Create an array of objects, each with "name" and "value" properties
+    const appCustomProperties = appMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
+
+    // Get tag metadata from QRS
+    const taskMetadata = await getTaskMetadata(msg[5]);
+
     // Get tags for the task that failed reloading
-    taskTags = await getTaskTags(msg[5]);
+    const taskTags = taskMetadata.tags.map((tag) => tag.name);
     globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
+    // Get reload task custom properties
+    const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
 
     // Post to Signl4 when a task has been aborted
     if (
-        globals.config.has('Butler.incidentTool.signl4.enable') &&
-        globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.enable') &&
         globals.config.get('Butler.incidentTool.signl4.enable') === true &&
         globals.config.get('Butler.incidentTool.signl4.reloadTaskAborted.enable') === true
     ) {
@@ -73,14 +97,16 @@ const schedulerAborted = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Post event to New Relic when a task has been aborted
     if (
-        globals.config.has('Butler.incidentTool.newRelic.enable') &&
-        globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') &&
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') === true
     ) {
@@ -96,14 +122,16 @@ const schedulerAborted = async (msg) => {
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Post log to New Relic when a task has been aborted
     if (
-        globals.config.has('Butler.incidentTool.newRelic.enable') &&
-        globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.enable') &&
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.enable') === true
     ) {
@@ -119,15 +147,17 @@ const schedulerAborted = async (msg) => {
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Post to Slack when a reload task has been aborted (typically from the QMC, or via APIs), if Slack is enabled
     if (
-        globals.config.has('Butler.slackNotification.enable') &&
-        globals.config.has('Butler.slackNotification.reloadTaskAborted.enable') &&
         globals.config.get('Butler.slackNotification.enable') === true &&
         globals.config.get('Butler.slackNotification.reloadTaskAborted.enable') === true
     ) {
@@ -143,15 +173,17 @@ const schedulerAborted = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Post to MS Teams when a reload task been aborted (typically from the QMC, or via APIs), if Teams is enabled
     if (
-        globals.config.has('Butler.teamsNotification.enable') &&
-        globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
         globals.config.get('Butler.teamsNotification.enable') === true &&
         globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable') === true
     ) {
@@ -167,15 +199,17 @@ const schedulerAborted = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Send notification email when task has been aborted (typically from the QMC, or via APIs), if this notification type is enabled
     if (
-        globals.config.has('Butler.emailNotification.enable') &&
-        globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') &&
         globals.config.get('Butler.emailNotification.enable') === true &&
         globals.config.get('Butler.emailNotification.reloadTaskAborted.enable') === true
     ) {
@@ -191,7 +225,11 @@ const schedulerAborted = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
@@ -199,7 +237,7 @@ const schedulerAborted = async (msg) => {
     // Call outgoing webhooks when task has been aborted
     // Note that there is no enable/disable flag for failed reloads.
     // Whether alerts are sent or not is controlled by whether there are any webhook URLs or not
-    if (globals.config.has('Butler.webhookNotification.enable') && globals.config.get('Butler.webhookNotification.enable') === true) {
+    if (globals.config.get('Butler.webhookNotification.enable') === true) {
         sendReloadTaskAbortedNotificationWebhook({
             hostName: msg[1],
             user: msg[4],
@@ -212,16 +250,16 @@ const schedulerAborted = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Publish basic MQTT message containing task name when a task has been aborted, if MQTT is enabled
-    if (
-        globals.config.has('Butler.mqttConfig.enable') &&
-        globals.config.get('Butler.mqttConfig.enable') === true &&
-        globals.config.has('Butler.mqttConfig.taskAbortedTopic')
-    ) {
+    if (globals.config.get('Butler.mqttConfig.enable') === true) {
         if (globals?.mqttClient?.connected) {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
         } else {
@@ -234,13 +272,7 @@ const schedulerAborted = async (msg) => {
     }
 
     // Publish stringified MQTT message containing full, stringified JSON when a task has been aborted, if MQTT is enabled
-    if (
-        globals.config.has('Butler.mqttConfig.enable') &&
-        globals.config.get('Butler.mqttConfig.enable') === true &&
-        globals.config.has('Butler.mqttConfig.taskAbortedSendFull') &&
-        globals.config.get('Butler.mqttConfig.taskAbortedSendFull') === true &&
-        globals.config.has('Butler.mqttConfig.taskAbortedFullTopic')
-    ) {
+    if (globals.config.get('Butler.mqttConfig.enable') === true && globals.config.get('Butler.mqttConfig.taskAbortedSendFull') === true) {
         globals.mqttClient.publish(
             globals.config.get('Butler.mqttConfig.taskAbortedFullTopic'),
             JSON.stringify({
@@ -255,7 +287,11 @@ const schedulerAborted = async (msg) => {
                 executionId: msg[9],
                 logMessage: msg[10],
                 qs_appTags: appTags,
+                qs_appCustomProperties: appCustomProperties,
                 qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_appMetadata: appMetadata,
+                qs_taskMetadata: taskMetadata,
             }),
         );
     }
@@ -267,12 +303,11 @@ const schedulerFailed = async (msg) => {
     // Only done if Slack, Teams, email or New Relic alerts are enabled
     let scriptLog;
     if (
-        (globals.config.has('Butler.incidentTool.newRelic.enable') && globals.config.get('Butler.incidentTool.newRelic.enable') === true) ||
-        (globals.config.has('Butler.slackNotification.enable') && globals.config.get('Butler.slackNotification.enable') === true) ||
-        (globals.config.has('Butler.teamsNotification.enable') && globals.config.get('Butler.teamsNotification.enable') === true) ||
-        (globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
-            globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) ||
-        (globals.config.has('Butler.emailNotification.enable') && globals.config.get('Butler.emailNotification.enable') === true)
+        globals.config.get('Butler.incidentTool.newRelic.enable') === true ||
+        globals.config.get('Butler.slackNotification.enable') === true ||
+        globals.config.get('Butler.teamsNotification.enable') === true ||
+        globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true ||
+        globals.config.get('Butler.emailNotification.enable') === true
     ) {
         scriptLog = await getScriptLog(msg[5], 0, 0);
         globals.logger.verbose(`Script log for failed reload retrieved`);
@@ -284,24 +319,46 @@ const schedulerFailed = async (msg) => {
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
-    // Check if app/task tags are used by any of the alert destinations.
-    // If so, get those tags once so they can be re-used where needed.
-    let appTags = [];
-    let taskTags = [];
+    // Get app metadata from QRS
+    const appMetadata = await getAppMetadata(msg[6]);
 
     // Get tags for the app that failed reloading
-    appTags = await getAppTags(msg[6]);
+    // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
+    // - id
+    // - name
+    //
+    // Create an array of tag names only
+    const appTags = appMetadata.tags.map((tag) => tag.name);
     globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
+    // Get app custom properties
+    // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
+    // - id
+    // - definition
+    //   - name
+    // - value
+    //
+    // Create an array of objects, each with "name" and "value" properties
+    const appCustomProperties = appMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
+
+    // Get tag metadata from QRS
+    const taskMetadata = await getTaskMetadata(msg[5]);
+
     // Get tags for the task that failed reloading
-    taskTags = await getTaskTags(msg[5]);
+    const taskTags = taskMetadata.tags.map((tag) => tag.name);
     globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
+    // Get reload task custom properties
+    const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
+
     // Store script log to disk
-    if (
-        globals.config.has('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') &&
-        globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true
-    ) {
+    if (globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true) {
         failedTaskStoreLogOnDisk({
             hostName: msg[1],
             user: msg[4].replace(/\\/g, '/'),
@@ -314,15 +371,17 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Post to Signl4 when a task has failed
     if (
-        globals.config.has('Butler.incidentTool.signl4.enable') &&
-        globals.config.has('Butler.incidentTool.signl4.reloadTaskFailure.enable') &&
         globals.config.get('Butler.incidentTool.signl4.enable') === true &&
         globals.config.get('Butler.incidentTool.signl4.reloadTaskFailure.enable') === true
     ) {
@@ -338,14 +397,16 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Post event to New Relic when a task has failed
     if (
-        globals.config.has('Butler.incidentTool.newRelic.enable') &&
-        globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') &&
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable') === true
     ) {
@@ -361,14 +422,16 @@ const schedulerFailed = async (msg) => {
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Post log to New Relic when a task has failed
     if (
-        globals.config.has('Butler.incidentTool.newRelic.enable') &&
-        globals.config.has('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') &&
         globals.config.get('Butler.incidentTool.newRelic.enable') === true &&
         globals.config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.enable') === true
     ) {
@@ -384,18 +447,17 @@ const schedulerFailed = async (msg) => {
             qs_executionId: msg[9],
             qs_logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Post to InfluxDB when a task has failed
-    if (
-        globals.config.has('Butler.influxDb.enable') &&
-        globals.config.has('Butler.influxDb.reloadTaskFailure.enable') &&
-        globals.config.get('Butler.influxDb.enable') === true &&
-        globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true
-    ) {
+    if (globals.config.get('Butler.influxDb.enable') === true && globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true) {
         postReloadTaskFailureNotificationInfluxDb({
             host: msg[1],
             user: msg[4].replace(/\\/g, '/'),
@@ -407,16 +469,18 @@ const schedulerFailed = async (msg) => {
             logLevel: msg[8],
             executionId: msg[9],
             logMessage: msg[10],
-            appTags,
-            taskTags,
+            qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
+            qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
             scriptLog,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Post to Slack when a task has failed, if Slack is enabled
     if (
-        globals.config.has('Butler.slackNotification.enable') &&
-        globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') &&
         globals.config.get('Butler.slackNotification.enable') === true &&
         globals.config.get('Butler.slackNotification.reloadTaskFailure.enable') === true
     ) {
@@ -432,15 +496,17 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Post to MS Teams when a task has failed, if Teams is enabled
     if (
-        globals.config.has('Butler.teamsNotification.enable') &&
-        globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
         globals.config.get('Butler.teamsNotification.enable') === true &&
         globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable') === true
     ) {
@@ -456,15 +522,17 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
 
     // Send notification email when task has failed, if this notification type is enabled
     if (
-        globals.config.has('Butler.emailNotification.enable') &&
-        globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') &&
         globals.config.get('Butler.emailNotification.enable') === true &&
         globals.config.get('Butler.emailNotification.reloadTaskFailure.enable') === true
     ) {
@@ -480,7 +548,11 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
             scriptLog,
         });
     }
@@ -501,16 +573,16 @@ const schedulerFailed = async (msg) => {
             executionId: msg[9],
             logMessage: msg[10],
             qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
             qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
         });
     }
 
     // Publish basic MQTT message containing task name when a task has failed, if MQTT is enabled
-    if (
-        globals.config.has('Butler.mqttConfig.enable') &&
-        globals.config.get('Butler.mqttConfig.enable') === true &&
-        globals.config.has('Butler.mqttConfig.taskFailureTopic')
-    ) {
+    if (globals.config.get('Butler.mqttConfig.enable') === true) {
         if (globals?.mqttClient?.connected) {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
         } else {
@@ -523,13 +595,7 @@ const schedulerFailed = async (msg) => {
     }
 
     // Publish stringified MQTT message containing full, stringified JSON when a task has failed, if MQTT is enabled
-    if (
-        globals.config.has('Butler.mqttConfig.enable') &&
-        globals.config.get('Butler.mqttConfig.enable') === true &&
-        globals.config.has('Butler.mqttConfig.taskFailureSendFull') &&
-        globals.config.get('Butler.mqttConfig.taskFailureSendFull') === true &&
-        globals.config.has('Butler.mqttConfig.taskFailureFullTopic')
-    ) {
+    if (globals.config.get('Butler.mqttConfig.enable') === true && globals.config.get('Butler.mqttConfig.taskFailureSendFull') === true) {
         globals.mqttClient.publish(
             globals.config.get('Butler.mqttConfig.taskFailureFullTopic'),
             JSON.stringify({
@@ -544,7 +610,10 @@ const schedulerFailed = async (msg) => {
                 executionId: msg[9],
                 logMessage: msg[10],
                 qs_appTags: appTags,
+                qs_appCustomProperties: appCustomProperties,
                 qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_taskMetadata: taskMetadata,
             }),
         );
     }
@@ -684,9 +753,13 @@ const schedulerReloadTaskSuccess = async (msg) => {
                 logLevel: msg[8],
                 executionId: msg[9],
                 logMessage: msg[10],
-                appTags,
-                taskTags,
+                qs_appTags: appTags,
+                qs_appCustomProperties: appCustomProperties,
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
                 taskInfo,
+                qs_appMetadata: appMetadata,
+                qs_taskMetadata: taskMetadata,
             });
 
             globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId}, "${msg[2]}" stored in InfluxDB`);

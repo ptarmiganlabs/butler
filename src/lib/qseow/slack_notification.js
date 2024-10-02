@@ -1,12 +1,13 @@
 /* eslint-disable no-param-reassign */
 
 import fs from 'fs';
-
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
-import globals from '../globals.js';
-import slackSend from './slack_api.js';
-import getAppOwner from '../qrs_util/get_app_owner.js';
+
+import globals from '../../globals.js';
+import slackSend from '../slack_api.js';
+import getAppOwner from '../../qrs_util/get_app_owner.js';
+import { getQlikSenseUrls } from './get_qs_urls.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -51,16 +52,6 @@ if (globals.config.has('Butler.slackNotification.serviceStopped.rateLimit')) {
 function getSlackReloadFailedNotificationConfigOk() {
     try {
         // First make sure Slack sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.slackNotification.reloadTaskFailure.enable') ||
-            !globals.config.has('Butler.slackNotification.reloadTaskFailure.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.reloadTaskFailure.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('SLACK RELOAD TASK FAILED: Reload failure Slack config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.slackNotification.reloadTaskFailure.enable')) {
             // Slack task falure notifications are disabled
             globals.logger.error(
@@ -132,17 +123,6 @@ function getSlackReloadFailedNotificationConfigOk() {
 
 function getSlackReloadAbortedNotificationConfigOk() {
     try {
-        // First make sure Slack sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.slackNotification.reloadTaskAborted.enable') ||
-            !globals.config.has('Butler.slackNotification.reloadTaskAborted.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.reloadTaskAborted.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('SLACK RELOAD TASK ABORTED: Reload aborted Slack config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
             // Slack task aborted notifications are disabled
             globals.logger.error(
@@ -214,19 +194,6 @@ function getSlackReloadAbortedNotificationConfigOk() {
 
 function getSlackServiceMonitorNotificationConfig(serviceStatus) {
     try {
-        // First make sure Slack sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.serviceMonitor.alertDestination.slack.enable') ||
-            !globals.config.has('Butler.slackNotification.serviceStopped.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.serviceStarted.messageType') ||
-            !globals.config.has('Butler.slackNotification.serviceStarted.webhookURL') ||
-            !globals.config.has('Butler.slackNotification.serviceStarted.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('SLACK SERVICE MONITOR: SLACK SERVICE MONITOR config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable')) {
             // Slack notifications are disabled
             globals.logger.error(
@@ -346,24 +313,6 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
         globals.logger.error(`SLACK SERVICE MONITOR: ${err}`);
         return false;
     }
-}
-
-function getQlikSenseUrls() {
-    let qmcUrl = '';
-    let hubUrl = '';
-
-    if (globals.config.has('Butler.qlikSenseUrls.qmc')) {
-        qmcUrl = globals.config.get('Butler.qlikSenseUrls.qmc');
-    }
-
-    if (globals.config.has('Butler.qlikSenseUrls.hub')) {
-        hubUrl = globals.config.get('Butler.qlikSenseUrls.hub');
-    }
-
-    return {
-        qmcUrl,
-        hubUrl,
-    };
 }
 
 async function sendSlack(slackConfig, templateContext, msgType) {
@@ -502,6 +451,16 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
+                // Construct URL to the failing app
+                // Note that senseUrls.appBaseUrl may or may not end with a slash.
+                // Handle both cases.
+                let appUrl = '';
+                if (senseUrls.appBaseUrl.endsWith('/')) {
+                    appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+                } else {
+                    appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+                }
+
                 // These are the template fields that can be used in Slack body
                 // Regular expression for converting escapöing single quote
 
@@ -510,8 +469,31 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
                     taskId: reloadParams.taskId,
+                    taskCustomProperties: reloadParams.qs_taskCustomProperties,
+                    taskTags: reloadParams.qs_taskTags,
+                    taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+                    taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+                    taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+                    taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+                    taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+                    taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+                    taskNextExecution:
+                        reloadParams.qs_taskMetadata.operational.nextExecution === '1753-01-01T00:00:00.000Z'
+                            ? 'Never'
+                            : reloadParams.qs_taskMetadata.operational.nextExecution,
                     appName: reloadParams.appName,
                     appId: reloadParams.appId,
+                    appUrl,
+                    appDescription: reloadParams.qs_appMetadata?.description,
+                    appFileSize: reloadParams.qs_appMetadata?.fileSize,
+                    appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+                    appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+                    appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+                    appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+                    appPublished: reloadParams.qs_appMetadata?.published,
+                    appStreamName: reloadParams.qs_appMetadata?.stream,
+                    appCustomProperties: reloadParams.qs_appCustomProperties,
+                    appTags: reloadParams.qs_appTags,
                     logTimeStamp: reloadParams.logTimeStamp,
                     logLevel: reloadParams.logLevel,
                     logMessage: reloadParams.logMessage,
@@ -664,14 +646,47 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
+                // Construct URL to the failing app
+                // Note that senseUrls.appBaseUrl may or may not end with a slash.
+                // Handle both cases.
+                let appUrl = '';
+                if (senseUrls.appBaseUrl.endsWith('/')) {
+                    appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+                } else {
+                    appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+                }
+
                 // These are the template fields that can be used in Slack body
                 const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
                     taskId: reloadParams.taskId,
+                    taskCustomProperties: reloadParams.qs_taskCustomProperties,
+                    taskTags: reloadParams.qs_taskTags,
+                    taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+                    taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+                    taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+                    taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+                    taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+                    taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+                    taskNextExecution:
+                        reloadParams.qs_taskMetadata.operational.nextExecution === '1753-01-01T00:00:00.000Z'
+                            ? 'Never'
+                            : reloadParams.qs_taskMetadata.operational.nextExecution,
                     appName: reloadParams.appName,
                     appId: reloadParams.appId,
+                    appUrl,
+                    appDescription: reloadParams.qs_appMetadata?.description,
+                    appFileSize: reloadParams.qs_appMetadata?.fileSize,
+                    appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+                    appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+                    appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+                    appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+                    appPublished: reloadParams.qs_appMetadata?.published,
+                    appStreamName: reloadParams.qs_appMetadata?.stream,
+                    appCustomProperties: reloadParams.qs_appCustomProperties,
+                    appTags: reloadParams.qs_appTags,
                     logTimeStamp: reloadParams.logTimeStamp,
                     logLevel: reloadParams.logLevel,
                     logMessage: reloadParams.logMessage,

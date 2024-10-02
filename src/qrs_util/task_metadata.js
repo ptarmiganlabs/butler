@@ -2,13 +2,8 @@ import path from 'path';
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
-/**
- *
- * @param {*} taskId
- * @returns
- */
-async function getTaskTags(taskId) {
-    globals.logger.debug(`GETTASKTAGS: Retrieving all tags of reload task ${taskId}`);
+async function getTaskMetadata(taskId) {
+    globals.logger.debug(`GETTASKMETADATA: Retrieving metadata for task ${taskId}`);
 
     try {
         // Get http headers from Butler config file
@@ -24,34 +19,28 @@ async function getTaskTags(taskId) {
             },
         });
 
-        // Get info about the task
+        // Get task metadata
         try {
-            globals.logger.debug(`GETTASKTAGS: task/full?filter=id eq ${taskId}`);
+            globals.logger.debug(`GETTASKMETADATA: task/full?filter=id eq ${taskId}`);
 
             const result = await qrsInstance.Get(`task/full?filter=id eq ${taskId}`);
-            globals.logger.debug(`GETTASKTAGS: Got response: ${result.statusCode}`);
+            globals.logger.debug(`GETTASKMETADATA: Got response: ${result.statusCode}`);
 
             if (result.body.length === 1) {
-                // Yes, the task exists. Return all tags for this task
-
-                // Get array of all values for this CP, for this task
-                const taskTags1 = result.body[0].tags;
-
-                // Get array of all CP values
-                const taskTags2 = taskTags1.map((item) => item.name);
-
-                return taskTags2;
+                // Yes, the task exists. Return metadata for this task
+                return result.body[0];
             }
+
             // The task does not exist
             return [];
         } catch (err) {
-            globals.logger.error(`GETTASKTAGS: Error while getting tags: ${err.message}`);
+            globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${err.message}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`GETTASKTAGS: Error while getting tags: ${err}`);
+        globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${err}`);
         return false;
     }
 }
 
-export default getTaskTags;
+export default getTaskMetadata;

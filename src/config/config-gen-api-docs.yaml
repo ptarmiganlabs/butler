@@ -138,6 +138,8 @@ Butler:
   qlikSenseUrls:
     qmc: http://10.11.12.13
     hub: http://10.11.12.13
+    appBaseUrl: http://10.11.12.13/sense/app   # Base URL for Qlik Sense apps. App ID will be appended to this URL.
+
 
   # Settings for monitoring Qlik Sense version info
   # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense

@@ -9,6 +9,7 @@ import emailValidator from 'email-validator';
 import globals from '../globals.js';
 import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
 import getAppOwner from '../qrs_util/get_app_owner.js';
+import { getQlikSenseUrls } from './qseow/get_qs_urls.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -44,22 +45,6 @@ if (globals.config.has('Butler.emailNotification.serviceStopped.rateLimit')) {
 export function isSmtpConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
-        if (
-            !globals.config.has('Butler.emailNotification.enable') ||
-            !globals.config.has('Butler.emailNotification.smtp.host') ||
-            !globals.config.has('Butler.emailNotification.smtp.port') ||
-            !globals.config.has('Butler.emailNotification.smtp.secure') ||
-            !globals.config.has('Butler.emailNotification.smtp.tls') ||
-            !globals.config.has('Butler.emailNotification.smtp.tls.rejectUnauthorized') ||
-            !globals.config.has('Butler.emailNotification.smtp.tls.serverName') ||
-            !globals.config.has('Butler.emailNotification.smtp.tls.ignoreTLS') ||
-            !globals.config.has('Butler.emailNotification.smtp.tls.requireTLS') ||
-            !globals.config.has('Butler.emailNotification.smtp.auth.enable')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('EMAIL CONFIG: Email config info missing in Butler config file');
-            return false;
-        }
         if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
             globals.logger.error("EMAIL CONFIG: SMTP notifications are disabled in config file - won't send email");
@@ -76,30 +61,6 @@ export function isSmtpConfigOk() {
 function isEmailReloadFailedNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
-        if (
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.user') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.excludeOwner.user') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.headScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.priority') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.subject') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.bodyFileDirectory') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.fromAddress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.recipients') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('EMAIL CONFIG: Reload failure email config info missing in Butler config file');
-            return false;
-        }
         if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
             globals.logger.error("EMAIL CONFIG: Reload failure email notifications are disabled in config file - won't send email");
@@ -116,30 +77,6 @@ function isEmailReloadFailedNotificationConfigOk() {
 function isEmailReloadAbortedNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
-        if (
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.includeAll') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.includeOwner.user') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.appOwnerAlert.excludeOwner.user') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.headScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.priority') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.subject') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.bodyFileDirectory') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.fromAddress') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.recipients') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enabledValue') ||
-            !globals.config.has('Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('EMAIL CONFIG: Reload aborted email config info missing in Butler config file');
-            return false;
-        }
         if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
             globals.logger.error("EMAIL CONFIG: Reload aborted email notifications are disabled in config file - won't send email");
@@ -156,20 +93,6 @@ function isEmailReloadAbortedNotificationConfigOk() {
 function isEmailServiceMonitorNotificationConfig() {
     try {
         // First make sure email sending is enabled in the config file
-        if (
-            !globals.config.has('Butler.serviceMonitor.enable') ||
-            !globals.config.has('Butler.serviceMonitor.alertDestination.email.enable') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.priority') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.subject') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.bodyFileDirectory') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.htmlTemplateFile') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.fromAddress') ||
-            !globals.config.has('Butler.emailNotification.serviceStopped.recipients')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('EMAIL CONFIG: service monitor email config info missing in Butler config file');
-            return false;
-        }
         if (
             !globals.config.get('Butler.serviceMonitor.enable') ||
             !globals.config.get('Butler.serviceMonitor.alertDestination.email.enable')
@@ -207,21 +130,6 @@ function getSmtpOptions() {
     }
 
     return smtpOptions;
-}
-
-function getQlikSenseUrls() {
-    let qmcUrl = '';
-    let hubUrl = '';
-
-    if (globals.config.has('Butler.qlikSenseUrls.qmc')) {
-        qmcUrl = globals.config.get('Butler.qlikSenseUrls.qmc');
-    }
-
-    if (globals.config.has('Butler.qlikSenseUrls.hub')) {
-        hubUrl = globals.config.get('Butler.qlikSenseUrls.hub');
-    }
-
-    return { qmcUrl, hubUrl };
 }
 
 export async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
@@ -542,14 +450,47 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
 
+    // Construct URL to the failing app
+    // Note that senseUrls.appBaseUrl may or may not end with a slash.
+    // Handle both cases.
+    let appUrl = '';
+    if (senseUrls.appBaseUrl.endsWith('/')) {
+        appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+    } else {
+        appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         hostName: reloadParams.hostName,
         user: reloadParams.user,
         taskName: reloadParams.taskName,
         taskId: reloadParams.taskId,
+        taskCustomProperties: reloadParams.qs_taskCustomProperties,
+        taskTags: reloadParams.qs_taskTags,
+        taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+        taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+        taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+        taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+        taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+        taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+        taskNextExecution:
+            reloadParams.qs_taskMetadata.operational.nextExecution === '1753-01-01T00:00:00.000Z'
+                ? 'Never'
+                : reloadParams.qs_taskMetadata.operational.nextExecution,
         appName: reloadParams.appName,
         appId: reloadParams.appId,
+        appUrl,
+        appDescription: reloadParams.qs_appMetadata?.description,
+        appFileSize: reloadParams.qs_appMetadata?.fileSize,
+        appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+        appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+        appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+        appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+        appPublished: reloadParams.qs_appMetadata?.published,
+        appStreamName: reloadParams.qs_appMetadata?.stream,
+        appCustomProperties: reloadParams.qs_appCustomProperties,
+        appTags: reloadParams.qs_appTags,
         logTimeStamp: reloadParams.logTimeStamp,
         logLevel: reloadParams.logLevel,
         logMessage: reloadParams.logMessage,
@@ -815,14 +756,44 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
 
+    // Construct URL to the failing app
+    // Note that senseUrls.appBaseUrl may or may not end with a slash.
+    // Handle both cases.
+    let appUrl = '';
+    if (senseUrls.appBaseUrl.endsWith('/')) {
+        appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+    } else {
+        appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         hostName: reloadParams.hostName,
         user: reloadParams.user,
         taskName: reloadParams.taskName,
         taskId: reloadParams.taskId,
+        taskCustomProperties: reloadParams.qs_taskCustomProperties,
+        taskTags: reloadParams.qs_taskTags,
+        taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+        taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+        taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+        taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+        taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+        taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+        taskNextExecution: reloadParams.qs_taskMetadata.operational.nextExecution,
         appName: reloadParams.appName,
         appId: reloadParams.appId,
+        appUrl,
+        appDescription: reloadParams.qs_appMetadata?.description,
+        appFileSize: reloadParams.qs_appMetadata?.fileSize,
+        appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+        appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+        appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+        appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+        appPublished: reloadParams.qs_appMetadata?.published,
+        appStreamName: reloadParams.qs_appMetadata?.stream,
+        appCustomProperties: reloadParams.qs_appCustomProperties,
+        appTags: reloadParams.qs_appTags,
         logTimeStamp: reloadParams.logTimeStamp,
         logLevel: reloadParams.logLevel,
         logMessage: reloadParams.logMessage,
