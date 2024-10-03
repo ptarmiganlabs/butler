@@ -238,11 +238,11 @@ export function status(logger, serviceName, host = null) {
         let command = '';
         if (host === null) {
             // Run command for get states of all services on local machine
-            logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
+            logger.debug(`WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
             command = `sc.exe query "${serviceName}"`;
         } else {
             // A host other that local machine is specfied
-            logger.verbose(`WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
+            logger.debug(`WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
             command = `sc.exe \\\\${host} query "${serviceName}"`;
         }
 
@@ -327,12 +327,12 @@ export function details(logger, serviceName, host = null) {
         let command = '';
         if (host === null) {
             // Run command for get states of all services on local machine
-            logger.verbose(`WINSVC DETAILS: Getting details of service ${serviceName} on local machine`);
+            logger.debug(`WINSVC DETAILS: Getting details of service ${serviceName} on local machine`);
 
             command = `sc.exe qc "${serviceName}"`;
         } else {
             // A host other that local machine is specfied
-            logger.verbose(`WINSVC DETAILS: Getting details of service ${serviceName} on host ${host}`);
+            logger.debug(`WINSVC DETAILS: Getting details of service ${serviceName} on host ${host}`);
 
             command = `sc.exe \\\\${host} qc "${serviceName}"`;
         }
