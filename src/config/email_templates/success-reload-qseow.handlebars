@@ -1,0 +1,209 @@
+<h1>Qlik Sense reload task successful</h1>
+<p>
+
+
+<table></table>
+  <tbody>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Task name</strong><br>
+        {{taskName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Task ID</strong><br>
+        {{taskId}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App name</strong><br>
+        {{appName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>App ID</strong><br>
+        {{appId}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App description</strong><br>
+        {{appDescription}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Link to app</strong><br>
+        {{appUrl}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App owner</strong><br>
+        {{appOwnerName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>App owner email</strong><br>
+        {{appOwnerEmail}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>App owner user</strong><br>
+        {{appOwnerUserDirectory}}/{{appOwnerUserId}}
+      </td>
+      <td style="padding-left: 20px;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>App tags</strong><br>
+        {{#each appTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>App custom properties</strong><br>
+        {{#each appCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>Reload task tags</strong><br>
+        {{#each taskTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>Reload task custom properties</strong><br>
+        {{#each taskCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Task started</strong><br>
+        {{executionStartTime.startTimeLocal1}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Task ended</strong><br>
+        {{executionStopTime.stopTimeLocal1}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Duration</strong><br>
+        {{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Reload on node</strong><br>
+        {{executingNodeName}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>User starting reload task</strong><br>
+        {{user}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Next execution</strong><br>
+        {{taskNextExecution}}
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Execution result</strong><br>
+        {{executionStatusText}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Execution result code</strong><br>
+        {{executionStatusNum}}
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Log timestamp</strong><br>
+        {{logTimeStamp}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Log message</strong><br>
+        {{logMessage}}
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <a href="{{qlikSenseQMC}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense QMC</a> 
+        <a href="{{qlikSenseHub}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense Hub</a>
+        <a href="{{appUrl}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Open app</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <strong>History</strong>
+      </td>
+    </tr>
+
+    {{#each executionDetails}}
+    <tr>
+      <td style="padding-right: 20px;">
+        {{this.timestampLocal1}}
+      </td>
+      <td style="padding-right: 20px;">
+        {{this.message}}
+      </td>
+    </tr>
+    {{/each}}
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        The script log contains {{scriptLogSize}} rows in total. Here are the first ones:
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <pre>{{scriptLogHead}}</pre>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><br></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        Here are the last {{scriptLogTailCount}} rows:
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <pre>{{scriptLogTail}}</pre>
+      </td>
+    </tr>
+
+
+  </tbody>
+</table>

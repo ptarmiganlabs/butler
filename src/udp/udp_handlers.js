@@ -1,6 +1,10 @@
 // Load global variables and functions
 import globals from '../globals.js';
-import { sendReloadTaskAbortedNotificationEmail, sendReloadTaskFailureNotificationEmail } from '../lib/smtp.js';
+import {
+    sendReloadTaskAbortedNotificationEmail,
+    sendReloadTaskFailureNotificationEmail,
+    sendReloadTaskSuccessNotificationEmail,
+} from '../lib/smtp.js';
 import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/qseow/slack_notification.js';
 import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/webhook_notification.js';
 import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/qseow/msteams_notification.js';
@@ -668,6 +672,57 @@ const schedulerReloadTaskSuccess = async (msg) => {
         }
     }
 
+    // Get script log for successful reloads.
+    // Only done if Slack, Teams or email alerts are enabled
+    let scriptLog;
+    if (
+        globals.config.get('Butler.slackNotification.enable') === true ||
+        globals.config.get('Butler.teamsNotification.enable') === true ||
+        (globals.config.get('Butler.emailNotification.enable') === true &&
+            globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable') === true)
+    ) {
+        scriptLog = await getScriptLog(reloadTaskId, 0, 0);
+        globals.logger.verbose(`Script log for successful reload retrieved`);
+    }
+
+    // Get app metadata from QRS
+    const appMetadata = await getAppMetadata(msg[6]);
+
+    // Get tags for the app that failed reloading
+    // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
+    // - id
+    // - name
+    //
+    // Create an array of tag names only
+    const appTags = appMetadata.tags.map((tag) => tag.name);
+    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+
+    // Get app custom properties
+    // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
+    // - id
+    // - definition
+    //   - name
+    // - value
+    //
+    // Create an array of objects, each with "name" and "value" properties
+    const appCustomProperties = appMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
+
+    // Get tag metadata from QRS
+    const taskMetadata = await getTaskMetadata(msg[5]);
+
+    // Get tags for the task that failed reloading
+    const taskTags = taskMetadata.tags.map((tag) => tag.name);
+    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
+    // Get reload task custom properties
+    const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
+        name: cp.definition.name,
+        value: cp.value,
+    }));
+
     if (storeInInfluxDb) {
         // Get results from last reload task execution
         // It may take a seconds or two from the finished-successfully log message is written until the execution results are available via the QRS.
@@ -764,12 +819,37 @@ const schedulerReloadTaskSuccess = async (msg) => {
 
             globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId}, "${msg[2]}" stored in InfluxDB`);
         }
-
-        return true;
+    } else {
+        globals.logger.verbose(`RELOAD TASK SUCCESS: Not storing task info in InfluxDB`);
     }
 
-    globals.logger.verbose(`RELOAD TASK SUCCESS: Not storing task info in InfluxDB`);
-    return false;
+    // Should we send email notification?
+    if (
+        globals.config.get('Butler.emailNotification.enable') === true &&
+        globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable') === true
+    ) {
+        sendReloadTaskSuccessNotificationEmail({
+            hostName: msg[1],
+            user: msg[4].replace(/\\\\/g, '\\'),
+            taskName: msg[2],
+            taskId: msg[5],
+            appName: msg[3],
+            appId: msg[6],
+            logTimeStamp: msg[7],
+            logLevel: msg[8],
+            executionId: msg[9],
+            logMessage: msg[10],
+            qs_appTags: appTags,
+            qs_appCustomProperties: appCustomProperties,
+            qs_taskTags: taskTags,
+            qs_taskCustomProperties: taskCustomProperties,
+            qs_appMetadata: appMetadata,
+            qs_taskMetadata: taskMetadata,
+            scriptLog,
+        });
+    }
+
+    return true;
 };
 
 // --------------------------------------------------------

@@ -994,6 +994,63 @@ export const confifgFileSchema = {
                     type: 'object',
                     properties: {
                         enable: { type: 'boolean' },
+                        reloadTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                alertEnableByCustomProperty: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        customPropertyName: { type: 'string' },
+                                        enabledValue: { type: 'string' },
+                                    },
+                                    required: ['enable', 'customPropertyName', 'enabledValue'],
+                                    additionalProperties: false,
+                                },
+                                alertEnabledByEmailAddress: {
+                                    type: 'object',
+                                    properties: {
+                                        customPropertyName: { type: 'string' },
+                                    },
+                                    required: ['customPropertyName'],
+                                    additionalProperties: false,
+                                },
+                                rateLimit: { type: 'number' },
+                                headScriptLogLines: { type: 'number' },
+                                tailScriptLogLines: { type: 'number' },
+                                priority: {
+                                    type: 'string',
+                                    enum: ['low', 'normal', 'high'],
+                                    transform: ['trim', 'toLowerCase'],
+                                },
+                                subject: { type: 'string' },
+                                bodyFileDirectory: { type: 'string' },
+                                htmlTemplateFile: { type: 'string' },
+                                fromAddress: { type: 'string' },
+                                recipients: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'string',
+                                    },
+                                },
+                            },
+                            required: [
+                                'enable',
+                                'alertEnableByCustomProperty',
+                                'alertEnabledByEmailAddress',
+                                'rateLimit',
+                                'headScriptLogLines',
+                                'tailScriptLogLines',
+                                'priority',
+                                'subject',
+                                'bodyFileDirectory',
+                                'htmlTemplateFile',
+                                'fromAddress',
+                                'recipients',
+                            ],
+                            additionalProperties: false,
+                        },
                         reloadTaskAborted: {
                             type: 'object',
                             properties: {
