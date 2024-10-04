@@ -1,76 +1,197 @@
 {
-    "@type": "MessageCard", 
-    "@context": "https://schema.org/extensions",
-    "themeColor": "0076D7",
-    "summary": "Qlik Sense reload task stopped",
-    "sections": [{
-        "activityTitle": "# Reload task aborted: '{{taskName}}'",
-        "activitySubtitle": "Reload was running on server: {{executingNodeName}}",
-        "facts": [{
-            "name": "App name",
-            "value": "{{appName}}"
-        },{
-            "name": "App ID",
-            "value": "{{appId}}"
-        },{
-            "name": "Task Name",
-            "value": "{{taskName}}"
-        },{
-            "name": "Task ID",
-            "value": "{{taskId}}"
-        },{
-            "name": "App owner",
-            "value": "{{appOwnerName}}"
-        },{
-            "name": "App owner user",
-            "value": "{{appOwnerUserDirectory}}/{{appOwnerUserId}}"
-        },{
-            "name": "App owner email",
-            "value": "{{appOwnerEmail}}"
-        }],
-        "markdown": true
-    }, {
-        "facts": [{
-            "name": "User stopping the reload",
-            "value": "{{user}}"
-        },{
-            "name": "Duration",
-            "value": "{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
-        },{
-            "name": "Execution started",
-            "value": "{{executionStartTime.startTimeLocal1}}"
-        },{
-            "name": "Execution result",
-            "value": "{{executionStatusText}}"
-        },{
-            "name": "Execution result code",
-            "value": "{{executionStatusNum}}"
-        },{
-            "name": "Log timestamp",
-            "value": "{{logTimeStamp}}"
-        },{
-            "name": "Log message",
-            "value": "{{logMessage}}"
-        }],
-        "markdown": true
-    },{
-        "activityTitle": "History",
-        "text": "{{executionDetailsConcatenated}}",
-        "markdown": true
-    }],
-    "potentialAction": [{
-        "@type": "OpenUri",
-        "name": "Qlik Sense QMC",
-        "targets": [{
-            "os": "default",
-            "uri": "{{qlikSenseQMC}}"
-        }]
-    },{
-        "@type": "OpenUri",
-        "name": "Qlik Sense Hub",
-        "targets": [{
-            "os": "default",
-            "uri": "{{qlikSenseHub}}"
-        }]
-    }]
+    "type": "message", 
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.3",
+                "msteams": {  
+                    "width": "Full"  
+                },  
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "large",
+                        "weight": "bolder",
+                        "text": "Qlik Sense reload task stopped",
+                        "style": "heading",
+                        "wrap": true
+                    },
+                    {
+                        "type": "ColumnSet",
+                        "columns": [
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "Image",
+                                        "style": "person",
+                                        "url": "https://raw.githubusercontent.com/ptarmiganlabs/butler/master/icon.png",
+                                        "altText": "Butler the Bot",
+                                        "size": "medium"
+                                    }
+                                ],
+                                "width": "auto"
+                            },
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "TextBlock",
+                                        "weight": "bolder",
+                                        "text": "Butler the Bot",
+                                        "wrap": true
+                                    },
+                                    {
+                                        "type": "TextBlock",
+                                        "spacing": "none",
+                                        "text": "",
+                                        "isSubtle": true,
+                                        "wrap": true
+                                    }
+                                ],
+                                "width": "stretch"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "FactSet",
+                        "spacing": "large",
+                        "facts": [
+                            {
+                                "title": "App name:",
+                                "value": "{{appName}}"
+                            },
+                            {
+                                "title": "App ID:",
+                                "value": "{{appId}}"
+                            },
+                            {
+                                "title": "Task name:",
+                                "value": "{{taskName}}"
+                            },
+                            {
+                                "title": "Task ID:",
+                                "value": "{{tasId}}"
+                            },
+                            {
+                                "title": "App owner:",
+                                "value": "{{appOwnerName}}"
+                            },
+                            {
+                                "title": "App owner user:",
+                                "value": "{{appOwnerUserDirectory}}/{{appOwnerUserId}}"
+                            },
+                            {
+                                "title": "App owner email:",
+                                "value": "{{appOwnerEmail}}"
+                            },
+                            {
+                                "title": "Reload started:",
+                                "value": "{{executionStartTime.startTimeLocal1}}"
+                            },
+                            {
+                                "title": "Duration:",
+                                "value": "{{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds"
+                            },
+                            {
+                                "title": "Reload ended:",
+                                "value": "{{executionStopTime.stopTimeLocal1}}"
+                            },
+                            {
+                                "title": "User starting the reload:",
+                                "value": "{{executionStartTime.startTimeLocal1}}"
+                            }
+                        ]
+                    },
+
+                    {
+                        "type": "ActionSet",
+                        "spacing": "extraLarge",
+                        "separator": true,
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open QMC",
+                                "tooltip": "Open management console in Qlik Sense",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            },
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open hub",
+                                "tooltip": "Open hub Qlik Sense",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            },
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open app",
+                                "tooltip": "Open app that failed reloading",
+                                "url": "{{appUrl}}",
+                                "role": "button"
+                            }
+{{#each genericUrls}}
+{{!-- Possible to use conditional logic in the template to include or exclude buttons based on the value of a variable. For example, the following code snippet includes a button only if the value of the id variable is "butler_docs": --}}
+{{!-- {{#if (eq id "butler_docs")}} --}}
+                            ,{
+                                "type": "Action.OpenUrl",
+                                "title": "{{this.linkText}}",
+                                "tooltip": "{{this.comment}}",
+                                "url": "{{this.url}}",
+                                "role": "button"
+                            }
+{{!-- {{/if}} --}}
+{{/each}}
+                        ]
+                    },
+
+
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
+                                "text": "Details",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "FactSet",
+                                "separator": true,
+                                "facts": [
+                                    {
+                                        "title": "Execution result:",
+                                        "value": "{{executionStatusText}}"
+                                    },
+                                    {
+                                        "title": "Execution result code:",
+                                        "value": "{{executionStatusNum}}"
+                                    },
+                                    {
+                                        "title": "Log timestamp:",
+                                        "value": "{{logTimeStamp}}"
+                                    },
+                                    {
+                                        "title": "Log message:",
+                                        "value": "{{logMessage}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{executionDetailsConcatenated}}"
+                            }
+                        ]
+                    }
+                ]                                
+            }
+        }
+    ]
 }

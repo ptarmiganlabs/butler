@@ -118,9 +118,7 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
         // Check InfluDB first
         // If InfluxDB is enabled, post the license status to InfluxDB
         if (
-            config.has('Butler.influxDb.enable') &&
             config.get('Butler.influxDb.enable') === true &&
-            config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable') &&
             config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable') === true
         ) {
             await postQlikSenseServerLicenseStatusToInfluxDB({
@@ -133,9 +131,7 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
 
         // Check if we should send data to MQTT
         if (
-            config.has('Butler.mqttConfig.enable') &&
             config.get('Butler.mqttConfig.enable') === true &&
-            config.has('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable') &&
             config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable') === true
         ) {
             // Prepare general license payload for MQTT
@@ -238,9 +234,7 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
         // Check InfluDB first
         // If InfluxDB is enabled, post the license status to InfluxDB
         if (
-            config.has('Butler.influxDb.enable') &&
             config.get('Butler.influxDb.enable') === true &&
-            config.has('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enable') &&
             config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enable') === true
         ) {
             await postQlikSenseLicenseStatusToInfluxDB(result1.body);
@@ -870,10 +864,7 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 // Function to set up the timer used to check Qlik Sense access license status
 export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
     try {
-        if (
-            !config.has('Butler.qlikSenseLicense.licenseMonitor.enable') ||
-            config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true
-        ) {
+        if (config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true) {
             const sched = later.parse.text(config.get('Butler.qlikSenseLicense.licenseMonitor.frequency'));
             later.setInterval(() => {
                 checkQlikSenseAccessLicenseStatus(config, logger, false);
@@ -894,10 +885,7 @@ export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
 // Function to set up the timer used to release Qlik Sense access licenses
 export async function setupQlikSenseLicenseRelease(config, logger) {
     try {
-        if (
-            !config.has('Butler.qlikSenseLicense.licenseRelease.enable') ||
-            config.get('Butler.qlikSenseLicense.licenseRelease.enable') === true
-        ) {
+        if (config.get('Butler.qlikSenseLicense.licenseRelease.enable') === true) {
             const sched = later.parse.text(config.get('Butler.qlikSenseLicense.licenseRelease.frequency'));
             later.setInterval(() => {
                 checkQlikSenseLicenseRelease(config, logger);
@@ -918,10 +906,7 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
 // Function to set up the timer used to check Qlik Sense server license status
 export async function setupQlikSenseServerLicenseMonitor(config, logger) {
     try {
-        if (
-            !config.has('Butler.qlikSenseLicense.serverLicenseMonitor.enable') ||
-            config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true
-        ) {
+        if (config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true) {
             const sched = later.parse.text(config.get('Butler.qlikSenseLicense.serverLicenseMonitor.frequency'));
             later.setInterval(() => {
                 checkQlikSenseServerLicenseStatus(config, logger);

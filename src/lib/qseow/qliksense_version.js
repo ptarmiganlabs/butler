@@ -45,9 +45,7 @@ async function checkQlikSenseVersion(config, logger) {
         // Check InfluDB first
         // If InfluxDB is enabled, post the version info to InfluxDB
         if (
-            config.has('Butler.influxDb.enable') &&
             config.get('Butler.influxDb.enable') === true &&
-            config.has('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enable') &&
             config.get('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enable') === true
         ) {
             await postQlikSenseVersionToInfluxDB(result.data);
@@ -61,13 +59,9 @@ async function checkQlikSenseVersion(config, logger) {
 }
 
 // Function to set up the timer used to check Qlik Sense version
-// eslint-disable-next-line import/prefer-default-export
 export async function setupQlikSenseVersionMonitor(config, logger) {
     try {
-        if (
-            !config.has('Butler.qlikSenseVersion.versionMonitor.enable') ||
-            config.get('Butler.qlikSenseVersion.versionMonitor.enable') === true
-        ) {
+        if (config.get('Butler.qlikSenseVersion.versionMonitor.enable') === true) {
             const sched = later.parse.text(config.get('Butler.qlikSenseVersion.versionMonitor.frequency'));
             later.setInterval(() => {
                 checkQlikSenseVersion(config, logger, false);

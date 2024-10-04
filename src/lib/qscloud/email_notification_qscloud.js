@@ -1,4 +1,3 @@
-import fs from 'fs';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
@@ -6,7 +5,7 @@ import globals from '../../globals.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
-import { sendEmail, isSmtpConfigOk } from '../smtp.js';
+import { sendEmail, isSmtpConfigOk } from '../qseow/smtp.js';
 
 let rateLimiterMemoryFailedReloads;
 let emailConfig;
@@ -140,8 +139,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                             `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
                         );
                     } else if (appHasAlertTag !== undefined) {
-                        // Add global send list from YAML config file to main send list
-                        globalSendList.push(...emailConfig.globalSendList);
+                        if (emailConfig?.globalSendList?.length > 0) {
+                            // Add global send list from YAML config file to main send list
+                            globalSendList.push(...emailConfig.globalSendList);
+                        }
                     }
                 }
 
@@ -168,7 +169,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                         } else {
                             // Check if app owner's email address is in the include list
                             const appOwnerIncludeList = emailConfig.appOwnerAlert.includeOwner?.user;
-                            if (appOwnerIncludeList !== undefined && appOwnerIncludeList.length > 0) {
+                            if (appOwnerIncludeList !== undefined && appOwnerIncludeList?.length > 0) {
                                 const appOwnerIsIncluded = appOwnerIncludeList.find((owner) => owner.email === appOwner.email);
 
                                 if (appOwnerIsIncluded !== undefined) {
@@ -180,7 +181,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
 
                         // Now evaluate the exclusion list
                         const appOwnerExcludeList = emailConfig.appOwnerAlert.excludeOwner?.user;
-                        if (appOwnerExcludeList !== undefined && appOwnerExcludeList.length > 0) {
+                        if (appOwnerExcludeList !== undefined && appOwnerExcludeList?.length > 0) {
                             // Exclusion list found.
                             // Remove all entries in exclude list from app owner send list
                             appOwnerSendList = appOwnerSendList.filter((ownerEmail) => {
@@ -200,7 +201,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                 globalSendList = [...new Set(globalSendList)];
 
                 // Check if we have any email addresses to send to
-                if (globalSendList.length === 0) {
+                if (globalSendList?.length === 0) {
                     globals.logger.warn(
                         `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: No email addresses found to send alert email for app [${reloadParams.appId}] "${reloadParams.appName}".`,
                     );
@@ -265,6 +266,13 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseCloudUrls();
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in email body
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
@@ -317,6 +325,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
 
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
 
                     appOwnerName: appOwner.name,
                     appOwnerUserId: appOwner.id,
@@ -340,7 +349,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                                 );
 
                                 // Only send email if there is an actual email address
-                                if (recipientEmailAddress.length > 0) {
+                                if (recipientEmailAddress?.length > 0) {
                                     sendEmail(
                                         emailConfig.fromAddress,
                                         [recipientEmailAddress],

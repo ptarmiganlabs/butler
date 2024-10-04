@@ -38,6 +38,10 @@
                 {
                     "type": "mrkdwn",
                     "text": "*App owner user:*\n{{appOwnerUserDirectory}}/{{appOwnerUserId}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Link to app:*\n{{appUrl}}"
                 }
             ]
         },
@@ -103,7 +107,32 @@
                     },
                     "style": "primary",
                     "url": "{{qlikSenseHub}}"
-                }                
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "Open app"
+                    },
+                    "style": "primary",
+                    "url": "{{appUrl}}"
+                }
+{{#each genericUrls}}
+{{!-- Possible to use conditional logic in the template to include or exclude buttons based on the value of a variable. For example, the following code snippet includes a button only if the value of the id variable is "butler_docs": --}}
+{{!-- {{#if (eq id "butler_docs")}} --}}
+                ,{
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": true,
+                        "text": "{{this.linkText}}"
+                    },
+                    "style": "primary",
+                    "url": "{{this.url}}"
+                }
+{{!-- {{/if}} --}}
+{{/each}}
             ]
         },
         {

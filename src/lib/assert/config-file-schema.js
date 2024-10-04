@@ -376,9 +376,31 @@ export const confifgFileSchema = {
                             type: 'string',
                             format: 'uri',
                         },
+                        appBaseUrl: {
+                            type: 'string',
+                            format: 'uri',
+                        },
                     },
-                    required: ['qmc', 'hub'],
+                    required: ['qmc', 'hub', 'appBaseUrl'],
                     additionalProperties: false,
+                },
+
+                genericUrls: {
+                    type: ['array', 'null'],
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            linkText: { type: 'string' },
+                            comment: { type: 'string' },
+                            url: {
+                                type: 'string',
+                                format: 'uri',
+                            },
+                        },
+                        required: ['id', 'linkText', 'comment', 'url'],
+                        additionalProperties: false,
+                    },
                 },
 
                 qlikSenseVersion: {
@@ -990,6 +1012,63 @@ export const confifgFileSchema = {
                     type: 'object',
                     properties: {
                         enable: { type: 'boolean' },
+                        reloadTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                alertEnableByCustomProperty: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        customPropertyName: { type: 'string' },
+                                        enabledValue: { type: 'string' },
+                                    },
+                                    required: ['enable', 'customPropertyName', 'enabledValue'],
+                                    additionalProperties: false,
+                                },
+                                alertEnabledByEmailAddress: {
+                                    type: 'object',
+                                    properties: {
+                                        customPropertyName: { type: 'string' },
+                                    },
+                                    required: ['customPropertyName'],
+                                    additionalProperties: false,
+                                },
+                                rateLimit: { type: 'number' },
+                                headScriptLogLines: { type: 'number' },
+                                tailScriptLogLines: { type: 'number' },
+                                priority: {
+                                    type: 'string',
+                                    enum: ['low', 'normal', 'high'],
+                                    transform: ['trim', 'toLowerCase'],
+                                },
+                                subject: { type: 'string' },
+                                bodyFileDirectory: { type: 'string' },
+                                htmlTemplateFile: { type: 'string' },
+                                fromAddress: { type: 'string' },
+                                recipients: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'string',
+                                    },
+                                },
+                            },
+                            required: [
+                                'enable',
+                                'alertEnableByCustomProperty',
+                                'alertEnabledByEmailAddress',
+                                'rateLimit',
+                                'headScriptLogLines',
+                                'tailScriptLogLines',
+                                'priority',
+                                'subject',
+                                'bodyFileDirectory',
+                                'htmlTemplateFile',
+                                'fromAddress',
+                                'recipients',
+                            ],
+                            additionalProperties: false,
+                        },
                         reloadTaskAborted: {
                             type: 'object',
                             properties: {
@@ -3045,6 +3124,7 @@ export const confifgFileSchema = {
                 'influxDb',
                 'scriptLog',
                 'qlikSenseUrls',
+                'genericUrls',
                 'qlikSenseVersion',
                 'qlikSenseLicense',
                 'teamsNotification',

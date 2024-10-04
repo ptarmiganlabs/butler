@@ -1,14 +1,14 @@
 import later from '@breejs/later';
 import { createMachine, createActor } from 'xstate';
 
-import { statusAll, status, details } from './qseow/winsvc.js';
-import globals from '../globals.js';
-import newRelic from './incident_mgmt/new_relic_service_monitor.js';
-import { sendServiceMonitorWebhook } from './webhook_notification.js';
+import { statusAll, status, details } from './winsvc.js';
+import globals from '../../globals.js';
+import newRelic from '../incident_mgmt/new_relic_service_monitor.js';
+import { sendServiceMonitorWebhook } from '../webhook_notification.js';
 import { sendServiceMonitorNotificationSlack } from './slack_notification.js';
 import { sendServiceMonitorNotificationTeams } from './msteams_notification.js';
 import { sendServiceMonitorNotificationEmail } from './smtp.js';
-import { postWindowsServiceStatusToInfluxDB } from './post_to_influxdb.js';
+import { postWindowsServiceStatusToInfluxDB } from '../post_to_influxdb.js';
 
 // One state machines for each service
 const serviceStateMachine = [];
@@ -174,15 +174,14 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
     const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
     hostsToCheck.forEach(async (host) => {
-        logger.verbose(`Checking status of Windows services on host ${host.host}`);
+        logger.debug(`Checking status of Windows services on host ${host.host}`);
         const servicesToCheck = host.services;
 
         // Get status of all services on host
-        logger.verbose(`Getting status of all Windows services on host ${host.host}`);
         const serviceStatusAll = await statusAll(logger, host.host);
 
         servicesToCheck.forEach(async (service) => {
-            logger.verbose(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
+            logger.debug(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
             // Does this service exist in the serviceStatusAll array?
             const svcMonitored = serviceStatusAll.find((svc) => svc.name === service.name);
@@ -196,7 +195,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // Get status of this service
             const serviceStatus = await status(logger, service.name, host.host);
-            logger.verbose(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
+            logger.debug(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
             // Get details about this service
             const serviceDetails = await details(logger, service.name, host.host);
@@ -485,7 +484,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
 async function setupServiceMonitorTimer(config, logger) {
     try {
-        if (!config.has('Butler.serviceMonitor.enable') || config.get('Butler.serviceMonitor.enable') === true) {
+        if (config.get('Butler.serviceMonitor.enable') === true) {
             // Make sure we're running on Windows
             let { hostInfo } = globals;
             if (hostInfo === undefined) {
@@ -496,7 +495,7 @@ async function setupServiceMonitorTimer(config, logger) {
                 // Verify all services exist
                 const servicesExist = await verifyServicesExist(config, logger);
                 if (servicesExist) {
-                    if (!config.has('Butler.serviceMonitor.monitor') || config.get('Butler.serviceMonitor.monitor').length === 0) {
+                    if (config.get('Butler.serviceMonitor.monitor').length === 0) {
                         logger.warn(`SERVICE MONITOR INIT: Missing or empty section in config file: Butler.serviceMonitor.service`);
                     } else {
                         logger.info(`SERVICE MONITOR INIT: Setting up monitor for Windows services:`);

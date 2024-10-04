@@ -1,9 +1,19 @@
-<h1>Qlik Sense Cloud app reload failed</h1>
+<h1>Qlik Sense reload task successful</h1>
 <p>
 
 
-<table>
+<table></table>
   <tbody>
+    <tr>
+      <td style="padding-right: 20px;">
+        <strong>Task name</strong><br>
+        {{taskName}}
+      </td>
+      <td style="padding-left: 20px;">
+        <strong>Task ID</strong><br>
+        {{taskId}}
+      </td>
+    </tr>
     <tr>
       <td style="padding-right: 20px;">
         <strong>App name</strong><br>
@@ -36,26 +46,51 @@
     </tr>
     <tr>
       <td style="padding-right: 20px;">
-        <strong>Tenant ID</strong><br>
-        {{tenantId}}
+        <strong>App owner user</strong><br>
+        {{appOwnerUserDirectory}}/{{appOwnerUserId}}
       </td>
       <td style="padding-left: 20px;">
-        <strong>Tenant comment</strong><br>
-        {{tenantComment}}
       </td>
     </tr>
-
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>App tags</strong><br>
+        {{#each appTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>App custom properties</strong><br>
+        {{#each appCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-right: 20px; vertical-align: top;">
+        <strong>Reload task tags</strong><br>
+        {{#each taskTags}}
+          {{this}}<br>
+        {{/each}}
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        <strong>Reload task custom properties</strong><br>
+        {{#each taskCustomProperties}}
+          {{this.name}}: {{this.value}}<br>
+        {{/each}}
+      </td>
+    </tr>
     <tr>
       <td colspan="2"><hr></td>
     </tr>
 
     <tr>
       <td style="padding-right: 20px;">
-        <strong>Reload started</strong><br>
+        <strong>Task started</strong><br>
         {{executionStartTime.startTimeLocal1}}
       </td>
       <td style="padding-left: 20px;">
-        <strong>Reload ended</strong><br>
+        <strong>Task ended</strong><br>
         {{executionStopTime.stopTimeLocal1}}
       </td>
     </tr>
@@ -65,17 +100,18 @@
         {{executionDuration.hours}} hours, {{executionDuration.minutes}} minutes, {{executionDuration.seconds}} seconds
       </td>
       <td style="padding-left: 20px;">
+        <strong>Reload on node</strong><br>
+        {{executingNodeName}}
       </td>
     </tr>
-
     <tr>
       <td style="padding-right: 20px;">
-        <strong>Trigger</strong><br>
-        {{reloadTrigger}}
+        <strong>User starting reload task</strong><br>
+        {{user}}
       </td>
       <td style="padding-left: 20px;">
-        <strong>Reload ID</strong><br>
-        {{reloadId}}
+        <strong>Next execution</strong><br>
+        {{taskNextExecution}}
       </td>
     </tr>
 
@@ -83,33 +119,25 @@
       <td colspan="2"><hr></td>
     </tr>
 
-    <tr></tr>
-      <td style="padding-right: 20px;">
-        <strong>Error message</strong><br>
-        {{errorMessage}}
-      </td>
-      <td style="padding-left: 20px;">
-        <strong>Error code</strong><br>
-        {{errorCode}}
-      </td>
-    </tr>
     <tr>
       <td style="padding-right: 20px;">
         <strong>Execution result</strong><br>
         {{executionStatusText}}
       </td>
       <td style="padding-left: 20px;">
-        <strong></strong><br>
+        <strong>Execution result code</strong><br>
+        {{executionStatusNum}}
       </td>
     </tr>
+
     <tr>
       <td style="padding-right: 20px;">
-        <strong>Peak memory bytes</strong><br>
-        {{peakMemoryBytes}}
+        <strong>Log timestamp</strong><br>
+        {{logTimeStamp}}
       </td>
       <td style="padding-left: 20px;">
-        <strong>Failed due to memory constraint</strong><br>
-        {{endedWithMemoryConstraint}}
+        <strong>Log message</strong><br>
+        {{logMessage}}
       </td>
     </tr>
 
@@ -137,14 +165,20 @@
 
     <tr>
       <td colspan="2">
-        <strong>Log message</strong>
+        <strong>History</strong>
       </td>
     </tr>
+
+    {{#each executionDetails}}
     <tr>
-      <td colspan="2">
-        <pre>{{logMessage}}</pre>
+      <td style="padding-right: 20px;">
+        {{this.timestampLocal1}}
+      </td>
+      <td style="padding-right: 20px;">
+        {{this.message}}
       </td>
     </tr>
+    {{/each}}
 
     <tr>
       <td colspan="2"><hr></td>

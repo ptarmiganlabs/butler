@@ -138,6 +138,17 @@ Butler:
   qlikSenseUrls:
     qmc: http://10.11.12.13
     hub: http://10.11.12.13
+    appBaseUrl: http://10.11.12.13/sense/app   # Base URL for Qlik Sense apps. App ID will be appended to this URL.
+
+  genericUrls:
+    # - id: ptarmiganlabs_com
+    #   linkText: Ptarmigan Labs home page
+    #   comment: The home page of the company behind Butler
+    #   url: https://ptarmiganlabs.com
+    # - id: butler_docs
+    #   linkText: Butler documentation
+    #   comment: The documentation for Butler
+    #   url: https://butler.ptarmiganlabs.com
 
   # Settings for monitoring Qlik Sense version info
   # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
@@ -325,6 +336,29 @@ Butler:
   # Reload failure notifications assume a log appender is configured in Sense AND that the UDP server in Butler is running.
   emailNotification:
     enable: false
+    reloadTaskSuccess:
+      enable: false
+      # Custom property used to control which task successes will cause alert emails to be sent
+      # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+      # If this setting is false, alerts will be sent for all failed reload tasks.
+      alertEnableByCustomProperty:
+        enable: false
+        customPropertyName: 'Butler_SuccessAlertEnableEmail'
+        enabledValue: 'Yes'
+      # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+      # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+      alertEnabledByEmailAddress:
+        customPropertyName: 'Butler_SuccessAlertSendToEmail'
+      rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      headScriptLogLines: 15
+      tailScriptLogLines: 25
+      priority: high              # high/normal/low
+      subject: '✅ Qlik Sense reload success: "{{taskName}}"'
+      bodyFileDirectory: path/to/email_templates
+      htmlTemplateFile: success-reload-qseow
+      fromAddress: Qlik Sense (no-reply) <qliksense-noreply@ptarmiganlabs.com>
+      recipients:
+
     reloadTaskAborted:
       enable: false
       appOwnerAlert:

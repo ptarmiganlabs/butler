@@ -614,18 +614,22 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         // Should app tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags') === true) {
             // Add app tags to InfluxDB datapoint
-            // eslint-disable-next-line no-restricted-syntax
-            for (const item of reloadParams.appTags) {
-                datapoint[0].tags[`appTag_${item}`] = 'true';
+            if (reloadParams.appTags) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const item of reloadParams.appTags) {
+                    datapoint[0].tags[`appTag_${item}`] = 'true';
+                }
             }
         }
 
         // Should task tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags') === true) {
             // Add task tags to InfluxDB datapoint
-            // eslint-disable-next-line no-restricted-syntax
-            for (const item of reloadParams.taskTags) {
-                datapoint[0].tags[`taskTag_${item}`] = 'true';
+            if (reloadParams.taskTags) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const item of reloadParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
             }
         }
 
@@ -754,19 +758,21 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
 
         // Should app tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskFailure.tag.dynamic.useAppTags') === true) {
-            // Add app tags to InfluxDB datapoint
-            // eslint-disable-next-line no-restricted-syntax
-            for (const item of reloadParams.appTags) {
-                datapoint[0].tags[`appTag_${item}`] = 'true';
+            if (reloadParams.appTags) {
+                // Add app tags to InfluxDB datapoint
+                for (const item of reloadParams.appTags) {
+                    datapoint[0].tags[`appTag_${item}`] = 'true';
+                }
             }
         }
 
         // Should task tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags') === true) {
-            // Add task tags to InfluxDB datapoint
-            // eslint-disable-next-line no-restricted-syntax
-            for (const item of reloadParams.taskTags) {
-                datapoint[0].tags[`taskTag_${item}`] = 'true';
+            if (reloadParams.taskTags) {
+                // Add task tags to InfluxDB datapoint
+                for (const item of reloadParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
             }
         }
 

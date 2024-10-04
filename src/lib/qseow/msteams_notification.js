@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
 import fs from 'fs';
-// eslint-disable-next-line no-unused-vars
 import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
-import globals from '../globals.js';
-import getAppOwner from '../qrs_util/get_app_owner.js';
+import globals from '../../globals.js';
+import getAppOwner from '../../qrs_util/get_app_owner.js';
+import { getQlikSenseUrls } from './get_qs_urls.js';
 
 let rateLimiterMemoryFailedReloads;
 let rateLimiterMemoryAbortedReloads;
@@ -50,17 +50,6 @@ if (globals.config.has('Butler.teamsNotification.serviceStopped.rateLimit')) {
 
 function getTeamsReloadFailedNotificationConfigOk() {
     try {
-        // First make sure Teams sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable') ||
-            !globals.config.has('Butler.teamsNotification.reloadTaskFailure.webhookURL') ||
-            !globals.config.has('Butler.teamsNotification.reloadTaskFailure.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('TEAMS RELOAD TASK FAILED: Reload failure Teams config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable')) {
             // Teams task falure notifications are disabled
             globals.logger.error(
@@ -123,17 +112,6 @@ function getTeamsReloadFailedNotificationConfigOk() {
 
 function getTeamsReloadAbortedNotificationConfigOk() {
     try {
-        // First make sure Teams sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.teamsNotification.reloadTaskAborted.enable') ||
-            !globals.config.has('Butler.teamsNotification.reloadTaskAborted.webhookURL') ||
-            !globals.config.has('Butler.teamsNotification.reloadTaskAborted.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('TEAMS RELOAD TASK ABORTED: Reload aborted Teams config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable')) {
             // Teams task aborted notifications are disabled
             globals.logger.error(
@@ -199,19 +177,6 @@ function getTeamsReloadAbortedNotificationConfigOk() {
 
 function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
     try {
-        // First make sure Teams sending is enabled in the config file and that we have needed parameters
-        if (
-            !globals.config.has('Butler.serviceMonitor.alertDestination.teams.enable') ||
-            !globals.config.has('Butler.teamsNotification.serviceStopped.webhookURL') ||
-            !globals.config.has('Butler.teamsNotification.serviceStopped.messageType') ||
-            !globals.config.has('Butler.teamsNotification.serviceStarted.webhookURL') ||
-            !globals.config.has('Butler.teamsNotification.serviceStarted.messageType')
-        ) {
-            // Not enough info in config file
-            globals.logger.error('TEAMS SERVICE MONITOR: Reload aborted Teams config info missing in Butler config file');
-            return false;
-        }
-
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable')) {
             // Teams notifications are disabled
             globals.logger.error(
@@ -321,24 +286,6 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
     }
 }
 
-function getQlikSenseUrls() {
-    let qmcUrl = '';
-    let hubUrl = '';
-
-    if (globals.config.has('Butler.qlikSenseUrls.qmc')) {
-        qmcUrl = globals.config.get('Butler.qlikSenseUrls.qmc');
-    }
-
-    if (globals.config.has('Butler.qlikSenseUrls.hub')) {
-        hubUrl = globals.config.get('Butler.qlikSenseUrls.hub');
-    }
-
-    return {
-        qmcUrl,
-        hubUrl,
-    };
-}
-
 async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
@@ -383,6 +330,11 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
                 if (fs.existsSync(teamsConfig.templateFile) === true) {
                     const template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
                     compiledTemplate = handlebars.compile(template);
+
+                    // Register handlebars helper to compare values
+                    handlebars.registerHelper('eq', function (a, b) {
+                        return a === b;
+                    });
 
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
@@ -463,14 +415,54 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
+                // Construct URL to the failing app
+                // Note that senseUrls.appBaseUrl may or may not end with a slash.
+                // Handle both cases.
+                let appUrl = '';
+                if (senseUrls.appBaseUrl.endsWith('/')) {
+                    appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+                } else {
+                    appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+                }
+
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
                     taskId: reloadParams.taskId,
+                    taskCustomProperties: reloadParams.qs_taskCustomProperties,
+                    taskTags: reloadParams.qs_taskTags,
+                    taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+                    taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+                    taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+                    taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+                    taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+                    taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+                    taskNextExecution:
+                        reloadParams.qs_taskMetadata.operational.nextExecution === '1753-01-01T00:00:00.000Z'
+                            ? 'Never'
+                            : reloadParams.qs_taskMetadata.operational.nextExecution,
                     appName: reloadParams.appName,
                     appId: reloadParams.appId,
+                    appUrl,
+                    appDescription: reloadParams.qs_appMetadata?.description,
+                    appFileSize: reloadParams.qs_appMetadata?.fileSize,
+                    appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+                    appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+                    appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+                    appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+                    appPublished: reloadParams.qs_appMetadata?.published,
+                    appStreamName: reloadParams.qs_appMetadata?.stream,
+                    appCustomProperties: reloadParams.qs_appCustomProperties,
+                    appTags: reloadParams.qs_appTags,
                     logTimeStamp: reloadParams.logTimeStamp,
                     logLevel: reloadParams.logLevel,
                     logMessage: reloadParams.logMessage,
@@ -498,6 +490,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -609,14 +602,54 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
+                // Construct URL to the failing app
+                // Note that senseUrls.appBaseUrl may or may not end with a slash.
+                // Handle both cases.
+                let appUrl = '';
+                if (senseUrls.appBaseUrl.endsWith('/')) {
+                    appUrl = `${senseUrls.appBaseUrl}${reloadParams.appId}`;
+                } else {
+                    appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
+                }
+
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     hostName: reloadParams.hostName,
                     user: reloadParams.user,
                     taskName: reloadParams.taskName,
                     taskId: reloadParams.taskId,
+                    taskCustomProperties: reloadParams.qs_taskCustomProperties,
+                    taskTags: reloadParams.qs_taskTags,
+                    taskIsManuallyTriggered: reloadParams.qs_taskMetadata.isManuallyTriggered,
+                    taskIsPartialReload: reloadParams.qs_taskMetadata.isPartialReload,
+                    taskMaxRetries: reloadParams.qs_taskMetadata.maxRetries,
+                    taskModifiedByUsername: reloadParams.qs_taskMetadata.modifiedByUserName,
+                    taskModifiedDate: reloadParams.qs_taskMetadata.modifiedDate,
+                    taskSessionTimeout: reloadParams.qs_taskMetadata.taskSessionTimeout,
+                    taskNextExecution:
+                        reloadParams.qs_taskMetadata.operational.nextExecution === '1753-01-01T00:00:00.000Z'
+                            ? 'Never'
+                            : reloadParams.qs_taskMetadata.operational.nextExecution,
                     appName: reloadParams.appName,
                     appId: reloadParams.appId,
+                    appUrl,
+                    appDescription: reloadParams.qs_appMetadata?.description,
+                    appFileSize: reloadParams.qs_appMetadata?.fileSize,
+                    appLastSuccessfulReload: reloadParams.qs_appMetadata?.lastReloadTime,
+                    appLastModifiedDate: reloadParams.qs_appMetadata?.modifiedDate,
+                    appLastModifiedByUserName: reloadParams.qs_appMetadata?.modifiedByUserName,
+                    appPublishTime: reloadParams.qs_appMetadata?.publishTime,
+                    appPublished: reloadParams.qs_appMetadata?.published,
+                    appStreamName: reloadParams.qs_appMetadata?.stream,
+                    appCustomProperties: reloadParams.qs_appCustomProperties,
+                    appTags: reloadParams.qs_appTags,
                     logTimeStamp: reloadParams.logTimeStamp,
                     logLevel: reloadParams.logLevel,
                     logMessage: reloadParams.logMessage,
@@ -644,6 +677,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -730,6 +764,13 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     return 1;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     host: serviceParams.host,
@@ -740,6 +781,7 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     serviceFriendlyName: serviceParams.serviceFriendlyName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
+                    genericUrls,
                 };
 
                 if (serviceParams.serviceStatus === 'STOPPED') {
@@ -760,9 +802,4 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
             );
             globals.logger.verbose(`TEAMS SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
-}
-
-// Function to send Qlik Sense Cloud app reload failed alert
-export function sendQSCloudAppReloadFailedNotificationTeams(reloadParams) {
-    //
 }

@@ -28,7 +28,7 @@ const start = async () => {
     const globals = await settingsObj.init();
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
-    const setupServiceMonitorTimer = (await import('./lib/service_monitor.js')).default;
+    const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
         './lib/qseow/qliksense_license.js'
     );
@@ -40,9 +40,8 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert } = await import(
-        './lib/assert/assert_config_file.js'
-    );
+    const { configFileEmailAssert, configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert } =
+        await import('./lib/assert/assert_config_file.js');
 
     let resAssert;
 
@@ -58,6 +57,15 @@ const start = async () => {
 
         // Verify select parts/values in config file
         if (globals.options.qsConnection) {
+            // Verify that the config file contains the required data related to email
+            resAssert = await configFileEmailAssert(globals.config, globals.configQRS, globals.logger);
+            if (resAssert === false) {
+                globals.logger.error('MAIN: Config file does not contain required email data. Exiting.');
+                process.exit(1);
+            } else {
+                globals.logger.info('MAIN: Config file contains required email data - all good.');
+            }
+
             // Verify that the config file contains the required data related to New Relic
             resAssert = await configFileNewRelicAssert(globals.config, globals.configQRS, globals.logger);
             if (resAssert === false) {
