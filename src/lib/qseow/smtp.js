@@ -6,10 +6,10 @@ import expressHandlebars from 'express-handlebars';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import emailValidator from 'email-validator';
-import globals from '../globals.js';
-import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
-import getAppOwner from '../qrs_util/get_app_owner.js';
-import { getQlikSenseUrls } from './qseow/get_qs_urls.js';
+import globals from '../../globals.js';
+import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../../qrs_util/task_cp_util.js';
+import getAppOwner from '../../qrs_util/get_app_owner.js';
+import { getQlikSenseUrls } from './get_qs_urls.js';
 
 let rateLimiterMemorySuccessReloads;
 let rateLimiterMemoryFailedReloads;
@@ -176,6 +176,11 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
         const sut = hbs({
             viewEngine,
             viewPath,
+        });
+
+        // Register handlebars helper to compare values
+        handlebars.registerHelper('eq', function (a, b) {
+            return a === b;
         });
 
         // Attach the template plugin to the nodemailer transporter
@@ -487,6 +492,13 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
     }
 
+    // Get generic URLs from config file. Can be used as template fields.
+    let genericUrls = globals.config.get('Butler.genericUrls');
+    if (!genericUrls) {
+        // No URLs defined in the config file. Set to empty array
+        genericUrls = [];
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         hostName: reloadParams.hostName,
@@ -535,6 +547,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
         qlikSenseQMC: senseUrls.qmcUrl,
         qlikSenseHub: senseUrls.hubUrl,
+        genericUrls,
         appOwnerName: appOwner.userName,
         appOwnerUserId: appOwner.userId,
         appOwnerUserDirectory: appOwner.directory,
@@ -793,6 +806,13 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
     }
 
+    // Get generic URLs from config file. Can be used as template fields.
+    let genericUrls = globals.config.get('Butler.genericUrls');
+    if (!genericUrls) {
+        // No URLs defined in the config file. Set to empty array
+        genericUrls = [];
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         hostName: reloadParams.hostName,
@@ -841,6 +861,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
         qlikSenseQMC: senseUrls.qmcUrl,
         qlikSenseHub: senseUrls.hubUrl,
+        genericUrls,
         appOwnerName: appOwner.userName,
         appOwnerUserId: appOwner.userId,
         appOwnerUserDirectory: appOwner.directory,
@@ -1028,6 +1049,13 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
         appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
     }
 
+    // Get generic URLs from config file. Can be used as template fields.
+    let genericUrls = globals.config.get('Butler.genericUrls');
+    if (!genericUrls) {
+        // No URLs defined in the config file. Set to empty array
+        genericUrls = [];
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         hostName: reloadParams.hostName,
@@ -1076,6 +1104,7 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
         scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
         qlikSenseQMC: senseUrls.qmcUrl,
         qlikSenseHub: senseUrls.hubUrl,
+        genericUrls,
         appOwnerName: appOwner.userName,
         appOwnerUserId: appOwner.userId,
         appOwnerUserDirectory: appOwner.directory,
@@ -1132,6 +1161,13 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
         return 1;
     }
 
+    // Get generic URLs from config file. Can be used as template fields.
+    let genericUrls = globals.config.get('Butler.genericUrls');
+    if (!genericUrls) {
+        // No URLs defined in the config file. Set to empty array
+        genericUrls = [];
+    }
+
     // These are the template fields that can be used in email subject and body
     const templateContext = {
         host: serviceParams.host,
@@ -1142,6 +1178,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
         serviceFriendlyName: serviceParams.serviceFriendlyName,
         serviceStartType: serviceParams.serviceDetails.startType,
         serviceExePath: serviceParams.serviceDetails.exePath,
+        genericUrls,
     };
 
     let globalSendList;

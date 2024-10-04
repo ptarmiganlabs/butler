@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 /**
- * 
- * @param {*} slackConfig 
+ *
+ * @param {*} slackConfig
  * slackConfig = {
  *   webhookUrl: 'https://hooks.slack.com/services/...',
  *   messageType: 'basic', // basic, formatted, restmsg
@@ -16,8 +16,8 @@ import axios from 'axios';
  *   channel: '#general',
  *   text: 'Hello, world!'
  * }
- * @param {*} logger 
- * @returns 
+ * @param {*} logger
+ * @returns
  */
 async function slackSend(slackConfig, logger) {
     // TODO Sanity check Slack config

@@ -157,6 +157,16 @@ Butler:
     hub: <URL to Qlik Sense Hub>
     appBaseUrl: <URL to Qlik Sense hub>/<virtual proxy, if any>/sense/app   # Base URL for Qlik Sense apps, for example http://sense.mycompany.net/sense/app. App ID will be appended to this URL.
 
+  genericUrls:
+    - id: ptarmiganlabs_com
+      linkText: Ptarmigan Labs home page
+      comment: The home page of the company behind Butler
+      url: https://ptarmiganlabs.com
+    - id: butler_docs
+      linkText: Butler documentation
+      comment: The documentation for Butler
+      url: https://butler.ptarmiganlabs.com
+
   # Settings for monitoring Qlik Sense version info
   # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
   qlikSenseVersion:

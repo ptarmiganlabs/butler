@@ -385,6 +385,24 @@ export const confifgFileSchema = {
                     additionalProperties: false,
                 },
 
+                genericUrls: {
+                    type: ['array', 'null'],
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            linkText: { type: 'string' },
+                            comment: { type: 'string' },
+                            url: {
+                                type: 'string',
+                                format: 'uri',
+                            },
+                        },
+                        required: ['id', 'linkText', 'comment', 'url'],
+                        additionalProperties: false,
+                    },
+                },
+
                 qlikSenseVersion: {
                     type: 'object',
                     properties: {
@@ -3106,6 +3124,7 @@ export const confifgFileSchema = {
                 'influxDb',
                 'scriptLog',
                 'qlikSenseUrls',
+                'genericUrls',
                 'qlikSenseVersion',
                 'qlikSenseLicense',
                 'teamsNotification',

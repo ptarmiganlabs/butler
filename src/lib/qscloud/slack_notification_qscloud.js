@@ -153,6 +153,11 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     // Compile the template
                     compiledTemplate = handlebars.compile(template);
 
+                    // Register handlebars helper to compare values
+                    handlebars.registerHelper('eq', function (a, b) {
+                        return a === b;
+                    });
+
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
@@ -265,6 +270,13 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseCloudUrls();
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Slack body
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
@@ -326,6 +338,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
 
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
 
                     appOwnerName: appOwner.name,
                     appOwnerUserId: appOwner.id,

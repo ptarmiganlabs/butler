@@ -1,4 +1,3 @@
-import fs from 'fs';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
@@ -6,7 +5,7 @@ import globals from '../../globals.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
-import { sendEmail, isSmtpConfigOk } from '../smtp.js';
+import { sendEmail, isSmtpConfigOk } from '../qseow/smtp.js';
 
 let rateLimiterMemoryFailedReloads;
 let emailConfig;
@@ -267,6 +266,13 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseCloudUrls();
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in email body
                 const templateContext = {
                     tenantId: reloadParams.tenantId,
@@ -319,6 +325,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams
 
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
 
                     appOwnerName: appOwner.name,
                     appOwnerUserId: appOwner.id,

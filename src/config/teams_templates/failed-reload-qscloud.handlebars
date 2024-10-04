@@ -119,7 +119,33 @@
                                 "tooltip": "Open management console in Qlik Sense Cloud",
                                 "url": "{{qlikSenseQMC}}",
                                 "role": "button"
+                            },
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open hub",
+                                "tooltip": "Open hub Qlik Sense",
+                                "url": "{{qlikSenseQMC}}",
+                                "role": "button"
+                            },
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "Open app",
+                                "tooltip": "Open app that failed reloading",
+                                "url": "{{appUrl}}",
+                                "role": "button"
                             }
+{{#each genericUrls}}
+{{!-- Possible to use conditional logic in the template to include or exclude buttons based on the value of a variable. For example, the following code snippet includes a button only if the value of the id variable is "butler_docs": --}}
+{{!-- {{#if (eq id "butler_docs")}} --}}
+                            ,{
+                                "type": "Action.OpenUrl",
+                                "title": "{{this.linkText}}",
+                                "tooltip": "{{this.comment}}",
+                                "url": "{{this.url}}",
+                                "role": "button"
+                            }
+{{!-- {{/if}} --}}
+{{/each}}
                         ]
                     },
 

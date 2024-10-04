@@ -122,6 +122,12 @@
         <a href="{{qlikSenseQMC}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense QMC</a> 
         <a href="{{qlikSenseHub}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Qlik Sense Hub</a>
         <a href="{{appUrl}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">Open app</a>
+{{#each genericUrls}}
+{{!-- Possible to use conditional logic in the template to include or exclude buttons based on the value of a variable. For example, the following code snippet includes a button only if the value of the id variable is "butler_docs": --}}
+{{!-- {{#if (eq id "butler_docs")}} --}}
+        <a href="{{this.url}}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: black; background-color: #00b140; text-align: center; text-decoration: none; border-radius: 5px; margin: 5px;">{{this.linkText}}</a>
+{{!-- {{/if}} --}}
+{{/each}}
       </td>
     </tr>
 

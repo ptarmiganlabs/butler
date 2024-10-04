@@ -375,6 +375,11 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     // Compile template
                     compiledTemplate = handlebars.compile(template);
 
+                    // Register handlebars helper to compare values
+                    handlebars.registerHelper('eq', function (a, b) {
+                        return a === b;
+                    });
+
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
@@ -461,6 +466,13 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Slack body
                 // Regular expression for converting escapöing single quote
 
@@ -521,6 +533,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -656,6 +669,13 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Slack body
                 const templateContext = {
                     hostName: reloadParams.hostName,
@@ -714,6 +734,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -800,6 +821,13 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
                     return 1;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Slack body
                 const templateContext = {
                     host: serviceParams.host,
@@ -810,6 +838,7 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
                     serviceFriendlyName: serviceParams.serviceFriendlyName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
+                    genericUrls,
                 };
 
                 if (serviceParams.serviceStatus === 'STOPPED') {

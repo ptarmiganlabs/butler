@@ -331,6 +331,11 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
                     const template = fs.readFileSync(teamsConfig.templateFile, 'utf8');
                     compiledTemplate = handlebars.compile(template);
 
+                    // Register handlebars helper to compare values
+                    handlebars.registerHelper('eq', function (a, b) {
+                        return a === b;
+                    });
+
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
@@ -420,6 +425,13 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     hostName: reloadParams.hostName,
@@ -478,6 +490,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -599,6 +612,13 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     appUrl = `${senseUrls.appBaseUrl}/${reloadParams.appId}`;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     hostName: reloadParams.hostName,
@@ -657,6 +677,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
                     qlikSenseQMC: senseUrls.qmcUrl,
                     qlikSenseHub: senseUrls.hubUrl,
+                    genericUrls,
                     appOwnerName: appOwner.userName,
                     appOwnerUserId: appOwner.userId,
                     appOwnerUserDirectory: appOwner.directory,
@@ -743,6 +764,13 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     return 1;
                 }
 
+                // Get generic URLs from config file. Can be used as template fields.
+                let genericUrls = globals.config.get('Butler.genericUrls');
+                if (!genericUrls) {
+                    // No URLs defined in the config file. Set to empty array
+                    genericUrls = [];
+                }
+
                 // These are the template fields that can be used in Teams body
                 const templateContext = {
                     host: serviceParams.host,
@@ -753,6 +781,7 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     serviceFriendlyName: serviceParams.serviceFriendlyName,
                     serviceStartType: serviceParams.serviceDetails.startType,
                     serviceExePath: serviceParams.serviceDetails.exePath,
+                    genericUrls,
                 };
 
                 if (serviceParams.serviceStatus === 'STOPPED') {

@@ -1,5 +1,5 @@
 import globals from '../globals.js';
-import { sendEmailBasic } from './smtp.js';
+import { sendEmailBasic } from './qseow/smtp.js';
 
 function sendTestEmail(emailAddress, fromAddress) {
     try {
