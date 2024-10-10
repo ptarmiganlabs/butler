@@ -1,29 +1,125 @@
 {
-    "@type": "MessageCard", 
-    "@context": "https://schema.org/extensions",
-    "themeColor": "0076D7",
-    "summary": "Windows service is stopped",
-    "sections": [{
-        "activityTitle": "# ❌ Windows service {{serviceStatus}}: '{{serviceDisplayName}}'",
-        "facts": [{
-            "name": "Host",
-            "value": "{{host}}"
-        },{
-            "name": "Name",
-            "value": "{{serviceName}}"
-        },{
-            "name": "Display name",
-            "value": "{{serviceDisplayName}}"
-        },{
-            "name": "Status",
-            "value": "{{serviceStatus}}"
-        },{
-            "name": "Previous status",
-            "value": "{{servicePrevStatus}}"
-        },{
-            "name": "Startup mode",
-            "value": "{{serviceStartType}}"
-        }],
-        "markdown": true
-    }]
+    "type": "message", 
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.3",
+                "msteams": {  
+                    "width": "Full"  
+                },  
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "large",
+                        "weight": "bolder",
+                        "text": "❌ Windows service {{serviceStatus}}: '{{serviceDisplayName}}'",
+                        "style": "heading",
+                        "wrap": true
+                    },
+                    {
+                        "type": "ColumnSet",
+                        "columns": [
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "Image",
+                                        "style": "person",
+                                        "url": "https://raw.githubusercontent.com/ptarmiganlabs/butler/master/icon.png",
+                                        "altText": "Butler the Bot",
+                                        "size": "medium"
+                                    }
+                                ],
+                                "width": "auto"
+                            },
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "TextBlock",
+                                        "weight": "bolder",
+                                        "text": "Butler the Bot",
+                                        "wrap": true
+                                    },
+                                    {
+                                        "type": "TextBlock",
+                                        "spacing": "none",
+                                        "text": "",
+                                        "isSubtle": true,
+                                        "wrap": true
+                                    }
+                                ],
+                                "width": "stretch"
+                            }
+                        ]
+                    },
+
+                    {
+                        "type": "FactSet",
+                        "spacing": "large",
+                        "facts": [
+                            {
+                                "title": "Host:",
+                                "value": "{{host}}"
+                            },
+                            {
+                                "title": "Name:",
+                                "value": "{{serviceName}}"
+                            },
+                            {
+                                "title": "Display name:",
+                                "value": "{{serviceDisplayName}}"
+                            },
+                            {
+                                "title": "Status:",
+                                "value": "{{serviceStatus}}"
+                            },
+                            {
+                                "title": "Previous status:",
+                                "value": "{{servicePrevStatus}}"
+                            },
+                            {
+                                "title": "Startup mode:",
+                                "value": "{{serviceStartType}}"
+                            }
+                        ]
+                    },
+
+                    {
+                        "type": "ActionSet",
+                        "spacing": "extraLarge",
+                        "separator": true,
+                        "actions": [
+{{#each genericUrls}}
+{{#if (eq id "butler_docs")}}
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "{{this.linkText}}",
+                                "tooltip": "{{this.comment}}",
+                                "url": "{{this.url}}",
+                                "role": "button"
+                            },
+{{/if}}
+{{/each}}
+{{#each genericUrls}}
+{{#if (eq id "ptarmiganlabs_com")}}
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "{{this.linkText}}",
+                                "tooltip": "{{this.comment}}",
+                                "url": "{{this.url}}",
+                                "role": "button"
+                            }
+{{/if}}
+{{/each}}
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
 }
