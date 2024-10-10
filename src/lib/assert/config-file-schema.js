@@ -347,17 +347,39 @@ export const confifgFileSchema = {
                         storeOnDisk: {
                             type: 'object',
                             properties: {
-                                reloadTaskFailure: {
+                                clientManaged: {
                                     type: 'object',
                                     properties: {
-                                        enable: { type: 'boolean' },
-                                        logDirectory: { type: 'string' },
+                                        reloadTaskFailure: {
+                                            type: 'object',
+                                            properties: {
+                                                enable: { type: 'boolean' },
+                                                logDirectory: { type: 'string' },
+                                            },
+                                            required: ['enable', 'logDirectory'],
+                                            additionalProperties: false,
+                                        },
                                     },
-                                    required: ['enable', 'logDirectory'],
+                                    required: ['reloadTaskFailure'],
                                     additionalProperties: false,
                                 },
+                                qsCloud: {
+                                    type: 'object',
+                                    properties: {
+                                        appReloadFailure: {
+                                            type: 'object',
+                                            properties: {
+                                                enable: { type: 'boolean' },
+                                                logDirectory: { type: 'string' },
+                                            },
+                                            required: ['enable', 'logDirectory'],
+                                            additionalProperties: false,
+                                        },
+                                    },
+                                    required: ['appReloadFailure'],
+                                },
                             },
-                            required: ['reloadTaskFailure'],
+                            required: ['clientManaged', 'qsCloud'],
                             additionalProperties: false,
                         },
                     },
