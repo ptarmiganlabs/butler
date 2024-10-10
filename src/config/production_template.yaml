@@ -152,7 +152,7 @@ Butler:
           enable: false
           logDirectory: /path/to/scriptlogs/qseow
       qsCloud:
-        apPReloadFailure:
+        appReloadFailure:
           enable: false
           logDirectory: /path/to/scriptlogs/qscloud
 
@@ -980,14 +980,14 @@ Butler:
   qlikSenseCloud:                   # Settings for Qlik Sense Cloud integration
     enable: false
     event:
-      mqtt:                         # Which QS Cloud tenant should Butler SOS receive events from, in the form of MQTT messages?
+      mqtt:                         # Which QS Cloud tenant should Butler receive events from, in the form of MQTT messages?
         tenant:
           id: tenant.region.qlikcloud.com
           tenantUrl: https://tenant.region.qlikcloud.com
           authType: jwt             # Authentication type used to connect to the tenant. Valid options are "jwt"  
           auth:
             jwt:
-              token: <JWT token>    # JWT token used to authenticate Butler SOS when connecting to the tenant
+              token: <JWT token>    # JWT token used to authenticate Butler when connecting to the tenant
           # Qlik Sense Cloud related links used in notification messages
           qlikSenseUrls:
             qmc: <URL to QMC in Qlik Sense Cloud>
@@ -1081,7 +1081,7 @@ Butler:
         - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
           value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
-                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler is running.
 
   configQRS:
     authentication: certificates
@@ -1093,7 +1093,7 @@ Butler:
         - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
           value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
-                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler is running.
 
   configDirectories:
     qvdPath: <Path to folder under which QVDs are stored>
