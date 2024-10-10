@@ -40,7 +40,7 @@
     <!-- Appender for detecting successful reload tasks -->
     <appender name="ReloadTaskSuccessLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
-            <param name="stringToMatch" value="Reload complete" />
+            <param name="stringToMatch" value="Execution State Change to FinishedSuccess" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
@@ -86,16 +86,12 @@
 
     <!-- Send message to Butler on task failure -->
     <!-- Send message to Butler on task abort -->
+    <!-- Send message to Butler on reload task success -->
     <logger name="System.Scheduler.Scheduler.Master.Task.TaskSession">
         <appender-ref ref="TaskFailureLogger" />
         <appender-ref ref="AbortedReloadTaskLogger" />
-    </logger>
-
-    <!-- Send message to Butler on reload task success -->
-    <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
         <appender-ref ref="ReloadTaskSuccessLogger" />
     </logger>
-
 
     <!--Send email on task failure-->
     <!-- <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask"> -->
