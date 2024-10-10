@@ -41,6 +41,10 @@ const callRemoteURL = async () => {
         let api_slackPostMessage = 'null';
 
         let influxDb_reloadTaskFailure = 'null';
+        let influxDb_reloadTaskSuccess = 'null';
+
+        let scriptLog_qseow_reloadTaskFailure = 'null';
+        let scriptLog_qscloud_appReloadFailure = 'null';
 
         let teamsNotification_reloadTaskFailure = 'null';
         let teamsNotification_reloadTaskAborted = 'null';
@@ -201,6 +205,18 @@ const callRemoteURL = async () => {
 
         if (globals.config.has('Butler.influxDb.reloadTaskFailure.enable')) {
             influxDb_reloadTaskFailure = globals.config.get('Butler.influxDb.reloadTaskFailure.enable');
+        }
+
+        if (globals.config.has('Butler.influxDb.reloadTaskSuccess.enable')) {
+            influxDb_reloadTaskSuccess = globals.config.get('Butler.influxDb.reloadTaskSuccess.enable');
+        }
+
+        if (globals.config.has('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable')) {
+            scriptLog_qseow_reloadTaskFailure = globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable');
+        }
+
+        if (globals.config.has('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable')) {
+            scriptLog_qscloud_appReloadFailure = globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable');
         }
 
         if (globals.config.has('Butler.teamsNotification.reloadTaskFailure.enable')) {
@@ -373,6 +389,10 @@ const callRemoteURL = async () => {
                 feature_apiSlackPostMessage: api_slackPostMessage,
 
                 feature_influxDbReloadTaskFailure: influxDb_reloadTaskFailure,
+                feature_influxDbReloadTaskSuccess: influxDb_reloadTaskSuccess,
+
+                feature_scriptLogQseowReloadTaskFailure: scriptLog_qseow_reloadTaskFailure,
+                feature_scriptLogQsCloudAppReloadFailure: scriptLog_qscloud_appReloadFailure,
 
                 feature_teamsNotificationReloadTaskFailure: teamsNotification_reloadTaskFailure,
                 feature_teamsNotificationReloadTaskAborted: teamsNotification_reloadTaskAborted,
@@ -431,6 +451,16 @@ const callRemoteURL = async () => {
                                 : {},
 
                             influxDbReloadTaskFailure: influxDb_reloadTaskFailure,
+                            influxDbReloadTaskSuccess: influxDb_reloadTaskSuccess,
+
+                            scriptLogStoreOnDisk: {
+                                qseow: {
+                                    reloadTaskFailure: scriptLog_qseow_reloadTaskFailure,
+                                },
+                                qsCloud: {
+                                    appReloadFailure: scriptLog_qscloud_appReloadFailure,
+                                },
+                            },
 
                             teamsNotificationReloadTaskFailure: teamsNotification_reloadTaskFailure,
                             teamsNotificationReloadTaskAborted: teamsNotification_reloadTaskAborted,
