@@ -1,5 +1,57 @@
 # Changelog
 
+## [13.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.2...butler-v13.0.0) (2024-10-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **script-log:** Changing config fils structure to prep for future features
+* **config:** Get rid of old typos and outdated structure in config file
+* **ms-teams:** Use MS Power Automate for sending Teams messges
+
+### Features
+
+* **alert-templates:** Add more template variables to email, Slack, Teams alerts ([25aaa2b](https://github.com/ptarmiganlabs/butler/commit/25aaa2b189ff570c95b6042d56f2892cd04ed02f)), closes [#1250](https://github.com/ptarmiganlabs/butler/issues/1250)
+* **alerts:** Add arbitrary URLs to reload failed/stopped/success msgs ([5e613db](https://github.com/ptarmiganlabs/butler/commit/5e613db4671a4cb9d4e53b6aa88a75249f4c8bd8)), closes [#1220](https://github.com/ptarmiganlabs/butler/issues/1220)
+* **config-vis:** Show current config in web page ([b53eaf7](https://github.com/ptarmiganlabs/butler/commit/b53eaf7053e0319273c685afd6a400b370d1c7af)), closes [#1199](https://github.com/ptarmiganlabs/butler/issues/1199)
+* **config:** Visualise config file in Butler hosted web page ([29356ce](https://github.com/ptarmiganlabs/butler/commit/29356ce36c9d6edf4a0b605b2b63be1c95fcaee3)), closes [#1199](https://github.com/ptarmiganlabs/butler/issues/1199)
+* **email-alert:** Send email when select reload tasks finish successfully ([6a0e49b](https://github.com/ptarmiganlabs/butler/commit/6a0e49bae6172bf35f1ea366426a2486b0484d26)), closes [#1207](https://github.com/ptarmiganlabs/butler/issues/1207)
+* **failed-task-alert:** Make failed reload task email look the same as QS Cloud ditto ([c163ad4](https://github.com/ptarmiganlabs/butler/commit/c163ad4c7d9769ea6e51e11bfb8b4a884a432fa1)), closes [#1237](https://github.com/ptarmiganlabs/butler/issues/1237)
+* **qs-cloud:** Reload failed alerts to email ([1d4a62d](https://github.com/ptarmiganlabs/butler/commit/1d4a62d38f5ae8382c2b483c1af1faf4cf40902f))
+* **qs-cloud:** Reload failed alerts to MS Teams ([523722a](https://github.com/ptarmiganlabs/butler/commit/523722a00a6a1c7c98ead806a171a6b14a388651))
+* **qs-cloud:** Reload failed alerts to Slack ([fa35d91](https://github.com/ptarmiganlabs/butler/commit/fa35d91dc6993c2c32722425b1d3a66fef7f54df))
+* Verify that needed email alert related custom properties exist in QS ([6babb0f](https://github.com/ptarmiganlabs/butler/commit/6babb0f1acffab2c80f88a98fa56984cd3aacd26)), closes [#1256](https://github.com/ptarmiganlabs/butler/issues/1256)
+
+
+### Bug Fixes
+
+* Fix error when sending successful reload email for apps and tasks with no tags associated with them ([c945493](https://github.com/ptarmiganlabs/butler/commit/c94549362c040670281f8650578276f1ce232a26))
+* **ms-teams:** Use MS Power Automate for sending Teams messges ([4f46e60](https://github.com/ptarmiganlabs/butler/commit/4f46e6087641ff925b67e7c151bc1b9fc31a6d3a)), closes [#1239](https://github.com/ptarmiganlabs/butler/issues/1239)
+* **scheduler:** Fix broken "scheduler" test case ([0012f6d](https://github.com/ptarmiganlabs/butler/commit/0012f6d1cc80d73df102f0aff660d5f09b609769)), closes [#1245](https://github.com/ptarmiganlabs/butler/issues/1245)
+* **script-log:** Changing config fils structure to prep for future features ([e81ee39](https://github.com/ptarmiganlabs/butler/commit/e81ee39c85f17d87fd1a3d7d4db64327b1dd21a9))
+* **service-alerts:** Update win service alert templates to latest look-n-feel ([b2e8bab](https://github.com/ptarmiganlabs/butler/commit/b2e8babd2e1f48a5d1cff99ad52d6f55567c6bb8)), closes [#1257](https://github.com/ptarmiganlabs/butler/issues/1257)
+* **slack-alert:** Align Slack template for QSEoW alerts with QS Cloud ditto ([2769553](https://github.com/ptarmiganlabs/butler/commit/2769553e4ea10367d37c6d4e097299aaf6854c8f)), closes [#1238](https://github.com/ptarmiganlabs/butler/issues/1238)
+* Test case "senseapp" now works again ([054faa6](https://github.com/ptarmiganlabs/butler/commit/054faa60bbff347dd49e0953cfddd75ea0e067c9)), closes [#1244](https://github.com/ptarmiganlabs/butler/issues/1244)
+* **test:** Fix broken test of `buterping` API endpoint ([39827c8](https://github.com/ptarmiganlabs/butler/commit/39827c82852c5dc0eb0c54943279aa6f14c36c51))
+* **winsvc-monitor:** Making verbose logging less spammy ([f8981b3](https://github.com/ptarmiganlabs/butler/commit/f8981b3d9b6611cc87821da4d9d94af154ee7e3b)), closes [#1234](https://github.com/ptarmiganlabs/butler/issues/1234)
+* **xml-appender:** Update XML appender files to more reliably detect successful reloads ([b02e6a8](https://github.com/ptarmiganlabs/butler/commit/b02e6a86aa8f61ee2b9a78c85a569aad740c0543)), closes [#1259](https://github.com/ptarmiganlabs/butler/issues/1259)
+
+
+### Miscellaneous
+
+* Bump Docker build action to v6 ([6793cae](https://github.com/ptarmiganlabs/butler/commit/6793caea16a09f3c58b76659181dd05f64576d03))
+* **deps:** Update dependencies ([e18ce59](https://github.com/ptarmiganlabs/butler/commit/e18ce59fa4f5485c62e668c699545a4191199d69))
+* **deps:** Update dependencies to stay safe and secure ([16032c0](https://github.com/ptarmiganlabs/butler/commit/16032c079807b62ffe252158c57665b7d1627d85))
+* **deps:** Upgrade dependencies to stay safe and secure ([2960da0](https://github.com/ptarmiganlabs/butler/commit/2960da0b4e274ade13a15a152cdcef306badcd70))
+* Update to use latest release-please action ([d0d8a62](https://github.com/ptarmiganlabs/butler/commit/d0d8a624b946f2eeee8bd0fac643cdb883fcb776))
+
+
+### Refactoring
+
+* **config:** Better verification of config file during startup ([d1ebfaa](https://github.com/ptarmiganlabs/butler/commit/d1ebfaa50e668b3b2e945aff48ceb2fc476235e4)), closes [#1236](https://github.com/ptarmiganlabs/butler/issues/1236)
+* **config:** Get rid of old typos and outdated structure in config file ([985b749](https://github.com/ptarmiganlabs/butler/commit/985b74999014055dded7b5fd49d91c2a38966d57)), closes [#1242](https://github.com/ptarmiganlabs/butler/issues/1242)
+* **config:** Remove support for "enabled" properties in config file, only support "enable". ([b3a9a40](https://github.com/ptarmiganlabs/butler/commit/b3a9a40a9f581d7e4df75e0acf1fcd4df0290b30)), closes [#1243](https://github.com/ptarmiganlabs/butler/issues/1243)
+
 ## [12.4.2](https://github.com/ptarmiganlabs/butler/compare/butler-v12.4.1...butler-v12.4.2) (2024-07-03)
 
 
