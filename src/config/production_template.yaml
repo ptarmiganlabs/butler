@@ -147,16 +147,22 @@ Butler:
   # NOTE: Use an absolute path when running Butler as a standalone executable! 
   scriptLog:
     storeOnDisk:
-      reloadTaskFailure:
-        enable: false
-        logDirectory: /path/to/scriptlogs
+      clientManaged:
+        reloadTaskFailure:
+          enable: false
+          logDirectory: /path/to/scriptlogs/qseow
+      qsCloud:
+        appReloadFailure:
+          enable: false
+          logDirectory: /path/to/scriptlogs/qscloud
 
-  # Qlik Sense related links used in notification messages
+  # Qlik Sense (client-managed) related links used in notification messages
   qlikSenseUrls:
     qmc: <URL to Qlik Sense QMC>
     hub: <URL to Qlik Sense Hub>
     appBaseUrl: <URL to Qlik Sense hub>/<virtual proxy, if any>/sense/app   # Base URL for Qlik Sense apps, for example http://sense.mycompany.net/sense/app. App ID will be appended to this URL.
 
+  # Links available as template variables in notification messages
   genericUrls:
     - id: ptarmiganlabs_com
       linkText: Ptarmigan Labs home page
@@ -365,7 +371,7 @@ Butler:
       # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
       alertEnabledByEmailAddress:
         customPropertyName: 'Butler_SuccessAlertSendToEmail'
-      rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+      rateLimit: 60              # Min seconds between emails for a given taskID/recipient combo. Defaults to 5 minutes.
       headScriptLogLines: 15
       tailScriptLogLines: 25
       priority: high              # high/normal/low
@@ -975,14 +981,14 @@ Butler:
   qlikSenseCloud:                   # Settings for Qlik Sense Cloud integration
     enable: false
     event:
-      mqtt:                         # Which QS Cloud tenant should Butler SOS receive events from, in the form of MQTT messages?
+      mqtt:                         # Which QS Cloud tenant should Butler receive events from, in the form of MQTT messages?
         tenant:
           id: tenant.region.qlikcloud.com
           tenantUrl: https://tenant.region.qlikcloud.com
           authType: jwt             # Authentication type used to connect to the tenant. Valid options are "jwt"  
           auth:
             jwt:
-              token: <JWT token>    # JWT token used to authenticate Butler SOS when connecting to the tenant
+              token: <JWT token>    # JWT token used to authenticate Butler when connecting to the tenant
           # Qlik Sense Cloud related links used in notification messages
           qlikSenseUrls:
             qmc: <URL to QMC in Qlik Sense Cloud>
@@ -998,10 +1004,9 @@ Butler:
                   tag: Butler - Send Teams alert if app reload fails
                 basicContentOnly: false
                 webhookURL: <URL to MS Teams webhook>
-
                 messageType: formatted     # formatted / basic
                 basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
-                rateLimit: 15              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                rateLimit: 15              # Min seconds between emails for a given appId. Defaults to 5 minutes.
                 headScriptLogLines: 15
                 tailScriptLogLines: 15
                 templateFile: /path/to/teams_templates/failed-reload-qscloud-workflow.handlebars
@@ -1018,7 +1023,7 @@ Butler:
                 channel: sense-task-failure     # Slack channel to which task failure notifications are sent
                 messageType: formatted          # formatted / basic. Formatted means that template file below will be used to create the message.
                 basicMsgTemplate: 'Qlik Sense Cloud app reload failed: "{{appName}}"'      # Only needed if message type = basic
-                rateLimit: 60                   # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                rateLimit: 60                   # Min seconds between emails for a given appId. Defaults to 5 minutes.
                 headScriptLogLines: 10
                 tailScriptLogLines: 20
                 templateFile: /path/to/slack_templates/failed-reload-qscloud.handlebars
@@ -1044,7 +1049,7 @@ Butler:
                   excludeOwner:
                     user:
                       # - email: daniel@somecompany.com
-                rateLimit: 60              # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+                rateLimit: 60              # Min seconds between emails for a given appId/recipient combo. Defaults to 5 minutes.
                 headScriptLogLines: 15
                 tailScriptLogLines: 25
                 priority: high              # high/normal/low
@@ -1076,7 +1081,7 @@ Butler:
         - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
           value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
-                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler is running.
 
   configQRS:
     authentication: certificates
@@ -1088,7 +1093,7 @@ Butler:
         - name: X-Qlik-User                                     # Header used to identify what user connection to QRS is made as
           value: UserDirectory=Internal;UserId=sa_repository    # What user connection to QRS is made as    
     rejectUnauthorized: false       # Set to false to ignore warnings/errors caused by Qlik Sense's self-signed certificates.
-                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler SOS is running.
+                                    # Set to true if the Qlik Sense root CA is available on the computer where Butler is running.
 
   configDirectories:
     qvdPath: <Path to folder under which QVDs are stored>

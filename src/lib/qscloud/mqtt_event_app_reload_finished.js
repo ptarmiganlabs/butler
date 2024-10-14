@@ -1,5 +1,13 @@
+import path from 'path';
+import fs from 'fs';
+
 import globals from '../../globals.js';
-import { getQlikSenseCloudAppReloadScriptLog, getQlikSenseCloudAppReloadInfo } from './api/appreloadinfo.js';
+import {
+    getQlikSenseCloudAppReloadScriptLog,
+    getQlikSenseCloudAppReloadInfo,
+    getQlikSenseCloudAppReloadScriptLogHead,
+    getQlikSenseCloudAppReloadScriptLogTail,
+} from './api/appreloadinfo.js';
 import { getQlikSenseCloudAppInfo, getQlikSenseCloudAppMetadata, getQlikSenseCloudAppItems } from './api/app.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationTeams } from './msteams_notification_qscloud.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationSlack } from './slack_notification_qscloud.js';
@@ -23,7 +31,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 const appId = message.extensions.topLevelResourceId;
 
                 // Get  info about the app reload from the message sent by Qlik Sense Cloud
-                const { source, eventType, eventTypeVersion } = message;
+                const { source, eventType, eventTime, eventTypeVersion } = message;
                 const { ownerId, tenantId, userId } = message.extensions;
                 const {
                     duration,
@@ -74,11 +82,133 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 let appMetadata = {};
                 let appItems = {};
 
-                // App reload did fail. Send enabled notifications/alerts
+                // App reload did fail. Send enabled notifications/alerts, store script log etc
                 logger.info(`QLIK SENSE CLOUD: App reload failed. App ID=[${appId}] name="${message.data.name}"`);
 
                 // Are notifications from QS Cloud enabled?
                 if (globals.config.get('Butler.qlikSenseCloud.enable') === true) {
+                    // Get info that will be needed later from QS CLoud APIs
+                    // This includes:
+                    // - Reload script log
+                    // - Reload info
+                    // - App info
+
+                    // Script log is available via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
+                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
+                    try {
+                        scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId);
+                    } catch (err) {
+                        logger.error(`QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`);
+                    }
+
+                    // If return value is false, the script log could not be obtained
+                    if (scriptLog === false) {
+                        logger.warn(`QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`);
+                    } else {
+                        logger.verbose(`QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`);
+                    }
+                    logger.debug(`QLIK SENSE CLOUD: App reload script log: ${scriptLog}`);
+
+                    // Reload info is available via "GET /v1/reloads/{reloadId}"
+                    // https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
+                    try {
+                        reloadInfo = await getQlikSenseCloudAppReloadInfo(reloadId);
+                        reloadTrigger = reloadInfo.type;
+
+                        logger.verbose(`QLIK SENSE CLOUD: App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
+                        logger.debug(`QLIK SENSE CLOUD: App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
+                    } catch (err) {
+                        logger.error(`QLIK SENSE CLOUD: Could not get app reload info. Error=${JSON.stringify(err, null, 2)}`);
+                    }
+
+                    // App info is available via "GET /v1/apps/{appId}"
+                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
+                    try {
+                        appInfo = await getQlikSenseCloudAppInfo(appId);
+
+                        logger.verbose(`QLIK SENSE CLOUD: App info obtained. App ID="${appId}"`);
+                        logger.debug(`QLIK SENSE CLOUD: App info: ${JSON.stringify(appInfo, null, 2)}`);
+                    } catch (err) {
+                        logger.error(`QLIK SENSE CLOUD: Could not get app info. Error=${JSON.stringify(err, null, 2)}`);
+                    }
+
+                    // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
+                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-data-metadata
+                    try {
+                        appMetadata = await getQlikSenseCloudAppMetadata(appId);
+
+                        logger.verbose(`QLIK SENSE CLOUD: App metadata obtained. App ID="${appId}"`);
+                        logger.debug(`QLIK SENSE CLOUD: App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
+                    } catch (err) {
+                        logger.error(`QLIK SENSE CLOUD: Could not get app metadata. Error=${JSON.stringify(err, null, 2)}`);
+                    }
+
+                    // App items are available via "GET /v1/items"
+                    // https://qlik.dev/apis/rest/items/#get-v1-items
+                    try {
+                        appItems = await getQlikSenseCloudAppItems(appId);
+
+                        // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
+                        // error if not
+                        if (appItems?.data.length !== 1 || appItems?.data[0].resourceId !== appId) {
+                            logger.error(
+                                `QLIK SENSE CLOUD: App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
+                                    appItems,
+                                    null,
+                                    2,
+                                )}"`,
+                            );
+
+                            // Set appItems to empty object
+                            appItems = {};
+                        }
+
+                        logger.verbose(`QLIK SENSE CLOUD: App items obtained. App ID="${appId}"`);
+                        logger.debug(`QLIK SENSE CLOUD: App items: ${JSON.stringify(appItems, null, 2)}`);
+                    } catch (err) {
+                        logger.error(`QLIK SENSE CLOUD: Could not get app items. Error=${JSON.stringify(err, null, 2)}`);
+                    }
+
+                    // Get info from config file
+                    const tenantUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl');
+
+                    // Build URL to the app in Qlik Sense Cloud
+                    // Format: <tenantUrl>/sense/app/<appId>
+                    // Take into account that tenant URL might have a trailing slash
+                    const appUrl = `${tenantUrl}${tenantUrl.endsWith('/') ? '' : '/'}sense/app/${appId}`;
+
+                    // Save script log to disk file, if enabled
+                    if (globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') === true) {
+                        logger.verbose(`QLIK SENSE CLOUD: Storing script log to disk file`);
+
+                        // Get path to the directory where script logs will be stored
+                        const scriptLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory');
+
+                        // Create directory for script logs, if needed
+                        // eventTime has format "2024-10-14T11:31:39Z"
+                        // Set logDate variable to date part of eventTime
+                        const logDate = eventTime.slice(0, 10);
+                        const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
+
+                        logger.debug(`QLIK SENSE CLOUD: Script log directory: ${reloadLogDir}`);
+
+                        // Get error time stamp from eventTime, in format YYY-MM-DD_HH-MM-SS
+                        const logTimeStamp = eventTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
+
+                        // Create directory for script logs, if needed
+                        fs.mkdirSync(reloadLogDir, { recursive: true });
+
+                        const fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
+
+                        // Write script log to disk file
+                        try {
+                            logger.info(`QLIK SENSE CLOUD: Writing failed task script log: ${fileName}`);
+                            fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
+                        } catch (err) {
+                            logger.error(`QLIK SENSE CLOUD: Could not store script log to disk file. File="${fileName}", error=${err}`);
+                        }
+                    }
+
                     // Post to Teams when an app reload has failed, if enabled
                     if (
                         globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable') ===
@@ -94,115 +224,24 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
                             ) === false
                         ) {
-                            // Get extended info about the event
-                            // This includes:
-                            // - Reload script log
-                            // - Reload info
-                            // - App info
+                            const headLineCount = globals.config.get(
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
+                            );
 
-                            // Script log is available via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
-                            // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
-                            try {
-                                const headLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
-                                );
+                            const tailLineCount = globals.config.get(
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
+                            );
 
-                                const tailLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
-                                );
-
-                                scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headLineCount, tailLineCount);
-
-                                // If return value is false, the script log could not be obtained
-                                if (scriptLog === false) {
-                                    logger.warn(
-                                        `QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`,
-                                    );
-                                } else {
-                                    logger.verbose(
-                                        `QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`,
-                                    );
-                                }
-                                logger.debug(`QLIK SENSE CLOUD: App reload script log: ${scriptLog}`);
-                            } catch (err) {
-                                logger.error(
-                                    `QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`,
-                                );
-                            }
-
-                            // Reload info is available via "GET /v1/reloads/{reloadId}"
-                            // https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
-                            try {
-                                reloadInfo = await getQlikSenseCloudAppReloadInfo(reloadId);
-                                reloadTrigger = reloadInfo.type;
-
-                                logger.verbose(`QLIK SENSE CLOUD: App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                                logger.debug(`QLIK SENSE CLOUD: App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
-                            } catch (err) {
-                                logger.error(`QLIK SENSE CLOUD: Could not get app reload info. Error=${JSON.stringify(err, null, 2)}`);
-                            }
-
-                            // App info is available via "GET /v1/apps/{appId}"
-                            // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
-                            try {
-                                appInfo = await getQlikSenseCloudAppInfo(appId);
-
-                                logger.verbose(`QLIK SENSE CLOUD: App info obtained. App ID="${appId}"`);
-                                logger.debug(`QLIK SENSE CLOUD: App info: ${JSON.stringify(appInfo, null, 2)}`);
-                            } catch (err) {
-                                logger.error(`QLIK SENSE CLOUD: Could not get app info. Error=${JSON.stringify(err, null, 2)}`);
-                            }
+                            scriptLog.HeadCount = headLineCount;
+                            scriptLog.TailCount = tailLineCount;
+                            scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
+                            scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
                         } else {
                             // Use the basic info provided in the event/MQTT message
                             scriptLog = {};
                             reloadInfo.appId = appId;
                             reloadInfo.reloadId = reloadId;
                         }
-
-                        // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
-                        // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-data-metadata
-                        try {
-                            appMetadata = await getQlikSenseCloudAppMetadata(appId);
-
-                            logger.verbose(`QLIK SENSE CLOUD: App metadata obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app metadata. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // App items are available via "GET /v1/items"
-                        // https://qlik.dev/apis/rest/items/#get-v1-items
-                        try {
-                            appItems = await getQlikSenseCloudAppItems(appId);
-
-                            // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
-                            // error if not
-                            if (appItems?.data.length !== 1 || appItems?.data[0].resourceId !== appId) {
-                                logger.error(
-                                    `QLIK SENSE CLOUD: App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
-                                        appItems,
-                                        null,
-                                        2,
-                                    )}"`,
-                                );
-
-                                // Set appItems to empty object
-                                appItems = {};
-                            }
-
-                            logger.verbose(`QLIK SENSE CLOUD: App items obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App items: ${JSON.stringify(appItems, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app items. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // Get info from config file
-                        const tenantUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl');
-
-                        // Build URL to the app in Qlik Sense Cloud
-                        // Format: <tenantUrl>/sense/app/<appId>
-                        // Take into account that tenant URL might have a trailing slash
-                        const appUrl = `${tenantUrl}${tenantUrl.endsWith('/') ? '' : '/'}sense/app/${appId}`;
 
                         sendQlikSenseCloudAppReloadFailureNotificationTeams({
                             tenantId,
@@ -257,115 +296,24 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly',
                             ) === false
                         ) {
-                            // Get extended info about the event
-                            // This includes:
-                            // - Reload script log
-                            // - Reload info
-                            // - App info
+                            const headLineCount = globals.config.get(
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines',
+                            );
 
-                            // Script log is available via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
-                            // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
-                            try {
-                                const headLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines',
-                                );
+                            const tailLineCount = globals.config.get(
+                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
+                            );
 
-                                const tailLineCount = globals.config.get(
-                                    'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
-                                );
-
-                                scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headLineCount, tailLineCount);
-
-                                // If return value is false, the script log could not be obtained
-                                if (scriptLog === false) {
-                                    logger.warn(
-                                        `QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`,
-                                    );
-                                } else {
-                                    logger.verbose(
-                                        `QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`,
-                                    );
-                                }
-                                logger.debug(`QLIK SENSE CLOUD: App reload script log: ${scriptLog}`);
-                            } catch (err) {
-                                logger.error(
-                                    `QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`,
-                                );
-                            }
-
-                            // Reload info is available via "GET /v1/reloads/{reloadId}"
-                            // https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
-                            try {
-                                reloadInfo = await getQlikSenseCloudAppReloadInfo(reloadId);
-                                reloadTrigger = reloadInfo.type;
-
-                                logger.verbose(`QLIK SENSE CLOUD: App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                                logger.debug(`QLIK SENSE CLOUD: App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
-                            } catch (err) {
-                                logger.error(`QLIK SENSE CLOUD: Could not get app reload info. Error=${JSON.stringify(err, null, 2)}`);
-                            }
-
-                            // App info is available via "GET /v1/apps/{appId}"
-                            // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
-                            try {
-                                appInfo = await getQlikSenseCloudAppInfo(appId);
-
-                                logger.verbose(`QLIK SENSE CLOUD: App info obtained. App ID="${appId}"`);
-                                logger.debug(`QLIK SENSE CLOUD: App info: ${JSON.stringify(appInfo, null, 2)}`);
-                            } catch (err) {
-                                logger.error(`QLIK SENSE CLOUD: Could not get app info. Error=${JSON.stringify(err, null, 2)}`);
-                            }
+                            scriptLog.HeadCount = headLineCount;
+                            scriptLog.TailCount = tailLineCount;
+                            scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
+                            scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
                         } else {
                             // Use the basic info provided in the event/MQTT message
                             scriptLog = {};
                             reloadInfo.appId = appId;
                             reloadInfo.reloadId = reloadId;
                         }
-
-                        // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
-                        // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-data-metadata
-                        try {
-                            appMetadata = await getQlikSenseCloudAppMetadata(appId);
-
-                            logger.verbose(`QLIK SENSE CLOUD: App metadata obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app metadata. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // App items are available via "GET /v1/items"
-                        // https://qlik.dev/apis/rest/items/#get-v1-items
-                        try {
-                            appItems = await getQlikSenseCloudAppItems(appId);
-
-                            // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
-                            // error if not
-                            if (appItems?.data.length !== 1 || appItems?.data[0].resourceId !== appId) {
-                                logger.error(
-                                    `QLIK SENSE CLOUD: App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
-                                        appItems,
-                                        null,
-                                        2,
-                                    )}"`,
-                                );
-
-                                // Set appItems to empty object
-                                appItems = {};
-                            }
-
-                            logger.verbose(`QLIK SENSE CLOUD: App items obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App items: ${JSON.stringify(appItems, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app items. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // Get info from config file
-                        const tenantUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl');
-
-                        // Build URL to the app in Qlik Sense Cloud
-                        // Format: <tenantUrl>/sense/app/<appId>
-                        // Take into account that tenant URL might have a trailing slash
-                        const appUrl = `${tenantUrl}${tenantUrl.endsWith('/') ? '' : '/'}sense/app/${appId}`;
 
                         // Send Slack notification
                         sendQlikSenseCloudAppReloadFailureNotificationSlack({
@@ -421,101 +369,18 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // - App metadata
                         // - App items
 
-                        // Script log is available via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
-                        // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
-                        try {
-                            const headLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines',
-                            );
+                        const headLineCount = globals.config.get(
+                            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines',
+                        );
 
-                            const tailLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
-                            );
+                        const tailLineCount = globals.config.get(
+                            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
+                        );
 
-                            scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headLineCount, tailLineCount);
-
-                            // If return value is false, the script log could not be obtained
-                            if (scriptLog === false) {
-                                logger.warn(
-                                    `QLIK SENSE CLOUD: Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`,
-                                );
-                            } else {
-                                logger.verbose(
-                                    `QLIK SENSE CLOUD: App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`,
-                                );
-                            }
-                            logger.debug(`QLIK SENSE CLOUD: App reload script log: ${scriptLog}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // Reload info is available via "GET /v1/reloads/{reloadId}"
-                        // https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
-                        try {
-                            reloadInfo = await getQlikSenseCloudAppReloadInfo(reloadId);
-                            reloadTrigger = reloadInfo.type;
-
-                            logger.verbose(`QLIK SENSE CLOUD: App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app reload info. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // App info is available via "GET /v1/apps/{appId}"
-                        // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
-                        try {
-                            appInfo = await getQlikSenseCloudAppInfo(appId);
-
-                            logger.verbose(`QLIK SENSE CLOUD: App info obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App info: ${JSON.stringify(appInfo, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app info. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
-                        // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-data-metadata
-                        try {
-                            appMetadata = await getQlikSenseCloudAppMetadata(appId);
-
-                            logger.verbose(`QLIK SENSE CLOUD: App metadata obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app metadata. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // App items are available via "GET /v1/items"
-                        // https://qlik.dev/apis/rest/items/#get-v1-items
-                        try {
-                            appItems = await getQlikSenseCloudAppItems(appId);
-
-                            // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
-                            // error if not
-                            if (appItems?.data.length !== 1 || appItems?.data[0].resourceId !== appId) {
-                                logger.error(
-                                    `QLIK SENSE CLOUD: App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
-                                        appItems,
-                                        null,
-                                        2,
-                                    )}"`,
-                                );
-
-                                // Set appItems to empty object
-                                appItems = {};
-                            }
-
-                            logger.verbose(`QLIK SENSE CLOUD: App items obtained. App ID="${appId}"`);
-                            logger.debug(`QLIK SENSE CLOUD: App items: ${JSON.stringify(appItems, null, 2)}`);
-                        } catch (err) {
-                            logger.error(`QLIK SENSE CLOUD: Could not get app items. Error=${JSON.stringify(err, null, 2)}`);
-                        }
-
-                        // Get info from config file
-                        const tenantUrl = globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.tenantUrl');
-
-                        // Build URL to the app in Qlik Sense Cloud
-                        // Format: <tenantUrl>/sense/app/<appId>
-                        // Take into account that tenant URL might have a trailing slash
-                        const appUrl = `${tenantUrl}${tenantUrl.endsWith('/') ? '' : '/'}sense/app/${appId}`;
+                        scriptLog.HeadCount = headLineCount;
+                        scriptLog.TailCount = tailLineCount;
+                        scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
+                        scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
 
                         // Send email notification
                         sendQlikSenseCloudAppReloadFailureNotificationEmail({

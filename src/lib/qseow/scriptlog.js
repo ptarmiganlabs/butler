@@ -288,7 +288,7 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
 export async function failedTaskStoreLogOnDisk(reloadParams) {
     try {
         // Get top level directory where logs should be stored
-        const reloadLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.logDirectory');
+        const reloadLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.logDirectory');
 
         // Get misc script log info
         const { scriptLog } = reloadParams;

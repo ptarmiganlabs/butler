@@ -362,7 +362,7 @@ const schedulerFailed = async (msg) => {
     }));
 
     // Store script log to disk
-    if (globals.config.get('Butler.scriptLog.storeOnDisk.reloadTaskFailure.enable') === true) {
+    if (globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable') === true) {
         failedTaskStoreLogOnDisk({
             hostName: msg[1],
             user: msg[4].replace(/\\/g, '/'),

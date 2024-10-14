@@ -130,9 +130,14 @@ Butler:
   # NOTE: Use an absolute path when running Butler as a standalone executable! 
   scriptLog:
     storeOnDisk:
-      reloadTaskFailure:
-        enable: false
-        logDirectory: ...
+      clientManaged:
+        reloadTaskFailure:
+          enable: false
+          logDirectory: /path/to/scriptlogs/qseow
+      qsCloud:
+        appReloadFailure:
+          enable: false
+          logDirectory: /path/to/scriptlogs/qscloud
 
   # Qlik Sense related links used in notification messages
   qlikSenseUrls:
