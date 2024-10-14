@@ -203,7 +203,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
 // Function to send Qlik Sense Cloud app reload failed alert
 export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
-        .consume(reloadParams.reloadId, 1)
+        .consume(reloadParams.appId, 1)
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(

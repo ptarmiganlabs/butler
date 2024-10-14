@@ -7,7 +7,7 @@ import globals from '../../../globals.js';
 // Parameters:
 // - appId: Qlik Sense Cloud app ID
 // - reloadId: Qlik Sense Cloud reload ID
-export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headLineCount, tailLineCount) {
+export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
     try {
         // Set up Qlik Sense Cloud API configuration
         const axiosConfig = {
@@ -26,33 +26,45 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId, headL
         // Get number of lines in scriptLogFull
         const scriptLogLineCount = scriptLogFull.length;
 
-        let scriptLogHead = '';
-        let scriptLogTail = '';
-
-        if (headLineCount > 0) {
-            scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
-        }
-
-        if (tailLineCount > 0) {
-            scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
-        }
-
-        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
-        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
-
         globals.logger.verbose('QLIK SENSE CLOUD GET SCRIPT LOG: Done getting script log');
 
         return {
             scriptLogFull,
             scriptLogSize: scriptLogLineCount,
-            scriptLogHead,
-            scriptLogHeadCount: headLineCount,
-            scriptLogTail,
-            scriptLogTailCount: tailLineCount,
         };
     } catch (err) {
         globals.logger.error(`QLIK SENSE CLOUD GET SCRIPT LOG: ${err}`);
         return false;
+    }
+}
+
+// Function to get script log head lines
+// Parameters:
+// - scriptLogFull: Full script log as array
+// - headLineCount: Number of lines to get from head
+export function getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, headLineCount) {
+    if (headLineCount > 0) {
+        const scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
+
+        return scriptLogHead;
+    } else {
+        return '';
+    }
+}
+
+// Function to get script log tail lines
+// Parameters:
+// - scriptLogFull: Full script log as array
+// - tailLineCount: Number of lines to get from tail
+export function getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, tailLineCount) {
+    if (tailLineCount > 0) {
+        const scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
+        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
+
+        return scriptLogTail;
+    } else {
+        return '';
     }
 }
 

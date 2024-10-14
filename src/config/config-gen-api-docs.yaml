@@ -135,7 +135,7 @@ Butler:
           enable: false
           logDirectory: /path/to/scriptlogs/qseow
       qsCloud:
-        apPReloadFailure:
+        appReloadFailure:
           enable: false
           logDirectory: /path/to/scriptlogs/qscloud
 
