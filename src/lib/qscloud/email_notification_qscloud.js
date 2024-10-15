@@ -79,9 +79,6 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         globals.logger.info(
             `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
         );
-        globals.logger.verbose(
-            `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
-        );
 
         // Logic for determining if alert email should be sent or not
         // 1. If config setting Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enabled is false, do not send email
@@ -120,7 +117,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         // Get recipients based on app tags (or for all failed reloads)
         if (emailConfig.emailAlertByTagEnable === false) {
             // Email alerts are enabled for all failed app reloads, not just those with a specific tag set
-            if (emailConfig?.globalSendList?.length < 0) {
+            if (emailConfig?.globalSendList?.length > 0) {
                 // Add global send list from YAML config file to main send list
                 globalSendList.push(...emailConfig.globalSendList);
             }

@@ -662,7 +662,7 @@ export async function configFileStructureAssert() {
         // Add formats to ajv instance
         ajvFormats.default(ajv);
 
-        // Load the YAML schema file, identified by globals.configFile, from file
+        // Load the YAML schema file, identified by globals.configFileExpanded, from file
         const fileContent = await fs.readFile(globals.configFileExpanded, 'utf8');
 
         // Parse the YAML file
@@ -696,7 +696,7 @@ export async function configFileStructureAssert() {
         // ------------------------------
         // Verify values of specific config entries
 
-        globals.logger.info(`VERIFY CONFIG FILE: Your config file at ${globals.configFile} is valid, good work!`);
+        globals.logger.info(`VERIFY CONFIG FILE: Your config file at ${globals.configFileExpanded} is valid, good work!`);
 
         return true;
     } catch (err) {
