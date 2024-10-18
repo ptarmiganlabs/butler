@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import fs from 'fs';
 
 import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';
@@ -206,7 +205,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 if (reloadParams.scriptLog === false) {
                     scriptLogData = {
                         scriptLogFull: [],
-                        scriptLogSize: 0,
+                        scriptLogSizeRows: 0,
                         scriptLogHead: '',
                         scriptLogHeadCount: 0,
                         scriptLogTail: '',
@@ -234,8 +233,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                         scriptLogData.scriptLogTail = '';
                     }
 
-                    // Get length of script log (character count)
-                    scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
+                    // Get length of script log (row count)
+                    scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
                     globals.logger.debug(
                         `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
@@ -299,7 +298,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
                     executionStopTime: reloadParams.reloadInfo.executionStopTime,
                     executionStatusText: reloadParams.reloadInfo.status,
-                    scriptLogSize: scriptLogData.scriptLogSize.toLocaleString(),
+                    scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
+                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')

@@ -232,8 +232,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
                             );
 
-                            scriptLog.HeadCount = headLineCount;
-                            scriptLog.TailCount = tailLineCount;
+                            scriptLog.scriptLogHeadCount = headLineCount;
+                            scriptLog.scriptLogTailCount = tailLineCount;
                             scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
                             scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
                         } else {
@@ -304,8 +304,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
                             );
 
-                            scriptLog.HeadCount = headLineCount;
-                            scriptLog.TailCount = tailLineCount;
+                            scriptLog.scriptLogHeadCount = headLineCount;
+                            scriptLog.scriptLogTailCount = tailLineCount;
                             scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
                             scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
                         } else {
@@ -377,8 +377,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
                         );
 
-                        scriptLog.HeadCount = headLineCount;
-                        scriptLog.TailCount = tailLineCount;
+                        scriptLog.scriptLogHeadCount = headLineCount;
+                        scriptLog.scriptLogTailCount = tailLineCount;
                         scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
                         scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
 

@@ -213,7 +213,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         if (reloadParams.scriptLog === false) {
             scriptLogData = {
                 scriptLogFull: [],
-                scriptLogSize: 0,
+                scriptLogSizeRows: 0,
                 scriptLogHead: '',
                 scriptLogHeadCount: 0,
                 scriptLogTail: '',
@@ -229,21 +229,19 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             );
 
             if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                // Get length of script log (character count)
-                scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
+                // Get length of script log (row count)
+                scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
                 // Get the first and last n lines of the script log
-                scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull
-                    .slice(0, reloadParams.scriptLog.scriptLogHeadCount)
-                    .join('\r\n');
+                scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
 
                 scriptLogData.scriptLogTail = reloadParams.scriptLog.scriptLogFull
-                    .slice(Math.max(reloadParams.scriptLog.scriptLogFull.length - reloadParams.scriptLog.scriptLogTailCount, 0))
+                    .slice(Math.max(reloadParams.scriptLog.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
                     .join('\r\n');
             } else {
                 scriptLogData.scriptLogHead = '';
                 scriptLogData.scriptLogTail = '';
-                scriptLogData.scriptLogSize = 0;
+                scriptLogData.scriptLogSizeRows = 0;
             }
 
             globals.logger.debug(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -309,7 +307,8 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             executionStartTime: reloadParams.reloadInfo.executionStartTime,
             executionStopTime: reloadParams.reloadInfo.executionStopTime,
             executionStatusText: reloadParams.reloadInfo.status,
-            scriptLogSize: scriptLogData.scriptLogSize.toLocaleString(),
+            scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
+            scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
             scriptLogHead: scriptLogData.scriptLogHead,
             scriptLogTail: scriptLogData.scriptLogTail,
             scriptLogTailCount: scriptLogData.scriptLogTailCount,

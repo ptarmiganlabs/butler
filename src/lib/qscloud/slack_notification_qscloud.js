@@ -229,7 +229,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                 if (reloadParams.scriptLog === false) {
                     scriptLogData = {
                         scriptLogFull: [],
-                        scriptLogSize: 0,
+                        scriptLogSizeRows: 0,
                         scriptLogHead: '',
                         scriptLogHeadCount: 0,
                         scriptLogTail: '',
@@ -245,8 +245,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     );
 
                     if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                        // Get length of script log (character count)
-                        scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
+                        // Get length of script log (row count)
+                        scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
                         // Get the first and last n lines of the script log
                         scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull
@@ -259,7 +259,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     } else {
                         scriptLogData.scriptLogHead = '';
                         scriptLogData.scriptLogTail = '';
-                        scriptLogData.scriptLogSize = 0;
+                        scriptLogData.scriptLogSizeRows = 0;
                     }
 
                     globals.logger.debug(
@@ -324,7 +324,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
                     executionStopTime: reloadParams.reloadInfo.executionStopTime,
                     executionStatusText: reloadParams.reloadInfo.status,
-                    scriptLogSize: scriptLogData.scriptLogSize.toLocaleString(),
+                    scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
+                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
