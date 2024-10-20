@@ -1,6 +1,4 @@
 {
-    "release-as": "13.0.0",
-    "last-release-sha": "d50886dbdca6778c3323d5e59a1107b2e141412f",
     "release-type": "node",
     "prerelease": false,
     "draft": true,

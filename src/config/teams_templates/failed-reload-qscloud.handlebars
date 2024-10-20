@@ -203,6 +203,31 @@
                                 "type": "TextBlock",
                                 "size": "large",
                                 "weight": "bolder",
+                                "text": "Beginning of script log",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "size": "small",
+                                "weight": "normal",
+                                "text": "The script log contains {{scriptLogSizeRows}} rows in total, with {{scriptLogSizeCharacters}} characters in them. Here are the first {{scriptLogHeadCount}} rows:",
+                                "style": "heading"
+                            },
+                            {
+                                "type": "CodeBlock",
+                                "codeSnippet": "{{scriptLogHead}}"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Container",
+                        "spacing": "extraLarge",
+                        "style": "emphasis",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "size": "large",
+                                "weight": "bolder",
                                 "text": "End of script log",
                                 "style": "heading"
                             },
@@ -210,7 +235,7 @@
                                 "type": "TextBlock",
                                 "size": "small",
                                 "weight": "normal",
-                                "text": "Last {{scriptLogTailCount}} rows shown. The script log contains {{scriptLogSize}} rows in total.",
+                                "text": "Here are the last {{scriptLogTailCount}} rows:",
                                 "style": "heading"
                             },
                             {

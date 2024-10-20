@@ -605,9 +605,9 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task event. Task name: "${params.qs_taskName}"`,
+                    `[QSEOW] TASK FAILED NEWRELIC: Rate limiting check passed for failed task event. Task name: "${params.qs_taskName}"`,
                 );
-                globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`[QSEOW] TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Get config and needed metadata
                 const incidentConfig = getReloadFailedEventConfig();
@@ -716,16 +716,16 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 1 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -733,9 +733,9 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${params.qs_taskName}"`,
+                `[QSEOW] TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure event to New Relic for task "${params.qs_taskName}"`,
             );
-            globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`[QSEOW] TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -747,9 +747,9 @@ export async function sendReloadTaskFailureLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK FAILED NEWRELIC: Rate limiting check passed for failed task log entry. Task name: "${params.qs_taskName}"`,
+                    `[QSEOW] TASK FAILED NEWRELIC: Rate limiting check passed for failed task log entry. Task name: "${params.qs_taskName}"`,
                 );
-                globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`[QSEOW] TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Get config and needed metadata
                 const incidentConfig = getReloadFailedLogConfig();
@@ -832,7 +832,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                        globals.logger.error(`[QSEOW] Get value of reload task custom property: ${err}`);
                     }
                 }
 
@@ -856,16 +856,16 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 2 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK FAILED NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -873,9 +873,9 @@ export async function sendReloadTaskFailureLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${params.qs_taskName}"`,
+                `[QSEOW] TASK FAILED NEWRELIC: Rate limiting failed. Not sending reload failure log entry to New Relic for task "${params.qs_taskName}"`,
             );
-            globals.logger.verbose(`TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`[QSEOW] TASK FAILED NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -887,9 +887,9 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task event. Task name: "${params.qs_taskName}"`,
+                    `[QSEOW] TASK ABORT NEWRELIC: Rate limiting check passed for abort task event. Task name: "${params.qs_taskName}"`,
                 );
-                globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`[QSEOW] TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Get config and needed metadata
                 const incidentConfig = getReloadAbortedEventConfig();
@@ -974,7 +974,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${err}`);
                     }
                 }
 
@@ -998,16 +998,16 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 1 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -1015,9 +1015,9 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${params.qs_taskName}"`,
+                `[QSEOW] TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload aborted event to New Relic for task "${params.qs_taskName}"`,
             );
-            globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`[QSEOW] TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }
 
@@ -1029,9 +1029,9 @@ export function sendReloadTaskAbortedLog(reloadParams) {
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TASK ABORT NEWRELIC: Rate limiting check passed for abort task log entry. Task name: "${params.qs_taskName}"`,
+                    `[QSEOW] TASK ABORT NEWRELIC: Rate limiting check passed for abort task log entry. Task name: "${params.qs_taskName}"`,
                 );
-                globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                globals.logger.verbose(`[QSEOW] TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
 
                 // Get config and needed metadata
                 const incidentConfig = getReloadAbortedLogConfig();
@@ -1116,7 +1116,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${err}`);
                     }
                 }
 
@@ -1140,16 +1140,16 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (err.message) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 2 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 message: ${err.message}`);
                 }
 
                 if (err.stack) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 stack: ${err.stack}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`TASK ABORT NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
                 }
 
                 return null;
@@ -1157,8 +1157,8 @@ export function sendReloadTaskAbortedLog(reloadParams) {
         })
         .catch((rateLimiterRes) => {
             globals.logger.verbose(
-                `TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${params.qs_taskName}"`,
+                `[QSEOW] TASK ABORT NEWRELIC: Rate limiting failed. Not sending reload abort log entry to New Relic for task "${params.qs_taskName}"`,
             );
-            globals.logger.verbose(`TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+            globals.logger.verbose(`[QSEOW] TASK ABORT NEWRELIC: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
         });
 }

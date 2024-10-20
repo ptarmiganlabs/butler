@@ -4,7 +4,7 @@ import { createMachine, createActor } from 'xstate';
 import { statusAll, status, details } from './winsvc.js';
 import globals from '../../globals.js';
 import newRelic from '../incident_mgmt/new_relic_service_monitor.js';
-import { sendServiceMonitorWebhook } from '../webhook_notification.js';
+import { sendServiceMonitorWebhook } from './webhook_notification.js';
 import { sendServiceMonitorNotificationSlack } from './slack_notification.js';
 import { sendServiceMonitorNotificationTeams } from './msteams_notification.js';
 import { sendServiceMonitorNotificationEmail } from './smtp.js';
@@ -116,7 +116,9 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
 };
 
 const verifyServicesExist = async (config, logger) => {
-    logger.info('VERIFY WIN SERVICES EXIST: Verifying that all Windows services specified in config file exist and can be reached.');
+    logger.info(
+        'VERIFY WIN SERVICES EXIST: Verifying that all Windows services specified in config file exist and can be reached.',
+    );
 
     // Return false if one or more services do not exist or cannot be reached.
     // Return true if all services are reachable.
@@ -195,7 +197,9 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // Get status of this service
             const serviceStatus = await status(logger, service.name, host.host);
-            logger.debug(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
+            logger.debug(
+                `Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`,
+            );
 
             // Get details about this service
             const serviceDetails = await details(logger, service.name, host.host);

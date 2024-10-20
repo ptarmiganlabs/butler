@@ -28,7 +28,7 @@ async function checkQlikSenseVersion(config, logger) {
 
         // Is status code 200 or body is empty?
         if (result.status !== 200 || !result.data) {
-            logger.error(`QLIKSENSE VERSION MONITOR: HTTP status code ${result.status}, "${result.statusText}"`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: HTTP status code ${result.status}, "${result.statusText}"`);
             return;
         }
 
@@ -36,10 +36,10 @@ async function checkQlikSenseVersion(config, logger) {
         logger.debug(`QLIKSENSE VERSION MONITOR: ${JSON.stringify(result.data)}`);
 
         // Log version info to console log
-        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense product name: ${result.data.productName}`);
-        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense deployment type: ${result.data.deploymentType}`);
-        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense version: ${result.data.version}`);
-        logger.info(`QLIKSENSE VERSION MONITOR: Qlik Sense release: ${result.data.releaseLabel}`);
+        logger.info(`[QSEOW] QLIKSENSE VERSION MONITOR: Qlik Sense product name: ${result.data.productName}`);
+        logger.info(`[QSEOW] QLIKSENSE VERSION MONITOR: Qlik Sense deployment type: ${result.data.deploymentType}`);
+        logger.info(`[QSEOW] QLIKSENSE VERSION MONITOR: Qlik Sense version: ${result.data.version}`);
+        logger.info(`[QSEOW] QLIKSENSE VERSION MONITOR: Qlik Sense release: ${result.data.releaseLabel}`);
 
         // To which destination should we send the version information?
         // Check InfluDB first
@@ -51,9 +51,9 @@ async function checkQlikSenseVersion(config, logger) {
             await postQlikSenseVersionToInfluxDB(result.data);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE VERSION MONITOR: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE VERSION MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err.stack}`);
         }
     }
 }
@@ -68,13 +68,13 @@ export async function setupQlikSenseVersionMonitor(config, logger) {
             }, sched);
 
             // Do an initial version check
-            logger.verbose('Doing initial Qlik Sense version check');
+            logger.verbose('[QSEOW] Doing initial Qlik Sense version check');
             checkQlikSenseVersion(config, logger, true);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE VERSION MONITOR INIT: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE VERSION MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err.stack}`);
         }
     }
 }

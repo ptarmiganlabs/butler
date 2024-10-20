@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import axios from 'axios';
 import globals from '../../../globals.js';
 
@@ -24,7 +23,7 @@ export async function getQlikSenseCloudUserInfo(userId) {
 
         return appInfo;
     } catch (err) {
-        globals.logger.error(`Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
         return false;
     }
 }

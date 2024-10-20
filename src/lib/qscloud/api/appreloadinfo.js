@@ -26,14 +26,14 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
         // Get number of lines in scriptLogFull
         const scriptLogLineCount = scriptLogFull.length;
 
-        globals.logger.verbose('QLIK SENSE CLOUD GET SCRIPT LOG: Done getting script log');
+        globals.logger.verbose('[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Done getting script log');
 
         return {
             scriptLogFull,
             scriptLogSize: scriptLogLineCount,
         };
     } catch (err) {
-        globals.logger.error(`QLIK SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: ${err}`);
         return false;
     }
 }
@@ -45,7 +45,7 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
 export function getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, headLineCount) {
     if (headLineCount > 0) {
         const scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
-        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
+        globals.logger.debug(`[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
 
         return scriptLogHead;
     } else {
@@ -60,7 +60,7 @@ export function getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, headLineC
 export function getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, tailLineCount) {
     if (tailLineCount > 0) {
         const scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
-        globals.logger.debug(`QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
+        globals.logger.debug(`[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
 
         return scriptLogTail;
     } else {
@@ -138,7 +138,7 @@ export async function getQlikSenseCloudAppReloadInfo(reloadId) {
 
         return reloadInfo;
     } catch (err) {
-        globals.logger.error(`Qlik SENSE CLOUD GET RELOAD INFO: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: ${err}`);
         return false;
     }
 }

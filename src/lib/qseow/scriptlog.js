@@ -59,11 +59,11 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         const qrsInstance = new QrsInteract(configQRS);
 
         // Step 1
-        globals.logger.debug(`GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
 
         const result1 = await qrsInstance.Get(`reloadtask/${reloadTaskId}`);
 
-        globals.logger.debug(`GET SCRIPT LOG 1: body: ${JSON.stringify(result1.body)}`);
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: body: ${JSON.stringify(result1.body)}`);
 
         const taskInfo = {
             fileReferenceId: result1.body.operational.lastExecutionResult.fileReferenceID,
@@ -163,7 +163,7 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${err}`);
         return false;
     }
 }
@@ -194,9 +194,11 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
         const qrsInstance = new QrsInteract(configQRS);
 
         // Only get script log if there is a valid fileReferenceId
-        globals.logger.debug(`GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
         if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
-            globals.logger.debug(`GET SCRIPT LOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
+            globals.logger.debug(
+                `[QSEOW] GET SCRIPT LOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
+            );
 
             const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
 
@@ -227,8 +229,14 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
 
             const result3 = await axios.request(axiosConfig);
 
+            // Get complete script log as an array of lines
             const scriptLogFull = result3.data.split('\r\n');
 
+            // Get total number of rows and characters in script log
+            const scriptLogSizeCharacters = result3.data.length;
+            const scriptLogSizeRows = scriptLogFull.length;
+
+            // Get head and tail of script log
             let scriptLogHead = '';
             let scriptLogTail = '';
 
@@ -240,10 +248,10 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
             }
 
-            globals.logger.debug(`GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
-            globals.logger.debug(`GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
+            globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
+            globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
 
-            globals.logger.verbose('GET SCRIPT LOG: Done getting script log');
+            globals.logger.verbose('[QSEOW] GET SCRIPT LOG: Done getting script log');
 
             return {
                 executingNodeName: taskInfo.executingNodeName,
@@ -256,6 +264,8 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 executionStatusText: taskInfo.executionStatusText,
                 scriptLogFull,
                 scriptLogSize: taskInfo.scriptLogSize,
+                scriptLogSizeRows: scriptLogSizeRows,
+                scriptLogSizeCharacters: scriptLogSizeCharacters,
                 scriptLogHead,
                 scriptLogHeadCount: headLineCount,
                 scriptLogTail,
@@ -280,7 +290,7 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             scriptLogTailCount: 0,
         };
     } catch (err) {
-        globals.logger.error(`GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${err}`);
         return false;
     }
 }
@@ -297,7 +307,7 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
         const logDate = reloadParams.logTimeStamp.slice(0, 10);
         const reloadLogDir = path.resolve(reloadLogDirRoot, logDate);
 
-        globals.logger.debug(`SCRIPTLOG STORE: Creating directory for failed task script log: ${reloadLogDir}`);
+        globals.logger.debug(`[QSEOW] SCRIPTLOG STORE: Creating directory for failed task script log: ${reloadLogDir}`);
         fs.mkdirSync(reloadLogDir, { recursive: true });
 
         const fileName = path.resolve(
@@ -307,11 +317,11 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
             }.log`,
         );
 
-        globals.logger.info(`SCRIPTLOG STORE: Writing failed task script log: ${fileName}`);
+        globals.logger.info(`[QSEOW] SCRIPTLOG STORE: Writing failed task script log: ${fileName}`);
         fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
         return true;
     } catch (err) {
-        globals.logger.error(`SCRIPTLOG STORE: ${err}`);
+        globals.logger.error(`[QSEOW] SCRIPTLOG STORE: ${err}`);
         return false;
     }
 }

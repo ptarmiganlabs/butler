@@ -8,7 +8,7 @@ import globals from '../globals.js';
  * @returns
  */
 async function getAppMetadata(appId) {
-    globals.logger.debug(`GET APP METADATA: Retrieving metadata for app ${appId}`);
+    globals.logger.debug(`[QSEOW] GET APP METADATA: Retrieving metadata for app ${appId}`);
 
     try {
         // Get http headers from Butler config file
@@ -26,10 +26,10 @@ async function getAppMetadata(appId) {
 
         // Get app metadata
         try {
-            globals.logger.debug(`GET APP METADATA: app/full?filter=id eq ${appId}`);
+            globals.logger.debug(`[QSEOW] GET APP METADATA: app/full?filter=id eq ${appId}`);
 
             const result = await qrsInstance.Get(`app/full?filter=id eq ${appId}`);
-            globals.logger.debug(`GET APP METADATA: Got response: ${result.statusCode}`);
+            globals.logger.debug(`[QSEOW] GET APP METADATA: Got response: ${result.statusCode}`);
 
             if (result.body.length === 1) {
                 // Yes, the app exists. Return metadata for this app
@@ -39,11 +39,11 @@ async function getAppMetadata(appId) {
             // The task does not exist
             return {};
         } catch (err) {
-            globals.logger.error(`GET APP METADATA: Error while getting app metadata: ${err.message}`);
-            return [];
+            globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${err.message}`);
+            return false;
         }
     } catch (err) {
-        globals.logger.error(`GET APP METADATA: Error while getting app metadata: ${err}`);
+        globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${err}`);
         return false;
     }
 }

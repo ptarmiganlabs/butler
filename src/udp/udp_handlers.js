@@ -6,7 +6,7 @@ import {
     sendReloadTaskSuccessNotificationEmail,
 } from '../lib/qseow/smtp.js';
 import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/qseow/slack_notification.js';
-import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/webhook_notification.js';
+import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/qseow/webhook_notification.js';
 import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/qseow/msteams_notification.js';
 import { sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification } from '../lib/incident_mgmt/signl4.js';
 import {
@@ -28,7 +28,7 @@ import getTaskMetadata from '../qrs_util/task_metadata.js';
 // Handler for failed scheduler initiated reloads
 const schedulerAborted = async (msg) => {
     globals.logger.verbose(
-        `TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
+        `[QSEOW] TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     // Get script log for failed reloads.
@@ -42,12 +42,19 @@ const schedulerAborted = async (msg) => {
     ) {
         scriptLog = await getScriptLog(msg[5], 1, 1);
 
-        globals.logger.verbose(`Script log for aborted reload retrieved`);
+        globals.logger.verbose(`[QSEOW] Script log for aborted reload retrieved`);
     }
 
     // TOOD: Add check if task exists in QRS
     // Get app metadata from QRS
+    // Returns false if app metadata retrieval fails, JSON object if successful
     const appMetadata = await getAppMetadata(msg[6]);
+
+    // If we could not get app metadata from QRS, that is a problem. Log it and return
+    if (appMetadata === false) {
+        globals.logger.error(`[QSEOW] TASKABORTED: Could not get app metadata for app ${msg[6]}. Aborting further processing`);
+        return;
+    }
 
     // Get tags for the app that failed reloading
     // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
@@ -56,7 +63,7 @@ const schedulerAborted = async (msg) => {
     //
     // Create an array of tag names only
     const appTags = appMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
     // Get app custom properties
     // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
@@ -76,7 +83,7 @@ const schedulerAborted = async (msg) => {
 
     // Get tags for the task that failed reloading
     const taskTags = taskMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
     // Get reload task custom properties
     const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
@@ -268,7 +275,7 @@ const schedulerAborted = async (msg) => {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskAbortedTopic'), msg[2]);
         } else {
             globals.logger.warn(
-                `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                `[QSEOW] MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
                     'Butler.mqttConfig.taskAbortedTopic',
                 )}`,
             );
@@ -314,17 +321,23 @@ const schedulerFailed = async (msg) => {
         globals.config.get('Butler.emailNotification.enable') === true
     ) {
         scriptLog = await getScriptLog(msg[5], 0, 0);
-        globals.logger.verbose(`Script log for failed reload retrieved`);
+        globals.logger.verbose(`[QSEOW] Script log for failed reload retrieved`);
     }
 
     globals.logger.verbose(
-        `TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
+        `[QSEOW] TASKFAILURE: Received reload failed UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     // First field in message (msg[0]) is message category (this is the modern/recent message format)
 
     // Get app metadata from QRS
     const appMetadata = await getAppMetadata(msg[6]);
+
+    // If we could not get app metadata from QRS, that is a problem. Log it and return
+    if (appMetadata === false) {
+        globals.logger.error(`[QSEOW] TASKFAILURE: Could not get app metadata for app ${msg[6]}. Aborting further processing`);
+        return;
+    }
 
     // Get tags for the app that failed reloading
     // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
@@ -333,7 +346,7 @@ const schedulerFailed = async (msg) => {
     //
     // Create an array of tag names only
     const appTags = appMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
     // Get app custom properties
     // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
@@ -353,7 +366,7 @@ const schedulerFailed = async (msg) => {
 
     // Get tags for the task that failed reloading
     const taskTags = taskMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
     // Get reload task custom properties
     const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
@@ -591,7 +604,7 @@ const schedulerFailed = async (msg) => {
             globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureTopic'), msg[2]);
         } else {
             globals.logger.warn(
-                `MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                `[QSEOW] MQTT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
                     'Butler.mqttConfig.taskFailureTopic',
                 )}`,
             );
@@ -628,7 +641,7 @@ const schedulerFailed = async (msg) => {
 // --------------------------------------------------------
 const schedulerReloadTaskSuccess = async (msg) => {
     globals.logger.verbose(
-        `RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
+        `[QSEOW] RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
     );
 
     const reloadTaskId = msg[5];
@@ -636,7 +649,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
     // Does task ID exist in Sense?
     const taskExists = await doesTaskExist(reloadTaskId);
     if (taskExists.exists !== true) {
-        globals.logger.warn(`RELOAD TASK SUCCESS: Task ID ${reloadTaskId} does not exist in Sense`);
+        globals.logger.warn(`[QSEOW] RELOAD TASK SUCCESS: Task ID ${reloadTaskId} does not exist in Sense`);
         return false;
     }
 
@@ -682,11 +695,17 @@ const schedulerReloadTaskSuccess = async (msg) => {
             globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable') === true)
     ) {
         scriptLog = await getScriptLog(reloadTaskId, 0, 0);
-        globals.logger.verbose(`Script log for successful reload retrieved`);
+        globals.logger.verbose(`[QSEOW] Script log for successful reload retrieved`);
     }
 
     // Get app metadata from QRS
     const appMetadata = await getAppMetadata(msg[6]);
+
+    // If we could not get app metadata from QRS, that is a problem. Log it and return
+    if (appMetadata === false) {
+        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Could not get app metadata for app ${msg[6]}. Aborting further processing`);
+        return;
+    }
 
     // Get tags for the app that failed reloading
     // Tags are found in appMetadata.tags, which is an array of objects with the following properties:
@@ -695,7 +714,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
     //
     // Create an array of tag names only
     const appTags = appMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
     // Get app custom properties
     // They are found in appMetadata.customProperties, which is an array of objects with the following properties:
@@ -715,7 +734,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
 
     // Get tags for the task that failed reloading
     const taskTags = taskMetadata.tags.map((tag) => tag.name);
-    globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+    globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
     // Get reload task custom properties
     const taskCustomProperties = taskMetadata.customProperties.map((cp) => ({
@@ -750,12 +769,12 @@ const schedulerReloadTaskSuccess = async (msg) => {
                     taskInfo.executionDuration.seconds === 0
                 ) {
                     globals.logger.warn(
-                        `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`,
+                        `[QSEOW] RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`,
                     );
                 }
 
                 globals.logger.debug(
-                    `RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts`,
+                    `[QSEOW] RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId} retrieved successfully after ${retryCount} attempts`,
                 );
                 break;
             }
@@ -763,7 +782,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
             retryCount += 1;
 
             globals.logger.verbose(
-                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
+                `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
             );
 
             // eslint-disable-next-line no-await-in-loop
@@ -772,11 +791,13 @@ const schedulerReloadTaskSuccess = async (msg) => {
 
         if (!taskInfo) {
             globals.logger.warn(
-                `RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`,
+                `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`,
             );
             return false;
         }
-        globals.logger.verbose(`RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId}: ${JSON.stringify(taskInfo, null, 2)}`);
+        globals.logger.verbose(
+            `[QSEOW] RELOAD TASK SUCCESS: Task info for reload task ${reloadTaskId}: ${JSON.stringify(taskInfo, null, 2)}`,
+        );
 
         // Get app/task tags so they can be included in data sent to alert destinations
         let appTags = [];
@@ -784,11 +805,11 @@ const schedulerReloadTaskSuccess = async (msg) => {
 
         // Get tags for the app that was reloaded
         appTags = await getAppTags(msg[6]);
-        globals.logger.verbose(`Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
+        globals.logger.verbose(`[QSEOW] Tags for app ${msg[6]}: ${JSON.stringify(appTags, null, 2)}`);
 
         // Get tags for the task that finished reloading successfully
         taskTags = await getTaskTags(msg[5]);
-        globals.logger.verbose(`Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+        globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
 
         // Post to InfluxDB when a reload task has finished successfully
         if (
@@ -817,10 +838,10 @@ const schedulerReloadTaskSuccess = async (msg) => {
                 qs_taskMetadata: taskMetadata,
             });
 
-            globals.logger.info(`RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId}, "${msg[2]}" stored in InfluxDB`);
+            globals.logger.info(`[QSEOW] RELOAD TASK SUCCESS: Reload info for reload task ${reloadTaskId}, "${msg[2]}" stored in InfluxDB`);
         }
     } else {
-        globals.logger.verbose(`RELOAD TASK SUCCESS: Not storing task info in InfluxDB`);
+        globals.logger.verbose(`[QSEOW] RELOAD TASK SUCCESS: Not storing task info in InfluxDB`);
     }
 
     // Should we send email notification?
@@ -861,7 +882,7 @@ const udpInitTaskErrorServer = () => {
     globals.udpServerReloadTaskSocket.on('listening', (message, remote) => {
         const address = globals.udpServerReloadTaskSocket.address();
 
-        globals.logger.info(`TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
+        globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
         // Publish MQTT message that UDP server has started
         if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
@@ -869,7 +890,7 @@ const udpInitTaskErrorServer = () => {
                 globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
             } else {
                 globals.logger.warn(
-                    `UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                    `[QSEOW] UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
                         'Butler.mqttConfig.taskFailureServerStatusTopic',
                     )}`,
                 );
@@ -882,7 +903,7 @@ const udpInitTaskErrorServer = () => {
     globals.udpServerReloadTaskSocket.on('error', (message, remote) => {
         try {
             const address = globals.udpServerReloadTaskSocket.address();
-            globals.logger.error(`TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
+            globals.logger.error(`[QSEOW] TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
 
             // Publish MQTT message that UDP server has reported an error
             if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
@@ -890,14 +911,14 @@ const udpInitTaskErrorServer = () => {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'error');
                 } else {
                     globals.logger.warn(
-                        `UDP SERVER ERROR: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                        `[QSEOW] UDP SERVER ERROR: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
                             'Butler.mqttConfig.taskFailureServerStatusTopic',
                         )}`,
                     );
                 }
             }
         } catch (err) {
-            globals.logger.error(`TASKFAILURE: Error in UDP error handler: ${err}`);
+            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${err}`);
         }
     });
 
@@ -971,7 +992,7 @@ const udpInitTaskErrorServer = () => {
         // mag[8]  : Message
 
         try {
-            globals.logger.debug(`UDP HANDLER: UDP message received: ${message.toString()}`);
+            globals.logger.debug(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
 
             const msg = message.toString().split(';');
 
@@ -982,15 +1003,15 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 9) {
                     globals.logger.warn(
-                        `UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,
+                        `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,
                     );
-                    globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
                     return;
                 }
 
                 globals.logger.verbose(
-                    `UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
+                    `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
                 );
             } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/') {
                 // Scheduler log appender detecting failed scheduler-started reload
@@ -999,10 +1020,10 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
                     return;
                 }
 
@@ -1014,10 +1035,10 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
                     return;
                 }
 
@@ -1029,19 +1050,21 @@ const udpInitTaskErrorServer = () => {
                 // There should be exactly 11 fields in the message
                 if (msg.length !== 11) {
                     globals.logger.warn(
-                        `UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
                     );
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Aborting processing of this message.`);
+                    globals.logger.warn(
+                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Incoming log message was:\n${message.toString()}`,
+                    );
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD TASK SUCCESS: Aborting processing of this message.`);
                     return;
                 }
                 schedulerReloadTaskSuccess(msg);
             } else {
-                globals.logger.warn(`UDP HANDLER: Unknown UDP message format: "${msg[0]}"`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message format: "${msg[0]}"`);
             }
         } catch (err) {
-            globals.logger.error(`UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${err}`);
-            globals.logger.error(`UDP HANDLER: Incoming log message was\n${message}`);
+            globals.logger.error(`[QSEOW] UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${err}`);
+            globals.logger.error(`[QSEOW] UDP HANDLER: Incoming log message was\n${message}`);
         }
     });
 };

@@ -7,6 +7,7 @@ import slackSend from '../slack_api.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
+import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
 
 let rateLimiterMemoryFailedReloads;
 
@@ -27,7 +28,7 @@ function getAppReloadFailedSlackConfig() {
         if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
             // Slack task falure notifications are disabled
             globals.logger.error(
-                "SLACK ALERT - QS CLOUD APP RELOAD FAILED: Reload failure Slack notifications are disabled in config file - won't send Slack message",
+                '[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Reload failure Slack notifications are disabled in config file - will not send Slack message',
             );
             return false;
         }
@@ -40,7 +41,7 @@ function getAppReloadFailedSlackConfig() {
         ) {
             // Invalid Slack message type
             globals.logger.error(
-                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Invalid Slack message type: ${globals.config.get(
+                `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Invalid Slack message type: ${globals.config.get(
                     'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.messageType',
                 )}`,
             );
@@ -53,7 +54,7 @@ function getAppReloadFailedSlackConfig() {
             // Basic formatting. Make sure requried parameters are present
             if (!globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicMsgTemplate')) {
                 // No message text in config file.
-                globals.logger.error('SLACK ALERT - QS CLOUD APP RELOAD FAILED: No message text in config file.');
+                globals.logger.error('[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: No message text in config file.');
                 return false;
             }
         } else if (
@@ -62,7 +63,7 @@ function getAppReloadFailedSlackConfig() {
         ) {
             // Extended formatting using Slack blocks. Make sure requried parameters are present
             if (!globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.templateFile')) {
-                globals.logger.error('SLACK ALERT - QS CLOUD APP RELOAD FAILED: Message template file not specified in config file.');
+                globals.logger.error('[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Message template file not specified in config file.');
                 return false;
             }
         }
@@ -89,7 +90,7 @@ function getAppReloadFailedSlackConfig() {
             channel: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.channel'),
         };
     } catch (err) {
-        globals.logger.error(`SLACK ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${err}`);
         return false;
     }
 }
@@ -161,16 +162,24 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(
+                            `[QSCLOUD] SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
+                        );
+                        globals.logger.debug(
+                            `[QSCLOUD] SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
+                        );
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
                     } else if (msgType === 'qscloud-app-reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(
+                            `[QSCLOUD] SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
+                        );
+                        globals.logger.debug(
+                            `[QSCLOUD] SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
+                        );
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
@@ -178,12 +187,12 @@ async function sendSlack(slackConfig, templateContext, msgType) {
 
                     slackMsg = compiledTemplate(templateContext);
 
-                    globals.logger.debug(`SLACK SEND: Rendered message:\n${slackMsg}`);
+                    globals.logger.debug(`[QSCLOUD] SLACK SEND: Rendered message:\n${slackMsg}`);
                 } else {
-                    globals.logger.error(`SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
+                    globals.logger.error(`[QSCLOUD] SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`SLACK SEND: Error processing Slack template file: ${err}`);
+                globals.logger.error(`[QSCLOUD] SLACK SEND: Error processing Slack template file: ${err}`);
             }
         }
 
@@ -192,11 +201,13 @@ async function sendSlack(slackConfig, templateContext, msgType) {
             const res = await slackSend(slackConfig, globals.logger);
 
             if (res !== undefined) {
-                globals.logger.debug(`SLACK SEND: Result from calling SlackApi.SlackSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(
+                    `[QSCLOUD] SLACK SEND: Result from calling SlackApi.SlackSend: ${res.statusText} (${res.status}): ${res.data}`,
+                );
             }
         }
     } catch (err) {
-        globals.logger.error(`SLACK SEND: ${err}`);
+        globals.logger.error(`[QSCLOUD] SLACK SEND: ${err}`);
     }
 }
 
@@ -207,10 +218,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
+                    `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
                 );
                 globals.logger.verbose(
-                    `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                    `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure Slack sending is enabled in the config file and that we have all required settings
@@ -229,7 +240,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                 if (reloadParams.scriptLog === false) {
                     scriptLogData = {
                         scriptLogFull: [],
-                        scriptLogSize: 0,
+                        scriptLogSizeRows: 0,
                         scriptLogHead: '',
                         scriptLogHeadCount: 0,
                         scriptLogTail: '',
@@ -245,25 +256,30 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     );
 
                     if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                        // Get length of script log (character count)
-                        scriptLogData.scriptLogSize = reloadParams.scriptLog.scriptLogFull.length;
+                        // Get length of entire script log (character count)
+                        scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
 
-                        // Get the first and last n lines of the script log
-                        scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull
-                            .slice(0, reloadParams.scriptLog.scriptLogHeadCount)
-                            .join('\r\n');
+                        // Get length of script log (row count)
+                        scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
-                        scriptLogData.scriptLogTail = reloadParams.scriptLog.scriptLogFull
-                            .slice(Math.max(reloadParams.scriptLog.scriptLogFull.length - reloadParams.scriptLog.scriptLogTailCount, 0))
-                            .join('\r\n');
+                        // Get the first and last rows of the script log
+                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(
+                            reloadParams.scriptLog.scriptLogFull,
+                            scriptLogData.scriptLogHeadCount,
+                        );
+                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(
+                            reloadParams.scriptLog.scriptLogFull,
+                            scriptLogData.scriptLogTailCount,
+                        );
                     } else {
                         scriptLogData.scriptLogHead = '';
                         scriptLogData.scriptLogTail = '';
-                        scriptLogData.scriptLogSize = 0;
+                        scriptLogData.scriptLogSizeRows = 0;
+                        scriptLogData.scriptLogSizeCharacters = 0;
                     }
 
                     globals.logger.debug(
-                        `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
+                        `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
                     );
                 }
 
@@ -324,7 +340,9 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
                     executionStopTime: reloadParams.reloadInfo.executionStopTime,
                     executionStatusText: reloadParams.reloadInfo.status,
-                    scriptLogSize: scriptLogData.scriptLogSize.toLocaleString(),
+                    scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
+                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
+                    scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
@@ -408,16 +426,16 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
 
                 sendSlack(slackConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
-                globals.logger.error(`SLACK ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+                globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.warn(
-                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Slack for app [${reloadParams.appId}] "${reloadParams.appName}"`,
+                `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Slack for app [${reloadParams.appId}] "${reloadParams.appName}"`,
             );
             globals.logger.debug(
-                `SLACK ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
             );
         });
 }
