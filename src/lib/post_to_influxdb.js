@@ -65,7 +65,7 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
 //     copyrightYearRange: "1993-2024",
 //   }
 export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
-    globals.logger.verbose('INFLUXDB QLIK SENSE VERSION: Sending Qlik Sense version to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE VERSION: Sending Qlik Sense version to InfluxDB');
 
     // Get tags from config file
     // Stored in array Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag
@@ -118,10 +118,12 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
     const deepClonedDatapoint = _.cloneDeep(datapoint);
     await globals.influx.writePoints(deepClonedDatapoint);
 
-    globals.logger.silly(`INFLUXDB QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`);
+    globals.logger.silly(
+        `[QSEOW] INFLUXDB QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`,
+    );
 
     datapoint = null;
-    globals.logger.verbose('INFLUXDB QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
 }
 
 // Function to store Qlik Sense server license status to InfluxDB
@@ -133,7 +135,7 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
 //     "daysUntilExpiry": <number>,
 //   }
 export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServerLicenseStatus) {
-    globals.logger.verbose('INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sending Qlik Sense server license status to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sending Qlik Sense server license status to InfluxDB');
 
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag
@@ -182,7 +184,7 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
     await globals.influx.writePoints(deepClonedDatapoint);
 
     globals.logger.silly(
-        `INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
+        `[QSEOW] INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
             datapoint,
             null,
             2,
@@ -190,7 +192,7 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
     );
 
     datapoint = null;
-    globals.logger.verbose('INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
 }
 
 // Function to store Qlik Sense access license status to InfluxDB
@@ -245,7 +247,7 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
 //     "schemaPath": "AccessTypeOverview"
 // }
 export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatus) {
-    globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE STATUS: Sending Qlik Sense license status to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE LICENSE STATUS: Sending Qlik Sense license status to InfluxDB');
 
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
@@ -396,16 +398,16 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     await globals.influx.writePoints(deepClonedDatapoint);
 
     globals.logger.silly(
-        `INFLUXDB QLIK SENSE LICENSE STATUS: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
+        `[QSEOW] INFLUXDB QLIK SENSE LICENSE STATUS: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
     );
 
     datapoint = null;
-    globals.logger.info('INFLUXDB QLIK SENSE LICENSE STATUS: Sent aggregated Qlik Sense license status to InfluxDB');
+    globals.logger.info('[QSEOW] INFLUXDB QLIK SENSE LICENSE STATUS: Sent aggregated Qlik Sense license status to InfluxDB');
 }
 
 // Function to store info about released Qlik Sense licenses to InfluxDB
 export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
-    globals.logger.verbose('INFLUXDB QLIK SENSE LICENSE RELEASE: Sending info on released Qlik Sense license to InfluxDB');
+    globals.logger.verbose('[QSEOW] INFLUXDB QLIK SENSE LICENSE RELEASE: Sending info on released Qlik Sense license to InfluxDB');
 
     // Get tags from config file
     // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
@@ -453,11 +455,11 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
     await globals.influx.writePoints(deepClonedDatapoint);
 
     globals.logger.silly(
-        `INFLUXDB QLIK SENSE LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`,
+        `[QSEOW] INFLUXDB QLIK SENSE LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`,
     );
 
     datapoint = null;
-    globals.logger.debug('INFLUXDB QLIK SENSE LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB');
+    globals.logger.debug('[QSEOW] INFLUXDB QLIK SENSE LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB');
 }
 
 // Function to store windows service status to InfluxDB
@@ -546,7 +548,7 @@ export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
 // Store information about successful reload tasks to InfluxDB
 export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
     try {
-        globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
+        globals.logger.verbose('[QSEOW] INFLUXDB RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
 
         // Add tags
         let tags = {};
@@ -587,7 +589,7 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         // Get task info
         const { taskInfo } = reloadParams;
 
-        globals.logger.debug(`INFLUXDB RELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+        globals.logger.debug(`[QSEOW] INFLUXDB RELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
 
         // Use task info to enrich log entry sent to InfluxDB
         datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
@@ -650,24 +652,26 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `INFLUXDB RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                    `[QSEOW] INFLUXDB RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
                 datapoint = null;
-                globals.logger.verbose('INFLUXDB RELOAD TASK SUCCESS: Sent reload task notification to InfluxDB');
+                globals.logger.verbose('[QSEOW] INFLUXDB RELOAD TASK SUCCESS: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`INFLUXDB RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                globals.logger.error(
+                    `[QSEOW] INFLUXDB RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.stack}`,
+                );
             });
     } catch (err) {
-        globals.logger.error(`INFLUXDB RELOAD TASK SUCCESS: ${err}`);
+        globals.logger.error(`[QSEOW] INFLUXDB RELOAD TASK SUCCESS: ${err}`);
     }
 }
 
 // Store information about failed reload tasks to InfluxDB
 export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     try {
-        globals.logger.info('INFLUXDB RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
+        globals.logger.info('[QSEOW] INFLUXDB RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
 
         // Add tags
         let tags = {};
@@ -721,7 +725,7 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
             scriptLogData.scriptLogTail = '';
         }
 
-        globals.logger.debug(`INFLUXDB RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+        globals.logger.debug(`[QSEOW] INFLUXDB RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
         // Use script log data to enrich log entry sent to InfluxDB
         datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
@@ -793,16 +797,18 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
 
             .then(() => {
                 globals.logger.silly(
-                    `INFLUXDB RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                    `[QSEOW] INFLUXDB RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
                 datapoint = null;
-                globals.logger.verbose('INFLUXDB RELOAD TASK FAILED: Sent reload task notification to InfluxDB');
+                globals.logger.verbose('[QSEOW] INFLUXDB RELOAD TASK FAILED: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`INFLUXDB RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                globals.logger.error(
+                    `[QSEOW] INFLUXDB RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.stack}`,
+                );
             });
     } catch (err) {
-        globals.logger.error(`INFLUXDB RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] INFLUXDB RELOAD TASK FAILED: ${err}`);
     }
 }

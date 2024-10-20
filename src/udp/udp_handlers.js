@@ -6,7 +6,7 @@ import {
     sendReloadTaskSuccessNotificationEmail,
 } from '../lib/qseow/smtp.js';
 import { sendReloadTaskFailureNotificationSlack, sendReloadTaskAbortedNotificationSlack } from '../lib/qseow/slack_notification.js';
-import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/webhook_notification.js';
+import { sendReloadTaskAbortedNotificationWebhook, sendReloadTaskFailureNotificationWebhook } from '../lib/qseow/webhook_notification.js';
 import { sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams } from '../lib/qseow/msteams_notification.js';
 import { sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification } from '../lib/incident_mgmt/signl4.js';
 import {

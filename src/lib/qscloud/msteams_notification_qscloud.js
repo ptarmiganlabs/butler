@@ -29,7 +29,7 @@ function getAppReloadFailedTeamsConfig() {
         if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
             // Teams task falure notifications are disabled
             globals.logger.error(
-                "TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message",
+                "[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Reload failure Teams notifications are disabled in config file - won't send Teams message",
             );
             return false;
         }
@@ -42,7 +42,7 @@ function getAppReloadFailedTeamsConfig() {
         ) {
             // Invalid Teams message type
             globals.logger.error(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Invalid Teams message type: ${globals.config.get(
+                `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Invalid Teams message type: ${globals.config.get(
                     'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.messageType',
                 )}`,
             );
@@ -68,7 +68,7 @@ function getAppReloadFailedTeamsConfig() {
             ),
         };
     } catch (err) {
-        globals.logger.error(`TEAMS ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${err}`);
         return false;
     }
 }
@@ -135,16 +135,24 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
                     if (msgType === 'reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(
+                            `[QSCLOUD] TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
+                        );
+                        globals.logger.debug(
+                            `[QSCLOUD] TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
+                        );
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
                     } else if (msgType === 'qscloud-app-reload') {
                         // Escape any back slashes in the script logs
                         const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(`TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`);
-                        globals.logger.debug(`TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`);
+                        globals.logger.debug(
+                            `[QSCLOUD] TEAMS SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
+                        );
+                        globals.logger.debug(
+                            `[QSCLOUD] TEAMS SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
+                        );
 
                         templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
                         templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
@@ -152,15 +160,15 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
 
                     renderedText = compiledTemplate(templateContext);
 
-                    globals.logger.debug(`TEAMS SEND: Rendered message:\n${renderedText}`);
+                    globals.logger.debug(`[QSCLOUD] TEAMS SEND: Rendered message:\n${renderedText}`);
 
                     // Parse the JSON string to get rid of extra linebreaks etc.
                     msg = JSON.parse(renderedText);
                 } else {
-                    globals.logger.error(`TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
+                    globals.logger.error(`[QSCLOUD] TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`TEAMS SEND: Error processing Teams template file: ${err}`);
+                globals.logger.error(`[QSCLOUD] TEAMS SEND: Error processing Teams template file: ${err}`);
             }
         }
 
@@ -169,11 +177,13 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             const res = await webhook.sendMessage();
 
             if (res !== undefined) {
-                globals.logger.debug(`TEAMS SEND: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`);
+                globals.logger.debug(
+                    `[QSCLOUD] TEAMS SEND: Result from calling TeamsApi.TeamsSend: ${res.statusText} (${res.status}): ${res.data}`,
+                );
             }
         }
     } catch (err) {
-        globals.logger.error(`TEAMS SEND: ${err}`);
+        globals.logger.error(`[QSCLOUD] TEAMS SEND: ${err}`);
     }
 }
 
@@ -184,10 +194,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
         .then(async (rateLimiterRes) => {
             try {
                 globals.logger.info(
-                    `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
+                    `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
                 );
                 globals.logger.verbose(
-                    `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                    `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                 );
 
                 // Make sure Teams sending is enabled in the config file and that we have all required settings
@@ -229,8 +239,14 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                         scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
                         // Get the first and last rows of the script log
-                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogHeadCount);
-                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogTailCount);
+                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(
+                            reloadParams.scriptLog.scriptLogFull,
+                            scriptLogData.scriptLogHeadCount,
+                        );
+                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(
+                            reloadParams.scriptLog.scriptLogFull,
+                            scriptLogData.scriptLogTailCount,
+                        );
                     } else {
                         scriptLogData.scriptLogHead = '';
                         scriptLogData.scriptLogTail = '';
@@ -239,7 +255,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     }
 
                     globals.logger.debug(
-                        `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
+                        `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
                     );
                 }
 
@@ -376,16 +392,16 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 const { webhookUrl } = teamsConfig;
                 sendTeams(webhookUrl, teamsConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
-                globals.logger.error(`TEAMS ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+                globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${err}`);
             }
             return true;
         })
         .catch((rateLimiterRes) => {
             globals.logger.warn(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Teams for app [${reloadParams.appId}] "${reloadParams.appName}"`,
+                `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Rate limiting failed. Not sending reload notification Teams for app [${reloadParams.appId}] "${reloadParams.appName}"`,
             );
             globals.logger.debug(
-                `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
             );
         });
 }

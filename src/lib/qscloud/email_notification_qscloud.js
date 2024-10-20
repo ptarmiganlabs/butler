@@ -28,7 +28,7 @@ function getAppReloadFailedEmailConfig() {
         // Is email alerts on failed reloads enabled?
         if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable')) {
             globals.logger.error(
-                'EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Email alerts on failed reloads are disabled in the config file.',
+                '[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Email alerts on failed reloads are disabled in the config file.',
             );
             return false;
         }
@@ -69,7 +69,7 @@ function getAppReloadFailedEmailConfig() {
             ),
         };
     } catch (err) {
-        globals.logger.error(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
         return false;
     }
 }
@@ -78,7 +78,7 @@ function getAppReloadFailedEmailConfig() {
 export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams) {
     try {
         globals.logger.info(
-            `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
+            `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Rate limiting check passed for failed task notification. App name: "${reloadParams.appName}"`,
         );
 
         // Logic for determining if alert email should be sent or not
@@ -131,7 +131,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
 
             if (appTags === undefined || appTags?.length === 0 || appHasAlertTag === undefined) {
                 globals.logger.warn(
-                    `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
                 );
             } else if (appHasAlertTag !== undefined) {
                 if (emailConfig?.globalSendList?.length > 0) {
@@ -151,7 +151,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
 
             if (appOwner.email === undefined || appOwner?.email?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: App owner email address is not set for app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email to app owner "${appOwner.name}".`,
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App owner email address is not set for app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email to app owner "${appOwner.name}".`,
                 );
             } else {
                 // App owner email address exists.
@@ -198,7 +198,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         // Check if we have any email addresses to send to
         if (globalSendList?.length === 0) {
             globals.logger.warn(
-                `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: No email addresses found to send alert email for app [${reloadParams.appId}] "${reloadParams.appName}".`,
+                `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: No email addresses found to send alert email for app [${reloadParams.appId}] "${reloadParams.appName}".`,
             );
             return false;
         }
@@ -236,9 +236,15 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                 // Get length of entire script log (character count)
                 scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
 
-                        // Get the first and last rows of the script log
-                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogHeadCount);
-                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogTailCount);
+                // Get the first and last rows of the script log
+                scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(
+                    reloadParams.scriptLog.scriptLogFull,
+                    scriptLogData.scriptLogHeadCount,
+                );
+                scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(
+                    reloadParams.scriptLog.scriptLogFull,
+                    scriptLogData.scriptLogTailCount,
+                );
             } else {
                 scriptLogData.scriptLogHead = '';
                 scriptLogData.scriptLogTail = '';
@@ -246,7 +252,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                 scriptLogData.scriptLogSizeCharacters = 0;
             }
 
-            globals.logger.debug(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+            globals.logger.debug(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
         }
 
         // Format log message line breaks to work in HTML email
@@ -336,9 +342,11 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                 .then(async (rateLimiterRes) => {
                     try {
                         globals.logger.info(
-                            `EMAIL ALERT - QS CLOUD: Rate limiting check passed for failed app reload notification. App name: "${reloadParams.appName}", email: "${recipientEmailAddress}"`,
+                            `[QSCLOUD] EMAIL ALERT - QS CLOUD: Rate limiting check passed for failed app reload notification. App name: "${reloadParams.appName}", email: "${recipientEmailAddress}"`,
                         );
-                        globals.logger.debug(`EMAIL ALERT - QS CLOUD: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                        globals.logger.debug(
+                            `[QSCLOUD] EMAIL ALERT - QS CLOUD: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                        );
 
                         // Only send email if there is an actual email address
                         if (recipientEmailAddress?.length > 0) {
@@ -353,24 +361,24 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                             );
                         } else {
                             globals.logger.warn(
-                                `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: No email address found for app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email.`,
+                                `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: No email address found for app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email.`,
                             );
                         }
                     } catch (err) {
-                        globals.logger.error(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+                        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
                     }
                 })
                 .catch((err) => {
                     globals.logger.warn(
-                        `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting failed. Not sending reload notification email for app [${reloadParams.appId}] "${reloadParams.appName}"`,
+                        `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Rate limiting failed. Not sending reload notification email for app [${reloadParams.appId}] "${reloadParams.appName}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`,
+                        `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Rate limiting details "${JSON.stringify(err, null, 2)}"`,
                     );
                 });
         }
     } catch (err) {
-        globals.logger.error(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
     }
 
     return true;

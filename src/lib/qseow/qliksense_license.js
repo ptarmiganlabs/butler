@@ -7,7 +7,7 @@ import {
     postQlikSenseLicenseReleasedToInfluxDB,
     postQlikSenseServerLicenseStatusToInfluxDB,
 } from '../post_to_influxdb.js';
-import { callQlikSenseServerLicenseWebhook } from '../webhook_notification.js';
+import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
 
 // Function to check Qlik Sense server license status
 async function checkQlikSenseServerLicenseStatus(config, logger) {
@@ -32,12 +32,12 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
 
         // Is status code 200 or body is empty?
         if (result.statusCode !== 200 || !result.body) {
-            logger.error(`QLIKSENSE SERVER LICENSE MONITOR: HTTP status code ${result.statusCode}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: HTTP status code ${result.statusCode}`);
             return;
         }
 
         // Debug log
-        logger.debug(`QLIKSENSE SERVER LICENSE MONITOR: ${JSON.stringify(result.body)}`);
+        logger.debug(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${JSON.stringify(result.body)}`);
 
         // Returned icense JSON has the following structure:
         // {
@@ -103,14 +103,16 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
         // Use warn logging if days until expiry is less than value specified in config file,
         // otherwise use info logging
         if (daysUntilExpiry !== null && expiryDateStr !== null && licenseExpired !== null) {
-            globals.logger.info(`QLIK SENSE SERVER LICENSE: License expired: ${licenseExpired}`);
+            globals.logger.info(`[QSEOW] QLIK SENSE SERVER LICENSE: License expired: ${licenseExpired}`);
 
             if (daysUntilExpiry <= globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays')) {
-                globals.logger.warn(`QLIK SENSE SERVER LICENSE: Qlik Sense server license is about to expire in ${daysUntilExpiry} days!`);
-                globals.logger.warn(`QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
+                globals.logger.warn(
+                    `[QSEOW] QLIK SENSE SERVER LICENSE: Qlik Sense server license is about to expire in ${daysUntilExpiry} days!`,
+                );
+                globals.logger.warn(`[QSEOW] QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
             } else {
-                globals.logger.info(`QLIK SENSE SERVER LICENSE: Qlik Sense server license expiry in ${daysUntilExpiry} days`);
-                globals.logger.info(`QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
+                globals.logger.info(`[QSEOW] QLIK SENSE SERVER LICENSE: Qlik Sense server license expiry in ${daysUntilExpiry} days`);
+                globals.logger.info(`[QSEOW] QLIK SENSE SERVER LICENSE: Expiry date: ${expiryDate}`);
             }
         }
 
@@ -193,9 +195,9 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
             }
         }
     } catch (err) {
-        logger.error(`QLIKSENSE SERVER LICENSE MONITOR: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE SERVER LICENSE MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${err.stack}`);
         }
     }
 }
@@ -223,12 +225,12 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
 
         // Is status code 200 or body is empty?
         if (result1.statusCode !== 200 || !result1.body) {
-            logger.error(`QLIKSENSE LICENSE MONITOR: HTTP status code ${result1.statusCode}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: HTTP status code ${result1.statusCode}`);
             return;
         }
 
         // Debug log
-        logger.debug(`QLIKSENSE LICENSE MONITOR: ${JSON.stringify(result1.body)}`);
+        logger.debug(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${JSON.stringify(result1.body)}`);
 
         // To which destination should we send the license information?
         // Check InfluDB first
@@ -240,9 +242,9 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
             await postQlikSenseLicenseStatusToInfluxDB(result1.body);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE LICENSE MONITOR: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE LICENSE MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${err.stack}`);
         }
     }
 }
@@ -262,25 +264,25 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
     cutoffDate.setHours(23, 59, 59, 999);
 
     // verbose log, format dates as yyyy-mm-ddThh:mm:ss.sssZ
-    logger.verbose(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: currentDate: ${currentDate.toISOString()}`);
-    logger.verbose(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: releaseThresholdDays: ${releaseThresholdDays}`);
-    logger.verbose(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: cutoffDate: ${cutoffDate.toISOString()}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: currentDate: ${currentDate.toISOString()}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: releaseThresholdDays: ${releaseThresholdDays}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: cutoffDate: ${cutoffDate.toISOString()}`);
 
     // Get all assigned professional licenses
     const url = `license/professionalaccesstype/full?filter=lastUsed le '${cutoffDate.toISOString()}'`;
-    logger.debug(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: Query URL: ${url}`);
+    logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Query URL: ${url}`);
     const result1 = await qrsInstance.Get(url);
 
     // Is status code other than 200 or body is empty?
     if (result1.statusCode !== 200 || !result1.body) {
         logger.error(
-            `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Could not get list of assigned professional licenses. HTTP status code ${result1.statusCode}`,
+            `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Could not get list of assigned professional licenses. HTTP status code ${result1.statusCode}`,
         );
         return false;
     }
 
     // Debug log
-    logger.debug(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: Assigned: ${JSON.stringify(result1.body)}`);
+    logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Assigned: ${JSON.stringify(result1.body)}`);
 
     // Determnine which allocated licenses to release.
     // Only release licenses that are NOT quarantined
@@ -302,18 +304,18 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                 const res = await qrsInstance.Get(`user/${license.user.id}`);
                 if (res.statusCode !== 200 || !res.body) {
                     logger.error(
-                        `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                     );
                     return false;
                 }
                 currentUser = res.body;
             } catch (err) {
                 logger.error(
-                    `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                 );
                 if (err.stack) {
                     logger.error(
-                        `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
                     );
                 }
                 return false;
@@ -470,7 +472,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             // Should currentUser be released?
             if (!doNotRelease) {
                 logger.info(
-                    `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseProfessional array`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseProfessional array`,
                 );
                 releaseProfessional.push({
                     licenseId: license.id,
@@ -480,14 +482,14 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                 });
             } else {
                 logger.info(
-                    `QLIKSENSE LICENSE RELEASE PROFESSIONAL: License for user ${license.user.userDirectory}\\${license.user.userId} not released because: ${doNotReleaseReason}`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: License for user ${license.user.userDirectory}\\${license.user.userId} not released because: ${doNotReleaseReason}`,
                 );
             }
         }
     }
 
     logger.verbose(
-        `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Professional licenses to be released: ${JSON.stringify(releaseProfessional, null, 2)}`,
+        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Professional licenses to be released: ${JSON.stringify(releaseProfessional, null, 2)}`,
     );
 
     // Is license release dry-run enabled? If so, do not release any licenses
@@ -498,7 +500,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
         // eslint-disable-next-line no-restricted-syntax
         for (const licenseRelease of releaseProfessional) {
             logger.info(
-                `QLIKSENSE LICENSE RELEASE PROFESSIONAL: Releasing license for user ${licenseRelease.userDir}\\${licenseRelease.userId} (days since last use: ${licenseRelease.daysSinceLastUse})`,
+                `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Releasing license for user ${licenseRelease.userDir}\\${licenseRelease.userId} (days since last use: ${licenseRelease.daysSinceLastUse})`,
             );
 
             // Release license
@@ -507,12 +509,12 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
 
             // Is status code 204? Error if it's nmt
             if (result2.statusCode !== 204) {
-                logger.error(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: HTTP status code ${result2.statusCode}`);
+                logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: HTTP status code ${result2.statusCode}`);
                 return false;
             }
 
             // Debug log
-            logger.debug(`QLIKSENSE LICENSE RELEASE PROFESSIONAL: ${JSON.stringify(result2.body)}`);
+            logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: ${JSON.stringify(result2.body)}`);
 
             // Write info about released license to InfluxDB?
             if (
@@ -548,25 +550,25 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
     cutoffDate.setHours(23, 59, 59, 999);
 
     // verbose log, format dates as yyyy-mm-ddThh:mm:ss.sssZ
-    logger.verbose(`QLIKSENSE LICENSE RELEASE ANALYZER: currentDate: ${currentDate.toISOString()}`);
-    logger.verbose(`QLIKSENSE LICENSE RELEASE ANALYZER: releaseThresholdDays: ${releaseThresholdDays}`);
-    logger.verbose(`QLIKSENSE LICENSE RELEASE ANALYZER: cutoffDate: ${cutoffDate.toISOString()}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: currentDate: ${currentDate.toISOString()}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: releaseThresholdDays: ${releaseThresholdDays}`);
+    logger.verbose(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: cutoffDate: ${cutoffDate.toISOString()}`);
 
     // Get all assigned analyzer licenses
     const url = `license/analyzeraccesstype/full?filter=lastUsed le '${cutoffDate.toISOString()}'`;
-    logger.debug(`QLIKSENSE LICENSE RELEASE ANALYZER: Query URL: ${url}`);
+    logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Query URL: ${url}`);
     const result3 = await qrsInstance.Get(url);
 
     // Is status code 200 or body is empty?
     if (result3.statusCode !== 200 || !result3.body) {
         logger.error(
-            `QLIKSENSE LICENSE RELEASE ANALYZER: Could not get list of assigned analyzer licenses. HTTP status code ${result3.statusCode}`,
+            `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Could not get list of assigned analyzer licenses. HTTP status code ${result3.statusCode}`,
         );
         return false;
     }
 
     // Debug log
-    logger.debug(`QLIKSENSE LICENSE RELEASE ANALYZER: Assigned: ${JSON.stringify(result3.body)}`);
+    logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Assigned: ${JSON.stringify(result3.body)}`);
 
     // Determnine which allocated licenses to release.
     // Only release licenses that are NOT quarantined
@@ -588,18 +590,18 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                 const res = await qrsInstance.Get(`user/${license.user.id}`);
                 if (res.statusCode !== 200 || !res.body) {
                     logger.error(
-                        `QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                     );
                     return false;
                 }
                 currentUser = res.body;
             } catch (err) {
                 logger.error(
-                    `QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                 );
                 if (err.stack) {
                     logger.error(
-                        `QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
                     );
                 }
                 return false;
@@ -750,7 +752,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // Should currentUser be released?
             if (!doNotRelease) {
                 logger.info(
-                    `QLIKSENSE LICENSE RELEASE ANALYZER: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseAnalyzer array`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseAnalyzer array`,
                 );
                 releaseAnalyzer.push({
                     licenseId: license.id,
@@ -760,23 +762,25 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                 });
             } else {
                 logger.info(
-                    `QLIKSENSE LICENSE RELEASE ANALYZER: License for user ${license.user.userDirectory}\\${license.user.userId} not released because: ${doNotReleaseReason}`,
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: License for user ${license.user.userDirectory}\\${license.user.userId} not released because: ${doNotReleaseReason}`,
                 );
             }
         }
     }
 
-    logger.verbose(`QLIKSENSE LICENSE RELEASE ANALYZER: Analyzer licenses to be released: ${JSON.stringify(releaseAnalyzer, null, 2)}`);
+    logger.verbose(
+        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Analyzer licenses to be released: ${JSON.stringify(releaseAnalyzer, null, 2)}`,
+    );
 
     // Is license release dry-run enabled? If so, do not release any licenses
     if (config.get('Butler.qlikSenseLicense.licenseRelease.dryRun') === true) {
-        logger.info('QLIKSENSE LICENSE RELEASE ANALYZER: Dry-run enabled. No licenses will be released');
+        logger.info('[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Dry-run enabled. No licenses will be released');
     } else {
         // Release all licenses in the releaseAnalyzer array
         // eslint-disable-next-line no-restricted-syntax
         for (const licenseRelease of releaseAnalyzer) {
             logger.info(
-                `QLIKSENSE LICENSE RELEASE ANALYZER: Releasing license for user ${licenseRelease.userDir}\\${licenseRelease.userId} (days since last use: ${licenseRelease.daysSinceLastUse})`,
+                `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Releasing license for user ${licenseRelease.userDir}\\${licenseRelease.userId} (days since last use: ${licenseRelease.daysSinceLastUse})`,
             );
 
             // Release license
@@ -785,12 +789,12 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
 
             // Is status code 204? Error if it's nmt
             if (result4.statusCode !== 204) {
-                logger.error(`QLIKSENSE LICENSE RELEASE ANALYZER: HTTP status code ${result4.statusCode}`);
+                logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: HTTP status code ${result4.statusCode}`);
                 return false;
             }
 
             // Debug log
-            logger.debug(`QLIKSENSE LICENSE RELEASE ANALYZER: ${JSON.stringify(result4.body)}`);
+            logger.debug(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: ${JSON.stringify(result4.body)}`);
 
             // Write info about released license to InfluxDB?
             if (
@@ -853,9 +857,9 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 
         return true;
     } catch (err) {
-        logger.error(`QLIKSENSE LICENSE RELEASE: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE LICENSE RELEASE: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${err.stack}`);
         }
         return false;
     }
@@ -871,13 +875,13 @@ export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
             }, sched);
 
             // Do an initial license check
-            logger.verbose('Doing initial Qlik Sense license check');
+            logger.verbose('[QSEOW] Doing initial Qlik Sense license check');
             checkQlikSenseAccessLicenseStatus(config, logger, true);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE LICENSE MONITOR INIT: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE LICENSE MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${err.stack}`);
         }
     }
 }
@@ -892,13 +896,13 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
             }, sched);
 
             // Do an initial release
-            logger.verbose('Doing initial Qlik Sense license check');
+            logger.verbose('[QSEOW] Doing initial Qlik Sense license check');
             checkQlikSenseLicenseRelease(config, logger);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE LICENSE RELEASE INIT: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE LICENSE RELEASE INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${err.stack}`);
         }
     }
 }
@@ -913,13 +917,13 @@ export async function setupQlikSenseServerLicenseMonitor(config, logger) {
             }, sched);
 
             // Do an initial license check
-            logger.verbose('Doing initial Qlik Sense server license check');
+            logger.verbose('[QSEOW] Doing initial Qlik Sense server license check');
             checkQlikSenseServerLicenseStatus(config, logger);
         }
     } catch (err) {
-        logger.error(`QLIKSENSE SERVER LICENSE MONITOR INIT: ${err}`);
+        logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${err}`);
         if (err.stack) {
-            logger.error(`QLIKSENSE SERVER LICENSE MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${err.stack}`);
         }
     }
 }

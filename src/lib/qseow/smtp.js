@@ -57,13 +57,13 @@ export function isSmtpConfigOk() {
         // First make sure email sending is enabled in the config file
         if (!globals.config.get('Butler.emailNotification.enable')) {
             // SMTP is disabled
-            globals.logger.error("EMAIL CONFIG: SMTP notifications are disabled in config file - won't send email");
+            globals.logger.error('[QSEOW] EMAIL CONFIG: SMTP notifications are disabled in config file - will not send email');
             return false;
         }
 
         return true;
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
         return false;
     }
 }
@@ -73,13 +73,15 @@ function isEmailReloadSuccessNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (!globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable')) {
             // SMTP is disabled
-            globals.logger.error("EMAIL CONFIG: Reload success email notifications are disabled in config file - won't send email");
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Reload success email notifications are disabled in config file - will not send email',
+            );
             return false;
         }
 
         return true;
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
         return false;
     }
 }
@@ -89,13 +91,15 @@ function isEmailReloadFailedNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (!globals.config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
             // SMTP is disabled
-            globals.logger.error("EMAIL CONFIG: Reload failure email notifications are disabled in config file - won't send email");
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Reload failure email notifications are disabled in config file - will not send email',
+            );
             return false;
         }
 
         return true;
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
         return false;
     }
 }
@@ -105,13 +109,15 @@ function isEmailReloadAbortedNotificationConfigOk() {
         // First make sure email sending is enabled in the config file
         if (!globals.config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
             // SMTP is disabled
-            globals.logger.error("EMAIL CONFIG: Reload aborted email notifications are disabled in config file - won't send email");
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Reload aborted email notifications are disabled in config file - will not send email',
+            );
             return false;
         }
 
         return true;
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
         return false;
     }
 }
@@ -124,13 +130,15 @@ function isEmailServiceMonitorNotificationConfig() {
             !globals.config.get('Butler.serviceMonitor.alertDestination.email.enable')
         ) {
             // SMTP is disabled
-            globals.logger.error("EMAIL CONFIG: Service monitor email notifications are disabled in config file - won't send email");
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Service monitor email notifications are disabled in config file - will not send email',
+            );
             return false;
         }
 
         return true;
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
         return false;
     }
 }
@@ -209,22 +217,24 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
                 // Verify SMTP configuration
                 // eslint-disable-next-line no-await-in-loop
                 const smtpStatus = await transporter.verify();
-                globals.logger.debug(`EMAIL CONFIG: SMTP status: ${smtpStatus}`);
-                globals.logger.debug(`EMAIL CONFIG: Message=${JSON.stringify(message, null, 2)}`);
+                globals.logger.debug(`[QSEOW] EMAIL CONFIG: SMTP status: ${smtpStatus}`);
+                globals.logger.debug(`[QSEOW] EMAIL CONFIG: Message=${JSON.stringify(message, null, 2)}`);
 
                 if (smtpStatus) {
                     // eslint-disable-next-line no-await-in-loop
                     const result = await transporter.sendMail(message);
-                    globals.logger.debug(`EMAIL CONFIG: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`);
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL CONFIG: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`,
+                    );
                 } else {
-                    globals.logger.warn('EMAIL CONFIG: SMTP transporter not ready');
+                    globals.logger.warn('[QSEOW] EMAIL CONFIG: SMTP transporter not ready');
                 }
             } else {
-                globals.logger.warn(`EMAIL CONFIG: Recipient email adress not valid: ${recipientEmail}`);
+                globals.logger.warn(`[QSEOW] EMAIL CONFIG: Recipient email adress not valid: ${recipientEmail}`);
             }
         }
     } catch (err) {
-        globals.logger.error(`EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
     }
 }
 
@@ -256,22 +266,22 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
                 // Verify SMTP configuration
                 // eslint-disable-next-line no-await-in-loop
                 const smtpStatus = await transporter.verify();
-                globals.logger.debug(`SMTP BASIC: SMTP status: ${smtpStatus}`);
-                globals.logger.debug(`SMTP BASIC: Message=${JSON.stringify(message, null, 2)}`);
+                globals.logger.debug(`[QSEOW] SMTP BASIC: SMTP status: ${smtpStatus}`);
+                globals.logger.debug(`[QSEOW] SMTP BASIC: Message=${JSON.stringify(message, null, 2)}`);
 
                 if (smtpStatus) {
                     // eslint-disable-next-line no-await-in-loop
                     const result = await transporter.sendMail(message);
-                    globals.logger.debug(`SMTP BASIC: Sending email result: ${JSON.stringify(result, null, 2)}`);
+                    globals.logger.debug(`[QSEOW] SMTP BASIC: Sending email result: ${JSON.stringify(result, null, 2)}`);
                 } else {
                     globals.logger.warn('SMTP BASIC: SMTP transporter not ready');
                 }
             } else {
-                globals.logger.warn(`SMTP BASIC: Recipient email adress not valid: ${recipientEmail}`);
+                globals.logger.warn(`[QSEOW] SMTP BASIC: Recipient email adress not valid: ${recipientEmail}`);
             }
         }
     } catch (err) {
-        globals.logger.error(`SMTP BASIC: ${err}`);
+        globals.logger.error(`[QSEOW] SMTP BASIC: ${err}`);
     }
 }
 
@@ -321,7 +331,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
-            `EMAIL RELOAD TASK FAILED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
+            `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
@@ -331,11 +341,11 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // 2 Should alert emails be sent for all failed reload tasks?
     if (globals.config.get('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable') === false) {
         // 2.1 Yes: Add system-wide list of recipients to send list
-        globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Send alert emails for all tasks`);
+        globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Send alert emails for all tasks`);
 
         if (globalSendList?.length > 0) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK FAILED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             mainSendList = mainSendList.concat(globalSendList);
             emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
@@ -344,14 +354,14 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // Only send alert email if the failed task has email alerts enabled
         // 2.2 No : Does the failed reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `EMAIL RELOAD TASK FAILED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
+            `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
         );
 
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK FAILED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
@@ -397,7 +407,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                 } else {
                     // No app owners on include list. Warn about this.
                     globals.logger.warn(
-                        `EMAIL RELOAD TASK FAILED ALERT: No app owners on include list for failed task. No app owners will receive notification emails.`,
+                        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No app owners on include list for failed task. No app owners will receive notification emails.`,
                     );
                 }
             }
@@ -426,12 +436,12 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             // Does the main sendlist contain any email addresses? Warn if not
             if (mainSendList?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for app owner's alert email for app "${reloadParams.appName}", ID=${reloadParams.appId}`,
+                    `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No email addresses defined for app owner's alert email for app "${reloadParams.appName}", ID=${reloadParams.appId}`,
                 );
             }
         } else {
             globals.logger.warn(
-                `EMAIL RELOAD TASK FAILED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
+                `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
             );
         }
     }
@@ -441,15 +451,15 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
 
     // Debug
     globals.logger.verbose(
-        `EMAIL RELOAD TASK FAILED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
+        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
             mainSendListUnique,
             null,
             2,
         )}`,
     );
-    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
-    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
-    globals.logger.verbose(`EMAIL RELOAD TASK FAILED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
 
     if (isSmtpConfigOk() === false) {
         return 1;
@@ -477,7 +487,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         scriptLogData.scriptLogTail = '';
     }
 
-    globals.logger.debug(`EMAIL RELOAD TASK FAILED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
@@ -564,10 +574,10 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -582,17 +592,17 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                             templateContext,
                         );
                     } else {
-                        globals.logger.warn(`EMAIL RELOAD TASK FAILED ALERT: No recipients to send alert email to.`);
+                        globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`EMAIL RELOAD TASK FAILED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: ${err}`);
                 }
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
                 );
-                globals.logger.debug(`EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }
@@ -642,7 +652,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
-            `EMAIL RELOAD TASK ABORTED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
+            `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
@@ -652,11 +662,11 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // 2 Should alert emails be sent for all aborted reload tasks?
     if (globals.config.get('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable') === false) {
         // 2.1 Yes: Add system-wide list of recipients to send list
-        globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Send alert emails for all tasks`);
+        globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Send alert emails for all tasks`);
 
         if (globalSendList?.length > 0) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK ABORTED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Added global send list for failed task: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             mainSendList = mainSendList.concat(globalSendList);
             emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
@@ -665,14 +675,14 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         // Only send alert email if the aborted task has email alerts enabled
         // 2.2 No : Does the aborted reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `EMAIL RELOAD TASK ABORTED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
+            `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
         );
 
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK ABORTED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
@@ -742,12 +752,12 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             // Does the main sendlist contain any email addresses? Warn if not
             if (mainSendList?.length === 0) {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK ABORTED ALERT: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`,
+                    `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: No email addresses defined for alert email to app "${reloadParams.appName}", ID=${reloadParams.appId}`,
                 );
             }
         } else {
             globals.logger.warn(
-                `EMAIL RELOAD TASK ABORTED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
+                `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: No email address for owner of app "${reloadParams.appName}", ID=${reloadParams.appId}`,
             );
         }
     }
@@ -757,15 +767,15 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
 
     // Debug
     globals.logger.verbose(
-        `EMAIL RELOAD TASK ABORTED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
+        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Final send list for failed task "${reloadParams.taskName}": ${JSON.stringify(
             mainSendListUnique,
             null,
             2,
         )}`,
     );
-    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
-    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
-    globals.logger.verbose(`EMAIL RELOAD TASK ABORTED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: App owner recipients: ${emailRecipientsVerbose.appOwner}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
 
     if (isSmtpConfigOk() === false) {
         return 1;
@@ -793,7 +803,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         scriptLogData.scriptLogTail = '';
     }
 
-    globals.logger.debug(`EMAIL RELOAD TASK ABORTED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseUrls();
@@ -880,10 +890,10 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -898,17 +908,17 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                             templateContext,
                         );
                     } else {
-                        globals.logger.warn(`EMAIL RELOAD TASK ABORTED ALERT: No recipients to send alert email to.`);
+                        globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`EMAIL RELOAD TASK ABORTED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: ${err}`);
                 }
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
                 );
-                globals.logger.debug(`EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }
@@ -952,7 +962,7 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
 
     if (taskSpecificAlertEmailAddresses?.length > 0) {
         globals.logger.debug(
-            `EMAIL RELOAD TASK SUCCESS ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
+            `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Added task specific send list: ${JSON.stringify(taskSpecificAlertEmailAddresses, null, 2)}`,
         );
 
         mainSendList = mainSendList.concat(taskSpecificAlertEmailAddresses);
@@ -962,11 +972,11 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
     // 2 Should alert emails be sent for all successful reload tasks?
     if (globals.config.get('Butler.emailNotification.reloadTaskSuccess.alertEnableByCustomProperty.enable') === false) {
         // 2.1 Yes: Add system-wide list of recipients to send list
-        globals.logger.verbose(`EMAIL RELOAD TASK SUCCESS ALERT: Send alert emails for all tasks`);
+        globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Send alert emails for all tasks`);
 
         if (globalSendList?.length > 0) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK SUCCESS ALERT: Added global send list for succeesful task: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Added global send list for succeesful task: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             mainSendList = mainSendList.concat(globalSendList);
             emailRecipientsVerbose.common = emailRecipientsVerbose.common.concat(globalSendList);
@@ -975,14 +985,14 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
         // Only send alert email if the successful task has email alerts enabled
         // 2.2 No : Does the failed reload task have alerts turned on (using custom property)?
         globals.logger.verbose(
-            `EMAIL RELOAD TASK SUCCESS ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
+            `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Only send alert emails for tasks with email-alert-CP "${emailAlertCpName}" set`,
         );
 
         const sendAlert = await isCustomPropertyValueSet(reloadParams.taskId, emailAlertCpName, emailAlertCpEnabledValue);
 
         if (sendAlert === true) {
             globals.logger.debug(
-                `EMAIL RELOAD TASK SUCCESS ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
+                `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Added send list based on email-alert-CP: ${JSON.stringify(globalSendList, null, 2)}`,
             );
             // 2.2.1 Yes: Add system-wide list of recipients to send list
             if (globalSendList?.length > 0) {
@@ -999,14 +1009,14 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
 
     // Debug
     globals.logger.verbose(
-        `EMAIL RELOAD TASK SUCCESS ALERT: Final send list for successful task "${reloadParams.taskName}": ${JSON.stringify(
+        `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Final send list for successful task "${reloadParams.taskName}": ${JSON.stringify(
             mainSendListUnique,
             null,
             2,
         )}`,
     );
-    globals.logger.verbose(`EMAIL RELOAD TASK SUCCESS ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
-    globals.logger.verbose(`EMAIL RELOAD TASK SUCCESS ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Shared all tasks recipients: ${emailRecipientsVerbose.shared}`);
+    globals.logger.verbose(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Task specific recipients: ${emailRecipientsVerbose.taskSpecific}`);
 
     if (isSmtpConfigOk() === false) {
         return 1;
@@ -1034,8 +1044,8 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
         scriptLogData.scriptLogTail = '';
     }
 
-    globals.logger.debug(`EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
-    globals.logger.debug(`EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
+    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
+    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
 
     // Get app owner
     const appOwner = await getAppOwner(reloadParams.appId);
@@ -1125,10 +1135,10 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting check passed for successful task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting check passed for successful task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
                     );
                     globals.logger.debug(
-                        `EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                        `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -1143,17 +1153,17 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
                             templateContext,
                         );
                     } else {
-                        globals.logger.warn(`EMAIL RELOAD TASK SUCCESS ALERT: No recipients to send alert email to.`);
+                        globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`EMAIL RELOAD TASK SUCCESS ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: ${err}`);
                 }
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
                 );
-                globals.logger.debug(`EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }
@@ -1200,7 +1210,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
         mainSendList = mainSendList.concat(globalSendList);
     } else {
         // Warn there are no recipients to send email to
-        globals.logger.warn(`EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
+        globals.logger.warn(`[QSEOW] EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
     }
 
     // Make sure send list does not contain any duplicate email addresses
@@ -1214,9 +1224,11 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `EMAIL SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`,
                     );
-                    globals.logger.debug(`EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`);
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
+                    );
 
                     // Only send email if there is at least one recipient
                     if (recipientEmailAddress.length > 0) {
@@ -1242,18 +1254,18 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                             );
                         }
                     } else {
-                        globals.logger.warn(`EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
+                        globals.logger.warn(`[QSEOW] EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`EMAIL SERVICE MONITOR: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${err}`);
                 }
             })
             // eslint-disable-next-line no-loop-func
             .catch((err) => {
                 globals.logger.warn(
-                    `EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`,
                 );
-                globals.logger.debug(`EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
             });
     }
 }

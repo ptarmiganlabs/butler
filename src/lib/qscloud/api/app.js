@@ -1,7 +1,6 @@
-/* eslint-disable import/prefer-default-export */
 import axios from 'axios';
 import globals from '../../../globals.js';
-import { verifyGuid } from '../../guid_util.js';    
+import { verifyGuid } from '../../guid_util.js';
 
 // Function to get info about a specific Qlik Sense Cloud app
 // Parameters:
@@ -10,7 +9,7 @@ export async function getQlikSenseCloudAppInfo(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false
         if (verifyGuid(appId) === false) {
-            globals.logger.error(`SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
+            globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
             return false;
         }
 
@@ -30,7 +29,7 @@ export async function getQlikSenseCloudAppInfo(appId) {
 
         return appInfo;
     } catch (err) {
-        globals.logger.error(`SENSE CLOUD GET APP INFO: ${err}`);
+        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP INFO: ${err}`);
         return false;
     }
 }
@@ -42,7 +41,7 @@ export async function getQlikSenseCloudAppMetadata(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false
         if (verifyGuid(appId) === false) {
-            globals.logger.error(`SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
+            globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
             return false;
         }
 
@@ -62,7 +61,7 @@ export async function getQlikSenseCloudAppMetadata(appId) {
 
         return appMetadata;
     } catch (err) {
-        globals.logger.error(`SENSE CLOUD GET APP METADATA: ${err}`);
+        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP METADATA: ${err}`);
         return false;
     }
 }
@@ -74,7 +73,7 @@ export async function getQlikSenseCloudAppItems(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false
         if (verifyGuid(appId) === false) {
-            globals.logger.error(`SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
+            globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: ${appId}`);
             return false;
         }
 
@@ -105,7 +104,7 @@ export async function getQlikSenseCloudAppItems(appId) {
 
         return appItems;
     } catch (err) {
-        globals.logger.error(`Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
         return false;
     }
 }
