@@ -1,5 +1,29 @@
 # Changelog
 
+## [13.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.0.0...butler-v13.1.0) (2024-10-20)
+
+
+### Features
+
+* **alerts:** Add new script log size template variables. ([44ca5a5](https://github.com/ptarmiganlabs/butler/commit/44ca5a5998570bd45fee4d6f8dad9c9e2bfdf947)), closes [#1276](https://github.com/ptarmiganlabs/butler/issues/1276)
+
+
+### Bug Fixes
+
+* **alert:** Fix unhandled exception when getting client-managed app metadata ([c838e01](https://github.com/ptarmiganlabs/butler/commit/c838e017811a05db43bf8bd76b3fbbb6d83e9ba9)), closes [#1274](https://github.com/ptarmiganlabs/butler/issues/1274)
+* **cloud-reload-alert:** Make script log head/tail include correct number of rows ([a230f0d](https://github.com/ptarmiganlabs/butler/commit/a230f0d7bc489ef5d1ae05b488e7f470a5fe2b56)), closes [#1275](https://github.com/ptarmiganlabs/butler/issues/1275)
+
+
+### Miscellaneous
+
+* **deps:** Update dependencies ([154b3f3](https://github.com/ptarmiganlabs/butler/commit/154b3f355c5470ef437215520f4fe63cd36340ef))
+* **deps:** Update dependencies ([dd56231](https://github.com/ptarmiganlabs/butler/commit/dd56231367cab5d546883363a33bf276a9d13c6d))
+
+
+### Refactoring
+
+* **logging:** Show if log entries are associated with QS Cloud or client-managed ([6054916](https://github.com/ptarmiganlabs/butler/commit/605491659fcd6604e3b7c9cc7ec658834a5f21eb)), closes [#1279](https://github.com/ptarmiganlabs/butler/issues/1279)
+
 ## [13.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.0.0...butler-v13.0.0) (2024-10-15)
 
 
