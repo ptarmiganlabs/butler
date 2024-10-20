@@ -5,8 +5,6 @@ import globals from '../../globals.js';
 import {
     getQlikSenseCloudAppReloadScriptLog,
     getQlikSenseCloudAppReloadInfo,
-    getQlikSenseCloudAppReloadScriptLogHead,
-    getQlikSenseCloudAppReloadScriptLogTail,
 } from './api/appreloadinfo.js';
 import { getQlikSenseCloudAppInfo, getQlikSenseCloudAppMetadata, getQlikSenseCloudAppItems } from './api/app.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationTeams } from './msteams_notification_qscloud.js';
@@ -222,21 +220,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         if (
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
-                            ) === false
+                            ) === true
                         ) {
-                            const headLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
-                            );
-
-                            const tailLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
-                            );
-
-                            scriptLog.scriptLogHeadCount = headLineCount;
-                            scriptLog.scriptLogTailCount = tailLineCount;
-                            scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
-                            scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
-                        } else {
                             // Use the basic info provided in the event/MQTT message
                             scriptLog = {};
                             reloadInfo.appId = appId;
@@ -294,21 +279,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         if (
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly',
-                            ) === false
+                            ) === true
                         ) {
-                            const headLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.headScriptLogLines',
-                            );
-
-                            const tailLineCount = globals.config.get(
-                                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.tailScriptLogLines',
-                            );
-
-                            scriptLog.scriptLogHeadCount = headLineCount;
-                            scriptLog.scriptLogTailCount = tailLineCount;
-                            scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
-                            scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
-                        } else {
                             // Use the basic info provided in the event/MQTT message
                             scriptLog = {};
                             reloadInfo.appId = appId;
@@ -368,19 +340,6 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // - App info
                         // - App metadata
                         // - App items
-
-                        const headLineCount = globals.config.get(
-                            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines',
-                        );
-
-                        const tailLineCount = globals.config.get(
-                            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
-                        );
-
-                        scriptLog.scriptLogHeadCount = headLineCount;
-                        scriptLog.scriptLogTailCount = tailLineCount;
-                        scriptLog.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(scriptLog.scriptLogFull, headLineCount);
-                        scriptLog.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(scriptLog.scriptLogFull, tailLineCount);
 
                         // Send email notification
                         sendQlikSenseCloudAppReloadFailureNotificationEmail({

@@ -6,6 +6,7 @@ import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
 import { sendEmail, isSmtpConfigOk } from '../qseow/smtp.js';
+import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
 
 let rateLimiterMemoryFailedReloads;
 let emailConfig;
@@ -232,16 +233,17 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                 // Get length of script log (row count)
                 scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
-                // Get the first and last n lines of the script log
-                scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                // Get length of entire script log (character count)
+                scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
 
-                scriptLogData.scriptLogTail = reloadParams.scriptLog.scriptLogFull
-                    .slice(Math.max(reloadParams.scriptLog.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                        // Get the first and last rows of the script log
+                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogHeadCount);
+                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogTailCount);
             } else {
                 scriptLogData.scriptLogHead = '';
                 scriptLogData.scriptLogTail = '';
                 scriptLogData.scriptLogSizeRows = 0;
+                scriptLogData.scriptLogSizeCharacters = 0;
             }
 
             globals.logger.debug(`EMAIL ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -309,6 +311,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             executionStatusText: reloadParams.reloadInfo.status,
             scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
             scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
+            scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
             scriptLogHead: scriptLogData.scriptLogHead,
             scriptLogTail: scriptLogData.scriptLogTail,
             scriptLogTailCount: scriptLogData.scriptLogTailCount,

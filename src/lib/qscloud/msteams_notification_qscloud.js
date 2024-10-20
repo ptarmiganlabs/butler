@@ -8,6 +8,7 @@ import globals from '../../globals.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
+import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
 
 let rateLimiterMemoryFailedReloads;
 
@@ -212,7 +213,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                         scriptLogTailCount: 0,
                     };
                 } else {
-                    // Reduce script log lines to only the ones we want to send to Teams
+                    // Reduce full script log to head and tail adapted for Teams
                     scriptLogData.scriptLogHeadCount = globals.config.get(
                         'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
                     );
@@ -221,20 +222,21 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     );
 
                     if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                        scriptLogData.scriptLogHead = reloadParams.scriptLog.scriptLogFull
-                            .slice(0, reloadParams.scriptLog.scriptLogHeadCount)
-                            .join('\r\n');
+                        // Get length of entire script log (character count)
+                        scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
 
-                        scriptLogData.scriptLogTail = reloadParams.scriptLog.scriptLogFull
-                            .slice(Math.max(reloadParams.scriptLog.scriptLogFull.length - reloadParams.scriptLog.scriptLogTailCount, 0))
-                            .join('\r\n');
+                        // Get length of script log (row count)
+                        scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
+
+                        // Get the first and last rows of the script log
+                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogHeadCount);
+                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(reloadParams.scriptLog.scriptLogFull, scriptLogData.scriptLogTailCount);
                     } else {
                         scriptLogData.scriptLogHead = '';
                         scriptLogData.scriptLogTail = '';
+                        scriptLogData.scriptLogSizeRows = 0;
+                        scriptLogData.scriptLogSizeCharacters = 0;
                     }
-
-                    // Get length of script log (row count)
-                    scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
 
                     globals.logger.debug(
                         `TEAMS ALERT - QS CLOUD APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
@@ -300,6 +302,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     executionStatusText: reloadParams.reloadInfo.status,
                     scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
                     scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
+                    scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')

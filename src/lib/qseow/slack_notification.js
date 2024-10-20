@@ -521,6 +521,8 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                         .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogSize: scriptLogData.scriptLogSize,
+                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows,
+                    scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters,
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
