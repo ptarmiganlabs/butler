@@ -21,7 +21,6 @@ import getAppTags from '../qrs_util/app_tag_util.js';
 import getAppMetadata from '../qrs_util/app_metadata.js';
 import doesTaskExist from '../qrs_util/does_task_exist.js';
 import { isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
-
 import { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } from '../lib/post_to_influxdb.js';
 import getTaskMetadata from '../qrs_util/task_metadata.js';
 

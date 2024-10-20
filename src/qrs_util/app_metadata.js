@@ -3,7 +3,7 @@ import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
 /**
- *
+ * Function to get metadata for a specific app from QSEoW
  * @param {*} appId
  * @returns
  */
