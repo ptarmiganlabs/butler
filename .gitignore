@@ -88,3 +88,7 @@ src/config/butler-config.yaml
 src/udp_client/udp-client.exe
 src/config/production_empty_arrays.yaml
 src/config/production_template_filledin.yaml
+build.cjs
+butler
+sea-config.json
+sea-prep.blob

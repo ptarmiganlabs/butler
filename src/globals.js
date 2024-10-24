@@ -96,6 +96,7 @@ class Settings {
         program.parse(process.argv);
         this.options = program.opts();
 
+        // Utility functions
         this.checkFileExistsSync = Settings.checkFileExistsSync;
         this.sleep = Settings.sleep;
 
@@ -274,7 +275,7 @@ class Settings {
             this.logger.debug('CONFIG: API doc mode=off');
             // Deep copy of headers object
             const httpHeadersEngine = JSON.parse(JSON.stringify(this.config.get('Butler.configEngine.headers')));
-            
+
             //  Engine config
             this.configEngine = {
                 engineVersion: this.config.get('Butler.configEngine.engineVersion'),
@@ -289,7 +290,7 @@ class Settings {
 
             // Deep copy of headers object
             const httpHeadersQRS = JSON.parse(JSON.stringify(this.config.get('Butler.configQRS.headers')));
-            
+
             // QRS config
             this.configQRS = {
                 authentication: this.config.get('Butler.configQRS.authentication'),

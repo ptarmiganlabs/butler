@@ -616,13 +616,14 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             let doNotRelease = false;
             let doNotReleaseReason = '';
 
-            // Check do-not-release user names
-            // eslint-disable-next-line no-restricted-syntax
-            for (const user of neverReleaseUsers) {
-                if (license.user.userDirectory === user.userDir && license.user.userId === user.userId) {
-                    doNotRelease = true;
-                    doNotReleaseReason = 'User is in the neverRelease.user list';
-                    break;
+            // Check do-not-release user names if there are any
+            if (neverReleaseUsers?.length > 0) {
+                for (const user of neverReleaseUsers) {
+                    if (license.user.userDirectory === user.userDir && license.user.userId === user.userId) {
+                        doNotRelease = true;
+                        doNotReleaseReason = 'User is in the neverRelease.user list';
+                        break;
+                    }
                 }
             }
 
@@ -630,7 +631,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not haven any neverReleaseTags set
-            if (!doNotRelease) {
+            if (!doNotRelease && currentUser.tags?.length > 0) {
                 // Check if the user has any of the neverReleaseTags set
                 // currentUser.tags is an array of tag objects. Each object has properties id and name
                 // eslint-disable-next-line no-restricted-syntax
@@ -653,7 +654,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not have any neverReleaseCustomProperties set
-            if (!doNotRelease) {
+            if (!doNotRelease && currentUser.customProperties?.length > 0) {
                 // currentUser.customProperties is an array of custom property objects.
                 // Each object looks like this:
                 // {
@@ -688,7 +689,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // If...
             // - the user is not already marked as doNotRelease=true and
             // - the currentUser does not have any neverReleaseUserDirectories set
-            if (!doNotRelease) {
+            if (!doNotRelease && neverReleaseUserDirectories?.length > 0) {
                 // eslint-disable-next-line no-restricted-syntax
                 for (const neverReleaseUserDir of neverReleaseUserDirectories) {
                     if (license.user.userDirectory === neverReleaseUserDir) {
