@@ -364,28 +364,7 @@ class Settings {
                 database: this.config.get('Butler.influxDb.dbName'),
                 username: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.username') : ''}`,
                 password: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.password') : ''}`,
-                schema: [
-                    {
-                        measurement: 'butler_memory_usage',
-                        fields: {
-                            heap_used: Influx.FieldType.FLOAT,
-                            heap_total: Influx.FieldType.FLOAT,
-                            external: Influx.FieldType.FLOAT,
-                            process_memory: Influx.FieldType.FLOAT,
-                        },
-                        tags: ['butler_instance', 'version'],
-                    },
-                    {
-                        measurement: 'win_service_state',
-                        fields: {
-                            state_num: Influx.FieldType.INTEGER,
-                            state_text: Influx.FieldType.STRING,
-                            startup_mode_num: Influx.FieldType.INTEGER,
-                            startup_mode_text: Influx.FieldType.STRING,
-                        },
-                        tags: ['butler_instance', 'host', 'service_name', 'display_name', 'friendly_name'],
-                    },
-                ],
+                schema: [],
             });
         }
 
