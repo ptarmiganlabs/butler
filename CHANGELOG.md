@@ -1,5 +1,19 @@
 # Changelog
 
+## [13.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.0...butler-v13.1.1) (2024-10-24)
+
+
+### Bug Fixes
+
+* **influxdb:** Remove pre-defined schema for InfluxDB database ([cbdfce3](https://github.com/ptarmiganlabs/butler/commit/cbdfce35628705589c5146674db24bf753bdee59)), closes [#1286](https://github.com/ptarmiganlabs/butler/issues/1286)
+* **license-release:** Allow empty arrays for never-release users, custom properties etc ([03ac212](https://github.com/ptarmiganlabs/butler/commit/03ac2120be2c53cccaf8b1523fb3fad283de1263)), closes [#1287](https://github.com/ptarmiganlabs/butler/issues/1287)
+* **logs:** Clearer logging when sending data to InfluxDB ([56663da](https://github.com/ptarmiganlabs/butler/commit/56663dabb1f0ba8ec06161d8243b8263c9caf99f)), closes [#1288](https://github.com/ptarmiganlabs/butler/issues/1288)
+
+
+### Miscellaneous
+
+* **deps:** Updated dependencies ([82a2c7c](https://github.com/ptarmiganlabs/butler/commit/82a2c7cf847384c39c9b7fc1b354f2b4174e5bc3))
+
 ## [13.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.0.0...butler-v13.1.0) (2024-10-20)
 
 
