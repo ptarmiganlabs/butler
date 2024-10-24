@@ -1,4 +1,3 @@
-/* eslint-disable import/first */
 // Add dependencies
 import dgram from 'dgram';
 
