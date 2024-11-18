@@ -55,7 +55,7 @@
         "@fastify/reply-from": "^9.8.0",
         "@fastify/sensible": "^5.6.0",
         "@fastify/static": "^7.0.4",
-        "@fastify/swagger": "^8.15.0",
+        "@fastify/swagger": "^9.3.0",
         "@fastify/swagger-ui": "^4.1.0",
         "@keyvhq/core": "^2.1.1",
         "@xstate/fsm": "^2.1.0",
