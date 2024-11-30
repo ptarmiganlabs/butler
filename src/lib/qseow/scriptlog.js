@@ -318,6 +318,20 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
         );
 
         globals.logger.info(`[QSEOW] SCRIPTLOG STORE: Writing failed task script log: ${fileName}`);
+
+        // Do we have a script log to store?
+        if (!scriptLog.scriptLogFull) {
+            globals.logger.error('[QSEOW] SCRIPTLOG STORE: A script log should be available, but it is not. Possibly because the QRS API did not return one.');
+            return false;
+        } else if (scriptLog.scriptLogFull.length === 0) {
+            globals.logger.error('[QSEOW] SCRIPTLOG STORE: A script log is available, but it is empty (zero rows in it).');
+            return false;
+        } else if (scriptLog.scriptLogFull.length < 10) {
+            globals.logger.warn('[QSEOW] SCRIPTLOG STORE: A script log is available, but it is very short (less than 10 rows).');
+        } else {
+            globals.logger.verbose(`[QSEOW] SCRIPTLOG STORE: Script log is available and has ${scriptLog.scriptLogFull.length} rows.`);
+        }
+
         fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
         return true;
     } catch (err) {

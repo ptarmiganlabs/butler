@@ -1,38 +1,38 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}/src/butler.js",
-      // "runtimeVersion": "20",
-      "runtimeVersion": "18",
-      // "runtimeVersion": "23",
-      "cwd": "${workspaceFolder}/src",
-      "env": {
-        "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
-        "NODE_ENV": "production"
-      },
-      "args": [
-        "--configfile",
-        "config/production.yaml",
-        // "config/production_template.yaml",
-        // "--new-relic-account-name",
-        // "'First NR account'",
-        // "--new-relic-account-id",
-        // "ACCOUNTID",
-        // "--new-relic-api-key",
-        // "APIKEY",
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/src/butler.js",
+            // "runtimeVersion": "20",
+            "runtimeVersion": "18",
+            // "runtimeVersion": "23",
+            "cwd": "${workspaceFolder}/src",
+            "env": {
+                "NODE_CONFIG_DIR": "${workspaceFolder}/src/config",
+                "NODE_ENV": "production"
+            },
+            "args": [
+                "--configfile",
+                "config/production.yaml"
+                // "config/production_template.yaml",
+                // "--new-relic-account-name",
+                // "'First NR account'",
+                // "--new-relic-account-id",
+                // "ACCOUNTID",
+                // "--new-relic-api-key",
+                // "APIKEY",
 
-        // "-c",
-        // "./config/config-gen-api-docs.yaml",
-        // "--no-qs-connection"
-      ],
-      "outFiles": ["${workspaceFolder}/**/*.js"]
-    }
-  ]
+                // "-c",
+                // "./config/config-gen-api-docs.yaml",
+                // "--no-qs-connection"
+            ],
+            "outFiles": ["${workspaceFolder}/**/*.js"]
+        }
+    ]
 }
