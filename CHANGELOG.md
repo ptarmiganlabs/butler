@@ -1,5 +1,111 @@
 # Changelog
 
+## [14.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.2...butler-v14.0.0) (2024-11-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **script-log:** Changing config fils structure to prep for future features
+* **config:** Get rid of old typos and outdated structure in config file
+* **ms-teams:** Use MS Power Automate for sending Teams messges
+
+### Features
+
+* **alert-templates:** Add more template variables to email, Slack, Teams alerts ([25aaa2b](https://github.com/ptarmiganlabs/butler/commit/25aaa2b189ff570c95b6042d56f2892cd04ed02f)), closes [#1250](https://github.com/ptarmiganlabs/butler/issues/1250)
+* **alerts:** Add arbitrary URLs to reload failed/stopped/success msgs ([5e613db](https://github.com/ptarmiganlabs/butler/commit/5e613db4671a4cb9d4e53b6aa88a75249f4c8bd8)), closes [#1220](https://github.com/ptarmiganlabs/butler/issues/1220)
+* **alerts:** Add new script log size template variables. ([44ca5a5](https://github.com/ptarmiganlabs/butler/commit/44ca5a5998570bd45fee4d6f8dad9c9e2bfdf947)), closes [#1276](https://github.com/ptarmiganlabs/butler/issues/1276)
+* **config-vis:** Show current config in web page ([b53eaf7](https://github.com/ptarmiganlabs/butler/commit/b53eaf7053e0319273c685afd6a400b370d1c7af)), closes [#1199](https://github.com/ptarmiganlabs/butler/issues/1199)
+* **config:** Add cmd line option "--skip-config-verification" ([f0795fc](https://github.com/ptarmiganlabs/butler/commit/f0795fcae196bb62c80abd15351f3b228c472900)), closes [#1114](https://github.com/ptarmiganlabs/butler/issues/1114)
+* **config:** Make it easier to get started with Butler using the provided sample config file ([11007a4](https://github.com/ptarmiganlabs/butler/commit/11007a428aac6af61a745edebb77eca973d10292)), closes [#1143](https://github.com/ptarmiganlabs/butler/issues/1143)
+* **config:** Much improved verification of config file on startup ([5dc1a23](https://github.com/ptarmiganlabs/butler/commit/5dc1a231b0b79e9aeab4ae4bd120f959a51c8bc7)), closes [#1090](https://github.com/ptarmiganlabs/butler/issues/1090)
+* **config:** Visualise config file in Butler hosted web page ([29356ce](https://github.com/ptarmiganlabs/butler/commit/29356ce36c9d6edf4a0b605b2b63be1c95fcaee3)), closes [#1199](https://github.com/ptarmiganlabs/butler/issues/1199)
+* **email-alert:** Send email when select reload tasks finish successfully ([6a0e49b](https://github.com/ptarmiganlabs/butler/commit/6a0e49bae6172bf35f1ea366426a2486b0484d26)), closes [#1207](https://github.com/ptarmiganlabs/butler/issues/1207)
+* **failed-task-alert:** Make failed reload task email look the same as QS Cloud ditto ([c163ad4](https://github.com/ptarmiganlabs/butler/commit/c163ad4c7d9769ea6e51e11bfb8b4a884a432fa1)), closes [#1237](https://github.com/ptarmiganlabs/butler/issues/1237)
+* **qs-cloud:** Reload failed alerts to email ([1d4a62d](https://github.com/ptarmiganlabs/butler/commit/1d4a62d38f5ae8382c2b483c1af1faf4cf40902f))
+* **qs-cloud:** Reload failed alerts to MS Teams ([523722a](https://github.com/ptarmiganlabs/butler/commit/523722a00a6a1c7c98ead806a171a6b14a388651))
+* **qs-cloud:** Reload failed alerts to Slack ([fa35d91](https://github.com/ptarmiganlabs/butler/commit/fa35d91dc6993c2c32722425b1d3a66fef7f54df))
+* **qs-license:** Call webhook when Qlik Sense server license is about to expire ([660a5dc](https://github.com/ptarmiganlabs/butler/commit/660a5dc0ffbe425c636025fa09e28f97414338fb)), closes [#1136](https://github.com/ptarmiganlabs/butler/issues/1136)
+* **qs-license:** Extract Sense server license info ([4cba793](https://github.com/ptarmiganlabs/butler/commit/4cba79304b8b9b1e1e52d1db4473988680ed5fc8)), closes [#805](https://github.com/ptarmiganlabs/butler/issues/805)
+* **qs-license:** More options for auto-release of unused Sense access licenses ([8eece16](https://github.com/ptarmiganlabs/butler/commit/8eece163b9feb3e667ba3d5ac64802d7632e6bbd))
+* **qs-license:** Send license expiration info to MQTT ([89684ea](https://github.com/ptarmiganlabs/butler/commit/89684eab916b634f7f14dd252aaa9b2f09509a6f)), closes [#1135](https://github.com/ptarmiganlabs/butler/issues/1135)
+* **qs-version:** Add Qlik Sense version logging to InfluxDb ([19a4eb7](https://github.com/ptarmiganlabs/butler/commit/19a4eb77c32a61f845ab2ede0a080ed0db8d97b7)), closes [#1123](https://github.com/ptarmiganlabs/butler/issues/1123)
+* Verify that needed email alert related custom properties exist in QS ([6babb0f](https://github.com/ptarmiganlabs/butler/commit/6babb0f1acffab2c80f88a98fa56984cd3aacd26)), closes [#1256](https://github.com/ptarmiganlabs/butler/issues/1256)
+
+
+### Bug Fixes
+
+* **access-license:** Make logging when releasing licenses less verbose ([3e54c0a](https://github.com/ptarmiganlabs/butler/commit/3e54c0a97a01047e2ffb5aa38dff0a417e78eb8a)), closes [#1303](https://github.com/ptarmiganlabs/butler/issues/1303)
+* **alert:** Fix unhandled exception when getting client-managed app metadata ([c838e01](https://github.com/ptarmiganlabs/butler/commit/c838e017811a05db43bf8bd76b3fbbb6d83e9ba9)), closes [#1274](https://github.com/ptarmiganlabs/butler/issues/1274)
+* **api-doc:** Get rid of errors when generating API docs ([30553f2](https://github.com/ptarmiganlabs/butler/commit/30553f213805f04c244505ef3c0f2a84ede80a54)), closes [#1144](https://github.com/ptarmiganlabs/butler/issues/1144)
+* **cloud-reload-alert:** Make script log head/tail include correct number of rows ([a230f0d](https://github.com/ptarmiganlabs/butler/commit/a230f0d7bc489ef5d1ae05b488e7f470a5fe2b56)), closes [#1275](https://github.com/ptarmiganlabs/butler/issues/1275)
+* **config:** Add missing, mandatory entries to sample config file ([c7c9ac3](https://github.com/ptarmiganlabs/butler/commit/c7c9ac3d6e5e96be2b97309feaa6ceb561572641)), closes [#1108](https://github.com/ptarmiganlabs/butler/issues/1108)
+* **config:** Incorrect startup validation of New Relic tags in config file ([ced7aa9](https://github.com/ptarmiganlabs/butler/commit/ced7aa9c7701f25c632031a2582ae9bb1b16f836)), closes [#1113](https://github.com/ptarmiganlabs/butler/issues/1113)
+* Fix api docs config file wrt assert code ([fdd5902](https://github.com/ptarmiganlabs/butler/commit/fdd5902f78fc330cd2e83453cc67e24f002fe27f))
+* Fix error when sending successful reload email for apps and tasks with no tags associated with them ([c945493](https://github.com/ptarmiganlabs/butler/commit/c94549362c040670281f8650578276f1ce232a26))
+* **host-info:** Add more verbose logging when getting host info fails ([41082ab](https://github.com/ptarmiganlabs/butler/commit/41082abfe3a3526cedc0ac21e789037df0e287fc))
+* **host-info:** Correctly handle cases where there is no MAC addr available ([3aa250e](https://github.com/ptarmiganlabs/butler/commit/3aa250e3ad22be21986d702c653536a11ef00f52)), closes [#1183](https://github.com/ptarmiganlabs/butler/issues/1183)
+* **influxdb:** Remove pre-defined schema for InfluxDB database ([cbdfce3](https://github.com/ptarmiganlabs/butler/commit/cbdfce35628705589c5146674db24bf753bdee59)), closes [#1286](https://github.com/ptarmiganlabs/butler/issues/1286)
+* **license-release:** Allow empty arrays for never-release users, custom properties etc ([03ac212](https://github.com/ptarmiganlabs/butler/commit/03ac2120be2c53cccaf8b1523fb3fad283de1263)), closes [#1287](https://github.com/ptarmiganlabs/butler/issues/1287)
+* **logs:** Clearer logging when sending data to InfluxDB ([56663da](https://github.com/ptarmiganlabs/butler/commit/56663dabb1f0ba8ec06161d8243b8263c9caf99f)), closes [#1288](https://github.com/ptarmiganlabs/butler/issues/1288)
+* **ms-teams:** Use MS Power Automate for sending Teams messges ([4f46e60](https://github.com/ptarmiganlabs/butler/commit/4f46e6087641ff925b67e7c151bc1b9fc31a6d3a)), closes [#1239](https://github.com/ptarmiganlabs/butler/issues/1239)
+* **qs-license:** Correct license type names written to InfluxDB when releasing QS licenses ([1cd59f2](https://github.com/ptarmiganlabs/butler/commit/1cd59f205b782834b81de11791b99c0489b9a99a)), closes [#1094](https://github.com/ptarmiganlabs/butler/issues/1094)
+* **qs-version:** Log Sense server version to console every time it is retrieved ([97e965a](https://github.com/ptarmiganlabs/butler/commit/97e965a8cc97cd89b1c8f56ca1b5e4af50f1c976))
+* **qseow:** Fix broken email templates for failed/aborted/successful reloads ([0f44dd5](https://github.com/ptarmiganlabs/butler/commit/0f44dd5e2e90f63935983817e2a6910597b56fbb)), closes [#1292](https://github.com/ptarmiganlabs/butler/issues/1292)
+* **qseow:** Make writing reload script logs to disk more robust ([d42f27d](https://github.com/ptarmiganlabs/butler/commit/d42f27d4ecb362892c353d1c09bb166dd0db4554)), closes [#1296](https://github.com/ptarmiganlabs/butler/issues/1296)
+* **scheduler:** Fix broken "scheduler" test case ([0012f6d](https://github.com/ptarmiganlabs/butler/commit/0012f6d1cc80d73df102f0aff660d5f09b609769)), closes [#1245](https://github.com/ptarmiganlabs/butler/issues/1245)
+* **script-log:** Changing config fils structure to prep for future features ([e81ee39](https://github.com/ptarmiganlabs/butler/commit/e81ee39c85f17d87fd1a3d7d4db64327b1dd21a9))
+* **service-alerts:** Update win service alert templates to latest look-n-feel ([b2e8bab](https://github.com/ptarmiganlabs/butler/commit/b2e8babd2e1f48a5d1cff99ad52d6f55567c6bb8)), closes [#1257](https://github.com/ptarmiganlabs/butler/issues/1257)
+* Show correct config file path in log during startup ([580d00d](https://github.com/ptarmiganlabs/butler/commit/580d00dec52dff086633919cc933d1dda3b60e26)), closes [#1270](https://github.com/ptarmiganlabs/butler/issues/1270)
+* **slack-alert:** Align Slack template for QSEoW alerts with QS Cloud ditto ([2769553](https://github.com/ptarmiganlabs/butler/commit/2769553e4ea10367d37c6d4e097299aaf6854c8f)), closes [#1238](https://github.com/ptarmiganlabs/butler/issues/1238)
+* Test case "senseapp" now works again ([054faa6](https://github.com/ptarmiganlabs/butler/commit/054faa60bbff347dd49e0953cfddd75ea0e067c9)), closes [#1244](https://github.com/ptarmiganlabs/butler/issues/1244)
+* **test:** Fix broken test of `buterping` API endpoint ([39827c8](https://github.com/ptarmiganlabs/butler/commit/39827c82852c5dc0eb0c54943279aa6f14c36c51))
+* **webhook:** Allow empty arrays of webhooks in config file ([4f354b8](https://github.com/ptarmiganlabs/butler/commit/4f354b8f4e829db5cda472b47676b68f339bc5f0)), closes [#1088](https://github.com/ptarmiganlabs/butler/issues/1088)
+* **winsvc-monitor:** Making verbose logging less spammy ([f8981b3](https://github.com/ptarmiganlabs/butler/commit/f8981b3d9b6611cc87821da4d9d94af154ee7e3b)), closes [#1234](https://github.com/ptarmiganlabs/butler/issues/1234)
+* **xml-appender:** Update XML appender files to more reliably detect successful reloads ([b02e6a8](https://github.com/ptarmiganlabs/butler/commit/b02e6a86aa8f61ee2b9a78c85a569aad740c0543)), closes [#1259](https://github.com/ptarmiganlabs/butler/issues/1259)
+
+
+### Miscellaneous
+
+* Add auto-closing of issues in GitHub repo ([7e529d1](https://github.com/ptarmiganlabs/butler/commit/7e529d11da12aa8f976456691c18724dbcaedf22))
+* Bump Docker build action to v6 ([6793cae](https://github.com/ptarmiganlabs/butler/commit/6793caea16a09f3c58b76659181dd05f64576d03))
+* **deps:** Update dependencies ([154b3f3](https://github.com/ptarmiganlabs/butler/commit/154b3f355c5470ef437215520f4fe63cd36340ef))
+* **deps:** Update dependencies ([dd56231](https://github.com/ptarmiganlabs/butler/commit/dd56231367cab5d546883363a33bf276a9d13c6d))
+* **deps:** Update dependencies ([e18ce59](https://github.com/ptarmiganlabs/butler/commit/e18ce59fa4f5485c62e668c699545a4191199d69))
+* **deps:** Update dependencies ([e3aa05f](https://github.com/ptarmiganlabs/butler/commit/e3aa05f4c5dd64ed49e1a4fbc842a3683a35efde))
+* **deps:** Update dependencies ([ec4e8f0](https://github.com/ptarmiganlabs/butler/commit/ec4e8f0593bff2b42c0c8bc9b551513eba67ff70))
+* **deps:** Update dependencies ([96cfe34](https://github.com/ptarmiganlabs/butler/commit/96cfe345d2e79b611051e5e4e1d77ed28c6d0779))
+* **deps:** Update dependencies to stay safe and secure ([16032c0](https://github.com/ptarmiganlabs/butler/commit/16032c079807b62ffe252158c57665b7d1627d85))
+* **deps:** Updated dependencies ([82a2c7c](https://github.com/ptarmiganlabs/butler/commit/82a2c7cf847384c39c9b7fc1b354f2b4174e5bc3))
+* **deps:** Upgrade dependencies ([8d8a68b](https://github.com/ptarmiganlabs/butler/commit/8d8a68b1df3dd74011d8d50797cfec074e88decf))
+* **deps:** Upgrade dependencies to stay safe and secure ([2960da0](https://github.com/ptarmiganlabs/butler/commit/2960da0b4e274ade13a15a152cdcef306badcd70))
+* Fix broken 12.2.1 build ([032f1f7](https://github.com/ptarmiganlabs/butler/commit/032f1f7f9d07319b8694f0ed1ab88e4c24d2e36f))
+* **master:** release butler 12.0.0 ([8a608f0](https://github.com/ptarmiganlabs/butler/commit/8a608f088a871c3949ddde957f89ed1fef66010a))
+* **master:** release butler 12.1.0 ([bb58cf5](https://github.com/ptarmiganlabs/butler/commit/bb58cf589b1dab94a851798be90759b786180b3f))
+* **master:** release butler 12.1.1 ([82cf5a0](https://github.com/ptarmiganlabs/butler/commit/82cf5a03e470ffd84289b88e081d495ef0b326c2))
+* **master:** release butler 12.2.0 ([0cc3055](https://github.com/ptarmiganlabs/butler/commit/0cc30553b86344726821b1c0baa0e4b94e12101e))
+* **master:** release butler 12.2.1 ([1622689](https://github.com/ptarmiganlabs/butler/commit/16226895d0afbd961d50b836062207a4d6c5e942))
+* **master:** release butler 12.3.0 ([31f3251](https://github.com/ptarmiganlabs/butler/commit/31f325102fcce5892530d7ff0ebed900df7afe93))
+* **master:** release butler 12.3.0 ([4fb66fe](https://github.com/ptarmiganlabs/butler/commit/4fb66fec71ad49fd47d2cc2dd12a6f7dd46aa466))
+* **master:** release butler 12.4.0 ([dafed13](https://github.com/ptarmiganlabs/butler/commit/dafed133fd1e75e5e2ff2676674fa5f142a80958))
+* **master:** release butler 12.4.1 ([7a1e7fa](https://github.com/ptarmiganlabs/butler/commit/7a1e7fa82987d4ad554d7eee624bc2b05820cc4c))
+* **master:** release butler 12.4.2 ([dbe3f5b](https://github.com/ptarmiganlabs/butler/commit/dbe3f5b4ba75961b7ff52d0de2b951f56571e5d1))
+* **master:** release butler 13.0.0 ([1a618c7](https://github.com/ptarmiganlabs/butler/commit/1a618c7191c56f22b8dbd7d436de926f17b7511f))
+* **master:** release butler 13.0.0 ([f487c35](https://github.com/ptarmiganlabs/butler/commit/f487c35e8b6423d5f3e2412ec9313221378d3f3f))
+* **master:** release butler 13.1.0 ([89e85bd](https://github.com/ptarmiganlabs/butler/commit/89e85bdd9be0c1209de6480dd222ad11f7328cc3))
+* **master:** release butler 13.1.1 ([ef2539b](https://github.com/ptarmiganlabs/butler/commit/ef2539be40ddf54f06aab62143247fa7497c0195))
+* **master:** release butler 13.1.2 ([909d84d](https://github.com/ptarmiganlabs/butler/commit/909d84daf19fbe8a7a32f5d27e8d984d0d0b8f6e))
+* Update dependencies to stay safe and secure ([ebe8c44](https://github.com/ptarmiganlabs/butler/commit/ebe8c441eae82ad6f2512a017174d6ce440d1b09))
+* Update to use latest release-please action ([d0d8a62](https://github.com/ptarmiganlabs/butler/commit/d0d8a624b946f2eeee8bd0fac643cdb883fcb776))
+
+
+### Refactoring
+
+* **config:** Better verification of config file during startup ([d1ebfaa](https://github.com/ptarmiganlabs/butler/commit/d1ebfaa50e668b3b2e945aff48ceb2fc476235e4)), closes [#1236](https://github.com/ptarmiganlabs/butler/issues/1236)
+* **config:** Get rid of old typos and outdated structure in config file ([985b749](https://github.com/ptarmiganlabs/butler/commit/985b74999014055dded7b5fd49d91c2a38966d57)), closes [#1242](https://github.com/ptarmiganlabs/butler/issues/1242)
+* **config:** Remove support for "enabled" properties in config file, only support "enable". ([b3a9a40](https://github.com/ptarmiganlabs/butler/commit/b3a9a40a9f581d7e4df75e0acf1fcd4df0290b30)), closes [#1243](https://github.com/ptarmiganlabs/butler/issues/1243)
+* Fix various typos, code formatting and style issues ([caf9439](https://github.com/ptarmiganlabs/butler/commit/caf9439d022e8c7ae68a35936301e92a6b826b8e))
+* **logging:** Show if log entries are associated with QS Cloud or client-managed ([6054916](https://github.com/ptarmiganlabs/butler/commit/605491659fcd6604e3b7c9cc7ec658834a5f21eb)), closes [#1279](https://github.com/ptarmiganlabs/butler/issues/1279)
+
 ## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
 
 
