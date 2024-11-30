@@ -1,5 +1,19 @@
 # Changelog
 
+## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
+
+
+### Bug Fixes
+
+* **access-license:** Make logging when releasing licenses less verbose ([3e54c0a](https://github.com/ptarmiganlabs/butler/commit/3e54c0a97a01047e2ffb5aa38dff0a417e78eb8a)), closes [#1303](https://github.com/ptarmiganlabs/butler/issues/1303)
+* **qseow:** Fix broken email templates for failed/aborted/successful reloads ([0f44dd5](https://github.com/ptarmiganlabs/butler/commit/0f44dd5e2e90f63935983817e2a6910597b56fbb)), closes [#1292](https://github.com/ptarmiganlabs/butler/issues/1292)
+* **qseow:** Make writing reload script logs to disk more robust ([d42f27d](https://github.com/ptarmiganlabs/butler/commit/d42f27d4ecb362892c353d1c09bb166dd0db4554)), closes [#1296](https://github.com/ptarmiganlabs/butler/issues/1296)
+
+
+### Miscellaneous
+
+* Update dependencies to stay safe and secure ([ebe8c44](https://github.com/ptarmiganlabs/butler/commit/ebe8c441eae82ad6f2512a017174d6ce440d1b09))
+
 ## [13.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.0...butler-v13.1.1) (2024-10-24)
 
 
