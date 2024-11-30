@@ -471,7 +471,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
 
             // Should currentUser be released?
             if (!doNotRelease) {
-                logger.info(
+                logger.verbose(
                     `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseProfessional array`,
                 );
                 releaseProfessional.push({
@@ -752,7 +752,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
 
             // Should currentUser be released?
             if (!doNotRelease) {
-                logger.info(
+                logger.verbose(
                     `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Adding user ${license.user.userDirectory}\\${license.user.userId} (days since last use: ${daysSinceLastUse}) to releaseAnalyzer array`,
                 );
                 releaseAnalyzer.push({
