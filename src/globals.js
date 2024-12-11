@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import { Command, Option } from 'commander';
 import 'winston-daily-rotate-file';
+import sea from 'node:sea';
 
 let instance = null;
 
@@ -22,45 +23,38 @@ class Settings {
         // Flag to keep track of initialisation status of globals object
         this.initialised = false;
 
-        // eslint-disable-next-line no-constructor-return
         return instance;
     }
 
     async init() {
         // Get app version from package.json file
         const filenamePackage = `./package.json`;
-        let a;
-        let b;
-        let c;
+
         // Are we running as a packaged app?
-        if (process.pkg) {
-            // Get path to JS file
-            a = process.pkg.defaultEntrypoint;
+        if (sea.isSea()) {
+            // Get contents of package.json file, including version number
+            const packageJson = sea.getAsset('package.json', 'utf8');
+            this.appVersion = JSON.parse(packageJson).version;
 
-            // Strip off the filename
-            b = upath.dirname(a);
-
-            // Add path to package.json file
-            c = upath.join(b, filenamePackage);
-
-            // Set base path of the executable
-            this.appBasePath = upath.join(b);
+            // Save path to the executable
+            this.appBasePath = upath.dirname(process.cwd());
         } else {
             // Get path to JS file
-            a = fileURLToPath(import.meta.url);
+            const a = fileURLToPath(import.meta.url);
 
             // Strip off the filename
-            b = upath.dirname(a);
+            const b = upath.dirname(a);
 
             // Add path to package.json file
-            c = upath.join(b, '..', filenamePackage);
+            const c = upath.join(b, '..', filenamePackage);
 
-            // Set base path of the executable
+            // Get app version
+            const { version } = JSON.parse(readFileSync(c));
+            this.appVersion = version;
+
+            // Save path to the executable
             this.appBasePath = upath.join(b, '..');
         }
-
-        const { version } = JSON.parse(readFileSync(c));
-        this.appVersion = version;
 
         // Command line parameters
         const program = new Command();
@@ -101,11 +95,12 @@ class Settings {
         this.sleep = Settings.sleep;
 
         // Is there a config file specified on the command line?
-        let configFileOption;
         this.configFileExpanded = null;
+        let configFileOption;
         let configFilePath;
         let configFileBasename;
         let configFileExtension;
+
         if (this.options.configfile && this.options.configfile.length > 0) {
             configFileOption = this.options.configfile;
             this.configFileExpanded = upath.resolve(this.options.configfile);
@@ -114,7 +109,6 @@ class Settings {
             configFileBasename = upath.basename(this.configFileExpanded, configFileExtension);
 
             if (configFileExtension.toLowerCase() !== '.yaml') {
-                // eslint-disable-next-line no-console
                 console.log('Error: Config file extension must be yaml');
                 process.exit(1);
             }
@@ -123,7 +117,6 @@ class Settings {
                 process.env.NODE_CONFIG_DIR = configFilePath;
                 process.env.NODE_ENV = configFileBasename;
             } else {
-                // eslint-disable-next-line no-console
                 console.log('Error: Specified config file does not exist');
                 process.exit(1);
             }
@@ -137,7 +130,15 @@ class Settings {
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
         }
 
-        this.config = (await import('config')).default;
+        // Are we running as a SEA app?
+        if (sea.isSea()) {
+            const { createRequire } = require('node:module');
+            require = createRequire(__filename);
+
+            this.config = (await import('config')).default;
+        } else {
+            this.config = (await import('config')).default;
+        }
 
         // Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
         // There must be the same number of each specified!
@@ -151,7 +152,6 @@ class Settings {
         ) {
             this.config.Butler.thirdPartyToolsCredentials.newRelic = [];
 
-            // eslint-disable-next-line no-plusplus
             for (let index = 0; index < this.options.newRelicApiKey.length; index++) {
                 const accountName = this.ptions.newRelicAccountName[index];
                 const accountId = this.options.newRelicAccountId[index];
@@ -164,16 +164,18 @@ class Settings {
             this.options?.newRelicApiKey?.length > 0 ||
             this.options?.newRelicAccountId?.length > 0
         ) {
-            // eslint-disable-next-line no-console
             console.log('\n\nIncorrect command line parameters: Number of New Relic account names/IDs/API keys must match. Exiting.');
             process.exit(1);
         }
 
-        this.execPath = this.isPkg ? upath.dirname(process.execPath) : process.cwd();
+        // Are we running as standalone app or not?
+        this.isSea = sea.isSea();
+
+        // Save path to executable
+        this.execPath = this.isSea ? upath.dirname(process.execPath) : process.cwd();
 
         // Are we running as standalone app or not?
-        this.isPkg = typeof process.pkg !== 'undefined';
-        if (this.isPkg && configFileOption === undefined) {
+        if (this.isSea && configFileOption === undefined) {
             // Show help if running as standalone app and mandatory options (e.g. config file) are not specified
             program.help({ error: true });
         }
@@ -208,21 +210,14 @@ class Settings {
             // We don't have a logging object yet, so use plain console.log
 
             // Are we in a packaged app?
-            if (this.isPkg) {
-                // eslint-disable-next-line no-console
-                console.log(`Running in packaged app. Executable path: ${this.execPath}`);
+            if (this.isSea) {
+                console.log(`Running as standalone app. Executable path: ${this.execPath}`);
             } else {
-                // eslint-disable-next-line no-console
                 console.log(`Running in non-packaged environment. Executable path: ${this.execPath}`);
             }
 
-            // eslint-disable-next-line no-console
             console.log(`Log file directory: ${upath.join(this.execPath, this.config.get('Butler.logDirectory'))}`);
-
-            // eslint-disable-next-line no-console
             console.log(`upath.dirname(process.execPath): ${upath.dirname(process.execPath)}`);
-
-            // eslint-disable-next-line no-console
             console.log(`process.cwd(): ${process.cwd()}`);
         }
 
@@ -250,9 +245,6 @@ class Settings {
         this.getLoggingLevel = () => this.logTransports.find((transport) => transport.name === 'console').level;
 
         // Write various verbose log info now that we have a logger object
-        // Are we running as standalone app or not?
-        this.logger.verbose(`Running as standalone app: ${this.isPkg}`);
-
         // Verbose: Show what New Relic account names/API keys/account IDs have been defined (on command line or in config file)
         this.logger.verbose(
             `New Relic account names/API keys/account IDs (via command line or config file): ${JSON.stringify(
@@ -319,7 +311,6 @@ class Settings {
         this.endpointsEnabled = [];
 
         const getEnabledApiEndpoints = (obj) => {
-            // eslint-disable-next-line no-restricted-syntax
             for (const [key, value] of Object.entries(obj)) {
                 if (typeof value === 'object' && value !== null) {
                     // Sub-object
@@ -382,7 +373,6 @@ class Settings {
 
         this.logger.verbose('GLOBALS: Init done');
 
-        // eslint-disable-next-line no-constructor-return
         return instance;
     }
 
@@ -670,7 +660,6 @@ class Settings {
 
     // Static sleep function
     static sleep(ms) {
-        // eslint-disable-next-line no-promise-executor-return
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 

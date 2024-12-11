@@ -20,6 +20,7 @@ async function handlerPutAppReload(request, reply) {
         let a;
         let b;
         let c;
+        // TODO:
         // Are we running as a packaged app?
         if (process.pkg) {
             // Yes, we are running as a packaged app
