@@ -1,5 +1,16 @@
 # Changelog
 
+## [13.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.2...butler-v13.1.3) (2025-02-07)
+
+
+### Miscellaneous
+
+* add console logs for executable path in standalone and non-packaged environments ([5a04fa4](https://github.com/ptarmiganlabs/butler/commit/5a04fa472ba8b454246acc3926c1d34a378d3960))
+* add JSDoc comments for improved code documentation ([2692e7a](https://github.com/ptarmiganlabs/butler/commit/2692e7a18b26571fe4291f3fc0018442947fc183))
+* remove redundant logging statement in build function ([2fd1b87](https://github.com/ptarmiganlabs/butler/commit/2fd1b8753b07d2a455ce8cf1712e6d49cae63a89))
+* update base image to Node 22-bullseye-slim in Dockerfile ([461aae5](https://github.com/ptarmiganlabs/butler/commit/461aae58aa4ca2b9729ad782696e4701811967ce))
+* update dependencies to latest versions ([d81e64f](https://github.com/ptarmiganlabs/butler/commit/d81e64f2cec0b8ec3f8e3503697819839d1b003e))
+
 ## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
 
 
