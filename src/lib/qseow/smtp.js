@@ -52,6 +52,10 @@ if (globals.config.has('Butler.emailNotification.serviceStopped.rateLimit')) {
     rateLimiterMemoryServiceMonitor = new RateLimiterMemory({ points: 1, duration: 300 });
 }
 
+/**
+ * Checks if SMTP configuration is valid.
+ * @returns {boolean} True if SMTP configuration is valid, false otherwise.
+ */
 export function isSmtpConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
@@ -68,6 +72,10 @@ export function isSmtpConfigOk() {
     }
 }
 
+/**
+ * Checks if email reload success notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
 function isEmailReloadSuccessNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
@@ -86,6 +94,10 @@ function isEmailReloadSuccessNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if email reload failure notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
 function isEmailReloadFailedNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
@@ -104,6 +116,10 @@ function isEmailReloadFailedNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if email reload aborted notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
 function isEmailReloadAbortedNotificationConfigOk() {
     try {
         // First make sure email sending is enabled in the config file
@@ -122,6 +138,10 @@ function isEmailReloadAbortedNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if email service monitor notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
 function isEmailServiceMonitorNotificationConfig() {
     try {
         // First make sure email sending is enabled in the config file
@@ -143,6 +163,10 @@ function isEmailServiceMonitorNotificationConfig() {
     }
 }
 
+/**
+ * Retrieves SMTP options from the configuration.
+ * @returns {object} SMTP options.
+ */
 function getSmtpOptions() {
     const smtpOptions = {
         host: globals.config.get('Butler.emailNotification.smtp.host'),
@@ -166,6 +190,17 @@ function getSmtpOptions() {
     return smtpOptions;
 }
 
+/**
+ * Sends an email using the specified parameters.
+ * @param {string} from - Sender email address.
+ * @param {string[]} recipientsEmail - Array of recipient email addresses.
+ * @param {string} emailPriority - Email priority.
+ * @param {string} subjectHandlebars - Handlebars template for the email subject.
+ * @param {string} viewPath - Path to the email template.
+ * @param {string} bodyFileHandlebars - Handlebars template for the email body.
+ * @param {object} templateContext - Context for the Handlebars template.
+ * @returns {Promise<void>}
+ */
 export async function sendEmail(from, recipientsEmail, emailPriority, subjectHandlebars, viewPath, bodyFileHandlebars, templateContext) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
@@ -238,6 +273,15 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
     }
 }
 
+/**
+ * Sends a basic email using the specified parameters.
+ * @param {string} from - Sender email address.
+ * @param {string[]} recipientsEmail - Array of recipient email addresses.
+ * @param {string} emailPriority - Email priority.
+ * @param {string} subject - Email subject.
+ * @param {string} body - Email body.
+ * @returns {Promise<void>}
+ */
 export async function sendEmailBasic(from, recipientsEmail, emailPriority, subject, body) {
     try {
         // First make sure email sending is enabled in the config file and that we have all required SMTP settings
@@ -285,6 +329,11 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
     }
 }
 
+/**
+ * Sends a reload task failure notification email.
+ * @param {object} reloadParams - Parameters for the reload task.
+ * @returns {Promise<void>}
+ */
 export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable is true
@@ -607,6 +656,11 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     }
 }
 
+/**
+ * Sends a reload task aborted notification email.
+ * @param {object} reloadParams - Parameters for the reload task.
+ * @returns {Promise<void>}
+ */
 export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable is true
@@ -923,6 +977,11 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 }
 
+/**
+ * Sends a reload task success notification email.
+ * @param {object} reloadParams - Parameters for the reload task.
+ * @returns {Promise<void>}
+ */
 export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
     // Determine if an alert should be sent or not
     // 1. If config setting Butler.emailNotification.reloadTaskSuccess.alertEnableByCustomProperty.enable is true
@@ -1168,6 +1227,11 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
     }
 }
 
+/**
+ * Sends a service monitor notification email.
+ * @param {object} serviceParams - Parameters for the service.
+ * @returns {Promise<void>}
+ */
 export async function sendServiceMonitorNotificationEmail(serviceParams) {
     if (isSmtpConfigOk() === false) {
         return 1;

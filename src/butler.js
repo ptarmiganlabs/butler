@@ -24,6 +24,7 @@ const start = async () => {
     // Load code from sub modules
     // Load globals dynamically/async to ensure singleton pattern works
     const settingsObj = (await import('./globals.js')).default;
+
     const globals = await settingsObj.init();
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
@@ -98,7 +99,6 @@ const start = async () => {
     // Sleep 5 seconds otherwise to llow globals to be initialised
 
     function sleepLocal(ms) {
-        // eslint-disable-next-line no-promise-executor-return
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 

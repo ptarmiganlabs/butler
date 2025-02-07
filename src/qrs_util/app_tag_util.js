@@ -3,9 +3,10 @@ import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
 /**
+ * Retrieves all tags of a given app.
  *
- * @param {*} appId
- * @returns
+ * @param {string} appId - The ID of the app.
+ * @returns {Promise<Array<string>>} - Returns an array of tag names.
  */
 async function getAppTags(appId) {
     globals.logger.debug(`GETAPPTAGS: Retrieving all tags of app ${appId}`);

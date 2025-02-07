@@ -3,9 +3,10 @@ import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
 /**
- * Function to get metadata for a specific app from QSEoW
- * @param {*} appId
- * @returns
+ * Function to get metadata for a specific app from QSEoW.
+ *
+ * @param {string} appId - The ID of the app.
+ * @returns {Promise<object>} - Returns the metadata of the app.
  */
 async function getAppMetadata(appId) {
     globals.logger.debug(`[QSEOW] GET APP METADATA: Retrieving metadata for app ${appId}`);

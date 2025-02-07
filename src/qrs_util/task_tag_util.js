@@ -3,9 +3,10 @@ import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
 /**
+ * Retrieves all tags of a given reload task.
  *
- * @param {*} taskId
- * @returns
+ * @param {string} taskId - The ID of the task.
+ * @returns {Promise<Array<string>>} - Returns an array of tag names.
  */
 async function getTaskTags(taskId) {
     globals.logger.debug(`GETTASKTAGS: Retrieving all tags of reload task ${taskId}`);

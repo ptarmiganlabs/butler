@@ -48,6 +48,10 @@ if (globals.config.has('Butler.teamsNotification.serviceStopped.rateLimit')) {
     });
 }
 
+/**
+ * Checks if the Teams reload failed notification configuration is valid.
+ * @returns {Object|boolean} - Returns the configuration object if valid, false otherwise.
+ */
 function getTeamsReloadFailedNotificationConfigOk() {
     try {
         if (!globals.config.get('Butler.teamsNotification.reloadTaskFailure.enable')) {
@@ -110,6 +114,10 @@ function getTeamsReloadFailedNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if the Teams reload aborted notification configuration is valid.
+ * @returns {Object|boolean} - Returns the configuration object if valid, false otherwise.
+ */
 function getTeamsReloadAbortedNotificationConfigOk() {
     try {
         if (!globals.config.get('Butler.teamsNotification.reloadTaskAborted.enable')) {
@@ -175,6 +183,11 @@ function getTeamsReloadAbortedNotificationConfigOk() {
     }
 }
 
+/**
+ * Gets the Teams service monitor notification configuration.
+ * @param {string} serviceStatus - The status of the service.
+ * @returns {Object|boolean} - Returns the configuration object if valid, false otherwise.
+ */
 function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
     try {
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable')) {
@@ -286,6 +299,13 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
     }
 }
 
+/**
+ * Sends a Teams notification.
+ * @param {string} teamsWebhookUrl - The Teams webhook URL.
+ * @param {Object} teamsConfig - The Teams configuration object.
+ * @param {Object} templateContext - The template context object.
+ * @param {string} msgType - The type of message.
+ */
 async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
@@ -379,6 +399,10 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
     }
 }
 
+/**
+ * Sends a Teams notification for a failed reload task.
+ * @param {Object} reloadParams - The parameters of the reload task.
+ */
 export function sendReloadTaskFailureNotificationTeams(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -569,6 +593,10 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
         });
 }
 
+/**
+ * Sends a Teams notification for an aborted reload task.
+ * @param {Object} reloadParams - The parameters of the reload task.
+ */
 export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
@@ -760,6 +788,10 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
         });
 }
 
+/**
+ * Sends a Teams notification for a service monitor event.
+ * @param {Object} serviceParams - The parameters of the service monitor event.
+ */
 export function sendServiceMonitorNotificationTeams(serviceParams) {
     rateLimiterMemoryServiceMonitor
         .consume(`${serviceParams.host}|${serviceParams.serviceName}`, 1)

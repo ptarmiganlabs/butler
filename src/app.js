@@ -1,11 +1,9 @@
-/* eslint-disable prefer-object-spread */
-/* eslint-disable global-require */
-
 import path from 'path';
 import fs from 'fs';
 import handlebars from 'handlebars';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
+import sea from 'node:sea';
 
 import Fastify from 'fastify';
 // import AutoLoad from '@fastify/autoload';
@@ -44,17 +42,25 @@ async function build(opts = {}) {
     }
 
     // Load certificates to use when connecting to healthcheck API
-    // When running in packaged app (using pkg): import.meta.url = /snapshot/butler/build.cjs
-    // When running as Node.js: import.meta.url =  /home/goran/code/butler/src/app.js
-    const filename = fileURLToPath(import.meta.url);
-    const dirname = path.dirname(filename);
+    //
+    // On macOS:
+    // When running in packaged app (using SEA): filename = /home/goran/code/butler/butler
+    // When running as Node.js: import.meta.url =  /Users/goran/code/butler/src/app.js
+    //
+    // Are we running as SEA app?
+    let dirname;
+    if (sea.isSea()) {
+        const filename = fileURLToPath(import.meta.url);
+        dirname = path.dirname(filename);
+    } else {
+        dirname = process.cwd();
+    }
+
     const certFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCert'));
     const keyFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertKey'));
     const caFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertCA'));
-    globals.logger.verbose(`----------------1: ${dirname}`);
 
     globals.logger.verbose(`MAIN: Executing JS dirname: ${dirname}`);
-    globals.logger.verbose(`MAIN: Executing JS filename: ${filename}`);
     globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
     globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
     globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
@@ -331,8 +337,6 @@ async function build(opts = {}) {
         // Create absolute path to the html directory
         // dirname points to the directory where this file (app.js) is located, taking into account
         // if the app is running as a packaged app or as a Node.js app.
-        globals.logger.verbose(`----------------2: ${globals.appBasePath}`);
-
         // Get directory contents of dirname
         const dirContents = fs.readdirSync(globals.appBasePath);
         globals.logger.verbose(`CONFIG VIS: Directory contents of "${globals.appBasePath}": ${dirContents}`);

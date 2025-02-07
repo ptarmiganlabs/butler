@@ -6,13 +6,20 @@ import senseStartTask from '../qrs_util/sense_start_task.js';
 
 const cronManager = new CronJobManager();
 
+/**
+ * Saves the current schedules to disk.
+ */
 function saveSchedulesToDisk() {
     // First add a top level for readability
     const diskSchedule = yaml.dump({ butlerSchedule: globals.configSchedule }, 4);
     fs.writeFileSync(globals.config.get('Butler.scheduler.configfile'), diskSchedule, 'utf8');
 }
 
-// Add cron entry for schedule
+/**
+ * Adds a cron entry for a new schedule.
+ *
+ * @param {Object} newSchedule - The new schedule to add.
+ */
 function addCronEntry(newSchedule) {
     cronManager.add(
         newSchedule.id.toString(),
@@ -30,7 +37,11 @@ function addCronEntry(newSchedule) {
     );
 }
 
-// Add new schedule
+/**
+ * Adds a new schedule.
+ *
+ * @param {Object} newSchedule - The new schedule to add.
+ */
 export function addSchedule(newSchedule) {
     try {
         globals.logger.debug(`SCHEDULER: Adding new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
@@ -55,6 +66,9 @@ export function addSchedule(newSchedule) {
     }
 }
 
+/**
+ * Loads schedules from disk.
+ */
 export function loadSchedulesFromDisk() {
     // Load scheduler config, if available
     try {
@@ -77,7 +91,11 @@ export function loadSchedulesFromDisk() {
     }
 }
 
-// Start all currently defined schedules
+/**
+ * Starts all currently defined schedules.
+ *
+ * @returns {Promise<void>}
+ */
 export function startAllSchedules() {
     return new Promise((resolve, reject) => {
         globals.logger.debug('SCHEDULER: Starting all schedules');
@@ -99,7 +117,11 @@ export function startAllSchedules() {
     });
 }
 
-// Stop all currently defined schedules
+/**
+ * Stops all currently defined schedules.
+ *
+ * @returns {Promise<void>}
+ */
 export function stopAllSchedules() {
     return new Promise((resolve, reject) => {
         globals.logger.debug('SCHEDULER: Stopping all schedules');
@@ -121,7 +143,11 @@ export function stopAllSchedules() {
     });
 }
 
-// Get schedule statuses
+/**
+ * Gets the status of all schedules.
+ *
+ * @returns {Object} The status of all schedules.
+ */
 export function getSchedulesStatus() {
     globals.logger.debug('SCHEDULER: Getting all crons');
 
@@ -131,21 +157,35 @@ export function getSchedulesStatus() {
     return cronList;
 }
 
-// Get array with all schedules
+/**
+ * Gets an array with all schedules.
+ *
+ * @returns {Array} An array of all schedules.
+ */
 export function getAllSchedules() {
     globals.logger.debug('SCHEDULER: Getting all schedules');
 
     return globals.configSchedule;
 }
 
-// Get object with a single schedule
+/**
+ * Gets a single schedule by its ID.
+ *
+ * @param {number} scheduleId - The ID of the schedule to get.
+ * @returns {Object} The schedule with the specified ID.
+ */
 export function getSchedule(scheduleId) {
     globals.logger.debug('SCHEDULER: Getting schedule');
 
     return globals.configSchedule.find((item) => item.id === scheduleId);
 }
 
-// Does a particular schedule exist?
+/**
+ * Checks if a particular schedule exists.
+ *
+ * @param {number} scheduleId - The ID of the schedule to check.
+ * @returns {boolean} True if the schedule exists, false otherwise.
+ */
 export function existsSchedule(scheduleId) {
     // Does the schedule ID exist?
     const idExists = globals.configSchedule.find((item) => item.id === scheduleId) !== undefined;
@@ -158,7 +198,12 @@ export function existsSchedule(scheduleId) {
     return false;
 }
 
-// Delete a schedule
+/**
+ * Deletes a schedule by its ID.
+ *
+ * @param {number} deleteScheduleId - The ID of the schedule to delete.
+ * @returns {boolean} True if the schedule was deleted, false otherwise.
+ */
 export function deleteSchedule(deleteScheduleId) {
     try {
         globals.logger.debug(`SCHEDULER: Deleting schedule with ID: ${deleteScheduleId}`);
@@ -187,6 +232,12 @@ export function deleteSchedule(deleteScheduleId) {
     }
 }
 
+/**
+ * Starts a schedule by its ID.
+ *
+ * @param {number} scheduleId - The ID of the schedule to start.
+ * @returns {boolean} True if the schedule was started, false otherwise.
+ */
 export function startSchedule(scheduleId) {
     try {
         cronManager.start(scheduleId.toString());
@@ -204,6 +255,12 @@ export function startSchedule(scheduleId) {
     }
 }
 
+/**
+ * Stops a schedule by its ID.
+ *
+ * @param {number} scheduleId - The ID of the schedule to stop.
+ * @returns {boolean} True if the schedule was stopped, false otherwise.
+ */
 export function stopSchedule(scheduleId) {
     try {
         cronManager.stop(scheduleId.toString());

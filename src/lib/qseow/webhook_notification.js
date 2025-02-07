@@ -75,6 +75,10 @@ if (globals.config.has('Butler.webhookNotification.serviceMonitor.rateLimit')) {
     });
 }
 
+/**
+ * Get configuration for outgoing webhook reload failed notification
+ * @returns {object|boolean} Configuration object or false if config is missing
+ */
 function getOutgoingWebhookReloadFailedNotificationConfigOk() {
     try {
         // First make sure outgoing webhooks are enabled in the config file and that we have needed parameters
@@ -102,6 +106,10 @@ function getOutgoingWebhookReloadFailedNotificationConfigOk() {
     }
 }
 
+/**
+ * Get configuration for outgoing webhook reload aborted notification
+ * @returns {object|boolean} Configuration object or false if config is missing
+ */
 function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
     try {
         // First make sure outgoing webhooks are enabled in the config file and that we have needed parameters
@@ -129,6 +137,10 @@ function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
     }
 }
 
+/**
+ * Get configuration for outgoing webhook service monitor
+ * @returns {object|boolean} Configuration object or false if config is missing
+ */
 function getOutgoingWebhookServiceMonitorConfig() {
     try {
         // First make sure outgoing webhooks are enabled in the config file and that we have needed parameters
@@ -175,6 +187,10 @@ function getOutgoingWebhookServiceMonitorConfig() {
     }
 }
 
+/**
+ * Get configuration for outgoing webhook Qlik Sense server license monitor
+ * @returns {object|boolean} Configuration object or false if config is missing
+ */
 function getOutgoingWebhookQlikSenseServerLicenseMonitorConfig() {
     try {
         return {
@@ -190,6 +206,10 @@ function getOutgoingWebhookQlikSenseServerLicenseMonitorConfig() {
     }
 }
 
+/**
+ * Get configuration for outgoing webhook Qlik Sense server license expiry alert
+ * @returns {object|boolean} Configuration object or false if config is missing
+ */
 function getOutgoingWebhookQlikSenseServerLicenseExpiryAlertConfig() {
     try {
         return {
@@ -205,6 +225,11 @@ function getOutgoingWebhookQlikSenseServerLicenseExpiryAlertConfig() {
     }
 }
 
+/**
+ * Send outgoing webhook
+ * @param {object} webhookConfig Webhook configuration object
+ * @param {object} reloadParams Reload parameters
+ */
 async function sendOutgoingWebhook(webhookConfig, reloadParams) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
@@ -421,6 +446,11 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
     }
 }
 
+/**
+ * Send outgoing webhook for service monitor
+ * @param {object} webhookConfig Webhook configuration object
+ * @param {object} serviceParams Service parameters
+ */
 async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
@@ -597,6 +627,11 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
     }
 }
 
+/**
+ * Send outgoing webhook for Qlik Sense server license
+ * @param {object} webhookConfig Webhook configuration object
+ * @param {object} serverLicenseInfo Server license information
+ */
 async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfo) {
     try {
         // webhookConfig.webhooks contains an array of all outgoing webhooks that should be processed
@@ -770,6 +805,10 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
     }
 }
 
+/**
+ * Send reload task failure notification via webhook
+ * @param {object} reloadParams Reload parameters
+ */
 export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -804,6 +843,10 @@ export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
         });
 }
 
+/**
+ * Send reload task aborted notification via webhook
+ * @param {object} reloadParams Reload parameters
+ */
 export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
@@ -838,6 +881,10 @@ export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
         });
 }
 
+/**
+ * Send service monitor notification via webhook
+ * @param {object} svc Service parameters
+ */
 export function sendServiceMonitorWebhook(svc) {
     rateLimiterMemoryServiceMonitor
         .consume(`${svc.host}|${svc.serviceName}`, 1)
@@ -888,6 +935,11 @@ export function sendServiceMonitorWebhook(svc) {
 //     expiryDateStr: string
 //     daysUntilExpiry: number
 // }
+
+/**
+ * Call webhook with Qlik Sense server license info
+ * @param {object} serverLicenseInfo Server license information
+ */
 export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
     // Do deep copy of serverLicenseInfo
     const serverLicenseInfoCopy = JSON.parse(JSON.stringify(serverLicenseInfo));

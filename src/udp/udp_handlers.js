@@ -24,7 +24,10 @@ import { isCustomPropertyValueSet } from '../qrs_util/task_cp_util.js';
 import { postReloadTaskFailureNotificationInfluxDb, postReloadTaskSuccessNotificationInfluxDb } from '../lib/post_to_influxdb.js';
 import getTaskMetadata from '../qrs_util/task_metadata.js';
 
-// Handler for failed scheduler initiated reloads
+/**
+ * Handler for failed scheduler initiated reloads.
+ * @param {Array} msg - The message array containing details about the failed reload.
+ */
 const schedulerAborted = async (msg) => {
     globals.logger.verbose(
         `[QSEOW] TASKABORTED: Received reload aborted UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
@@ -307,7 +310,10 @@ const schedulerAborted = async (msg) => {
     }
 };
 
-// Handler for failed scheduler initiated reloads
+/**
+ * Handler for failed scheduler initiated reloads.
+ * @param {Array} msg - The message array containing details about the failed reload.
+ */
 const schedulerFailed = async (msg) => {
     // Get script log for failed reloads.
     // Only done if Slack, Teams, email or New Relic alerts are enabled
@@ -635,9 +641,11 @@ const schedulerFailed = async (msg) => {
     }
 };
 
-// --------------------------------------------------------
-// Handler for successful scheduler initiated reloads
-// --------------------------------------------------------
+/**
+ * Handler for successful scheduler initiated reloads.
+ * @param {Array} msg - The message array containing details about the successful reload.
+ * @returns {boolean} - Returns true if processing was successful, false otherwise.
+ */
 const schedulerReloadTaskSuccess = async (msg) => {
     globals.logger.verbose(
         `[QSEOW] RELOAD TASK SUCCESS: Received reload task success UDP message from scheduler: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Log level=${msg[8]}, Log msg=${msg[10]}`,
@@ -872,9 +880,9 @@ const schedulerReloadTaskSuccess = async (msg) => {
     return true;
 };
 
-// --------------------------------------------------------
-// Set up UDP server handlers for acting on Sense failed task events
-// --------------------------------------------------------
+/**
+ * Set up UDP server handlers for acting on Sense failed task events.
+ */
 const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
     // eslint-disable-next-line no-unused-vars

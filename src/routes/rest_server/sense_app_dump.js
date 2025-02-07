@@ -11,6 +11,12 @@ import { logRESTCall } from '../../lib/log_rest_call.js';
 import { apiGetSenseAppDump, apiGetAppDump } from '../../api/sense_app_dump.js';
 import SenseUtilities from 'enigma.js/sense-utilities.js';
 
+/**
+ * Handler function for GET /v4/senseappdump/:appId endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerGetSenseAppDump(request, reply) {
     try {
         // Set up enigma.js configuration
@@ -18,6 +24,7 @@ async function handlerGetSenseAppDump(request, reply) {
         let a;
         let b;
         let c;
+        // TODO:
         // Are we running as a packaged app?
         if (process.pkg) {
             // Yes, we are running as a packaged app
@@ -98,6 +105,12 @@ async function handlerGetSenseAppDump(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
+/**
+ * Registers the REST endpoint for app dump.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ * @returns {Promise<void>}
+ */
 export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseAppDump') &&

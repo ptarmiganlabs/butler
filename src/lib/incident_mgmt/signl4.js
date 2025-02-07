@@ -29,6 +29,10 @@ if (globals.config.has('Butler.incidentTool.signl4.reloadTaskAborted.rateLimit')
     });
 }
 
+/**
+ * Retrieves the configuration for a reload failed event.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadFailedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -64,6 +68,10 @@ function getReloadFailedEventConfig() {
     }
 }
 
+/**
+ * Retrieves the configuration for a reload aborted event.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadAbortedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -99,6 +107,11 @@ function getReloadAbortedEventConfig() {
     }
 }
 
+/**
+ * Sends a SIGNL4 notification.
+ * @param {Object} incidentConfig - Configuration for the incident.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 async function sendSignl4(incidentConfig, reloadParams) {
     try {
         // Build body for HTTP POST
@@ -124,6 +137,10 @@ async function sendSignl4(incidentConfig, reloadParams) {
     }
 }
 
+/**
+ * Sends a notification for a reload task failure.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export function sendReloadTaskFailureNotification(reloadParams) {
     rateLimiterFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -157,6 +174,10 @@ export function sendReloadTaskFailureNotification(reloadParams) {
         });
 }
 
+/**
+ * Sends a notification for a reload task aborted.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export function sendReloadTaskAbortedNotification(reloadParams) {
     rateLimiterAbortedReloads
         .consume(reloadParams.taskId, 1)

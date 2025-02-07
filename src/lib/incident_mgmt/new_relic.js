@@ -3,6 +3,10 @@ import QrsInteract from 'qrs-interact';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 
+/**
+ * Retrieves the QRS configuration.
+ * @returns {Object} Configuration object for QRS.
+ */
 function getQRSConfig() {
     const cfg = {
         hostname: globals.config.get('Butler.configQRS.host'),
@@ -69,6 +73,10 @@ if (globals.config.has('Butler.incidentTool.newRelic.reloadTaskAborted.sharedSet
     });
 }
 
+/**
+ * Retrieves the configuration for a reload failed event.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadFailedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -148,6 +156,10 @@ function getReloadFailedEventConfig() {
     }
 }
 
+/**
+ * Retrieves the configuration for a reload failed log.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadFailedLogConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -224,6 +236,10 @@ function getReloadFailedLogConfig() {
     }
 }
 
+/**
+ * Retrieves the configuration for a reload aborted event.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadAbortedEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -303,6 +319,10 @@ function getReloadAbortedEventConfig() {
     }
 }
 
+/**
+ * Retrieves the configuration for a reload aborted log.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getReloadAbortedLogConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -379,6 +399,12 @@ function getReloadAbortedLogConfig() {
     }
 }
 
+/**
+ * Sends a New Relic event.
+ * @param {Object} incidentConfig - Configuration for the incident.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ * @param {Array} destNewRelicAccounts - Destination New Relic accounts.
+ */
 export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final payload
@@ -462,6 +488,12 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
     }
 }
 
+/**
+ * Sends a New Relic log.
+ * @param {Object} incidentConfig - Configuration for the incident.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ * @param {Array} destNewRelicAccounts - Destination New Relic accounts.
+ */
 export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelicAccounts) {
     try {
         // Build final URL
@@ -597,6 +629,10 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
     }
 }
 
+/**
+ * Sends a reload task failure event to New Relic.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export async function sendReloadTaskFailureEvent(reloadParams) {
     const params = reloadParams;
 
@@ -739,6 +775,10 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
         });
 }
 
+/**
+ * Sends a reload task failure log to New Relic.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export async function sendReloadTaskFailureLog(reloadParams) {
     const params = reloadParams;
 
@@ -879,6 +919,10 @@ export async function sendReloadTaskFailureLog(reloadParams) {
         });
 }
 
+/**
+ * Sends a reload task aborted event to New Relic.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export function sendReloadTaskAbortedEvent(reloadParams) {
     const params = reloadParams;
 
@@ -1021,6 +1065,10 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
         });
 }
 
+/**
+ * Sends a reload task aborted log to New Relic.
+ * @param {Object} reloadParams - Parameters for the reload task.
+ */
 export function sendReloadTaskAbortedLog(reloadParams) {
     const params = reloadParams;
 

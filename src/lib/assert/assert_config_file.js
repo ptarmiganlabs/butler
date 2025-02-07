@@ -7,7 +7,22 @@ import { getReloadTasksCustomProperties } from '../../qrs_util/task_cp_util.js';
 import { confifgFileSchema } from './config-file-schema.js';
 import globals from '../../globals.js';
 
-// Verify QS related settings in the config file
+/**
+ * Asserts the validity of QS related settings in the configuration file.
+ *
+ * This function checks that the `Butler.configEngine.headers.static` and
+ * `Butler.configQRS.headers.static` arrays in the config file are not empty
+ * and contain at least one object with the property "X-Qlik-User". The
+ * "X-Qlik-User" value should be in the format "UserDirectory=<userdir>;
+ * UserId=<userid>".
+ *
+ * If any of the conditions are not met, an error is logged and the function
+ * returns `false`. Otherwise, the function returns `true`.
+ *
+ * @param {object} config - The configuration object.
+ * @param {object} logger - The logger object used for logging errors.
+ * @returns {boolean} - Returns `true` if all assertions pass, otherwise `false`.
+ */
 export const configFileQsAssert = async (config, logger) => {
     // The array Butler.configEngine.headers.static must contain
     // - at least one object
@@ -45,7 +60,26 @@ export const configFileQsAssert = async (config, logger) => {
     return true;
 };
 
-// Verify email specic settings in the config file
+/**
+ * Asserts the validity of email notification settings in the configuration file.
+ *
+ * This function checks if the email notification settings for reload task success,
+ * failure, and aborted events are properly configured in the config file. It verifies
+ * that when email notifications are enabled, specific custom properties are set to
+ * valid, non-empty strings and exist in the Qlik Sense environment.
+ *
+ * For each type of notification (success, failure, aborted), it checks:
+ * - If email notifications are enabled.
+ * - If the necessary custom properties are specified and exist in the Qlik Sense environment.
+ *
+ * If any condition is not met, an error is logged and the function returns `false`.
+ * Otherwise, it returns `true`.
+ *
+ * @param {object} config - The configuration object.
+ * @param {object} configQRS - The QRS configuration object.
+ * @param {object} logger - The logger object used for logging errors and debugging information.
+ * @returns {boolean} - Returns `true` if all assertions pass, otherwise `false`.
+ */
 export const configFileEmailAssert = async (config, configQRS, logger) => {
     // If the following properties are true:
     // - Butler.emailNotification.enable
@@ -191,7 +225,14 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
     return true;
 };
 
-// Veriify InfluxDb related settings in the config file
+/**
+ * Asserts that the InfluxDB related settings in the config file are valid
+ *
+ * @param {object} config - The configuration object.
+ * @param {object} configQRS - The QRS configuration object.
+ * @param {object} logger - The logger object.
+ * @returns {Promise<boolean>} - Returns true if config file is valid, false otherwise.
+ */
 export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
     // The custom property specified by
     // Butler.influxDb.reloadTaskSuccess.byCustomProperty.customPropertyName
@@ -254,7 +295,14 @@ export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
 };
 
 /**
- * Verify New Relic settings in the config file
+ * Verifies that the New Relic settings in the config file are correct.
+ * Specifically, it checks that the custom property specified for New Relic
+ * monitoring is present in Qlik Sense, and that the choice values of the custom
+ * property match the values in Butler.thirdPartyToolsCredentials.newRelic.
+ * @param {Config} config - The configuration object.
+ * @param {Object} configQRS - The configuration object for QRS.
+ * @param {Logger} logger - The logger instance.
+ * @returns {Promise<boolean>} true if the settings are correct, false otherwise.
  */
 export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
@@ -641,7 +689,16 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     return true;
 };
 
-// Function to verify that config file has the correct format
+/**
+ * Verifies that the config file has the correct structure, as defined by the Ajv schema
+ * in src/lib/assert/config-file-schema.js. If the config file is valid, this function
+ * does nothing. If the config file is invalid, this function logs the errors and exits
+ * the process with a non-zero exit code.
+ *
+
+ * @returns {Promise<boolean>} true if the config file is valid, false otherwise
+ * @throws {Error} if there is an error while trying to read the config file
+ */
 export async function configFileStructureAssert() {
     try {
         const ajv = new Ajv({

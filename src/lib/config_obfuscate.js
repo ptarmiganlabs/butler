@@ -1,5 +1,10 @@
 import globals from '../globals.js';
 
+/**
+ * Obfuscate sensitive information in the configuration object.
+ * @param {Object} config - The configuration object to obfuscate.
+ * @returns {Object} - The obfuscated configuration object.
+ */
 function configObfuscate(config) {
     try {
         const obfuscatedConfig = { ...config };

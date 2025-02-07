@@ -7,6 +7,12 @@ import { logRESTCall } from '../../lib/log_rest_call.js';
 import slackSend from '../../lib/slack_api.js';
 import apiPutSlackPostMessage from '../../api/slack_post_message.js';
 
+/**
+ * Handles the PUT request to post a message to Slack.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerPutSlackPostMessage(request, reply) {
     try {
         logRESTCall(request);
@@ -46,6 +52,12 @@ async function handlerPutSlackPostMessage(request, reply) {
     }
 }
 
+/**
+ * Registers the Slack post message endpoint if enabled in the configuration.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ * @returns {Promise<void>}
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

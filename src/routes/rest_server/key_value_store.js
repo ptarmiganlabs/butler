@@ -23,6 +23,11 @@ import {
     apiGetKeysInNamespace,
 } from '../../api/key_value_store.js';
 
+/**
+ * Handles the GET request to retrieve the list of namespaces.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerGetNamespaceList(request, reply) {
     try {
         logRESTCall(request);
@@ -38,6 +43,11 @@ async function handlerGetNamespaceList(request, reply) {
     }
 }
 
+/**
+ * Handles the GET request to retrieve a key-value pair in a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerGetKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
@@ -89,6 +99,11 @@ async function handlerGetKeyValueInNamespace(request, reply) {
     }
 }
 
+/**
+ * Handles the GET request to check if a key exists in a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerKeyExists(request, reply) {
     try {
         logRESTCall(request);
@@ -143,6 +158,11 @@ async function handlerKeyExists(request, reply) {
     }
 }
 
+/**
+ * Handles the POST request to add a key-value pair in a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerPostKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
@@ -175,6 +195,11 @@ async function handlerPostKeyValueInNamespace(request, reply) {
     }
 }
 
+/**
+ * Handles the DELETE request to delete a key-value pair in a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerDeleteKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
@@ -226,6 +251,11 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
     }
 }
 
+/**
+ * Handles the DELETE request to delete a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerDeleteNamespace(request, reply) {
     try {
         logRESTCall(request);
@@ -268,6 +298,11 @@ async function handlerDeleteNamespace(request, reply) {
     }
 }
 
+/**
+ * Handles the GET request to retrieve the list of keys in a namespace.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerGetKeyList(request, reply) {
     try {
         logRESTCall(request);
@@ -316,6 +351,11 @@ async function handlerGetKeyList(request, reply) {
     }
 }
 
+/**
+ * Registers the REST endpoints for key-value store operations.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

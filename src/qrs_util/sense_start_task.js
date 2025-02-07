@@ -1,7 +1,12 @@
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
-// Function for starting Sense task, given its task ID (as it appears in the QMC task list)
+/**
+ * Starts a Qlik Sense task given its task ID.
+ *
+ * @param {string} taskId - The ID of the task.
+ * @returns {Promise<boolean>} - Returns true if the task was started successfully, otherwise false.
+ */
 async function senseStartTask(taskId) {
     try {
         // Get http headers from Butler config file

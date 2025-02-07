@@ -29,6 +29,12 @@ import {
     apiGETSchedulerStatus,
 } from '../../api/scheduler.js';
 
+/**
+ * Handler function for GET /v4/schedules endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerGETSchedules(request, reply) {
     try {
         logRESTCall(request);
@@ -56,6 +62,12 @@ async function handlerGETSchedules(request, reply) {
     }
 }
 
+/**
+ * Handler function for POST /v4/schedules endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerPOSTSchedules(request, reply) {
     try {
         logRESTCall(request);
@@ -76,6 +88,12 @@ async function handlerPOSTSchedules(request, reply) {
     }
 }
 
+/**
+ * Handler function for DELETE /v4/schedules/:scheduleId endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerDELETESchedules(request, reply) {
     try {
         logRESTCall(request);
@@ -96,6 +114,12 @@ async function handlerDELETESchedules(request, reply) {
     }
 }
 
+/**
+ * Handler function for PUT /v4/schedules/:scheduleId/start endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerPUTSchedulesStart(request, reply) {
     try {
         logRESTCall(request);
@@ -131,6 +155,12 @@ async function handlerPUTSchedulesStart(request, reply) {
     }
 }
 
+/**
+ * Handler function for PUT /v4/schedules/:scheduleId/stop endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerPUTSchedulesStop(request, reply) {
     try {
         logRESTCall(request);
@@ -163,6 +193,12 @@ async function handlerPUTSchedulesStop(request, reply) {
     }
 }
 
+/**
+ * Handler function for GET /v4/schedules/status endpoint.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Promise<void>}
+ */
 async function handlerGETSchedulesStatus(request, reply) {
     try {
         logRESTCall(request);
@@ -177,6 +213,12 @@ async function handlerGETSchedulesStatus(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
+/**
+ * Registers the REST endpoints for scheduler operations.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ * @returns {Promise<void>}
+ */
 export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.scheduler.getSchedule') &&

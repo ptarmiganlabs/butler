@@ -1,7 +1,12 @@
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
-// Function for getting info about owner of Qlik Sense apps
+/**
+ * Checks if a Qlik Sense task exists given its task ID.
+ *
+ * @param {string} taskId - The ID of the task.
+ * @returns {Promise<object>} - Returns an object indicating whether the task exists and its details.
+ */
 const doesTaskExist = async (taskId) => {
     // eslint-disable-next-line no-unused-vars
     try {

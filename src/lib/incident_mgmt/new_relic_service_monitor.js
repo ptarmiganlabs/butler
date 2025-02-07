@@ -27,6 +27,10 @@ if (globals.config.has('Butler.incidentTool.newRelic.serviceMonitor.sharedSettin
     });
 }
 
+/**
+ * Retrieves the configuration for a service state event.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getServiceStateEventConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -94,6 +98,10 @@ function getServiceStateEventConfig() {
     }
 }
 
+/**
+ * Retrieves the configuration for a service state log.
+ * @returns {Object|boolean} Configuration object if successful, false otherwise.
+ */
 function getServiceStateLogConfig() {
     try {
         // First make sure this tool is enabled in the config file and that we have needed parameters
@@ -159,6 +167,10 @@ function getServiceStateLogConfig() {
     }
 }
 
+/**
+ * Sends a service monitor event to New Relic.
+ * @param {Object} serviceStatusParams - Parameters for the service status.
+ */
 async function sendServiceMonitorEvent(serviceStatusParams) {
     const params = serviceStatusParams;
 
@@ -256,6 +268,10 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
         });
 }
 
+/**
+ * Sends a service monitor log to New Relic.
+ * @param {Object} serviceStatusParams - Parameters for the service status.
+ */
 async function sendServiceMonitorLog(serviceStatusParams) {
     const params = serviceStatusParams;
 

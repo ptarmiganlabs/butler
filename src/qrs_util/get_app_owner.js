@@ -1,7 +1,12 @@
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
-// Function for getting info about owner of Qlik Sense apps
+/**
+ * Retrieves information about the owner of a Qlik Sense app.
+ *
+ * @param {string} appId - The ID of the app.
+ * @returns {Promise<object>} - Returns an object containing owner information.
+ */
 const getAppOwner = async (appId) => {
     try {
         // Get http headers from Butler config file

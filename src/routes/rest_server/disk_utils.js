@@ -11,6 +11,11 @@ import { logRESTCall } from '../../lib/log_rest_call.js';
 import isDirectoryChildOf from '../../lib/disk_utils.js';
 import { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } from '../../api/disk_utils.js';
 
+/**
+ * Handles the PUT request to copy a file.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerFileCopy(request, reply) {
     try {
         logRESTCall(request);
@@ -126,6 +131,11 @@ async function handlerFileCopy(request, reply) {
     }
 }
 
+/**
+ * Handles the PUT request to move a file.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerFileMove(request, reply) {
     try {
         logRESTCall(request);
@@ -219,6 +229,11 @@ async function handlerFileMove(request, reply) {
     }
 }
 
+/**
+ * Handles the DELETE request to delete a file.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerFileDelete(request, reply) {
     try {
         logRESTCall(request);
@@ -288,6 +303,11 @@ async function handlerFileDelete(request, reply) {
     }
 }
 
+/**
+ * Handles the POST request to create a QVD directory.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerCreateDirQvd(request, reply) {
     try {
         logRESTCall(request);
@@ -315,6 +335,11 @@ async function handlerCreateDirQvd(request, reply) {
     }
 }
 
+/**
+ * Handles the PUT request to create a directory.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerCreateDir(request, reply) {
     try {
         logRESTCall(request);
@@ -341,6 +366,11 @@ async function handlerCreateDir(request, reply) {
     }
 }
 
+/**
+ * Registers the REST endpoints for disk utility operations.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

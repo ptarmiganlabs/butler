@@ -3,10 +3,13 @@ import { Duration, DateTime } from 'luxon';
 
 import globals from '../../../globals.js';
 
-// Function to get script log for a specific Qlik Sense Cloud app reload
-// Parameters:
-// - appId: Qlik Sense Cloud app ID
-// - reloadId: Qlik Sense Cloud reload ID
+/**
+ * Get script log for a specific Qlik Sense Cloud app reload.
+ *
+ * @param {string} appId - Qlik Sense Cloud app ID
+ * @param {string} reloadId - Qlik Sense Cloud reload ID
+ * @returns {Promise<Object|boolean>} - Returns script log object if successful, otherwise false
+ */
 export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
     try {
         // Set up Qlik Sense Cloud API configuration
@@ -38,10 +41,13 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
     }
 }
 
-// Function to get script log head lines
-// Parameters:
-// - scriptLogFull: Full script log as array
-// - headLineCount: Number of lines to get from head
+/**
+ * Get script log head lines.
+ *
+ * @param {Array} scriptLogFull - Full script log as array
+ * @param {number} headLineCount - Number of lines to get from head
+ * @returns {string} - Returns script log head as string
+ */
 export function getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, headLineCount) {
     if (headLineCount > 0) {
         const scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
@@ -53,10 +59,13 @@ export function getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, headLineC
     }
 }
 
-// Function to get script log tail lines
-// Parameters:
-// - scriptLogFull: Full script log as array
-// - tailLineCount: Number of lines to get from tail
+/**
+ * Get script log tail lines.
+ *
+ * @param {Array} scriptLogFull - Full script log as array
+ * @param {number} tailLineCount - Number of lines to get from tail
+ * @returns {string} - Returns script log tail as string
+ */
 export function getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, tailLineCount) {
     if (tailLineCount > 0) {
         const scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
@@ -68,9 +77,12 @@ export function getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, tailLineC
     }
 }
 
-// Function to get general info/status/result for a specific Qlik Sense Cloud reload
-// Parameters:
-// - reloadId: Qlik Sense Cloud reload ID
+/**
+ * Get general info/status/result for a specific Qlik Sense Cloud reload.
+ *
+ * @param {string} reloadId - Qlik Sense Cloud reload ID
+ * @returns {Promise<Object|boolean>} - Returns reload info object if successful, otherwise false
+ */
 export async function getQlikSenseCloudAppReloadInfo(reloadId) {
     try {
         // Set up Qlik Sense Cloud API configuration

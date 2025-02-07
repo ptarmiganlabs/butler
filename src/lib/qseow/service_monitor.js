@@ -13,6 +13,12 @@ import { postWindowsServiceStatusToInfluxDB } from '../post_to_influxdb.js';
 // One state machines for each service
 const serviceStateMachine = [];
 
+/**
+ * Sends service status to New Relic.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @param {object} svc - Service parameters.
+ */
 const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     logger.verbose(`Sending service status "${svc.serviceStatus}" to New Relic: "${svc.serviceName}"`);
 
@@ -35,6 +41,12 @@ const serviceMonitorNewRelicSend1 = (config, logger, svc) => {
     });
 };
 
+/**
+ * Sends service status to MQTT.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @param {object} svc - Service parameters.
+ */
 const serviceMonitorMqttSend1 = (config, logger, svc) => {
     if (svc.serviceStatus === 'STOPPED') {
         if (
@@ -91,6 +103,12 @@ const serviceMonitorMqttSend1 = (config, logger, svc) => {
     }
 };
 
+/**
+ * Sends service status to MQTT.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @param {object} svc - Service parameters.
+ */
 const serviceMonitorMqttSend2 = (config, logger, svc) => {
     if (config.get('Butler.mqttConfig.serviceStatusTopic') === null || config.get('Butler.mqttConfig.serviceStatusTopic').length === 0) {
         logger.verbose(`"${svc.serviceName}"No MQTT topic defined in config entry "Butler.mqttConfig.serviceStatusTopic"`);
@@ -115,10 +133,14 @@ const serviceMonitorMqttSend2 = (config, logger, svc) => {
     }
 };
 
+/**
+ * Verifies that all Windows services specified in the config file exist and can be reached.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @returns {Promise<boolean>} True if all services are reachable, false otherwise.
+ */
 const verifyServicesExist = async (config, logger) => {
-    logger.info(
-        'VERIFY WIN SERVICES EXIST: Verifying that all Windows services specified in config file exist and can be reached.',
-    );
+    logger.info('VERIFY WIN SERVICES EXIST: Verifying that all Windows services specified in config file exist and can be reached.');
 
     // Return false if one or more services do not exist or cannot be reached.
     // Return true if all services are reachable.
@@ -169,9 +191,13 @@ const verifyServicesExist = async (config, logger) => {
     return result;
 };
 
-// Function to check the status of all Windows services specified in the config file
-// The isFirsCheck parameter is used to determine if we should send a message to the alert destinations
-// Set isFirsCheck default to false
+/**
+ * Checks the status of all Windows services specified in the config file.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @param {boolean} [isFirstCheck=false] - Indicates if this is the first check.
+ * @returns {Promise<void>}
+ */
 const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
     const hostsToCheck = config.get('Butler.serviceMonitor.monitor');
 
@@ -197,9 +223,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
 
             // Get status of this service
             const serviceStatus = await status(logger, service.name, host.host);
-            logger.debug(
-                `Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`,
-            );
+            logger.debug(`Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`);
 
             // Get details about this service
             const serviceDetails = await details(logger, service.name, host.host);
@@ -486,6 +510,12 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
     });
 };
 
+/**
+ * Sets up the service monitor timer.
+ * @param {object} config - Configuration object.
+ * @param {object} logger - Logger object.
+ * @returns {Promise<void>}
+ */
 async function setupServiceMonitorTimer(config, logger) {
     try {
         if (config.get('Butler.serviceMonitor.enable') === true) {

@@ -5,12 +5,14 @@ import upath from 'upath';
 import { fileURLToPath } from 'url';
 
 // Load global variables and functions
-// import { globals, config, logger } from '../globals.js';
 import globals from '../globals.js';
 import { handleQlikSenseCloudAppReloadFinished } from './qscloud/mqtt_event_app_reload_finished.js';
 
 const { config, logger } = globals;
 
+/**
+ * Initialize MQTT handlers for Qlik Sense Enterprise on Windows and Qlik Sense Cloud events.
+ */
 function mqttInitHandlers() {
     // Set up MQTT handlers related to QSEoW
     try {
@@ -192,7 +194,7 @@ function mqttInitHandlers() {
 
             if (!globals.mqttClientQlikSenseCloudEvent.connected) {
                 logger.verbose(
-                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT client for Qlik Sense Cloud events. Host is "${brokerUrl}"`
+                    `MQTT INIT HANDLERS: Created (but not yet connected) MQTT client for Qlik Sense Cloud events. Host is "${brokerUrl}"`,
                 );
             }
 
@@ -201,18 +203,18 @@ function mqttInitHandlers() {
                 globals.mqttClientQlikSenseCloudEvent.on('connect', () => {
                     try {
                         logger.info(
-                            `MQTT QS CLOUD EVENT CONNECT: Connected to MQTT broker "${brokerUrl}", with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`
+                            `MQTT QS CLOUD EVENT CONNECT: Connected to MQTT broker "${brokerUrl}", with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`,
                         );
 
                         // Let the world know that Butler is connected to MQTT, ready to receive Qlik Sense Cloud events
                         globals.mqttClientQlikSenseCloudEvent.publish(
                             'butler/qscloud/event/mqttforward/status',
-                            `Connected to MQTT broker "${brokerUrl}" with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`
+                            `Connected to MQTT broker "${brokerUrl}" with client ID ${globals.mqttClientQlikSenseCloudEvent.options.clientId}`,
                         );
 
                         // Have Butler listen to all messages in the topic subtree specified in the config file
                         globals.mqttClientQlikSenseCloudEvent.subscribe(
-                            config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.subscriptionRoot')
+                            config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.subscriptionRoot'),
                         );
                     } catch (err) {
                         logger.error(`MQTT QS CLOUD EVENT CONNECT: Error=${JSON.stringify(err, null, 2)}`);
@@ -240,8 +242,6 @@ function mqttInitHandlers() {
 
                             // Handle app reload finished event
                             const appReloadResult = await handleQlikSenseCloudAppReloadFinished(messageObj);
-
-
                         }
                     } catch (err) {
                         logger.error(`MQTT QS CLOUD MESSAGE: Error=${JSON.stringify(err, null, 2)}`);

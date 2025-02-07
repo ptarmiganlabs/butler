@@ -9,8 +9,11 @@ const optionsHealth = {
     timeout: 2000,
 };
 
-// This code checks the health of the docker container using the docker api
-// It checks the status code of the response and returns an exit code of 0 if the response is 200 and 1 otherwise
+/**
+ * This code checks the health of the docker container using the docker API.
+ * It checks the status code of the response and returns an exit code of 0 if the response is 200 and 1 otherwise.
+ * @param {http.IncomingMessage} res - The response object from the HTTP request.
+ */
 const requestHealth = httpHealth.request(optionsHealth, (res) => {
     console.log(`STATUS Docker health: ${res.statusCode}`);
     if (res.statusCode === 200) {
@@ -20,6 +23,10 @@ const requestHealth = httpHealth.request(optionsHealth, (res) => {
     }
 });
 
+/**
+ * Handles errors that occur during the HTTP request.
+ * @param {Error} err - The error object.
+ */
 requestHealth.on('error', (err) => {
     console.log('ERROR Docker health:');
     console.log(err);

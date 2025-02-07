@@ -4,6 +4,7 @@ import { exec } from 'child_process';
  * Get all names of services installed
  * @param {object} logger Logger object
  * @param {string} host Host from which to get services
+ * @returns {Promise<string[]>} Promise resolving to an array of service names
  */
 export function all(logger, host = null) {
     // If host is not specified, use services on localhost
@@ -62,6 +63,7 @@ export function all(logger, host = null) {
  * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
+ * @returns {Promise<boolean>} Promise resolving to true if service exists, false otherwise
  */
 export function exists(logger, serviceName, host = null) {
     // If host is not specified, use services on localhost
@@ -121,6 +123,7 @@ export function exists(logger, serviceName, host = null) {
  * Get status of all services on a host
  * @param {object} logger Logger object
  * @param {string} host Host on which service is running
+ * @returns {Promise<object[]>} Promise resolving to an array of service status objects
  */
 export function statusAll(logger, host = null) {
     // Create promise
@@ -205,10 +208,10 @@ export function statusAll(logger, host = null) {
 /**
  * Get status of a specific service on a host
  * It is assumed that the service exists.
- *
  * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
+ * @returns {Promise<string>} Promise resolving to the state name of the service
  */
 export function status(logger, serviceName, host = null) {
     // Create promise
@@ -292,10 +295,10 @@ export function status(logger, serviceName, host = null) {
 /**
  * Get the details of provided service
  * It is assumed that the service exists.
- *
  * @param {object} logger Logger object
  * @param {string} serviceName Name of service
  * @param {string} host Host on which service is running
+ * @returns {Promise<object>} Promise resolving to an object containing service details
  */
 export function details(logger, serviceName, host = null) {
     // Create promise

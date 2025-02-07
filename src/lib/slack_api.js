@@ -1,23 +1,21 @@
 import axios from 'axios';
 
 /**
- *
- * @param {*} slackConfig
- * slackConfig = {
- *   webhookUrl: 'https://hooks.slack.com/services/...',
- *   messageType: 'basic', // basic, formatted, restmsg
- *   templateFile: 'slack_template.json',
- *   headScriptLogLines: 'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. Nullam nec purus.',
- *   tailScriptLogLines: 'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit. Nullam nec purus.',
- *   fromUser: 'MyBot',
- *   iconEmoji: ':ghost:',
- *   rateLimit: 30,
- *   basicMsgTemplate: 'abc123...',
- *   channel: '#general',
- *   text: 'Hello, world!'
- * }
- * @param {*} logger
- * @returns
+ * Sends a message to a Slack channel using the provided configuration.
+ * @param {Object} slackConfig - Configuration for the Slack message.
+ * @param {string} slackConfig.webhookUrl - The Slack webhook URL.
+ * @param {string} slackConfig.messageType - The type of message (basic, formatted, restmsg).
+ * @param {string} slackConfig.templateFile - The template file for the message.
+ * @param {string} slackConfig.headScriptLogLines - The head script log lines.
+ * @param {string} slackConfig.tailScriptLogLines - The tail script log lines.
+ * @param {string} slackConfig.fromUser - The username to send the message from.
+ * @param {string} slackConfig.iconEmoji - The emoji icon to use.
+ * @param {number} slackConfig.rateLimit - The rate limit for sending messages.
+ * @param {string} slackConfig.basicMsgTemplate - The basic message template.
+ * @param {string} slackConfig.channel - The Slack channel to send the message to.
+ * @param {string} slackConfig.text - The text of the message.
+ * @param {Object} logger - The logger object for logging messages.
+ * @returns {Promise<void>}
  */
 async function slackSend(slackConfig, logger) {
     // TODO Sanity check Slack config
