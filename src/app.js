@@ -337,8 +337,6 @@ async function build(opts = {}) {
         // Create absolute path to the html directory
         // dirname points to the directory where this file (app.js) is located, taking into account
         // if the app is running as a packaged app or as a Node.js app.
-        globals.logger.verbose(`----------------2: ${globals.appBasePath}`);
-
         // Get directory contents of dirname
         const dirContents = fs.readdirSync(globals.appBasePath);
         globals.logger.verbose(`CONFIG VIS: Directory contents of "${globals.appBasePath}": ${dirContents}`);
