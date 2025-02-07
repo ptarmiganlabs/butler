@@ -2,9 +2,12 @@ import axios from 'axios';
 import globals from '../../../globals.js';
 import { verifyGuid } from '../../guid_util.js';
 
-// Function to get info about a specific Qlik Sense Cloud app
-// Parameters:
-// - appId: Qlik Sense Cloud app ID
+/**
+ * Get info about a specific Qlik Sense Cloud app.
+ *
+ * @param {string} appId - Qlik Sense Cloud app ID
+ * @returns {Promise<Object|boolean>} - Returns app info object if successful, otherwise false
+ */
 export async function getQlikSenseCloudAppInfo(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false
@@ -34,9 +37,12 @@ export async function getQlikSenseCloudAppInfo(appId) {
     }
 }
 
-// Function to get metadata for a specific Qlik Sense Cloud app
-// Parameters:
-// - appId: Qlik Sense Cloud app ID
+/**
+ * Get metadata for a specific Qlik Sense Cloud app.
+ *
+ * @param {string} appId - Qlik Sense Cloud app ID
+ * @returns {Promise<Object|boolean>} - Returns app metadata object if successful, otherwise false
+ */
 export async function getQlikSenseCloudAppMetadata(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false
@@ -66,9 +72,12 @@ export async function getQlikSenseCloudAppMetadata(appId) {
     }
 }
 
-// Function to get app items for a specific Qlik Sense Cloud app
-// Parameters:
-// - appId: Qlik Sense Cloud app ID
+/**
+ * Get app items for a specific Qlik Sense Cloud app.
+ *
+ * @param {string} appId - Qlik Sense Cloud app ID
+ * @returns {Promise<Object|boolean>} - Returns app items object if successful, otherwise false
+ */
 export async function getQlikSenseCloudAppItems(appId) {
     try {
         // Make sure appId is valid GUID. If not, log error and return false

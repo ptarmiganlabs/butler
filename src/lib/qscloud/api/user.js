@@ -1,10 +1,13 @@
 import axios from 'axios';
 import globals from '../../../globals.js';
 
-// Function to get info about a specific Qlik Sense Cloud user
-// Documentation: https://qlik.dev/apis/rest/users/#get-v1-users-userId
-// Parameters:
-// - userId: Qlik Sense Cloud user ID
+/**
+ * Get info about a specific Qlik Sense Cloud user.
+ * Documentation: https://qlik.dev/apis/rest/users/#get-v1-users-userId
+ *
+ * @param {string} userId - Qlik Sense Cloud user ID
+ * @returns {Promise<Object|boolean>} - Returns user info object if successful, otherwise false
+ */
 export async function getQlikSenseCloudUserInfo(userId) {
     try {
         // Set up Qlik Sense Cloud API configuration

@@ -1,7 +1,10 @@
 // Load global variables and functions
 import globals from '../globals.js';
 
-// Function for logging info about REST call
+/**
+ * Log information about a REST call.
+ * @param {Object} req - The request object.
+ */
 export const logRESTCall = (req) => {
     globals.logger.info(`${req.url} called from ${req.headers.remoteip}`);
     globals.logger.debug(`Query: ${JSON.stringify(req.query, null, 2)}`);

@@ -6,6 +6,12 @@ import globals from '../../globals.js';
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import apiGetButlerPing from '../../api/butler_ping.js';
 
+/**
+ * Handles the GET request to ping Butler.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Object} - The response object with Butler's status and version.
+ */
 async function handlerGetButlerPing(request, reply) {
     try {
         logRESTCall(request);
@@ -21,6 +27,11 @@ async function handlerGetButlerPing(request, reply) {
     }
 }
 
+/**
+ * Registers the REST endpoint for pinging Butler.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

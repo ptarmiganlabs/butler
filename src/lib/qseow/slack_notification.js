@@ -49,6 +49,10 @@ if (globals.config.has('Butler.slackNotification.serviceStopped.rateLimit')) {
     });
 }
 
+/**
+ * Checks if Slack reload failed notification configuration is valid.
+ * @returns {object|boolean} Configuration object if valid, false otherwise.
+ */
 function getSlackReloadFailedNotificationConfigOk() {
     try {
         // First make sure Slack sending is enabled in the config file and that we have needed parameters
@@ -121,6 +125,10 @@ function getSlackReloadFailedNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if Slack reload aborted notification configuration is valid.
+ * @returns {object|boolean} Configuration object if valid, false otherwise.
+ */
 function getSlackReloadAbortedNotificationConfigOk() {
     try {
         if (!globals.config.get('Butler.slackNotification.reloadTaskAborted.enable')) {
@@ -192,6 +200,11 @@ function getSlackReloadAbortedNotificationConfigOk() {
     }
 }
 
+/**
+ * Checks if Slack service monitor notification configuration is valid.
+ * @param {string} serviceStatus - Status of the service.
+ * @returns {object|boolean} Configuration object if valid, false otherwise.
+ */
 function getSlackServiceMonitorNotificationConfig(serviceStatus) {
     try {
         if (!globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable')) {
@@ -315,6 +328,13 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
     }
 }
 
+/**
+ * Sends a Slack message using the specified configuration and template context.
+ * @param {object} slackConfig - Slack configuration.
+ * @param {object} templateContext - Context for the Handlebars template.
+ * @param {string} msgType - Type of the message.
+ * @returns {Promise<void>}
+ */
 async function sendSlack(slackConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
@@ -418,6 +438,11 @@ async function sendSlack(slackConfig, templateContext, msgType) {
     }
 }
 
+/**
+ * Sends a reload task failure notification to Slack.
+ * @param {object} reloadParams - Parameters for the reload task.
+ * @returns {void}
+ */
 export function sendReloadTaskFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.taskId, 1)
@@ -625,6 +650,11 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
         });
 }
 
+/**
+ * Sends a reload task aborted notification to Slack.
+ * @param {object} reloadParams - Parameters for the reload task.
+ * @returns {void}
+ */
 export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
     rateLimiterMemoryAbortedReloads
         .consume(reloadParams.taskId, 1)
@@ -815,6 +845,11 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
         });
 }
 
+/**
+ * Sends a service monitor notification to Slack.
+ * @param {object} serviceParams - Parameters for the service.
+ * @returns {void}
+ */
 export function sendServiceMonitorNotificationSlack(serviceParams) {
     rateLimiterMemoryServiceMonitor
         .consume(`${serviceParams.host}|${serviceParams.serviceName}`, 1)

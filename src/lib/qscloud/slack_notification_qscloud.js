@@ -23,6 +23,10 @@ if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotif
     });
 }
 
+/**
+ * Retrieves the Slack configuration for app reload failure notifications.
+ * @returns {Object|boolean} The Slack configuration object or false if configuration is invalid.
+ */
 function getAppReloadFailedSlackConfig() {
     try {
         if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.enable')) {
@@ -95,6 +99,12 @@ function getAppReloadFailedSlackConfig() {
     }
 }
 
+/**
+ * Sends a Slack message based on the provided configuration and template context.
+ * @param {Object} slackConfig - The Slack configuration object.
+ * @param {Object} templateContext - The context for the Handlebars template.
+ * @param {string} msgType - The type of message to send.
+ */
 async function sendSlack(slackConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
@@ -211,7 +221,10 @@ async function sendSlack(slackConfig, templateContext, msgType) {
     }
 }
 
-// Function to send Qlik Sense Cloud app reload failed alert
+/**
+ * Sends a Slack notification for a Qlik Sense Cloud app reload failure.
+ * @param {Object} reloadParams - The parameters related to the app reload.
+ */
 export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.appId, 1)

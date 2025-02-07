@@ -7,17 +7,30 @@ import globals from '../globals.js';
 // eslint-disable-next-line prefer-const
 let kvStore = [];
 
+/**
+ * Get the list of namespaces in the key-value store.
+ * @returns {Array} - An array of namespace names.
+ */
 export function getNamespaceList() {
     const ns = [];
     kvStore.forEach((item) => ns.push(item.namespace));
     return ns;
 }
 
+/**
+ * Get a specific namespace from the key-value store.
+ * @param {string} namespaceName - The name of the namespace to retrieve.
+ * @returns {Object} - The namespace object.
+ */
 export function getNamespace(namespaceName) {
     const ns = kvStore.find((item) => item.namespace === namespaceName);
     return ns;
 }
 
+/**
+ * Delete a specific namespace from the key-value store.
+ * @param {string} namespaceName - The name of the namespace to delete.
+ */
 export async function deleteNamespace(namespaceName) {
     try {
         // Remove all KV pairs from namespace
@@ -32,6 +45,12 @@ export async function deleteNamespace(namespaceName) {
     }
 }
 
+/**
+ * Get the value of a specific key in a namespace.
+ * @param {string} namespace - The namespace containing the key.
+ * @param {string} key - The key to retrieve the value for.
+ * @returns {Promise<*>} - The value of the key, or null if the namespace does not exist.
+ */
 export async function getValue(namespace, key) {
     try {
         const ns = getNamespace(namespace);
@@ -46,6 +65,12 @@ export async function getValue(namespace, key) {
     }
 }
 
+/**
+ * Delete a specific key-value pair from a namespace.
+ * @param {string} namespace - The namespace containing the key-value pair.
+ * @param {string} key - The key to delete.
+ * @returns {Promise<boolean>} - True if the key was deleted, false otherwise.
+ */
 export async function deleteKeyValuePair(namespace, key) {
     try {
         const ns = getNamespace(namespace);
@@ -60,6 +85,13 @@ export async function deleteKeyValuePair(namespace, key) {
     }
 }
 
+/**
+ * Add a new key-value pair to a namespace.
+ * @param {string} newNamespace - The namespace to add the key-value pair to.
+ * @param {string} newKey - The key to add.
+ * @param {*} newValue - The value to add.
+ * @param {number} [newTtl] - The time-to-live for the key-value pair, in milliseconds.
+ */
 export async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
     try {
         // Does namespace already exist?

@@ -3,6 +3,9 @@ import globals from '../globals.js';
 // Construct a new RegExp object matching guids
 const guidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
+/**
+ * Verify that all task IDs in the configuration are valid GUIDs.
+ */
 export const configVerifyAllTaskId = () => {
     try {
         // Only verify allowed task IDs if that feature is turned on
@@ -27,6 +30,11 @@ export const configVerifyAllTaskId = () => {
     }
 };
 
+/**
+ * Verify if a specific task ID is a valid GUID.
+ * @param {string} taskId - The task ID to verify.
+ * @returns {boolean} - True if the task ID is valid, false otherwise.
+ */
 export const verifyTaskId = (taskId) => {
     try {
         if (guidRegExp.test(taskId) === true) {

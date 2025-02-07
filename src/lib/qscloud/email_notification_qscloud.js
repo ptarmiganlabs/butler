@@ -23,6 +23,10 @@ if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotif
     });
 }
 
+/**
+ * Retrieves the email configuration for app reload failure notifications.
+ * @returns {Object|boolean} The email configuration object or false if configuration is invalid.
+ */
 function getAppReloadFailedEmailConfig() {
     try {
         // Is email alerts on failed reloads enabled?
@@ -74,7 +78,11 @@ function getAppReloadFailedEmailConfig() {
     }
 }
 
-// Function to send Qlik Sense Cloud app reload failed alert as email
+/**
+ * Sends an email notification for a Qlik Sense Cloud app reload failure.
+ * @param {Object} reloadParams - The parameters related to the app reload.
+ * @returns {boolean} True if the email was sent successfully, false otherwise.
+ */
 export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams) {
     try {
         globals.logger.info(

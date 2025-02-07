@@ -11,6 +11,12 @@ import { apiGetBase16ToBase62, apiGetBase62ToBase16 } from '../../api/base_conve
 const base62_to_Hex = anyBase('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789abcdef');
 const hex_to_base62 = anyBase('0123456789abcdef', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
+/**
+ * Handles the GET request to convert base62 to base16.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Object} - The response object with the converted base16 value.
+ */
 async function handlerGetBase62ToBase16(request, reply) {
     try {
         logRESTCall(request);
@@ -33,6 +39,12 @@ async function handlerGetBase62ToBase16(request, reply) {
     }
 }
 
+/**
+ * Handles the GET request to convert base16 to base62.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ * @returns {Object} - The response object with the converted base62 value.
+ */
 async function handlerGetBase16ToBase62(request, reply) {
     try {
         logRESTCall(request);
@@ -55,7 +67,11 @@ async function handlerGetBase16ToBase62(request, reply) {
     }
 }
 
-// eslint-disable-next-line no-unused-vars
+/**
+ * Registers the REST endpoints for base conversion operations.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.base62ToBase16') &&

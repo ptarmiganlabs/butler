@@ -10,11 +10,13 @@ import { sendQlikSenseCloudAppReloadFailureNotificationEmail } from './email_not
 
 const { config, logger } = globals;
 
-// Function to handle Qlik Sense Cloud app reload finished event
-// These events are received as MQTT messages, via a gateway that forwards the Qlik Sense Cloud webhook API events to MQTT
-//
-// Parameters:
-// - message: MQTT message object, as sent by Qlik Sense Cloud webhook API
+/**
+ * Handle Qlik Sense Cloud app reload finished event.
+ * These events are received as MQTT messages, via a gateway that forwards the Qlik Sense Cloud webhook API events to MQTT.
+ *
+ * @param {Object} message - MQTT message object, as sent by Qlik Sense Cloud webhook API
+ * @returns {Promise<boolean>} - Returns true if successful, otherwise false
+ */
 export async function handleQlikSenseCloudAppReloadFinished(message) {
     try {
         // Make sure eventType is 'com.qlik.v1.app.reload.finished'

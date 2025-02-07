@@ -3,11 +3,13 @@ import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
 /**
+ * Checks if a custom property value is set for a given task.
  *
- * @param {*} taskId
- * @param {*} cpName
- * @param {*} cpValue
- * @returns
+ * @param {string} taskId - The ID of the task.
+ * @param {string} cpName - The name of the custom property.
+ * @param {string} cpValue - The value of the custom property.
+ * @param {object} [logger] - Optional logger object.
+ * @returns {Promise<boolean>} - Returns true if the custom property value is set, otherwise false.
  */
 export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
     const localLogger = logger !== undefined ? logger : globals.logger;
@@ -57,10 +59,11 @@ export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) 
 }
 
 /**
+ * Retrieves all values for a custom property of a given task.
  *
- * @param {*} taskId
- * @param {*} cpName
- * @returns
+ * @param {string} taskId - The ID of the task.
+ * @param {string} cpName - The name of the custom property.
+ * @returns {Promise<Array<string>>} - Returns an array of custom property values.
  */
 export async function getTaskCustomPropertyValues(taskId, cpName) {
     globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
@@ -111,6 +114,14 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
 }
 
 // Function to get all custom properties that are available for reload tasks
+/**
+ * Retrieves all custom properties that are available for reload tasks.
+ *
+ * @param {object} config - The configuration object.
+ * @param {object} configQRS - The QRS configuration object.
+ * @param {object} logger - The logger object.
+ * @returns {Promise<Array<object>>} - Returns an array of custom property definitions.
+ */
 export async function getReloadTasksCustomProperties(config, configQRS, logger) {
     logger.debug('GETRELOADTASKSCP: Retrieving all custom properties that are available for reload tasks');
 

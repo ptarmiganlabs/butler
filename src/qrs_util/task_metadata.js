@@ -2,6 +2,12 @@ import path from 'path';
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
+/**
+ * Retrieves metadata for a given task.
+ *
+ * @param {string} taskId - The ID of the task.
+ * @returns {Promise<object>} - Returns the metadata of the task.
+ */
 async function getTaskMetadata(taskId) {
     globals.logger.debug(`GETTASKMETADATA: Retrieving metadata for task ${taskId}`);
 

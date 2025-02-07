@@ -1,8 +1,13 @@
 import QrsInteract from 'qrs-interact';
 import globals from '../globals.js';
 
-// Function for getting info about owner of Qlik Sense apps
-// filter: { tag: 'abc', customProperty: { name: 'def', value: 'ghi' } }
+/**
+ * Retrieves information about Qlik Sense tasks based on a filter.
+ *
+ * @param {object} filter - The filter object containing tag or custom property.
+ *                 Example: { tag: 'abc', customProperty: { name: 'def', value: 'ghi' } }
+ * @returns {Promise<Array<object>>} - Returns an array of tasks matching the filter.
+ */
 const getTasks = async (filter) => {
     try {
         // Get http headers from Butler config file

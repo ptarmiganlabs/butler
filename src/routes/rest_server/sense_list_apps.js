@@ -10,6 +10,11 @@ import globals from '../../globals.js';
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import { apiGetSenseListApps, apiGetAppsList } from '../../api/sense_list_apps.js';
 
+/**
+ * Handles the GET request to list Qlik Sense apps.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerGetSenseListApps(request, reply) {
     try {
         // Set up enigma.js configuration
@@ -108,6 +113,11 @@ async function handlerGetSenseListApps(request, reply) {
     }
 }
 
+/**
+ * Registers the list apps endpoint if enabled in the configuration.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

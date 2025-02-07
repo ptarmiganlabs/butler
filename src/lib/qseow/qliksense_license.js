@@ -10,6 +10,11 @@ import {
 import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
 
 // Function to check Qlik Sense server license status
+/**
+ * Checks the Qlik Sense server license status.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 async function checkQlikSenseServerLicenseStatus(config, logger) {
     try {
         // Set up Sense repository service configuration
@@ -203,6 +208,11 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
 }
 
 // Function to check Qlik Sense access license status
+/**
+ * Checks the Qlik Sense access license status.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 async function checkQlikSenseAccessLicenseStatus(config, logger) {
     try {
         // Set up Sense repository service configuration
@@ -250,6 +260,13 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
 }
 
 // Function to release professional access licenses
+/**
+ * Releases professional access licenses.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ * @param {Object} qrsInstance - The QRS instance.
+ * @returns {boolean} - Returns true if licenses are successfully released, false otherwise.
+ */
 async function licenseReleaseProfessional(config, logger, qrsInstance) {
     // Build date filter to be used when fetching licenses with old lastUsed date
     // Get the current date and time
@@ -536,6 +553,13 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
 }
 
 // Function to release analyzer access licenses
+/**
+ * Releases analyzer access licenses.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ * @param {Object} qrsInstance - The QRS instance.
+ * @returns {boolean} - Returns true if licenses are successfully released, false otherwise.
+ */
 async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
     // Build date filter to be used when fetching licenses with old lastUsed date
     // Get the current date and time
@@ -817,6 +841,12 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
 }
 
 // Function to release Qlik Sense access licenses
+/**
+ * Checks and releases Qlik Sense access licenses.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ * @returns {boolean} - Returns true if licenses are successfully checked and released, false otherwise.
+ */
 async function checkQlikSenseLicenseRelease(config, logger) {
     try {
         // Set up Sense repository service configuration
@@ -867,6 +897,11 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 }
 
 // Function to set up the timer used to check Qlik Sense access license status
+/**
+ * Sets up the timer used to check Qlik Sense access license status.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
     try {
         if (config.get('Butler.qlikSenseLicense.licenseMonitor.enable') === true) {
@@ -888,6 +923,11 @@ export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
 }
 
 // Function to set up the timer used to release Qlik Sense access licenses
+/**
+ * Sets up the timer used to release Qlik Sense access licenses.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 export async function setupQlikSenseLicenseRelease(config, logger) {
     try {
         if (config.get('Butler.qlikSenseLicense.licenseRelease.enable') === true) {
@@ -909,6 +949,11 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
 }
 
 // Function to set up the timer used to check Qlik Sense server license status
+/**
+ * Sets up the timer used to check Qlik Sense server license status.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 export async function setupQlikSenseServerLicenseMonitor(config, logger) {
     try {
         if (config.get('Butler.qlikSenseLicense.serverLicenseMonitor.enable') === true) {

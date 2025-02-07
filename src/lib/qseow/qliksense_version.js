@@ -5,7 +5,11 @@ import https from 'https';
 import globals from '../../globals.js';
 import { postQlikSenseVersionToInfluxDB } from '../post_to_influxdb.js';
 
-// Function to check Qlik Sense version
+/**
+ * Checks the Qlik Sense version.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 async function checkQlikSenseVersion(config, logger) {
     try {
         // Set up Sense call to systeminfo endpoint using Axios
@@ -58,7 +62,11 @@ async function checkQlikSenseVersion(config, logger) {
     }
 }
 
-// Function to set up the timer used to check Qlik Sense version
+/**
+ * Sets up the timer used to check Qlik Sense version.
+ * @param {Object} config - The configuration object.
+ * @param {Object} logger - The logger object.
+ */
 export async function setupQlikSenseVersionMonitor(config, logger) {
     try {
         if (config.get('Butler.qlikSenseVersion.versionMonitor.enable') === true) {

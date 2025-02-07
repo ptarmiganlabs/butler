@@ -5,6 +5,10 @@ import globals from '../globals.js';
 import { postButlerMemoryUsageToInfluxdb } from './post_to_influxdb.js';
 import { postButlerUptimeToNewRelic } from './post_to_new_relic.js';
 
+/**
+ * Starts the service uptime monitoring.
+ * Logs uptime and memory usage at specified intervals.
+ */
 function serviceUptimeStart() {
     const uptimeLogLevel = globals.config.get('Butler.uptimeMonitor.logLevel');
     const uptimeInterval = globals.config.get('Butler.uptimeMonitor.frequency');

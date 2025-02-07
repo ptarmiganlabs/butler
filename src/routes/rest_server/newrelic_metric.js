@@ -7,6 +7,11 @@ import globals from '../../globals.js';
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import apiPostNewRelicMetric from '../../api/newrelic_metric.js';
 
+/**
+ * Handles the POST request to send New Relic metrics.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 // eslint-disable-next-line consistent-return
 async function handlerPostNewRelicMetric(request, reply) {
     try {
@@ -129,6 +134,11 @@ async function handlerPostNewRelicMetric(request, reply) {
     }
 }
 
+/**
+ * Registers the REST endpoint for posting New Relic metrics.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 // eslint-disable-next-line no-unused-vars
 export default async (fastify, options) => {
     if (

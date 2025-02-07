@@ -22,6 +22,12 @@ const taskStatusLookup = {
     12: 'Reset',
 };
 
+/**
+ * Compares two task details based on their creation date.
+ * @param {Object} a - The first task detail.
+ * @param {Object} b - The second task detail.
+ * @returns {number} - Returns -1 if a is less than b, 1 if a is greater than b, and 0 if they are equal.
+ */
 function compareTaskDetails(a, b) {
     if (a.detailCreatedDate < b.detailCreatedDate) {
         return -1;
@@ -33,13 +39,22 @@ function compareTaskDetails(a, b) {
 }
 
 // eslint-disable-next-line no-unused-vars
+/**
+ * Delays execution for a specified number of milliseconds.
+ * @param {number} milliseconds - The number of milliseconds to delay.
+ * @returns {Promise} - A promise that resolves after the specified delay.
+ */
 function delay(milliseconds) {
     return new Promise((resolve) => {
         setTimeout(resolve, milliseconds);
     });
 }
 
-// Function to get reload task execution results
+/**
+ * Gets reload task execution results.
+ * @param {string} reloadTaskId - The ID of the reload task.
+ * @returns {Object|boolean} - Returns an object with task execution details or false if an error occurs.
+ */
 export async function getReloadTaskExecutionResults(reloadTaskId) {
     try {
         // Set up Sense repository service configuration
@@ -168,9 +183,13 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
     }
 }
 
-// Function to get:
-// - reload task execution results
-// - reload task script log
+/**
+ * Gets reload task execution results and script log.
+ * @param {string} reloadTaskId - The ID of the reload task.
+ * @param {number} headLineCount - The number of lines to include from the start of the script log.
+ * @param {number} tailLineCount - The number of lines to include from the end of the script log.
+ * @returns {Object|boolean} - Returns an object with task execution details and script log or false if an error occurs.
+ */
 export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     try {
         // Step 1
@@ -295,6 +314,11 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
     }
 }
 
+/**
+ * Stores the script log of a failed task on disk.
+ * @param {Object} reloadParams - The parameters of the reload task.
+ * @returns {boolean} - Returns true if the log is successfully stored, false otherwise.
+ */
 export async function failedTaskStoreLogOnDisk(reloadParams) {
     try {
         // Get top level directory where logs should be stored
@@ -321,7 +345,9 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
 
         // Do we have a script log to store?
         if (!scriptLog.scriptLogFull) {
-            globals.logger.error('[QSEOW] SCRIPTLOG STORE: A script log should be available, but it is not. Possibly because the QRS API did not return one.');
+            globals.logger.error(
+                '[QSEOW] SCRIPTLOG STORE: A script log should be available, but it is not. Possibly because the QRS API did not return one.',
+            );
             return false;
         } else if (scriptLog.scriptLogFull.length === 0) {
             globals.logger.error('[QSEOW] SCRIPTLOG STORE: A script log is available, but it is empty (zero rows in it).');

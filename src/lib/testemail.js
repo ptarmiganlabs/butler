@@ -1,6 +1,11 @@
 import globals from '../globals.js';
 import { sendEmailBasic } from './qseow/smtp.js';
 
+/**
+ * Sends a test email to verify email configuration.
+ * @param {string} emailAddress - The recipient's email address.
+ * @param {string} fromAddress - The sender's email address.
+ */
 function sendTestEmail(emailAddress, fromAddress) {
     try {
         if (fromAddress.length > 0) {

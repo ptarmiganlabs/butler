@@ -3,6 +3,18 @@ import axios from 'axios';
 
 import globals from '../globals.js';
 
+/**
+ * Posts Butler uptime metrics to New Relic.
+ *
+ * @param {Object} fields - The fields containing uptime metrics.
+ * @param {number} fields.intervalMillisec - The interval in milliseconds.
+ * @param {number} fields.heapUsed - The used heap memory.
+ * @param {number} fields.heapTotal - The total heap memory.
+ * @param {number} fields.externalMemory - The external memory.
+ * @param {number} fields.processMemory - The process memory.
+ * @param {number} fields.uptimeMilliSec - The uptime in milliseconds.
+ * @returns {Promise<void>}
+ */
 export async function postButlerUptimeToNewRelic(fields) {
     try {
         const payload = [];
@@ -153,6 +165,11 @@ export async function postButlerUptimeToNewRelic(fields) {
     }
 }
 
+/**
+ * Posts a failed reload event to New Relic.
+ *
+ * @returns {Promise<void>}
+ */
 export async function postFailedReloadEventToNewRelic() {
     try {
         //
@@ -162,6 +179,11 @@ export async function postFailedReloadEventToNewRelic() {
     }
 }
 
+/**
+ * Posts an aborted reload event to New Relic.
+ *
+ * @returns {Promise<void>}
+ */
 export async function postAbortedReloadEventToNewRelic() {
     try {
         //

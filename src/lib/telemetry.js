@@ -6,6 +6,11 @@ import globals from '../globals.js';
 // Define variable to hold the PostHog client
 let posthogClient;
 
+/**
+ * Calls a remote URL to gather and send telemetry data.
+ * @async
+ * @returns {Promise<void>}
+ */
 const callRemoteURL = async () => {
     try {
         let heartbeat = 'null';
@@ -520,6 +525,11 @@ const callRemoteURL = async () => {
     }
 };
 
+/**
+ * Sets up a timer to report anonymous usage data to PostHog.
+ * @param {Object} logger - The logger object for logging messages.
+ * @param {Object} hostInfo - Information about the host system.
+ */
 export default function setupAnonUsageReportTimer(logger, hostInfo) {
     try {
         // Setup PostHog client

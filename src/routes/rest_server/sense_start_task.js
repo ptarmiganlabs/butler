@@ -12,6 +12,10 @@ import apiPutStartTask from '../../api/sense_start_task.js';
 import { verifyTaskId } from '../../lib/config_util.js';
 
 // Get array of allowed task IDs
+/**
+ * Get array of allowed task IDs.
+ * @returns {Array} Array of allowed task IDs.
+ */
 function getTaskIdAllowed() {
     if (
         globals.config.has('Butler.startTaskFilter.allowTask.taskId') === true &&
@@ -23,6 +27,10 @@ function getTaskIdAllowed() {
 }
 
 // Get array of allowed task tags
+/**
+ * Get array of allowed task tags.
+ * @returns {Array} Array of allowed task tags.
+ */
 function getTaskTagAllowed() {
     if (globals.config.has('Butler.startTaskFilter.allowTask.tag') === true && globals.config.get('Butler.startTaskFilter.allowTask.tag')) {
         return globals.config.get('Butler.startTaskFilter.allowTask.tag');
@@ -31,6 +39,10 @@ function getTaskTagAllowed() {
 }
 
 // Get array of allowed task custom properties
+/**
+ * Get array of allowed task custom properties.
+ * @returns {Array} Array of allowed task custom properties.
+ */
 function getTaskCPAllowed() {
     if (
         globals.config.has('Butler.startTaskFilter.allowTask.customProperty') === true &&
@@ -41,6 +53,11 @@ function getTaskCPAllowed() {
     return [];
 }
 
+/**
+ * Check if the task ID is allowed.
+ * @param {string} taskId - The task ID to check.
+ * @returns {boolean} True if the task ID is allowed, false otherwise.
+ */
 function isTaskIdAllowed(taskId) {
     const allowedTaskId = getTaskIdAllowed();
     const tmp = allowedTaskId.find((item) => item === taskId);
@@ -50,6 +67,11 @@ function isTaskIdAllowed(taskId) {
     return true;
 }
 
+/**
+ * Check if the task tag is allowed.
+ * @param {string} taskTag - The task tag to check.
+ * @returns {boolean} True if the task tag is allowed, false otherwise.
+ */
 function isTaskTagAllowed(taskTag) {
     const allowedTaskTag = getTaskTagAllowed();
     const tmp = allowedTaskTag.find((item) => item === taskTag);
@@ -59,6 +81,12 @@ function isTaskTagAllowed(taskTag) {
     return true;
 }
 
+/**
+ * Check if the task custom property is allowed.
+ * @param {string} taskCustomPropertyName - The custom property name.
+ * @param {string} taskCustomPropertyValue - The custom property value.
+ * @returns {boolean} True if the custom property is allowed, false otherwise.
+ */
 function isTaskCPAllowed(taskCustomPropertyName, taskCustomPropertyValue) {
     const allowedTaskCP = getTaskCPAllowed();
     const tmp = allowedTaskCP.find((item) => {
@@ -73,6 +101,11 @@ function isTaskCPAllowed(taskCustomPropertyName, taskCustomPropertyValue) {
     return true;
 }
 
+/**
+ * Handles the PUT request to start a Qlik Sense task.
+ * @param {Object} request - The request object.
+ * @param {Object} reply - The reply object.
+ */
 async function handlerPutStartTask(request, reply) {
     try {
         logRESTCall(request);
@@ -324,6 +357,11 @@ async function handlerPutStartTask(request, reply) {
 }
 
 // eslint-disable-next-line no-unused-vars
+/**
+ * Registers the start task endpoint if enabled in the configuration.
+ * @param {Object} fastify - The Fastify instance.
+ * @param {Object} options - The options object.
+ */
 export default async (fastify, options) => {
     if (
         globals.config.has('Butler.restServerEndpointsEnable.senseStartTask') &&

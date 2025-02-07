@@ -1,10 +1,10 @@
 import globals from '../globals.js';
 
-// Function to verify if a string is a valid GUID
-// Parameters:
-// - guid: string to verify
-// Returns:
-// - true if guid is valid, false otherwise
+/**
+ * Verify if a string is a valid GUID.
+ * @param {string} guid - The string to verify.
+ * @returns {boolean} - True if the GUID is valid, false otherwise.
+ */
 export const verifyGuid = (guid) => {
     try {
         // Construct a new RegExp object matching guids

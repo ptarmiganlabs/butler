@@ -24,6 +24,10 @@ if (globals.config.has('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotif
     });
 }
 
+/**
+ * Retrieves the Teams configuration for app reload failure notifications.
+ * @returns {Object|boolean} The Teams configuration object or false if configuration is invalid.
+ */
 function getAppReloadFailedTeamsConfig() {
     try {
         if (!globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable')) {
@@ -73,6 +77,13 @@ function getAppReloadFailedTeamsConfig() {
     }
 }
 
+/**
+ * Sends a Teams message based on the provided configuration and template context.
+ * @param {string} teamsWebhookUrl - The Teams webhook URL.
+ * @param {Object} teamsConfig - The Teams configuration object.
+ * @param {Object} templateContext - The context for the Handlebars template.
+ * @param {string} msgType - The type of message to send.
+ */
 async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType) {
     try {
         let compiledTemplate;
@@ -187,7 +198,10 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
     }
 }
 
-// Function to send Qlik Sense Cloud app reload failed alert
+/**
+ * Sends a Teams notification for a Qlik Sense Cloud app reload failure.
+ * @param {Object} reloadParams - The parameters related to the app reload.
+ */
 export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams) {
     rateLimiterMemoryFailedReloads
         .consume(reloadParams.reloadId, 1)
