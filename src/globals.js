@@ -38,6 +38,7 @@ class Settings {
 
             // Save path to the executable
             this.appBasePath = upath.dirname(process.cwd());
+            console.log(`Running as standalone app. Executable path: ${this.appBasePath}`);
         } else {
             // Get path to JS file
             const a = fileURLToPath(import.meta.url);
@@ -54,6 +55,7 @@ class Settings {
 
             // Save path to the executable
             this.appBasePath = upath.join(b, '..');
+            console.log(`Running in non-packaged environment. Executable path: ${this.appBasePath}`);
         }
 
         // Command line parameters
