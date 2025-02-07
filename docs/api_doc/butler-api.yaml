@@ -5,10 +5,12 @@ info:
     Butler is a microservice that provides add-on features to Qlik Sense
     Enterprise on Windows.
 
-    Butler offers both a REST API and things like failed reload notifications etc.
+    Butler offers both a REST API and things like failed reload notifications
+    etc.
 
 
-    This page contains the API documentation. Full documentation is available at https://butler.ptarmiganlabs.com
+    This page contains the API documentation. Full documentation is available at
+    https://butler.ptarmiganlabs.com
   version: 13.1.2
 components:
   schemas: {}
@@ -21,7 +23,8 @@ paths:
         Butler config file.
 
 
-        Note: Endpoints are enabled/disabled in the Butler main configuration file.
+        Note: Endpoints are enabled/disabled in the Butler main configuration
+        file.
       responses:
         "200":
           description: Enabled API enpooints.
@@ -211,10 +214,12 @@ paths:
       description: >-
         Copying of files is only posttible between pre-approved directories.
 
-        Defining approved source and destination directories is done in Butler's config file.
+        Defining approved source and destination directories is done in Butler's
+        config file.
 
 
-        If the source directory contains subdirectories, these will be copied too.
+        If the source directory contains subdirectories, these will be copied
+        too.
       requestBody:
         content:
           application/json:
@@ -336,10 +341,12 @@ paths:
       description: >-
         Moving of files is only posttible between pre-approved directories.
 
-        Defining approved source and destination directories is done in Butler's config file.
+        Defining approved source and destination directories is done in Butler's
+        config file.
 
 
-        If the source directory contains subdirectories, these will be moved too.
+        If the source directory contains subdirectories, these will be moved
+        too.
       requestBody:
         content:
           application/json:
@@ -591,7 +598,8 @@ paths:
       description: >-
         If the directory already exists nothing will happen.
 
-        If permissions don't allow a directory to be created, or if the path is invalid, an error will be returned.
+        If permissions don't allow a directory to be created, or if the path is
+        invalid, an error will be returned.
       requestBody:
         content:
           application/json:
@@ -687,7 +695,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/keyvalues/{namespace}":
+  /v4/keyvalues/{namespace}:
     get:
       summary: Get the value associated with a key, in a specific namespace.
       parameters:
@@ -766,9 +774,11 @@ paths:
         If the specified key already exists it will be overwritten.
 
 
-        If the posted data has a TTL, it will start counting when the post occur.
+        If the posted data has a TTL, it will start counting when the post
+        occur.
 
-        I.e. if a previouly posted key also had a TTL, it will be replace with the most recent TTL.
+        I.e. if a previouly posted key also had a TTL, it will be replace with
+        the most recent TTL.
       requestBody:
         content:
           application/json:
@@ -913,7 +923,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/keyvalues/{namespace}/keyexists":
+  /v4/keyvalues/{namespace}/keyexists:
     get:
       summary: Checks if a key exists in a namespace.
       description: Returns true if the specified key exists, otherwise false.
@@ -996,7 +1006,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/keyvalues/{namespace}/{key}":
+  /v4/keyvalues/{namespace}/{key}:
     delete:
       summary: Delete a key-value pair in a specific namespace.
       parameters:
@@ -1059,7 +1069,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/keylist/{namespace}":
+  /v4/keylist/{namespace}:
     get:
       summary: Retrieve a list of all keys present in the specified namespace.
       parameters:
@@ -1451,12 +1461,14 @@ paths:
                         5 or 6 position cron schedule.
 
 
-                        If 6 positions used, the leftmost position represent seconds.
+                        If 6 positions used, the leftmost position represent
+                        seconds.
 
                         If 5 positions used, leftmost position is minutes.
 
 
-                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                        The example schedule will trigger at 00 and 30 minutes
+                        past 6:00 on Mon-Fri.
                       example: 0,30 6 * * 1-5
                     timezone:
                       type: string
@@ -1546,12 +1558,14 @@ paths:
                     5 or 6 position cron schedule.
 
 
-                    If 6 positions used, the leftmost position represent seconds.
+                    If 6 positions used, the leftmost position represent
+                    seconds.
 
                     If 5 positions used, leftmost position is minutes.
 
 
-                    The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                    The example schedule will trigger at 00 and 30 minutes past
+                    6:00 on Mon-Fri.
                   example: 0,30 6 * * 1-5
                 timezone:
                   type: string
@@ -1616,12 +1630,14 @@ paths:
                         5 or 6 position cron schedule.
 
 
-                        If 6 positions used, the leftmost position represent seconds.
+                        If 6 positions used, the leftmost position represent
+                        seconds.
 
                         If 5 positions used, leftmost position is minutes.
 
 
-                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                        The example schedule will trigger at 00 and 30 minutes
+                        past 6:00 on Mon-Fri.
                       example: 0,30 6 * * 1-5
                     timezone:
                       type: string
@@ -1677,7 +1693,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/schedules/{scheduleId}":
+  /v4/schedules/{scheduleId}:
     delete:
       summary: Delete a schedule.
       parameters:
@@ -1733,7 +1749,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/schedules/{scheduleId}/start":
+  /v4/schedules/{scheduleId}/start:
     put:
       summary: Start a schedule.
       description: Start a schedule, i.e. have the scheduler run the associated reload
@@ -1752,7 +1768,8 @@ paths:
             Schedule successfully started.
 
 
-            An object with all information about the started schedule is returned.
+            An object with all information about the started schedule is
+            returned.
           content:
             application/json:
               schema:
@@ -1760,7 +1777,8 @@ paths:
                   Schedule successfully started.
 
 
-                  An object with all information about the started schedule is returned.
+                  An object with all information about the started schedule is
+                  returned.
                 type: object
                 properties:
                   id:
@@ -1781,12 +1799,14 @@ paths:
                       5 or 6 position cron schedule.
 
 
-                      If 6 positions used, the leftmost position represent seconds.
+                      If 6 positions used, the leftmost position represent
+                      seconds.
 
                       If 5 positions used, leftmost position is minutes.
 
 
-                      The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      The example schedule will trigger at 00 and 30 minutes
+                      past 6:00 on Mon-Fri.
                     example: 0,30 6 * * 1-5
                   timezone:
                     type: string
@@ -1869,7 +1889,8 @@ paths:
             Schedules successfully started.
 
 
-            An array with all information about the started schedules is returned.
+            An array with all information about the started schedules is
+            returned.
           content:
             application/json:
               schema:
@@ -1877,7 +1898,8 @@ paths:
                   Schedules successfully started.
 
 
-                  An array with all information about the started schedules is returned.
+                  An array with all information about the started schedules is
+                  returned.
                 type: array
                 items:
                   type: object
@@ -1900,12 +1922,14 @@ paths:
                         5 or 6 position cron schedule.
 
 
-                        If 6 positions used, the leftmost position represent seconds.
+                        If 6 positions used, the leftmost position represent
+                        seconds.
 
                         If 5 positions used, leftmost position is minutes.
 
 
-                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                        The example schedule will trigger at 00 and 30 minutes
+                        past 6:00 on Mon-Fri.
                       example: 0,30 6 * * 1-5
                     timezone:
                       type: string
@@ -1952,7 +1976,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/schedules/{scheduleId}/stop":
+  /v4/schedules/{scheduleId}/stop:
     put:
       summary: Stop a schedule.
       description: Stop a schedule, i.e. tell the scheduler to no longer execute the
@@ -1971,7 +1995,8 @@ paths:
             Schedule successfully stopped.
 
 
-            An object with all information about the stopped schedule is returned.
+            An object with all information about the stopped schedule is
+            returned.
           content:
             application/json:
               schema:
@@ -1979,7 +2004,8 @@ paths:
                   Schedule successfully stopped.
 
 
-                  An object with all information about the stopped schedule is returned.
+                  An object with all information about the stopped schedule is
+                  returned.
                 type: object
                 properties:
                   id:
@@ -2000,12 +2026,14 @@ paths:
                       5 or 6 position cron schedule.
 
 
-                      If 6 positions used, the leftmost position represent seconds.
+                      If 6 positions used, the leftmost position represent
+                      seconds.
 
                       If 5 positions used, leftmost position is minutes.
 
 
-                      The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                      The example schedule will trigger at 00 and 30 minutes
+                      past 6:00 on Mon-Fri.
                     example: 0,30 6 * * 1-5
                   timezone:
                     type: string
@@ -2088,7 +2116,8 @@ paths:
             Schedules successfully stopped.
 
 
-            An array with all information about the stopped schedules is returned.
+            An array with all information about the stopped schedules is
+            returned.
           content:
             application/json:
               schema:
@@ -2096,7 +2125,8 @@ paths:
                   Schedules successfully stopped.
 
 
-                  An array with all information about the stopped schedules is returned.
+                  An array with all information about the stopped schedules is
+                  returned.
                 type: array
                 items:
                   type: object
@@ -2119,12 +2149,14 @@ paths:
                         5 or 6 position cron schedule.
 
 
-                        If 6 positions used, the leftmost position represent seconds.
+                        If 6 positions used, the leftmost position represent
+                        seconds.
 
                         If 5 positions used, leftmost position is minutes.
 
 
-                        The example schedule will trigger at 00 and 30 minutes past 6:00 on Mon-Fri.
+                        The example schedule will trigger at 00 and 30 minutes
+                        past 6:00 on Mon-Fri.
                       example: 0,30 6 * * 1-5
                     timezone:
                       type: string
@@ -2178,7 +2210,9 @@ paths:
         Get basic status from the core scheduler.
 
 
-        No schedule metadata beyond ID, cron setting and job state will be returned, but as this comes from the core scheduler it is the authorative truth about what jobs are running (and which ones are not).
+        No schedule metadata beyond ID, cron setting and job state will be
+        returned, but as this comes from the core scheduler it is the
+        authorative truth about what jobs are running (and which ones are not).
       responses:
         "200":
           description: Status for all jobs that exist in the core scheduler.
@@ -2190,13 +2224,17 @@ paths:
               example: >-
                 {
 
-                '3702cec1-b6c8-463e-bda3-58d6a94dd9ac': * */2 * * * status: Running 
+                '3702cec1-b6c8-463e-bda3-58d6a94dd9ac': * */2 * * * status:
+                Running 
 
-                '2d5dcebc-2440-4bd7-9aa1-fb69708715c8': */45 * * * * * status: Running 
+                '2d5dcebc-2440-4bd7-9aa1-fb69708715c8': */45 * * * * * status:
+                Running 
 
-                'a93ca0f3-7980-439b-9eda-723a167352e3': */10 * * * * * status: Running 
+                'a93ca0f3-7980-439b-9eda-723a167352e3': */10 * * * * * status:
+                Running 
 
-                'ad250f49-ffd8-45dc-9b2b-f76028e969a4': */5 * * * * * status: Running 
+                'ad250f49-ffd8-45dc-9b2b-f76028e969a4': */5 * * * * * status:
+                Running 
 
                 }
         "500":
@@ -2217,7 +2255,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/app/{appId}/reload":
+  /v4/app/{appId}/reload:
     put:
       summary: Do a stand-alone reload of a Qlik Sense app, without using a task.
       requestBody:
@@ -2310,7 +2348,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/senseappdump/{appId}":
+  /v4/senseappdump/{appId}:
     get:
       summary: Dump a Sense app to JSON.
       description: Does the same thing as `/v4/app/:appId/dump`
@@ -2399,7 +2437,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/app/{appId}/dump":
+  /v4/app/{appId}/dump:
     get:
       summary: Dump a Sense app to JSON.
       description: Does the same thing as `/v4/senseappdump/:appId`
@@ -2570,7 +2608,7 @@ paths:
                     type: string
                   time:
                     type: string
-  "/v4/reloadtask/{taskId}/start":
+  /v4/reloadtask/{taskId}/start:
     put:
       summary: Start a Qlik Sense task.
       description: >-
@@ -2582,9 +2620,12 @@ paths:
         Currently supported values in this array are:
 
 
-        - A key-value pair that will be stored in Butler's KV store. If Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.
+        - A key-value pair that will be stored in Butler's KV store. If Butler's
+        key-value store is not enabled, any key-value information passed in this
+        parameter will simply be ignored.
 
-        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not expire.
+        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not
+        expire.
 
         - A task identified by its taskId that should be started.
 
@@ -2646,13 +2687,16 @@ paths:
             started.
 
 
-            If set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.
+            If set to `false`, all existing taskIds will be started.
+            Missing/invalid taskIds will be ignored.
 
 
-            In either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.
+            In either case, missing/invalid taskIds will be reported in the
+            result set back to the client calling the API.
 
 
-            Note: Tasks started by specifying tags and/or custom properties are not affected by this.
+            Note: Tasks started by specifying tags and/or custom properties are
+            not affected by this.
         - schema:
             type: string
           example: 210832b5-6174-4572-bd19-3e61eda675ef
@@ -2662,7 +2706,8 @@ paths:
           description: >-
             ID of Qlik Sense task.
 
-            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.
+            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This
+            ID will not be reported as invalid.
       responses:
         "200":
           description: Task successfully started.
@@ -2738,9 +2783,12 @@ paths:
         Currently supported values in this array are:
 
 
-        - A key-value pair that will be stored in Butler's KV store. If Butler's key-value store is not enabled, any key-value information passed in this parameter will simply be ignored.
+        - A key-value pair that will be stored in Butler's KV store. If Butler's
+        key-value store is not enabled, any key-value information passed in this
+        parameter will simply be ignored.
 
-        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not expire.
+        Setting `ttl=0` disables the TTL feature, i.e. the KV pair will not
+        expire.
 
         - A task identified by its taskId that should be started.
 
@@ -2802,13 +2850,16 @@ paths:
             started.
 
 
-            If set to `false`, all existing taskIds will be started. Missing/invalid taskIds will be ignored.
+            If set to `false`, all existing taskIds will be started.
+            Missing/invalid taskIds will be ignored.
 
 
-            In either case, missing/invalid taskIds will be reported in the result set back to the client calling the API.
+            In either case, missing/invalid taskIds will be reported in the
+            result set back to the client calling the API.
 
 
-            Note: Tasks started by specifying tags and/or custom properties are not affected by this.
+            Note: Tasks started by specifying tags and/or custom properties are
+            not affected by this.
         - schema:
             type: string
           example: 210832b5-6174-4572-bd19-3e61eda675ef
@@ -2818,7 +2869,8 @@ paths:
           description: >-
             ID of Qlik Sense task.
 
-            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.
+            Butler will ignore the "magic" task ID of "-" (=dash, hyphen). This
+            ID will not be reported as invalid.
       responses:
         "200":
           description: Task successfully started.
