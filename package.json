@@ -78,7 +78,7 @@
         "i": "^0.3.7",
         "influx": "^5.9.7",
         "is-unc-path": "^1.0.0",
-        "jjsontree.js": "^2.9.0",
+        "jjsontree.js": "^4.7.0",
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "luxon": "^3.5.0",
