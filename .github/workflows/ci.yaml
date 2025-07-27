@@ -1,435 +1,564 @@
 name: ci
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - master
+    workflow_dispatch:
+    push:
+        branches:
+            - master
 jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      release_tag_name: ${{ steps.release.outputs['tag_name'] }}
-      release_version: ${{ steps.release.outputs['version'] }}
-      release_upload_url: ${{ steps.release.outputs['upload_url'] }}
-    env:
-      GITHUB_REF: ${{ github.ref }}
-      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-      DIST_FILE_NAME: butler
-    permissions:
-        contents: write
-        pull-requests: write
-    steps:
-      - name: Show github.ref
-        run: echo "$GITHUB_REF"
-
-      - uses: googleapis/release-please-action@v4
-        id: release
-        if: github.repository_owner == 'ptarmiganlabs'
-        with:
-          token: ${{ secrets.RELEASE_PLEASE_PAT }}
-          # optional. customize path to release-please-config.json
-          config-file: release-please-config.json
-          # optional. customize path to .release-please-manifest.json
-          manifest-file: .release-please-manifest.json
-          target-branch: master
-
-      - name: Show output from Release-Please
-        if: always()
+    release-please:
+        runs-on: ubuntu-latest
+        outputs:
+            releases_created: ${{ steps.release.outputs.releases_created }}
+            release_tag_name: ${{ steps.release.outputs['tag_name'] }}
+            release_version: ${{ steps.release.outputs['version'] }}
+            release_upload_url: ${{ steps.release.outputs['upload_url'] }}
         env:
-          RELEASE_PLEASE_OUTPUT: ${{ toJSON(steps.release.outputs) }}
-        run: echo "$RELEASE_PLEASE_OUTPUT"
+            GITHUB_REF: ${{ github.ref }}
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+            DIST_FILE_NAME: butler
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Show github.ref
+              run: echo "$GITHUB_REF"
 
-      - name: Show output from Release-Please
-        run: |
-          echo "releases_created: ${{ steps.release.outputs.releases_created }}"
-          echo "release_created : ${{ steps.release.outputs.release_created }}"
-          echo "draft           : ${{ steps.release.outputs['draft'] }}"
-          echo "path            : ${{ steps.release.outputs['path'] }}"
-          echo "upload_url      : ${{ steps.release.outputs['upload_url'] }}"
-          echo "html_url        : ${{ steps.release.outputs['html_url'] }}"
-          echo "tag_name        : ${{ steps.release.outputs['tag_name'] }}"
-          echo "version         : ${{ steps.release.outputs['version'] }}"
-          echo "major           : ${{ steps.release.outputs['major'] }}"
-          echo "minor           : ${{ steps.release.outputs['minor'] }}"
-          echo "patch           : ${{ steps.release.outputs['patch'] }}"
-          echo "sha             : ${{ steps.release.outputs['sha'] }}"
+            - uses: googleapis/release-please-action@v4
+              id: release
+              if: github.repository_owner == 'ptarmiganlabs'
+              with:
+                  token: ${{ secrets.RELEASE_PLEASE_PAT }}
+                  # optional. customize path to release-please-config.json
+                  config-file: release-please-config.json
+                  # optional. customize path to .release-please-manifest.json
+                  manifest-file: .release-please-manifest.json
+                  target-branch: master
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-  
-      - name: Install dependencies
-        run: |
-          node -v
-          npm ci --include=dev --include=prod
+            - name: Show output from Release-Please
+              if: always()
+              env:
+                  RELEASE_PLEASE_OUTPUT: ${{ toJSON(steps.release.outputs) }}
+              run: echo "$RELEASE_PLEASE_OUTPUT"
 
-      - name: Install tool for creating stand-alone API html docs file
-        run: |
-          npm i -g @redocly/cli@latest
+            - name: Show output from Release-Please
+              run: |
+                  echo "releases_created: ${{ steps.release.outputs.releases_created }}"
+                  echo "release_created : ${{ steps.release.outputs.release_created }}"
+                  echo "draft           : ${{ steps.release.outputs['draft'] }}"
+                  echo "path            : ${{ steps.release.outputs['path'] }}"
+                  echo "upload_url      : ${{ steps.release.outputs['upload_url'] }}"
+                  echo "html_url        : ${{ steps.release.outputs['html_url'] }}"
+                  echo "tag_name        : ${{ steps.release.outputs['tag_name'] }}"
+                  echo "version         : ${{ steps.release.outputs['version'] }}"
+                  echo "major           : ${{ steps.release.outputs['major'] }}"
+                  echo "minor           : ${{ steps.release.outputs['minor'] }}"
+                  echo "patch           : ${{ steps.release.outputs['patch'] }}"
+                  echo "sha             : ${{ steps.release.outputs['sha'] }}"
 
-      - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
-        run: |
-          pwd
-          ls -la
-          node src/butler.js -c ./src/config/config-gen-api-docs.yaml --no-qs-connection & 
-          sleep 20
-          echo "...1"
-          curl localhost:8081/documentation/json > ./docs/api_doc/butler-api.json
-          echo "...4"
-          curl localhost:8081/documentation/yaml > ./docs/api_doc/butler-api.yaml
-          echo "...5"
-          ls -la ./docs/api_doc
-          npx @redocly/cli build-docs ./docs/api_doc/butler-api.yaml --output ./docs/api_doc/butler-api.html
-          pkill -f 'node src/butler.js'
-          git config --global user.name 'GitHub action'
-          git config --global user.email 'mountaindude@users.noreply.github.com'
-          git add ./docs/api_doc/butler-api.json
-          git add ./docs/api_doc/butler-api.yaml
-          git add ./docs/api_doc/butler-api.html
-          git commit -m "Auto-adding API docs" --allow-empty
-          git push
-  
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-  release-macos:
-    needs: release-please
-    runs-on:
-      - self-hosted
-      - x64
-      - macos
-      - sp53
-    # timeout-minutes: 15
+            - name: Install dependencies
+              run: |
+                  node -v
+                  npm ci --include=dev --include=prod
 
-    if: needs.release-please.outputs.releases_created == 'true'
-    env:
-      DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-      MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
-      MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
-      MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
-      MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
-      PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
-      PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
-      PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}    
-    steps:
-      - name: Release tag and upload url from previous job
-        run: |
-          echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
-          echo "version    : ${{ needs.release-please.outputs.release_version }}"
-          echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+            - name: Install tool for creating stand-alone API html docs file
+              run: |
+                  npm i -g @redocly/cli@latest
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+            - name: Generate latest API doc files and convert to standalone html. Also commit back to GitHub repo
+              run: |
+                  pwd
+                  ls -la
+                  node src/butler.js -c ./src/config/config-gen-api-docs.yaml --no-qs-connection & 
+                  sleep 20
+                  echo "...1"
+                  curl localhost:8081/documentation/json > ./docs/api_doc/butler-api.json
+                  echo "...4"
+                  curl localhost:8081/documentation/yaml > ./docs/api_doc/butler-api.yaml
+                  echo "...5"
+                  ls -la ./docs/api_doc
+                  npx @redocly/cli build-docs ./docs/api_doc/butler-api.yaml --output ./docs/api_doc/butler-api.html
+                  pkill -f 'node src/butler.js'
+                  git config --global user.name 'GitHub action'
+                  git config --global user.email 'mountaindude@users.noreply.github.com'
+                  git add ./docs/api_doc/butler-api.json
+                  git add ./docs/api_doc/butler-api.yaml
+                  git add ./docs/api_doc/butler-api.html
+                  git commit -m "Auto-adding API docs" --allow-empty
+                  git push
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+    release-macos:
+        needs: release-please
+        runs-on:
+            - self-hosted
+            - x64
+            - macos
+            - sp53
+        # timeout-minutes: 15
 
-      - name: Install tool for creating stand-alone executables
-        run: |
-          npm install pkg --location=global
-          npm install --save-exact esbuild
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+            MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
+            MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
+            MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
+            MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+            PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+            PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+            PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+        steps:
+            - name: Release tag and upload url from previous job
+              run: |
+                  echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+                  echo "version    : ${{ needs.release-please.outputs.release_version }}"
+                  echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
-      - name: Install dependencies
-        run: |
-          pwd 
-          npm ci --include=prod
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Build binaries
-        run: |
-          pwd
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-          pkg --output "./${DIST_FILE_NAME}" -t node18-macos-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
-          chmod +x "${DIST_FILE_NAME}"
-          security delete-keychain build.keychain || true
+            - name: Install tool for creating stand-alone executables
+              run: |
+                  npm install --save-exact esbuild
 
-          # Turn our base64-encoded certificate back to a regular .p12 file
-          
-          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+            - name: Install dependencies
+              run: |
+                  pwd 
+                  npm ci --include=prod
 
-          # We need to create a new keychain, otherwise using the certificate will prompt
-          # with a UI dialog asking for the certificate password, which we can't
-          # use in a headless CI environment
-          
-          security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-          security list-keychains -d user -s build.keychain
-          security default-keychain -d user -s build.keychain
-          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-      
-          codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
+            - name: Build binaries
+              run: |
+                  pwd
+                  ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+                  node --experimental-sea-config build-script/sea-config.json
+
+                  # Get a copy of the Node executable
+                  cp $(command -v node) ${DIST_FILE_NAME}
+
+                  # Remove the signature from the Node executable
+                  codesign --remove-signature ${DIST_FILE_NAME}
+
+                  # Inject the blob
+                  npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
+
+                  chmod +x "${DIST_FILE_NAME}"
+                  security delete-keychain build.keychain || true
+
+                  # Turn our base64-encoded certificate back to a regular .p12 file
+
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+                  # We need to create a new keychain, otherwise using the certificate will prompt
+                  # with a UI dialog asking for the certificate password, which we can't
+                  # use in a headless CI environment
+
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security list-keychains -d user -s build.keychain
+                  security default-keychain -d user -s build.keychain
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+                  codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
 
 
-          # We can't notarize an app bundle directly, but we need to compress it as an archive.
-          # Therefore, we create a zip file containing our app bundle, so that we can send it to the
-          # notarization service
+                  # We can't notarize an app bundle directly, but we need to compress it as an archive.
+                  # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+                  # notarization service
 
-          # Notarize release binary
-          # Include following directories & files in the created zip file, in the ./config directory.
-          # - ./src/config/log_appender_xml
-          # - ./src/config/email_templates
-          # - ./src/config/slack_templates
-          # - ./src/config/teams_templates
-          # - ./src/config⁄production_template.yaml
-          # - ./src/config⁄schedule_template.yaml
-          echo "Creating temp notarization archive for release binary"
-          zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
-          # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}.zip"
-          # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip"
+                  # Notarize release binary
+                  # Include following directories & files in the created zip file, in the ./config directory.
+                  # - ./src/config/log_appender_xml
+                  # - ./src/config/email_templates
+                  # - ./src/config/slack_templates
+                  # - ./src/config/teams_templates
+                  # - ./src/config⁄production_template.yaml
+                  # - ./src/config⁄schedule_template.yaml
+                  echo "Creating temp notarization archive for release binary"
+                  zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
+                  # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}.zip"
+                  # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_tag_name }}-macos.zip"
 
-          cd src
-          zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
-          cd ..
+                  cd src
+                  zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
+                  cd ..
 
-          # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
-          # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
-          # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
-          # you're curious
-          echo "Notarize release app"
-          xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" --keychain-profile "notarytool-profile" --wait
+                  # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+                  # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+                  # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+                  # you're curious
+                  echo "Notarize release app"
+                  xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" --keychain-profile "notarytool-profile" --wait
 
-          # Delete build keychain
-          security delete-keychain build.keychain
+                  # Delete build keychain
+                  security delete-keychain build.keychain
 
-      - name: Upload to existing release
-        uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitNameDuringUpdate: true
-          artifactContentType: raw
-          # artifactContentType: application/zip
-          draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos.zip
-          token: ${{ github.token }}
+            - name: Upload to existing release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
+                  artifactContentType: raw
+                  # artifactContentType: application/zip
+                  draft: true
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+                  artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos.zip
+                  token: ${{ github.token }}
 
-      - name: Tidy up before existing
-        run: |
-          pwd
-          ls -la 
-          rm build.cjs
-          rm "./${DIST_FILE_NAME}"
-          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
+            - name: Tidy up before existing
+              run: |
+                  pwd
+                  ls -la 
+                  rm build/build.cjs build/sea-prep.blob
+                  rm "./${DIST_FILE_NAME}"
+                  rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
 
-  release-win64:
-    needs: release-please
-    runs-on:
-      - self-hosted
-      - x64
-      - windows
-      - sp53
-      - win-code-sign
-    # timeout-minutes: 15
-    if: needs.release-please.outputs.releases_created == 'true'
-    env:
-      DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-      # CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
-      # CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
-      # CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
-      CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
-    steps:
-      - name: Release tag and upload url from previous job
-        run: |
-          Write-Output 'tag_name        : ${{ needs.release-please.outputs.release_tag_name }}'
-          Write-Output 'version         : ${{ needs.release-please.outputs.release_version }}'
-          Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
+    release-macos-arm64:
+        needs: release-please
+        runs-on:
+            - self-hosted
+            - arm64
+            - macos
+            - sp53
+        # timeout-minutes: 15
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+            MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
+            MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
+            MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
+            MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+            PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+            PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+            PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+        steps:
+            - name: Release tag and upload url from previous job
+              run: |
+                  echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+                  echo "version    : ${{ needs.release-please.outputs.release_version }}"
+                  echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Install tool for creating stand-alone executables
-        run: |
-          npm install pkg --location=global
-          npm install --save-exact esbuild
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
-      - name: Install dependencies
-        run: |
-          pwd 
-          npm ci --include=prod
+            - name: Install tool for creating stand-alone executables
+              run: |
+                  npm install --save-exact esbuild
 
-      - name: Build binaries
-        run: |
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-          pkg --output "./${env:DIST_FILE_NAME}.exe" -t node18-win-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
+            - name: Install dependencies
+              run: |
+                  pwd 
+                  npm ci --include=prod
 
-          # # Extract signing certificate to files on disk
-          # New-Item -ItemType directory -Path certificate
-          # Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
-          # certutil -decode certificate\certificate.txt certificate\certificate.pfx
-          # Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
-          # certutil -decode certificate\intermediate.txt certificate\intermediate.crt
+            - name: Build binaries
+              run: |
+                  pwd
+                  ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+                  node --experimental-sea-config build-script/sea-config.json
 
-          # # Sign the executable
-          # $processOptions = @{
-            #   FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-            #   Wait = $true
-            #   ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
-            #   WorkingDirectory = "."
-            #   NoNewWindow = $true
-            # }
-            # Start-Process @processOptions
-            
-          # Sign the executable
-          # 1st signing
-          $processOptions1 = @{
-            FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-            Wait = $true
-            ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha1", "/v", "./${env:DIST_FILE_NAME}.exe"
-            WorkingDirectory = "."
-            NoNewWindow = $true
-          }
-          Start-Process @processOptions1
+                  # Get a copy of the Node executable
+                  cp $(command -v node) ${DIST_FILE_NAME}
 
-          # 2nd signing
-          $processOptions2 = @{
-            FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-            Wait = $true
-            ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha256", "/v", "./${env:DIST_FILE_NAME}.exe"
-            WorkingDirectory = "."
-            NoNewWindow = $true
-          }
-          Start-Process @processOptions2
+                  # Remove the signature from the Node executable
+                  codesign --remove-signature ${DIST_FILE_NAME}
 
-          # Remove-Item -Recurse -Force certificate
+                  # Inject the blob
+                  npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
 
-          # Create release binary zip
-          $compress = @{
-            Path = "./${env:DIST_FILE_NAME}.exe"
-            CompressionLevel = "Fastest"
-            DestinationPath = "${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
-          }
-          Compress-Archive @compress
+                  chmod +x "${DIST_FILE_NAME}"
+                  security delete-keychain build.keychain || true
 
-          # Add following directories & files to the created zip file, in the ./config directory.
-          # - ./src/config/log_appender_xml
-          # - ./src/config/email_templates
-          # - ./src/config/slack_templates
-          # - ./src/config/teams_templates
-          # - ./src/config⁄production_template.yaml
-          # - ./src/config⁄schedule_template.yaml
-          mkdir config
-          Copy-Item -Path ./src/config/log_appender_xml/ -Destination ./config/ -Recurse
-          Copy-Item -Path ./src/config/email_templates/ -Destination ./config/ -Recurse
-          Copy-Item -Path ./src/config/slack_templates/ -Destination ./config/ -Recurse
-          Copy-Item -Path ./src/config/teams_templates/ -Destination ./config/ -Recurse
-          Copy-Item -Path ./src/config/production_template.yaml -Destination ./config/
-          Copy-Item -Path ./src/config/schedule_template.yaml -Destination ./config/
+                  # Turn our base64-encoded certificate back to a regular .p12 file
 
-          Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
-          
-      - name: Upload to existing release
-        uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitNameDuringUpdate: true
-          artifactContentType: raw
-          # artifactContentType: application/zip
-          draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-win.zip
-          token: ${{ github.token }}
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
 
-      - name: Tidy up before existing
-        run: |
-          dir
-          del build.cjs
-          del "./${env:DIST_FILE_NAME}.exe"
-          del "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
+                  # We need to create a new keychain, otherwise using the certificate will prompt
+                  # with a UI dialog asking for the certificate password, which we can't
+                  # use in a headless CI environment
 
-  release-linux:
-    needs: release-please
-    runs-on: ubuntu-latest
-    # timeout-minutes: 15
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security list-keychains -d user -s build.keychain
+                  security default-keychain -d user -s build.keychain
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
-    if: needs.release-please.outputs.releases_created == 'true'
-    env:
-      DIST_FILE_NAME: butler
-      GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-    steps:
-      - name: Release tag and upload url from previous job
-        run: |
-          echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
-          echo "version    : ${{ needs.release-please.outputs.release_version }}"
-          echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+                  codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+                  # Delete build keychain
+                  security delete-keychain build.keychain
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+            - name: Compress release binary
+              run: |
+                  zip "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./${DIST_FILE_NAME}"
 
-      - name: Install tool for creating stand-alone executables
-        run: |
-          npm install pkg --location=global
-          npm install --save-exact esbuild
+            - name: Upload release artifacts to GitHub
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  artifactContentType: raw
+                  # artifactContentType: application/zip
+                  draft: true
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+                  artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip
+                  token: ${{ github.token }}
 
-      - name: Install dependencies
-        run: |
-          pwd 
-          npm ci --include=prod
+            - name: Tidy up before existing
+              run: |
+                  pwd
+                  ls -la 
+                  rm build/build.cjs build/sea-prep.blob
+                  rm "./${DIST_FILE_NAME}"
+                  rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip"
 
-      - name: Build binaries
-        run: |
-          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=build.cjs --format=cjs --platform=node --target=node18 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
-          pkg --output "./${DIST_FILE_NAME}" -t node18-linux-x64 ./build.cjs --config package.json --options no-deprecation --compress GZip
+    release-win64:
+        needs: release-please
+        runs-on:
+            - self-hosted
+            - x64
+            - windows
+            - sp53
+            - win-code-sign
+        # timeout-minutes: 15
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+            # CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
+            # CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
+            # CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
+            CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
+        steps:
+            - name: Release tag and upload url from previous job
+              run: |
+                  Write-Output 'tag_name        : ${{ needs.release-please.outputs.release_tag_name }}'
+                  Write-Output 'version         : ${{ needs.release-please.outputs.release_version }}'
+                  Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
 
-          chmod +x ${DIST_FILE_NAME}
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Make binary executable
-        run: |
-          chmod +x ./${DIST_FILE_NAME}
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
-      - name: Compress release binary
-        run: |
-          # Compress insider's build
-          # Include following directories & files in the created archive file.
-          # - ./src/config/log_appender_xml
-          # - ./src/config/email_templates
-          # - ./src/config/slack_templates
-          # - ./src/config/teams_templates
-          # - ./src/config⁄production_template.yaml
-          # - ./src/config⁄schedule_template.yaml
+            - name: Install tool for creating stand-alone executables
+              run: |
+                  npm install --save-exact esbuild
 
-          ls -la
-          zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
+            - name: Install dependencies
+              run: |
+                  pwd 
+                  npm ci --include=prod
 
-          cd src
-          zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
-          cd ..
+            - name: Build binaries
+              run: |
+                  ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+                  node --experimental-sea-config build-script/sea-config.json
 
-      - name: Debug
-        run: |
-          ls -la
+                  # Get a copy of the Node executable
+                  node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe')" 
 
-      - name: Upload to existing release
-        uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitNameDuringUpdate: true
-          artifactContentType: raw
-          # artifactContentType: application/zip
-          draft: true
-          tag: ${{ needs.release-please.outputs.release_tag_name }}
-          artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-linux.zip
-          token: ${{ github.token }}
+                  # Remove the signature from the executable
+                  $processOptions1 = @{
+                    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                    Wait = $true
+                    ArgumentList = "remove", "/s", "./${env:DIST_FILE_NAME}.exe"
+                    WorkingDirectory = "."
+                    NoNewWindow = $true
+                  }
+                  Start-Process @processOptions1
 
-      - name: Tidy up before existing
-        run: |
-          pwd
-          ls -la
-          rm build.cjs
-          rm "./${DIST_FILE_NAME}"
-          rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip"
+                  npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+
+                  # # Extract signing certificate to files on disk
+                  # New-Item -ItemType directory -Path certificate
+                  # Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
+                  # certutil -decode certificate\certificate.txt certificate\certificate.pfx
+                  # Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
+                  # certutil -decode certificate\intermediate.txt certificate\intermediate.crt
+
+                  # # Sign the executable
+                  # $processOptions = @{
+                    #   FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                    #   Wait = $true
+                    #   ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
+                    #   WorkingDirectory = "."
+                    #   NoNewWindow = $true
+                    # }
+                    # Start-Process @processOptions
+                    
+                  # Sign the executable
+                  # 1st signing
+                  $processOptions1 = @{
+                    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                    Wait = $true
+                    ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha1", "/v", "./${env:DIST_FILE_NAME}.exe"
+                    WorkingDirectory = "."
+                    NoNewWindow = $true
+                  }
+                  Start-Process @processOptions1
+
+                  # 2nd signing
+                  $processOptions2 = @{
+                    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
+                    Wait = $true
+                    ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha256", "/v", "./${env:DIST_FILE_NAME}.exe"
+                    WorkingDirectory = "."
+                    NoNewWindow = $true
+                  }
+                  Start-Process @processOptions2
+
+                  # Remove-Item -Recurse -Force certificate
+
+                  # Create release binary zip
+                  $compress = @{
+                    Path = "./${env:DIST_FILE_NAME}.exe"
+                    CompressionLevel = "Fastest"
+                    DestinationPath = "${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
+                  }
+                  Compress-Archive @compress
+
+                  # Add following directories & files to the created zip file, in the ./config directory.
+                  # - ./src/config/log_appender_xml
+                  # - ./src/config/email_templates
+                  # - ./src/config/slack_templates
+                  # - ./src/config/teams_templates
+                  # - ./src/config⁄production_template.yaml
+                  # - ./src/config⁄schedule_template.yaml
+                  mkdir config
+                  Copy-Item -Path ./src/config/log_appender_xml/ -Destination ./config/ -Recurse
+                  Copy-Item -Path ./src/config/email_templates/ -Destination ./config/ -Recurse
+                  Copy-Item -Path ./src/config/slack_templates/ -Destination ./config/ -Recurse
+                  Copy-Item -Path ./src/config/teams_templates/ -Destination ./config/ -Recurse
+                  Copy-Item -Path ./src/config/production_template.yaml -Destination ./config/
+                  Copy-Item -Path ./src/config/schedule_template.yaml -Destination ./config/
+
+                  Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
+
+            - name: Upload to existing release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
+                  artifactContentType: raw
+                  # artifactContentType: application/zip
+                  draft: true
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+                  artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-win.zip
+                  token: ${{ github.token }}
+
+            - name: Tidy up before existing
+              run: |
+                  dir
+                  del build/build.cjs build/sea-prep.blob
+                  del "./${env:DIST_FILE_NAME}.exe"
+                  del "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
+
+    release-linux:
+        needs: release-please
+        runs-on: ubuntu-latest
+        # timeout-minutes: 15
+
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+        steps:
+            - name: Release tag and upload url from previous job
+              run: |
+                  echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+                  echo "version    : ${{ needs.release-please.outputs.release_version }}"
+                  echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install tool for creating stand-alone executables
+              run: |
+                  npm install --save-exact esbuild
+
+            - name: Install dependencies
+              run: |
+                  pwd 
+                  npm ci --include=prod
+
+            - name: Build binaries
+              run: |
+                  ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+                  node --experimental-sea-config build-script/sea-config.json
+
+                  # Get a copy of the Node executable
+                  cp $(command -v node) ${DIST_FILE_NAME}
+                  npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+
+                  chmod +x ${DIST_FILE_NAME}
+
+            - name: Make binary executable
+              run: |
+                  chmod +x ./${DIST_FILE_NAME}
+
+            - name: Compress release binary
+              run: |
+                  # Compress insider's build
+                  # Include following directories & files in the created archive file.
+                  # - ./src/config/log_appender_xml
+                  # - ./src/config/email_templates
+                  # - ./src/config/slack_templates
+                  # - ./src/config/teams_templates
+                  # - ./src/config⁄production_template.yaml
+                  # - ./src/config⁄schedule_template.yaml
+
+                  ls -la
+                  zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
+
+                  cd src
+                  zip -9 -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
+                  cd ..
+
+            - name: Debug
+              run: |
+                  ls -la
+
+            - name: Upload to existing release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
+                  artifactContentType: raw
+                  # artifactContentType: application/zip
+                  draft: true
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+                  artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-linux.zip
+                  token: ${{ github.token }}
+
+            - name: Tidy up before existing
+              run: |
+                  pwd
+                  ls -la
+                  rm build/build.cjs build/sea-prep.blob
+                  rm "./${DIST_FILE_NAME}"
+                  rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip"

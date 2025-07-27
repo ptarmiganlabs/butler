@@ -1,0 +1,12 @@
+# Build butler executable using Node.js SEA
+# Execute this script from the repository's root folder
+
+npm i
+./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+node --experimental-sea-config ./build-script/sea-config.json
+
+cp $(command -v node) ./build/butler
+codesign --remove-signature ./build/butler
+npx postject ./build/butler NODE_SEA_BLOB ./build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
+codesign --sign - ./build/butler
+
