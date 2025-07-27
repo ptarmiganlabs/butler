@@ -3,19 +3,13 @@
     "version": "13.1.2",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "scripts": {
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config src/jest.config.js",
         "test2": "node_modules/jshint/bin/jshint butler.js",
         "format1": "npm run format",
         "format": "npm run format:prettier",
         "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js,html}\" --write",
         "butler": "node src/butler.js",
         "lint": "npx eslint ./src/**/*.js"
-    },
-    "jest": {
-        "transform": {},
-        "setupFiles": [
-            "./src/test/env.js"
-        ]
     },
     "repository": {
         "type": "git",
@@ -111,7 +105,7 @@
         "esbuild": "^0.24.2",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-prettier": "^5.2.3",
-        "jest": "^29.7.0",
+        "jest": "^30.0.5",
         "prettier": "^3.4.2",
         "snyk": "^1.1295.2"
     },
