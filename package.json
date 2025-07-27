@@ -3,6 +3,7 @@
     "version": "13.1.2",
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "scripts": {
+        "build:macos": "./build-script/build-macos.sh",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
         "test2": "node_modules/jshint/bin/jshint butler.js",
         "format1": "npm run format",
