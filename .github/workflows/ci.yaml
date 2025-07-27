@@ -221,6 +221,111 @@ jobs:
                   rm "./${DIST_FILE_NAME}"
                   rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
 
+    release-macos-arm64:
+        needs: release-please
+        runs-on:
+            - self-hosted
+            - arm64
+            - macos
+            - sp53
+        # timeout-minutes: 15
+
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler
+            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
+            MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
+            MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
+            MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
+            MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+            PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+            PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+            PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+        steps:
+            - name: Release tag and upload url from previous job
+              run: |
+                  echo "tag_name   : ${{ needs.release-please.outputs.release_tag_name }}"
+                  echo "version    : ${{ needs.release-please.outputs.release_version }}"
+                  echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
+
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install tool for creating stand-alone executables
+              run: |
+                  npm install --save-exact esbuild
+
+            - name: Install dependencies
+              run: |
+                  pwd 
+                  npm ci --include=prod
+
+            - name: Build binaries
+              run: |
+                  pwd
+                  ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+                  node --experimental-sea-config build-script/sea-config.json
+
+                  # Get a copy of the Node executable
+                  cp $(command -v node) ${DIST_FILE_NAME}
+
+                  # Remove the signature from the Node executable
+                  codesign --remove-signature ${DIST_FILE_NAME}
+
+                  # Inject the blob
+                  npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
+
+                  chmod +x "${DIST_FILE_NAME}"
+                  security delete-keychain build.keychain || true
+
+                  # Turn our base64-encoded certificate back to a regular .p12 file
+
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+                  # We need to create a new keychain, otherwise using the certificate will prompt
+                  # with a UI dialog asking for the certificate password, which we can't
+                  # use in a headless CI environment
+
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security list-keychains -d user -s build.keychain
+                  security default-keychain -d user -s build.keychain
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+                  codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
+
+                  # Delete build keychain
+                  security delete-keychain build.keychain
+
+            - name: Compress release binary
+              run: |
+                  zip "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./${DIST_FILE_NAME}"
+
+            - name: Upload release artifacts to GitHub
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  artifactContentType: raw
+                  # artifactContentType: application/zip
+                  draft: true
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+                  artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip
+                  token: ${{ github.token }}
+
+            - name: Tidy up before existing
+              run: |
+                  pwd
+                  ls -la 
+                  rm build/build.cjs build/sea-prep.blob
+                  rm "./${DIST_FILE_NAME}"
+                  rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip"
+
     release-win64:
         needs: release-please
         runs-on:

@@ -8,7 +8,7 @@ jobs:
     insiders-build:
         strategy:
             matrix:
-                os: [win-code-sign, mac-build1, ubuntu-latest]
+                os: [win-code-sign, mac-build1, mac-build2, ubuntu-latest]
                 include:
                     - os: win-code-sign
                       build: |
@@ -205,6 +205,92 @@ jobs:
                       # artifact_release_name: release-binaries-macos
                       # artifact_release_path: release-binaries-macos/*
                       artifact_insider: butler--macos-x64--${{ github.sha }}.zip
+                    - os: mac-build2
+                      build: |
+                          # Inject git SHA into package.json
+                          GIT_SHA=$(git rev-parse --short HEAD)
+                          VERSION=$(grep -o '"version": "[^"]*"' package.json | cut -d'"' -f4)
+                          sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION-$GIT_SHA\"/" package.json
+
+                          # Create a single JS file using esbuild
+                          ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+
+                          # Generate blob to be injected into the binary
+                          node --experimental-sea-config build-script/sea-config.json
+
+                          # Get a copy of the Node executable
+                          cp $(command -v node) ${DIST_FILE_NAME}
+
+                          # Remove the signature from the Node executable
+                          codesign --remove-signature ${DIST_FILE_NAME}
+
+                          # Inject the blob
+                          npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
+
+                          security delete-keychain build.keychain || true
+
+                          pwd
+                          ls -la
+
+                          # Turn our base64-encoded certificate back to a regular .p12 file
+
+                          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+                          # We need to create a new keychain, otherwise using the certificate will prompt
+                          # with a UI dialog asking for the certificate password, which we can't
+                          # use in a headless CI environment
+
+                          security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                          security list-keychains -d user -s build.keychain
+                          security default-keychain -d user -s build.keychain
+                          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+                          codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
+
+
+                          # Notarize
+                          # Store the notarization credentials so that we can prevent a UI password dialog from blocking the CI
+
+                          echo "Create keychain profile"
+                          xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
+
+                          # We can't notarize an app bundle directly, but we need to compress it as an archive.
+                          # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+                          # notarization service
+
+
+                          # Notarize insider binary
+                          # Include following directories & files in the created zip file, in the ./config directory.
+                          # - ./src/config/log_appender_xml
+                          # - ./src/config/email_templates
+                          # - ./src/config/slack_templates
+                          # - ./src/config/teams_templates
+                          # - ./src/config⁄production_template.yaml
+                          # - ./src/config⁄schedule_template.yaml
+                          echo "Creating temp notarization archive for insider build"
+                          zip -r "./${DIST_FILE_NAME}--macos-arm64--${{ github.sha }}.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
+
+                          cd src
+                          zip -u -r "../${DIST_FILE_NAME}--macos-arm64--${{ github.sha }}.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
+                          cd ..
+
+                          # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+                          # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+                          # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+                          # you're curious
+                          echo "Notarize insider app"
+                          xcrun notarytool submit "./${DIST_FILE_NAME}--macos-arm64--${{ github.sha }}.zip" --keychain-profile "notarytool-profile" --wait
+
+                          # Clean up
+                          rm build/build.cjs build/sea-prep.blob
+
+                          # Delete build keychain
+                          security delete-keychain build.keychain
+                      # artifact_release_name: release-binaries-macos
+                      # artifact_release_path: release-binaries-macos/*
+                      artifact_insider: butler--macos-arm64--${{ github.sha }}.zip
                     - os: ubuntu-latest
                       build: |
                           # Inject git SHA into package.json
