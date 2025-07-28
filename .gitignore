@@ -90,7 +90,6 @@ src/config/production_empty_arrays.yaml
 src/config/production_template_filledin.yaml
 build.cjs
 butler
-sea-config.json
 sea-prep.blob
 dir1/file1.txt
 dir1/file2.txt
