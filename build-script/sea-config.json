@@ -1,0 +1,27 @@
+{
+    "main": "./build/build.cjs",
+    "output": "./build/sea-prep.blob",
+    "disableExperimentalSEAWarning": true,
+    "assets": {
+        "package.json": "./package.json",
+        "butler-api.yaml": "./docs/api_doc/butler-api.yaml",
+        "/logo.svg": "./static/logo.svg",
+        "/butler.png": "./static/configvis/butler.png",
+        "/download-solid.svg": "./static/configvis/download-solid.svg",
+        "/index.html": "./static/configvis/index.html",
+        "/jsontree.js": "./static/configvis/jsontree.js",
+        "/jsontree.js.css": "./static/configvis/jsontree.js.css",
+        "/jsontree.js.css.map": "./static/configvis/jsontree.js.css.map",
+        "/jsontree.js.map": "./static/configvis/jsontree.js.map",
+        "/prism.css": "./static/configvis/prism.css",
+        "/prism.js": "./static/configvis/prism.js",
+        "enigma_schema_12.170.2.json": "./node_modules/enigma.js/schemas/12.170.2.json",
+        "enigma_schema_12.612.0.json": "./node_modules/enigma.js/schemas/12.612.0.json",
+        "enigma_schema_12.936.0.json": "./node_modules/enigma.js/schemas/12.936.0.json",
+        "enigma_schema_12.1306.0.json": "./node_modules/enigma.js/schemas/12.1306.0.json",
+        "enigma_schema_12.1477.0.json": "./node_modules/enigma.js/schemas/12.1477.0.json",
+        "enigma_schema_12.1657.0.json": "./node_modules/enigma.js/schemas/12.1657.0.json",
+        "enigma_schema_12.1823.0.json": "./node_modules/enigma.js/schemas/12.1823.0.json",
+        "enigma_schema_12.2015.0.json": "./node_modules/enigma.js/schemas/12.2015.0.json"
+    }
+}
