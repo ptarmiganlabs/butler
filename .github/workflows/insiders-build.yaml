@@ -240,7 +240,7 @@ jobs:
                           # Clean up
                           # Delete build keychain
                           security delete-keychain build.keychain
-                          rm build.cjs certificate.p12
+                          rm build/build.cjs build/sea-prep.blob certificate.p12
 
                           ls -la
                       artifact_insider: butler--macos-x64--${{ github.sha }}.zip
