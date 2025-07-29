@@ -89,7 +89,7 @@ jobs:
                   git commit -m "Auto-adding API docs" --allow-empty
                   git push
 
-    release-macos:
+    release-macos-x64:
         needs: release-please
         runs-on:
             - self-hosted
@@ -151,24 +151,67 @@ jobs:
                   chmod +x "${DIST_FILE_NAME}"
                   security delete-keychain build.keychain || true
 
-                  # Turn our base64-encoded certificate back to a regular .p12 file
+                  pwd
+                  ls -la
 
-                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+                  # Start signing of the binary
 
+                  # -------------------
                   # We need to create a new keychain, otherwise using the certificate will prompt
                   # with a UI dialog asking for the certificate password, which we can't
                   # use in a headless CI environment
 
-                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security list-keychains -d user -s build.keychain
-                  security default-keychain -d user -s build.keychain
-                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  # Turn our base64-encoded certificate back to a regular .p12 file
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
 
+                  echo "DEBUG: Setting KEYCHAIN_NAME environment variable"
+                  export KEYCHAIN_NAME="build.keychain"
+
+                  echo "DEBUG: Creating new keychain"
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Getting current keychain list"
+                  OLD_KEYCHAIN_NAMES=$(security list-keychains -d user | sed -e 's/"//g' | xargs)
+                  echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_NAMES}"
+
+                  echo "DEBUG: Setting keychain search list"
+                  security list-keychains -d user -s "${KEYCHAIN_NAME}" ${OLD_KEYCHAIN_NAMES}
+
+                  echo "DEBUG: Getting current default keychain"
+                  DEFAULT_KEYCHAIN=$(security default-keychain -d user | sed -e 's/"//g' | xargs)
+                  echo "DEBUG: Default keychain is: ${DEFAULT_KEYCHAIN}"
+
+                  echo "DEBUG: Setting our keychain as default"
+                  security default-keychain -d user -s "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Unlocking keychain"
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Importing certificate into keychain"
+                  security import certificate.p12 -k "${KEYCHAIN_NAME}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+
+                  echo "DEBUG: Setting keychain timeout to prevent locking"
+                  security set-keychain-settings -t 3600 -l "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Setting key partition list"
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Performing codesign operation"
                   codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
 
+                  echo "DEBUG: Verifying code signature"
+                  codesign -vvv --deep --strict "./${DIST_FILE_NAME}"
 
+                  # -------------------
+                  # Notarize
+                  # Store the notarization credentials so that we can prevent a UI password dialog from blocking the CI
+                  echo "Create keychain profile"
+                  # Get the absolute path to the keychain in ~/Library/Keychains/ with the -db suffix macOS adds to keychain files
+                  KEYCHAIN_PATH=~/Library/Keychains/${KEYCHAIN_NAME}-db
+                  echo "DEBUG: Using keychain at path: ${KEYCHAIN_PATH}"
+                  xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD" --keychain "${KEYCHAIN_PATH}"
+
+                  # -------------------
                   # We can't notarize an app bundle directly, but we need to compress it as an archive.
                   # Therefore, we create a zip file containing our app bundle, so that we can send it to the
                   # notarization service
@@ -190,15 +233,25 @@ jobs:
                   zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
                   cd ..
 
-                  # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
-                  # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
-                  # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
-                  # you're curious
-                  echo "Notarize release app"
-                  xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" --keychain-profile "notarytool-profile" --wait
 
+                  # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+                  echo "Notarize release app"
+                  xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" --keychain-profile "notarytool-profile" --wait --keychain "${KEYCHAIN_PATH}"
+
+                  echo "DEBUG: Restoring original default keychain"
+                  security default-keychain -d user -s "$DEFAULT_KEYCHAIN" || echo "WARNING: Failed to restore default keychain, continuing anyway"
+
+                  echo "DEBUG: Restoring original keychain list"
+                  security list-keychains -d user -s ${OLD_KEYCHAIN_NAMES} || echo "WARNING: Failed to restore keychain list, continuing anyway"
+
+
+                  # -------------------
+                  # Clean up
                   # Delete build keychain
                   security delete-keychain build.keychain
+                  rm certificate.p12
+
+                  ls -la
 
             - name: Upload to existing release
               uses: ncipollo/release-action@v1
@@ -283,29 +336,104 @@ jobs:
                   chmod +x "${DIST_FILE_NAME}"
                   security delete-keychain build.keychain || true
 
-                  # Turn our base64-encoded certificate back to a regular .p12 file
+                  pwd
+                  ls -la
 
-                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+                  # Start signing of the binary
 
+                  # -------------------
                   # We need to create a new keychain, otherwise using the certificate will prompt
                   # with a UI dialog asking for the certificate password, which we can't
                   # use in a headless CI environment
 
-                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security list-keychains -d user -s build.keychain
-                  security default-keychain -d user -s build.keychain
-                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  # Turn our base64-encoded certificate back to a regular .p12 file
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
 
+                  echo "DEBUG: Setting KEYCHAIN_NAME environment variable"
+                  export KEYCHAIN_NAME="build.keychain"
+
+                  echo "DEBUG: Creating new keychain"
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Getting current keychain list"
+                  OLD_KEYCHAIN_NAMES=$(security list-keychains -d user | sed -e 's/"//g' | xargs)
+                  echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_NAMES}"
+
+                  echo "DEBUG: Setting keychain search list"
+                  security list-keychains -d user -s "${KEYCHAIN_NAME}" ${OLD_KEYCHAIN_NAMES}
+
+                  echo "DEBUG: Getting current default keychain"
+                  DEFAULT_KEYCHAIN=$(security default-keychain -d user | sed -e 's/"//g' | xargs)
+                  echo "DEBUG: Default keychain is: ${DEFAULT_KEYCHAIN}"
+
+                  echo "DEBUG: Setting our keychain as default"
+                  security default-keychain -d user -s "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Unlocking keychain"
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Importing certificate into keychain"
+                  security import certificate.p12 -k "${KEYCHAIN_NAME}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+
+                  echo "DEBUG: Setting keychain timeout to prevent locking"
+                  security set-keychain-settings -t 3600 -l "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Setting key partition list"
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+
+                  echo "DEBUG: Performing codesign operation"
                   codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
 
+                  echo "DEBUG: Verifying code signature"
+                  codesign -vvv --deep --strict "./${DIST_FILE_NAME}"
+
+                  # -------------------
+                  # Notarize
+                  # Store the notarization credentials so that we can prevent a UI password dialog from blocking the CI
+                  echo "Create keychain profile"
+                  # Get the absolute path to the keychain in ~/Library/Keychains/ with the -db suffix macOS adds to keychain files
+                  KEYCHAIN_PATH=~/Library/Keychains/${KEYCHAIN_NAME}-db
+                  echo "DEBUG: Using keychain at path: ${KEYCHAIN_PATH}"
+                  xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD" --keychain "${KEYCHAIN_PATH}"
+
+                  # -------------------
+                  # We can't notarize an app bundle directly, but we need to compress it as an archive.
+                  # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+                  # notarization service
+                  # Notarize release binary
+                  echo "Creating temp notarization archive for release binary"
+                  zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
+
+                  # Include following directories & files in the created zip file, in the ./config directory.
+                  # - ./src/config/log_appender_xml
+                  # - ./src/config/email_templates
+                  # - ./src/config/slack_templates
+                  # - ./src/config/teams_templates
+                  # - ./src/config⁄production_template.yaml
+                  # - ./src/config⁄schedule_template.yaml
+                  cd src
+                  zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
+                  cd ..
+
+
+                  # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+                  echo "Notarize release app"
+                  xcrun notarytool submit "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" --keychain-profile "notarytool-profile" --wait --keychain "${KEYCHAIN_PATH}"
+
+                  echo "DEBUG: Restoring original default keychain"
+                  security default-keychain -d user -s "$DEFAULT_KEYCHAIN" || echo "WARNING: Failed to restore default keychain, continuing anyway"
+
+                  echo "DEBUG: Restoring original keychain list"
+                  security list-keychains -d user -s ${OLD_KEYCHAIN_NAMES} || echo "WARNING: Failed to restore keychain list, continuing anyway"
+
+
+                  # -------------------
+                  # Clean up
                   # Delete build keychain
                   security delete-keychain build.keychain
+                  rm certificate.p12
 
-            - name: Compress release binary
-              run: |
-                  zip "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./${DIST_FILE_NAME}"
+                  ls -la
 
             - name: Upload release artifacts to GitHub
               uses: ncipollo/release-action@v1
