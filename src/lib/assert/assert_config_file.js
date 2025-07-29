@@ -701,19 +701,24 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
  * @returns {Promise<boolean>} A promise that resolves to true if all checks pass, false otherwise
  */
 export const configFileAppAssert = async (config, logger) => {
-    // Verify that telemetry and system info settings are compatible
-    // If telemetry is enabled but system info gathering is disabled, this creates an incompatibility
-    // because telemetry relies on detailed system information for proper functionality
-    const anonTelemetryEnabled = 
-        config.has('Butler.anonTelemetry') === false || 
-        (config.has('Butler.anonTelemetry') === true && config.get('Butler.anonTelemetry') === true);
+    // Check if anonymous telemetry is enabled (true by default if not specified)
+    const telemetryConfigMissing = !config.has('Butler.anonTelemetry');
+    const telemetryExplicitlyEnabled = config.has('Butler.anonTelemetry') && config.get('Butler.anonTelemetry') === true;
+    const isTelemetryEnabled = telemetryConfigMissing || telemetryExplicitlyEnabled;
     
-    const systemInfoEnabled = config.get('Butler.systemInfo.enable');
+    const isSystemInfoEnabled = config.get('Butler.systemInfo.enable');
 
-    if (anonTelemetryEnabled === true && systemInfoEnabled === false) {
-        logger.error(
-            'ASSERT CONFIG APP: Anonymous telemetry is enabled (Butler.anonTelemetry=true or missing) but system information gathering is disabled (Butler.systemInfo.enable=false). Telemetry requires system information to function properly. Either disable telemetry by setting Butler.anonTelemetry=false or enable system info gathering by setting Butler.systemInfo.enable=true. Exiting.'
-        );
+    // Validate compatibility between telemetry and system info gathering
+    if (isTelemetryEnabled && !isSystemInfoEnabled) {
+        const errorMsg = [
+            'ASSERT CONFIG APP: Anonymous telemetry is enabled (Butler.anonTelemetry=true or missing)',
+            'but system information gathering is disabled (Butler.systemInfo.enable=false).',
+            'Telemetry requires system information to function properly.',
+            'Either disable telemetry by setting Butler.anonTelemetry=false',
+            'or enable system info gathering by setting Butler.systemInfo.enable=true. Exiting.'
+        ].join(' ');
+        
+        logger.error(errorMsg);
         return false;
     }
 
