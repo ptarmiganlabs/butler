@@ -2,21 +2,21 @@
 
 ## Overview
 
-Butler collects system information for monitoring and diagnostic purposes. This information helps with troubleshooting, resource monitoring, and identifying system characteristics. However, on Windows systems, this may trigger security alerts in enterprise environments due to OS command execution.
+Butler collects system information for monitoring and diagnostic purposes. This information helps with troubleshooting, resource monitoring, and identifying system characteristics. However, this may trigger security alerts in enterprise security monitoring tools due to OS command execution.
 
 ## Root Cause
 
-Butler uses the [systeminformation](https://www.npmjs.com/package/systeminformation) npm package to gather detailed system information. On Windows, this package internally executes several OS commands to collect system details:
+Butler uses the [systeminformation](https://www.npmjs.com/package/systeminformation) npm package to gather detailed system information. On Windows, this package internally executes several OS commands to collect system details (other OSs will use different methods):
 
 - `cmd.exe /d /s /c \chcp` - Gets code page information
-- `netstat -r` - Gets routing table information  
+- `netstat -r` - Gets routing table information
 - `cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN%` - Gets computer name and domain
 
 These commands are **not executed directly by Butler** but by the systeminformation package dependency. The commands are legitimate system information gathering commands, but they may trigger alerts in security monitoring tools.
 
 ## Security Configuration
 
-Starting with this version, Butler provides a configuration option to disable detailed system information gathering for security-sensitive environments.
+Starting with version 14.0.0, Butler provides a configuration option to disable detailed system information gathering for security-sensitive environments.
 
 ### Configuration Option
 
@@ -24,15 +24,15 @@ Add this section to your Butler configuration file:
 
 ```yaml
 Butler:
-  # System information gathering
-  # Butler collects system information for monitoring and diagnostic purposes.
-  # On Windows, this may trigger security alerts in enterprise monitoring tools as it executes various OS commands:
-  # - cmd.exe /d /s /c \chcp (to get code page info)
-  # - netstat -r (to get routing table)  
-  # - cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN% (to get computer/domain names)
-  # These commands are executed by the 'systeminformation' npm package, not directly by Butler.
-  systemInfo:
-    enable: true    # Set to false in security-sensitive environments
+    # System information gathering
+    # Butler collects system information for monitoring and diagnostic purposes.
+    # On Windows, this may trigger security alerts in enterprise monitoring tools as it executes various OS commands:
+    # - cmd.exe /d /s /c \chcp (to get code page info)
+    # - netstat -r (to get routing table)
+    # - cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN% (to get computer/domain names)
+    # These commands are executed by the 'systeminformation' npm package, not directly by Butler.
+    systemInfo:
+        enable: true # Set to false in security-sensitive environments
 ```
 
 ### When to Disable System Information
@@ -49,23 +49,27 @@ Consider setting `systemInfo.enable: false` if:
 When `systemInfo.enable` is set to `false`:
 
 **✅ Benefits:**
+
 - No OS commands are executed by the systeminformation package
 - Eliminates security alerts from monitoring tools
 - Butler continues to function normally
 - Basic system information is still collected using Node.js built-in APIs
 
 **⚠️ Limitations:**
+
 - Reduced detail in system information logs
 - Some monitoring dashboards may show less detailed host information
-- Telemetry data will contain minimal system details
+- Anonymous telemetry will not work.
 
 **What's Still Collected:**
+
 - Node.js version and platform information
 - Basic OS platform, architecture, and version
 - Memory and CPU count from Node.js APIs
 - Application version and instance ID
 
 **What's Not Collected:**
+
 - Detailed CPU model and specifications
 - Detailed OS distribution information
 - Network interface details
@@ -75,19 +79,21 @@ When `systemInfo.enable` is set to `false`:
 ## Example Configuration Files
 
 ### High Security Environment
+
 ```yaml
 Butler:
-  systemInfo:
-    enable: false  # Disable to prevent OS command execution
-  # ... rest of configuration
+    systemInfo:
+        enable: false # Disable to prevent OS command execution
+    # ... rest of configuration
 ```
 
 ### Standard Environment
+
 ```yaml
 Butler:
-  systemInfo:
-    enable: true   # Default - enables full system information gathering
-  # ... rest of configuration
+    systemInfo:
+        enable: true # Default - enables full system information gathering
+    # ... rest of configuration
 ```
 
 ## Testing the Configuration

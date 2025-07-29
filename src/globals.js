@@ -296,11 +296,7 @@ class Settings {
                 cert: this.readCert(certPath),
                 key: this.readCert(keyPath),
                 ca: this.readCert(caPath),
-                certPaths: {
-                    certPath,
-                    keyPath,
-                    caPath,
-                },
+                certPaths: { certPath, keyPath, caPath },
             };
         } else {
             this.logger.debug('CONFIG: API doc mode=on');
@@ -499,6 +495,8 @@ class Settings {
      * - netstat -r (to get routing table info)
      * - cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN% (to get computer/domain names)
      *
+     * Other OSs may use similar commands or system calls to gather information.
+     *
      * These commands are not executed directly by Butler, but by the systeminformation package
      * to gather system details. If this triggers security alerts, you can disable detailed system
      * information gathering by setting Butler.systemInfo.enable to false in the config file.
@@ -529,9 +527,7 @@ class Settings {
                 siNetworkDefault = await si.networkInterfaceDefault();
             } else {
                 // If detailed system info is disabled, use minimal fallback values
-                this.logger.info(
-                    'SYSTEM INFO: Detailed system information gathering is disabled. Using minimal system info.'
-                );
+                this.logger.info('SYSTEM INFO: Detailed system information gathering is disabled. Using minimal system info.');
                 siSystem = { uuid: 'disabled' };
                 siMem = { total: os.totalmem() };
                 siOS = {
@@ -542,19 +538,8 @@ class Settings {
                     codename: 'unknown',
                     serial: 'unknown',
                 };
-                siCPU = {
-                    processors: 1,
-                    physicalCores: 1,
-                    cores: os.cpus().length,
-                    brand: 'unknown',
-                };
-                siNetwork = [
-                    {
-                        iface: 'default',
-                        mac: '00:00:00:00:00:00',
-                        ip4: '127.0.0.1',
-                    },
-                ];
+                siCPU = { processors: 1, physicalCores: 1, cores: os.cpus().length, brand: 'unknown' };
+                siNetwork = [{ iface: 'default', mac: '00:00:00:00:00:00', ip4: '127.0.0.1' }];
                 siNetworkDefault = 'default';
                 siDocker = { isDocker: false };
             }
@@ -566,12 +551,7 @@ class Settings {
 
             // Ensure we have at least one network interface for ID generation
             const netIface =
-                networkInterface.length > 0
-                    ? networkInterface[0]
-                    : siNetwork[0] || {
-                          mac: '00:00:00:00:00:00',
-                          ip4: '127.0.0.1',
-                      };
+                networkInterface.length > 0 ? networkInterface[0] : siNetwork[0] || { mac: '00:00:00:00:00:00', ip4: '127.0.0.1' };
 
             // Loop through all network interfaces, find the first one with a MAC address
             // and use that to generate a unique ID for this Butler instance
@@ -622,10 +602,7 @@ class Settings {
             const hostInfo = {
                 id,
                 isRunningInDocker: Settings.isRunningInDocker(),
-                node: {
-                    nodeVersion: process.version,
-                    versions: process.versions,
-                },
+                node: { nodeVersion: process.version, versions: process.versions },
                 os: {
                     platform: os.platform(),
                     release: os.release(),
@@ -638,9 +615,7 @@ class Settings {
                 si: {
                     cpu: siCPU,
                     system: siSystem,
-                    memory: {
-                        total: siMem.total,
-                    },
+                    memory: { total: siMem.total },
                     os: siOS,
                     network: siNetwork,
                     networkDefault: siNetworkDefault,
