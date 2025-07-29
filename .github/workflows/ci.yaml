@@ -249,7 +249,7 @@ jobs:
                   # Clean up
                   # Delete build keychain
                   security delete-keychain build.keychain
-                  rm certificate.p12
+                  rm build/build.cjs build/sea-prep.blob certificate.p12
 
                   ls -la
 
@@ -431,7 +431,7 @@ jobs:
                   # Clean up
                   # Delete build keychain
                   security delete-keychain build.keychain
-                  rm certificate.p12
+                  rm build/build.cjs build/sea-prep.blob certificate.p12
 
                   ls -la
 
