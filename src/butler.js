@@ -40,7 +40,7 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileEmailAssert, configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert } =
+    const { configFileEmailAssert, configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert, configFileAppAssert } =
         await import('./lib/assert/assert_config_file.js');
 
     let resAssert;
@@ -53,6 +53,15 @@ const start = async () => {
             process.exit(1);
         } else {
             globals.logger.info('MAIN: Config file structure is correct - all good.');
+        }
+
+        // Verify application-specific settings and relationships
+        resAssert = await configFileAppAssert(globals.config, globals.logger);
+        if (resAssert === false) {
+            globals.logger.error('MAIN: Application-specific config validation failed. Exiting.');
+            process.exit(1);
+        } else {
+            globals.logger.info('MAIN: Application-specific config validation passed - all good.');
         }
 
         // Verify select parts/values in config file

@@ -14,6 +14,14 @@ export const confifgFileSchema = {
                 fileLogging: { type: 'boolean' },
                 logDirectory: { type: 'string' },
                 anonTelemetry: { type: 'boolean' },
+                systemInfo: {
+                    type: 'object',
+                    properties: {
+                        enable: { type: 'boolean' },
+                    },
+                    required: ['enable'],
+                    additionalProperties: false,
+                },
                 configVisualisation: {
                     type: 'object',
                     properties: {
@@ -3138,6 +3146,7 @@ export const confifgFileSchema = {
                 'fileLogging',
                 'logDirectory',
                 'anonTelemetry',
+                'systemInfo',
                 'configVisualisation',
                 'heartbeat',
                 'dockerHealthCheck',

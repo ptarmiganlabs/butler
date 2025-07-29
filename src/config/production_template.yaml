@@ -25,6 +25,16 @@ Butler:
                           # More info on whata data is collected: https://butler.ptarmiganlabs.com/docs/about/telemetry/
                           # Please consider leaving this at true - it really helps future development of Butler!
 
+  # System information gathering
+  # Butler collects system information for monitoring and diagnostic purposes.
+  # On Windows, this may trigger security alerts in enterprise monitoring tools as it executes various OS commands:
+  # - cmd.exe /d /s /c \chcp (to get code page info)
+  # - netstat -r (to get routing table)  
+  # - cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN% (to get computer/domain names)
+  # These commands are executed by the 'systeminformation' npm package, not directly by Butler.
+  systemInfo:
+    enable: true          # Should detailed system information be collected? Set to false in security-sensitive environments.
+
   # Should Butler start a web server that serves an obfuscated view of the Butler config file?
   configVisualisation:
     enable: true

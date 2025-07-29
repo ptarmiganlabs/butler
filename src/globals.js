@@ -296,11 +296,7 @@ class Settings {
                 cert: this.readCert(certPath),
                 key: this.readCert(keyPath),
                 ca: this.readCert(caPath),
-                certPaths: {
-                    certPath,
-                    keyPath,
-                    caPath,
-                },
+                certPaths: { certPath, keyPath, caPath },
             };
         } else {
             this.logger.debug('CONFIG: API doc mode=on');
@@ -490,20 +486,72 @@ class Settings {
         }
     }
 
+    /**
+     * Gathers and returns information about the host system where Butler is running.
+     * Includes OS details, network info, hardware details, and a unique ID.
+     *
+     * Note: On Windows, this function may execute OS commands via the 'systeminformation' npm package:
+     * - cmd.exe /d /s /c \chcp (to get code page info)
+     * - netstat -r (to get routing table info)
+     * - cmd.exe /d /s /c \echo %COMPUTERNAME%.%USERDNSDOMAIN% (to get computer/domain names)
+     *
+     * Other OSs may use similar commands or system calls to gather information.
+     *
+     * These commands are not executed directly by Butler, but by the systeminformation package
+     * to gather system details. If this triggers security alerts, you can disable detailed system
+     * information gathering by setting Butler.systemInfo.enable to false in the config file.
+     *
+     * @returns {object | null} Object containing host information or null if an error occurs
+     */
     async initHostInfo() {
         try {
-            const siCPU = await si.cpu();
-            const siSystem = await si.system();
-            const siMem = await si.mem();
-            const siOS = await si.osInfo();
-            const siDocker = await si.dockerInfo();
-            const siNetwork = await si.networkInterfaces();
-            const siNetworkDefault = await si.networkInterfaceDefault();
+            // Check if detailed system info gathering is enabled
+            const enableSystemInfo = this.config.get('Butler.systemInfo.enable');
+
+            let siCPU = {};
+            let siSystem = {};
+            let siMem = {};
+            let siOS = {};
+            let siDocker = {};
+            let siNetwork = [];
+            let siNetworkDefault = '';
+
+            // Only gather detailed system info if enabled in config
+            if (enableSystemInfo) {
+                siCPU = await si.cpu();
+                siSystem = await si.system();
+                siMem = await si.mem();
+                siOS = await si.osInfo();
+                siDocker = await si.dockerInfo();
+                siNetwork = await si.networkInterfaces();
+                siNetworkDefault = await si.networkInterfaceDefault();
+            } else {
+                // If detailed system info is disabled, use minimal fallback values
+                this.logger.info('SYSTEM INFO: Detailed system information gathering is disabled. Using minimal system info.');
+                siSystem = { uuid: 'disabled' };
+                siMem = { total: os.totalmem() };
+                siOS = {
+                    platform: os.platform(),
+                    arch: os.arch(),
+                    release: os.release(),
+                    distro: 'unknown',
+                    codename: 'unknown',
+                    serial: 'unknown',
+                };
+                siCPU = { processors: 1, physicalCores: 1, cores: os.cpus().length, brand: 'unknown' };
+                siNetwork = [{ iface: 'default', mac: '00:00:00:00:00:00', ip4: '127.0.0.1' }];
+                siNetworkDefault = 'default';
+                siDocker = { isDocker: false };
+            }
 
             const defaultNetworkInterface = siNetworkDefault;
 
             // Get info about all available network interfaces
             const networkInterface = siNetwork.filter((item) => item.iface === defaultNetworkInterface);
+
+            // Ensure we have at least one network interface for ID generation
+            const netIface =
+                networkInterface.length > 0 ? networkInterface[0] : siNetwork[0] || { mac: '00:00:00:00:00:00', ip4: '127.0.0.1' };
 
             // Loop through all network interfaces, find the first one with a MAC address
             // and use that to generate a unique ID for this Butler instance
@@ -528,19 +576,19 @@ class Settings {
             // - siCPU.brand
             if (id === '') {
                 let idSrc = '';
-                if (siOS.serial !== '') {
+                if (siOS.serial && siOS.serial !== '' && siOS.serial !== 'unknown') {
                     idSrc = siOS.serial + this.config.get('Butler.configQRS.host') + siSystem.uuid;
-                } else if (siMem.total !== '') {
+                } else if (siMem.total && siMem.total !== '') {
                     idSrc = siMem.total + this.config.get('Butler.configQRS.host') + siSystem.uuid;
-                } else if (siOS.release !== '') {
+                } else if (siOS.release && siOS.release !== '' && siOS.release !== 'unknown') {
                     idSrc = siOS.release + this.config.get('Butler.configQRS.host') + siSystem.uuid;
-                } else if (siCPU.brand !== '') {
+                } else if (siCPU.brand && siCPU.brand !== '' && siCPU.brand !== 'unknown') {
                     idSrc = siCPU.brand + this.config.get('Butler.configQRS.host') + siSystem.uuid;
                 } else {
                     idSrc = this.config.get('Butler.configQRS.host') + siSystem.uuid;
                 }
                 // Add underscore to salt to make sure it's a string
-                const salt = `${siMem.total}_`;
+                const salt = `${siMem.total || 'fallback'}_`;
                 const hash = crypto.createHmac('sha256', salt);
                 hash.update(idSrc);
                 id = hash.digest('hex');
@@ -554,10 +602,7 @@ class Settings {
             const hostInfo = {
                 id,
                 isRunningInDocker: Settings.isRunningInDocker(),
-                node: {
-                    nodeVersion: process.version,
-                    versions: process.versions,
-                },
+                node: { nodeVersion: process.version, versions: process.versions },
                 os: {
                     platform: os.platform(),
                     release: os.release(),
@@ -570,9 +615,7 @@ class Settings {
                 si: {
                     cpu: siCPU,
                     system: siSystem,
-                    memory: {
-                        total: siMem.total,
-                    },
+                    memory: { total: siMem.total },
                     os: siOS,
                     network: siNetwork,
                     networkDefault: siNetworkDefault,
