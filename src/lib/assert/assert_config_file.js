@@ -84,13 +84,18 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
     // If the following properties are true:
     // - Butler.emailNotification.enable
     // - Butler.emailNotification.reloadTaskSuccess.enable
+    // - Butler.emailNotification.reloadTaskSuccess.alertEnableByCustomProperty.enable
     //
     // ... then the following properties must be set to non-empty strings that are valid custom property names:
     // - Butler.emailNotification.reloadTaskSuccess.alertEnableByCustomProperty.customPropertyName
     // - Butler.emailNotification.reloadTaskSuccess.alertEnabledByEmailAddress.customPropertyName
     //
     // Also, those custom properties must exist in the Qlik Sense environment
-    if (config.get('Butler.emailNotification.enable') && config.get('Butler.emailNotification.reloadTaskSuccess.enable')) {
+    if (
+        config.get('Butler.emailNotification.enable') &&
+        config.get('Butler.emailNotification.reloadTaskSuccess.enable') &&
+        config.get('Butler.emailNotification.reloadTaskSuccess.alertEnableByCustomProperty.enable')
+    ) {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
@@ -131,13 +136,18 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
     // If the following properties are true:
     // - Butler.emailNotification.enable
     // - Butler.emailNotification.reloadTaskFailure.enable
+    // - Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable
     //
     // ... then the following properties must be set to non-empty strings that are valid custom property names:
     // - Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName
     // - Butler.emailNotification.reloadTaskFailure.alertEnabledByEmailAddress.customPropertyName
     //
     // Also, those custom properties must exist in the Qlik Sense environment
-    if (config.get('Butler.emailNotification.enable') && config.get('Butler.emailNotification.reloadTaskFailure.enable')) {
+    if (
+        config.get('Butler.emailNotification.enable') &&
+        config.get('Butler.emailNotification.reloadTaskFailure.enable') &&
+        config.get('Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable')
+    ) {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
@@ -178,13 +188,18 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
     // If the following properties are true:
     // - Butler.emailNotification.enable
     // - Butler.emailNotification.reloadTaskAborted.enable
+    // - Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable
     //
     // ... then the following properties must be set to non-empty strings that are valid custom property names:
     // - Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.customPropertyName
     // - Butler.emailNotification.reloadTaskAborted.alertEnabledByEmailAddress.customPropertyName
     //
     // Also, those custom properties must exist in the Qlik Sense environment
-    if (config.get('Butler.emailNotification.enable') && config.get('Butler.emailNotification.reloadTaskAborted.enable')) {
+    if (
+        config.get('Butler.emailNotification.enable') &&
+        config.get('Butler.emailNotification.reloadTaskAborted.enable') &&
+        config.get('Butler.emailNotification.reloadTaskAborted.alertEnableByCustomProperty.enable')
+    ) {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
