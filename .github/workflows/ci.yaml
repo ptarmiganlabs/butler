@@ -89,6 +89,62 @@ jobs:
                   git commit -m "Auto-adding API docs" --allow-empty
                   git push
 
+    sbom-build:
+        needs: release-please
+        runs-on: ubuntu-latest
+
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler-sos
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: |
+                  npm ci --include=prod
+
+            - name: Generate SBOM
+              run: |
+                  curl -Lo $RUNNER_TEMP/sbom-tool https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
+                  chmod +x $RUNNER_TEMP/sbom-tool
+
+                  mkdir -p ./build
+
+                  $RUNNER_TEMP/sbom-tool generate -b ./build -bc . -pn ${DIST_FILE_NAME} -pv ${{ needs.release-please.outputs.release_version }} -ps "Ptarmigan Labs" -nsb https://sbom.ptarmiganlabs.com -V verbose
+
+            - name: List generated SBOM files (debug)
+              run: |
+                  echo "=== Build directory structure ==="
+                  find ./build -type f -name "*.json" -o -name "*.spdx*" | head -20
+                  echo "=== File sizes ==="
+                  find ./build -type f -name "*.json" -o -name "*.spdx*" -exec ls -la {} \;
+
+            - name: Upload SBOM to Release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
+                  # artifactContentType: raw
+                  draft: true
+                  artifacts: './build/**/*.spdx.json'
+                  token: ${{ github.token }}
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+
+            - name: Upload SBOM as Workflow Artifact (backup)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: sbom-${{ needs.release-please.outputs.release_version }}
+                  path: './build/'
+                  retention-days: 3
+
     release-macos-x64:
         needs: release-please
         runs-on:
