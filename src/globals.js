@@ -257,11 +257,7 @@ class Settings {
         );
 
         // Get certificate file paths for QRS connection
-        const filename = fileURLToPath(import.meta.url);
-        const dirname = upath.dirname(filename);
-        const certPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCert'));
-        const keyPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertKey'));
-        const caPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertCA'));
+        const certificates = this.loadCertificates();
 
         this.configEngine = null;
         this.configQRS = null;
@@ -277,8 +273,8 @@ class Settings {
                 port: this.config.get('Butler.configEngine.port'),
                 isSecure: this.config.get('Butler.configEngine.useSSL'),
                 headers: httpHeadersEngine,
-                cert: this.readCert(this.config.get('Butler.cert.clientCert')),
-                key: this.readCert(this.config.get('Butler.cert.clientCertKey')),
+                cert: certificates.cert,
+                key: certificates.key,
                 rejectUnauthorized: this.config.get('Butler.configEngine.rejectUnauthorized'),
             };
 
@@ -293,10 +289,10 @@ class Settings {
                 useSSL: this.config.get('Butler.configQRS.useSSL'),
                 headers: httpHeadersQRS,
                 rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
-                cert: this.readCert(certPath),
-                key: this.readCert(keyPath),
-                ca: this.readCert(caPath),
-                certPaths: { certPath, keyPath, caPath },
+                cert: certificates.cert,
+                key: certificates.key,
+                ca: certificates.ca,
+                certPaths: certificates.paths,
             };
         } else {
             this.logger.debug('CONFIG: API doc mode=on');
@@ -374,6 +370,13 @@ class Settings {
         return instance;
     }
 
+    // Helper function to resolve certificate file paths
+    resolveCertPath(certConfigPath) {
+        const filename = fileURLToPath(import.meta.url);
+        const dirname = upath.dirname(filename);
+        return upath.resolve(dirname, certConfigPath);
+    }
+
     // Helper function to read the contents of the certificate files
     readCert(filename) {
         let cert = null;
@@ -383,6 +386,39 @@ class Settings {
             this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${err.stack}`);
         }
         return cert;
+    }
+
+    // Utility function to load all certificates at once
+    loadCertificates() {
+        const certPath = this.resolveCertPath(this.config.get('Butler.cert.clientCert'));
+        const keyPath = this.resolveCertPath(this.config.get('Butler.cert.clientCertKey'));
+        const caPath = this.resolveCertPath(this.config.get('Butler.cert.clientCertCA'));
+
+        return {
+            cert: this.readCert(certPath),
+            key: this.readCert(keyPath),
+            ca: this.readCert(caPath),
+            paths: { certPath, keyPath, caPath },
+        };
+    }
+
+    // Utility function to get certificate paths for external use (e.g., in app.js)
+    // This resolves paths based on the calling context (SEA vs regular Node.js)
+    getCertificatePaths() {
+        // Use the same logic as in app.js for path resolution
+        let dirname;
+        if (sea.isSea()) {
+            const filename = fileURLToPath(import.meta.url);
+            dirname = upath.dirname(filename);
+        } else {
+            dirname = process.cwd();
+        }
+
+        const certPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCert'));
+        const keyPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertKey'));
+        const caPath = upath.resolve(dirname, this.config.get('Butler.cert.clientCertCA'));
+
+        return { certPath, keyPath, caPath };
     }
 
     // Helper function to load list of approved directories for file system operations via Butler's REST API

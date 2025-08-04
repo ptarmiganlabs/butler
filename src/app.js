@@ -1,9 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import handlebars from 'handlebars';
-import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import sea from 'node:sea';
 
 import Fastify from 'fastify';
 // import AutoLoad from '@fastify/autoload';
@@ -47,20 +45,12 @@ async function build(opts = {}) {
     // When running in packaged app (using SEA): filename = /home/goran/code/butler/butler
     // When running as Node.js: import.meta.url =  /Users/goran/code/butler/src/app.js
     //
-    // Are we running as SEA app?
-    let dirname;
-    if (sea.isSea()) {
-        const filename = fileURLToPath(import.meta.url);
-        dirname = path.dirname(filename);
-    } else {
-        dirname = process.cwd();
-    }
+    // Use the centralized certificate path utility from globals
+    const certificatePaths = globals.getCertificatePaths();
+    const certFile = certificatePaths.certPath;
+    const keyFile = certificatePaths.keyPath;
+    const caFile = certificatePaths.caPath;
 
-    const certFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCert'));
-    const keyFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertKey'));
-    const caFile = path.resolve(dirname, globals.config.get('Butler.cert.clientCertCA'));
-
-    globals.logger.verbose(`MAIN: Executing JS dirname: ${dirname}`);
     globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
     globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
     globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
