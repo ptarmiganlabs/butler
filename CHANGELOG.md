@@ -1,5 +1,31 @@
 # Changelog
 
+## [14.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.2...butler-v14.0.0) (2025-08-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add new setting to control gathering of detailsed host  information
+
+### Features
+
+* Add new setting to control gathering of detailsed host  information ([dab5e28](https://github.com/ptarmiganlabs/butler/commit/dab5e2869150e415efe1eef4360c0a2b0439ec46)), closes [#1347](https://github.com/ptarmiganlabs/butler/issues/1347)
+
+
+### Miscellaneous
+
+* add build script for macOS ([cbe4711](https://github.com/ptarmiganlabs/butler/commit/cbe4711d71cba189806538cb7693e3626ced0c48))
+* add console logs for executable path in standalone and non-packaged environments ([5a04fa4](https://github.com/ptarmiganlabs/butler/commit/5a04fa472ba8b454246acc3926c1d34a378d3960))
+* add JSDoc comments for improved code documentation ([2692e7a](https://github.com/ptarmiganlabs/butler/commit/2692e7a18b26571fe4291f3fc0018442947fc183))
+* add macOS ARM64 (I.e. Apple Silicon) release job to CI workflows ([1ec7c50](https://github.com/ptarmiganlabs/butler/commit/1ec7c509062962ef7957adbbe700818dfea04554))
+* **deps:** update dependencies to latest versions ([45e0a86](https://github.com/ptarmiganlabs/butler/commit/45e0a86f7b4ee9ce2150730e5905ffb76249c1ff))
+* enhance macOS signing and notarization process in CI workflows ([f9006c8](https://github.com/ptarmiganlabs/butler/commit/f9006c8cef70e699ca1d42507d0ea21afda60562))
+* enhance macOS signing and notarization process in CI workflows ([77616fb](https://github.com/ptarmiganlabs/butler/commit/77616fb4984496af1a6040ce42b240ffde2f2e98))
+* Make insiders build and regular build using Node SEA when creating binaries. ([d171b19](https://github.com/ptarmiganlabs/butler/commit/d171b197bc30f863ba9991087e992bc43dcc3999))
+* remove redundant logging statement in build function ([2fd1b87](https://github.com/ptarmiganlabs/butler/commit/2fd1b8753b07d2a455ce8cf1712e6d49cae63a89))
+* update base image to Node 22-bullseye-slim in Dockerfile ([461aae5](https://github.com/ptarmiganlabs/butler/commit/461aae58aa4ca2b9729ad782696e4701811967ce))
+* update dependencies to latest versions ([d81e64f](https://github.com/ptarmiganlabs/butler/commit/d81e64f2cec0b8ec3f8e3503697819839d1b003e))
+
 ## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
 
 
