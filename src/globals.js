@@ -124,6 +124,11 @@ class Settings {
                 try {
                     const yamlStr = fs.readFileSync(this.configFileExpanded, 'utf8');
                     const cfgObj = yaml.load(yamlStr) || {};
+                    // Apply CLI loglevel override before loading config
+                    if (this.options.loglevel && this.options.loglevel.length > 0) {
+                        cfgObj.Butler = cfgObj.Butler || {};
+                        cfgObj.Butler.logLevel = this.options.loglevel;
+                    }
                     process.env.NODE_CONFIG = JSON.stringify(cfgObj);
                     process.env.SUPPRESS_NO_CONFIG_WARNING = 'true';
                 } catch (e) {
@@ -142,10 +147,23 @@ class Settings {
             const filename = fileURLToPath(import.meta.url);
             const dirname = upath.dirname(filename);
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
+            // If CLI loglevel is provided without -c, inject it via NODE_CONFIG so it overrides file configs
+            if (this.options.loglevel && this.options.loglevel.length > 0) {
+                try {
+                    const cfgObj = { Butler: { logLevel: this.options.loglevel } };
+                    process.env.NODE_CONFIG = JSON.stringify(cfgObj);
+                    process.env.SUPPRESS_NO_CONFIG_WARNING = process.env.SUPPRESS_NO_CONFIG_WARNING || 'true';
+                } catch (_) {
+                    // no-op
+                }
+            }
         }
 
         // Load YAML parser before loading the 'config' package so YAML support is available in bundled/SEA builds
         await import('js-yaml');
+
+        // Allow config mutations if needed (per node-config docs)
+        process.env.ALLOW_CONFIG_MUTATIONS = process.env.ALLOW_CONFIG_MUTATIONS || '1';
         // Load application config after env vars are set; works in both SEA and non-SEA when bundled with esbuild
         this.config = (await import('config')).default;
 
@@ -210,15 +228,7 @@ class Settings {
             program.help({ error: true });
         }
 
-        // Is there a log level file specified on the command line?
-        if (this.options.loglevel && this.options.loglevel.length > 0) {
-            if (this.config?.util?.extendDeep) {
-                this.config.util.extendDeep(this.config, { Butler: { logLevel: this.options.loglevel } });
-            } else {
-                this.config.Butler = this.config.Butler || {};
-                this.config.Butler.logLevel = this.options.loglevel;
-            }
-        }
+        // CLI loglevel already applied via NODE_CONFIG prior to loading config
 
         // Set up logger with timestamps and colors, and optional logging to disk file
         this.logTransports = [];
