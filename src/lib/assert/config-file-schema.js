@@ -55,7 +55,7 @@ export const confifgFileSchema = {
                         enable: { type: 'boolean' },
                         port: { type: 'number' },
                     },
-                    required: ['enable', 'port'],
+                    required: ['enable'],
                     additionalProperties: false,
                 },
                 uptimeMonitor: {
@@ -171,7 +171,7 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                     },
-                    required: ['enable', 'frequency', 'logLevel', 'storeInInfluxdb', 'storeNewRelic'],
+                    required: ['enable'],
                     additionalProperties: false,
                 },
                 thirdPartyToolsCredentials: {
