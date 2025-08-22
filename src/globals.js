@@ -6,6 +6,7 @@ import Influx from 'influx';
 import si from 'systeminformation';
 import isUncPath from 'is-unc-path';
 import winston from 'winston';
+import yaml from 'js-yaml';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import { Command, Option } from 'commander';
@@ -130,6 +131,18 @@ class Settings {
             const filename = fileURLToPath(import.meta.url);
             const dirname = upath.dirname(filename);
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
+        }
+
+        // Ensure the config package has a YAML parser registered (SEA bundles can fail on dynamic require)
+        try {
+            const parserModule = await import('config/lib/parser.js');
+            const cfgParser = parserModule?.parser;
+            if (cfgParser?.setParser) {
+                cfgParser.setParser('yaml', (filename, content) => yaml.load(content));
+                cfgParser.setParser('yml', (filename, content) => yaml.load(content));
+            }
+        } catch (e) {
+            // Best-effort; if this fails we'll fall back to config's default behaviour
         }
 
         // Are we running as a SEA app?
