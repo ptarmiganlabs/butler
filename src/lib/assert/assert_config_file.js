@@ -798,3 +798,83 @@ export async function configFileStructureAssert() {
         return false;
     }
 }
+
+/**
+ * Validates that required fields are present when their associated features are enabled.
+ * 
+ * This function performs conditional validation that checks fields are present only when
+ * the feature they belong to is enabled (when enable: true).
+ * 
+ * @param {object} config - The configuration object to verify
+ * @param {object} logger - The logger object for logging messages
+ * @returns {Promise<boolean>} A promise that resolves to true if all checks pass, false otherwise
+ */
+export const configFileConditionalAssert = async (config, logger) => {
+    try {
+        // Validate configVisualisation fields when enabled
+        if (config.has('Butler.configVisualisation.enable') && config.get('Butler.configVisualisation.enable')) {
+            const requiredFields = ['Butler.configVisualisation.host', 'Butler.configVisualisation.port', 'Butler.configVisualisation.obfuscate'];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when configVisualisation is enabled.`);
+                    return false;
+                }
+            }
+        }
+
+        // Validate heartbeat fields when enabled
+        if (config.has('Butler.heartbeat.enable') && config.get('Butler.heartbeat.enable')) {
+            const requiredFields = ['Butler.heartbeat.remoteURL', 'Butler.heartbeat.frequency'];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when heartbeat is enabled.`);
+                    return false;
+                }
+            }
+        }
+
+        // Validate dockerHealthCheck fields when enabled
+        if (config.has('Butler.dockerHealthCheck.enable') && config.get('Butler.dockerHealthCheck.enable')) {
+            const requiredFields = ['Butler.dockerHealthCheck.port'];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when dockerHealthCheck is enabled.`);
+                    return false;
+                }
+            }
+        }
+
+        // Validate uptimeMonitor fields when enabled
+        if (config.has('Butler.uptimeMonitor.enable') && config.get('Butler.uptimeMonitor.enable')) {
+            const requiredFields = ['Butler.uptimeMonitor.frequency', 'Butler.uptimeMonitor.logLevel', 'Butler.uptimeMonitor.storeInInfluxdb', 'Butler.uptimeMonitor.storeNewRelic'];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when uptimeMonitor is enabled.`);
+                    return false;
+                }
+            }
+
+            // Validate storeNewRelic fields when enabled
+            if (config.has('Butler.uptimeMonitor.storeNewRelic.enable') && config.get('Butler.uptimeMonitor.storeNewRelic.enable')) {
+                const newRelicFields = [
+                    'Butler.uptimeMonitor.storeNewRelic.destinationAccount',
+                    'Butler.uptimeMonitor.storeNewRelic.url',
+                    'Butler.uptimeMonitor.storeNewRelic.header',
+                    'Butler.uptimeMonitor.storeNewRelic.metric',
+                    'Butler.uptimeMonitor.storeNewRelic.attribute'
+                ];
+                for (const field of newRelicFields) {
+                    if (!config.has(field)) {
+                        logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when uptimeMonitor.storeNewRelic is enabled.`);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    } catch (err) {
+        logger.error(`ASSERT CONFIG CONDITIONAL: ${err}`);
+        return false;
+    }
+};

@@ -47,6 +47,7 @@ const start = async () => {
         configFileInfluxDbAssert,
         configFileQsAssert,
         configFileAppAssert,
+        configFileConditionalAssert,
     } = await import('./lib/assert/assert_config_file.js');
 
     let resAssert;
@@ -68,6 +69,15 @@ const start = async () => {
             process.exit(1);
         } else {
             globals.logger.info('MAIN: Application-specific config validation passed - all good.');
+        }
+
+        // Verify conditional field requirements based on enabled features
+        resAssert = await configFileConditionalAssert(globals.config, globals.logger);
+        if (resAssert === false) {
+            globals.logger.error('MAIN: Conditional config validation failed. Exiting.');
+            process.exit(1);
+        } else {
+            globals.logger.info('MAIN: Conditional config validation passed - all good.');
         }
 
         // Verify select parts/values in config file
