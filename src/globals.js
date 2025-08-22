@@ -37,7 +37,7 @@ class Settings {
             this.appVersion = JSON.parse(packageJson).version;
 
             // Save path to the executable
-            this.appBasePath = upath.dirname(process.cwd());
+            this.appBasePath = upath.dirname(process.execPath);
             console.log(`Running as standalone app. Executable path: ${this.appBasePath}`);
         } else {
             // Get path to JS file
