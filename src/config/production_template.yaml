@@ -142,7 +142,7 @@ Butler:
             allReloadTasks:
                 enable: false
             byCustomProperty:
-                enable: true
+                enable: false
                 customPropertyName: 'Butler_SuccessReloadTask_InfluxDB'
                 enabledValue: 'Yes'
             tag:
