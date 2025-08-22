@@ -146,7 +146,7 @@ const start = async () => {
                     configVisServer.log.error(err);
                     process.exit(1);
                 }
-                globals.logger.info(`MAIN: Config visualisation server listening on ${address}`);
+                globals.logger.info(`MAIN: Config visualisation server listening on ${address}/`);
 
                 configVisServer.ready((err2) => {
                     if (err2) throw err;
