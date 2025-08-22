@@ -691,7 +691,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
 
 /**
  * Verifies application-specific settings and relationships between configuration settings.
- * 
+ *
  * This function performs validation beyond simple schema validation, specifically checking:
  * - If telemetry is enabled but system info gathering is disabled, this creates an incompatibility
  *   because telemetry relies on detailed system information for proper functionality
@@ -705,7 +705,7 @@ export const configFileAppAssert = async (config, logger) => {
     const telemetryConfigMissing = !config.has('Butler.anonTelemetry');
     const telemetryExplicitlyEnabled = config.has('Butler.anonTelemetry') && config.get('Butler.anonTelemetry') === true;
     const isTelemetryEnabled = telemetryConfigMissing || telemetryExplicitlyEnabled;
-    
+
     const isSystemInfoEnabled = config.get('Butler.systemInfo.enable');
 
     // Validate compatibility between telemetry and system info gathering
@@ -715,9 +715,9 @@ export const configFileAppAssert = async (config, logger) => {
             'but system information gathering is disabled (Butler.systemInfo.enable=false).',
             'Telemetry requires system information to function properly.',
             'Either disable telemetry by setting Butler.anonTelemetry=false',
-            'or enable system info gathering by setting Butler.systemInfo.enable=true. Exiting.'
+            'or enable system info gathering by setting Butler.systemInfo.enable=true. Exiting.',
         ].join(' ');
-        
+
         logger.error(errorMsg);
         return false;
     }
