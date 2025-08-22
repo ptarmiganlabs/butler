@@ -45,7 +45,7 @@ jobs:
           echo "Inputs: ${{ github.event.inputs }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
