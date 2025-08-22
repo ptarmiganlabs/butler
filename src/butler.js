@@ -47,6 +47,7 @@ const start = async () => {
         configFileInfluxDbAssert,
         configFileQsAssert,
         configFileAppAssert,
+        configFileConditionalAssert,
     } = await import('./lib/assert/assert_config_file.js');
 
     let resAssert;
@@ -68,6 +69,15 @@ const start = async () => {
             process.exit(1);
         } else {
             globals.logger.info('MAIN: Application-specific config validation passed - all good.');
+        }
+
+        // Verify conditional field requirements based on enabled features
+        resAssert = await configFileConditionalAssert(globals.config, globals.logger);
+        if (resAssert === false) {
+            globals.logger.error('MAIN: Conditional config validation failed. Exiting.');
+            process.exit(1);
+        } else {
+            globals.logger.info('MAIN: Conditional config validation passed - all good.');
         }
 
         // Verify select parts/values in config file
@@ -131,25 +141,29 @@ const start = async () => {
     const { dockerHealthCheckServer } = apps;
     const { configVisServer } = apps;
 
-    configVisServer.listen(
-        {
-            host: globals.config.get('Butler.configVisualisation.host'),
-            port: globals.config.get('Butler.configVisualisation.port'),
-        },
-        (err, address) => {
-            if (err) {
-                globals.logger.error(`MAIN: Could not set up config visualisation server on ${address}`);
-                globals.logger.error(`MAIN: ${err.stack}`);
-                configVisServer.log.error(err);
-                process.exit(1);
-            }
-            globals.logger.verbose(`MAIN: Config visualisation server listening on ${address}`);
+    // ---------------------------------------------------
+    // Start config visualization server, if enabled
+    if (globals.config.get('Butler.configVisualisation.enable')) {
+        configVisServer.listen(
+            {
+                host: globals.config.get('Butler.configVisualisation.host'),
+                port: globals.config.get('Butler.configVisualisation.port'),
+            },
+            (err, address) => {
+                if (err) {
+                    globals.logger.error(`MAIN: Could not set up config visualisation server on ${address}`);
+                    globals.logger.error(`MAIN: ${err.stack}`);
+                    configVisServer.log.error(err);
+                    process.exit(1);
+                }
+                globals.logger.info(`MAIN: Config visualisation server listening on ${address}/`);
 
-            configVisServer.ready((err2) => {
-                if (err2) throw err;
-            });
-        },
-    );
+                configVisServer.ready((err2) => {
+                    if (err2) throw err;
+                });
+            },
+        );
+    }
 
     // ---------------------------------------------------
     // Start REST server on port 8080
