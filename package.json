@@ -14,7 +14,7 @@
         "lint:fix": "npx eslint --fix src/**/*.js",
         "security:audit": "npm audit --audit-level=high",
         "security:full": "npm run security:audit && snyk test --severity-threshold=high",
-        "sbom:generate": "rm -r ./build && mkdir -p ./build && sbom-tool generate -b ./build -bc . -pn butler -pv $(node -p \"require('./package.json').version\") -ps \"Ptarmigan Labs\" -nsb https://sbom.ptarmiganlabs.com -V verbose",
+        "sbom:generate": "rm -rf ./build && mkdir -p ./build && sbom-tool generate -b ./build -bc . -pn butler -pv $(node -p \"require('./package.json').version\") -ps \"Ptarmigan Labs\" -nsb https://sbom.ptarmiganlabs.com -V verbose",
         "deps:check": "ncu --doctor -u",
         "deps:audit": "audit-ci --config .audit-ci.json",
         "deps:lockfile": "lockfile-lint --path package-lock.json --validate-https --validate-integrity",
