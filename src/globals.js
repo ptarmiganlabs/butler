@@ -120,8 +120,16 @@ class Settings {
             }
 
             if (this.checkFileExistsSync(this.options.configfile)) {
-                process.env.NODE_CONFIG_DIR = configFilePath;
-                process.env.NODE_ENV = configFileBasename;
+                // Read YAML config and inject via NODE_CONFIG to avoid parser/resolution issues in SEA bundles
+                try {
+                    const yamlStr = fs.readFileSync(this.configFileExpanded, 'utf8');
+                    const cfgObj = yaml.load(yamlStr) || {};
+                    process.env.NODE_CONFIG = JSON.stringify(cfgObj);
+                    process.env.SUPPRESS_NO_CONFIG_WARNING = 'true';
+                } catch (e) {
+                    console.log(`Error: Failed reading/parsing config file ${this.configFileExpanded}: ${e.message}`);
+                    process.exit(1);
+                }
             } else {
                 console.log('Error: Specified config file does not exist');
                 process.exit(1);
@@ -136,14 +144,30 @@ class Settings {
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
         }
 
-        // Are we running as a SEA app?
-        if (sea.isSea()) {
-            const { createRequire } = require('node:module');
-            require = createRequire(__filename);
+        // Load YAML parser before loading the 'config' package so YAML support is available in bundled/SEA builds
+        await import('js-yaml');
+        // Load application config after env vars are set; works in both SEA and non-SEA when bundled with esbuild
+        this.config = (await import('config')).default;
 
-            this.config = (await import('config')).default;
-        } else {
-            this.config = (await import('config')).default;
+        // Startup diagnostics for config loading (safe: does not print secrets)
+        try {
+            const cfgObjDiag = this.config?.util?.toObject ? this.config.util.toObject() : null;
+            const topKeys = cfgObjDiag ? Object.keys(cfgObjDiag).slice(0, 10) : [];
+            const isSea = sea.isSea();
+            console.log('CONFIG: source', {
+                cliConfigFile: this.options.configfile ?? null,
+                resolvedConfigFile: this.configFileExpanded ?? null,
+                NODE_ENV: process.env.NODE_ENV ?? null,
+                NODE_CONFIG_DIR: process.env.NODE_CONFIG_DIR ?? null,
+                NODE_CONFIG_present: typeof process.env.NODE_CONFIG === 'string' && process.env.NODE_CONFIG.length > 0,
+                SEA: isSea,
+            });
+            console.log('CONFIG: top-level keys', topKeys);
+            if (this.config?.has?.('Butler.logLevel')) {
+                console.log('CONFIG: Butler.logLevel (pre-CLI override):', this.config.get('Butler.logLevel'));
+            }
+        } catch (e) {
+            console.log('CONFIG: diagnostics failed:', e?.message ?? e);
         }
 
         // Are there New Relic account name(s), API key(s) and account ID(s) specified on the command line?
@@ -159,7 +183,7 @@ class Settings {
             this.config.Butler.thirdPartyToolsCredentials.newRelic = [];
 
             for (let index = 0; index < this.options.newRelicApiKey.length; index++) {
-                const accountName = this.ptions.newRelicAccountName[index];
+                const accountName = this.options.newRelicAccountName[index];
                 const accountId = this.options.newRelicAccountId[index];
                 const insertApiKey = this.options.newRelicApiKey[index];
 
@@ -188,7 +212,12 @@ class Settings {
 
         // Is there a log level file specified on the command line?
         if (this.options.loglevel && this.options.loglevel.length > 0) {
-            this.config.Butler.logLevel = this.options.loglevel;
+            if (this.config?.util?.extendDeep) {
+                this.config.util.extendDeep(this.config, { Butler: { logLevel: this.options.loglevel } });
+            } else {
+                this.config.Butler = this.config.Butler || {};
+                this.config.Butler.logLevel = this.options.loglevel;
+            }
         }
 
         // Set up logger with timestamps and colors, and optional logging to disk file
