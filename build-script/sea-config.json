@@ -15,6 +15,13 @@
         "/jsontree.js.map": "./static/configvis/jsontree.js.map",
         "/prism.css": "./static/configvis/prism.css",
         "/prism.js": "./static/configvis/prism.js",
+        "/favicon-32x32.png": "./static/configvis/butler.png",
+        "/favicon-16x16.png": "./static/configvis/butler.png",
+
+        "/swagger-ui.css": "./node_modules/@fastify/swagger-ui/static/swagger-ui.css",
+        "/index.css": "./node_modules/@fastify/swagger-ui/static/index.css",
+        "/swagger-ui-bundle.js": "./node_modules/@fastify/swagger-ui/static/swagger-ui-bundle.js",
+        "/swagger-ui-standalone-preset.js": "./node_modules/@fastify/swagger-ui/static/swagger-ui-standalone-preset.js",
         "enigma_schema_12.170.2.json": "./node_modules/enigma.js/schemas/12.170.2.json",
         "enigma_schema_12.612.0.json": "./node_modules/enigma.js/schemas/12.612.0.json",
         "enigma_schema_12.936.0.json": "./node_modules/enigma.js/schemas/12.936.0.json",

@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import sea from 'node:sea';
 import handlebars from 'handlebars';
 import yaml from 'js-yaml';
 
@@ -206,6 +207,64 @@ async function build(opts = {}) {
             },
         });
 
+        // In SEA, serve Swagger UI static files from embedded assets to avoid fs lookups
+        if (sea.isSea()) {
+            const swaggerAssetMap = {
+                'swagger-ui.css': '/swagger-ui.css',
+                'index.css': '/index.css',
+                'swagger-ui-bundle.js': '/swagger-ui-bundle.js',
+                'swagger-ui-standalone-preset.js': '/swagger-ui-standalone-preset.js',
+            };
+            restServer.get('/documentation/static/:asset', async (request, reply) => {
+                try {
+                    const name = request.params.asset;
+                    const key = swaggerAssetMap[name];
+                    if (!key) return reply.code(404).send('Not found');
+                    let ct = 'application/octet-stream';
+                    if (name.endsWith('.css')) ct = 'text/css; charset=utf-8';
+                    else if (name.endsWith('.js')) ct = 'application/javascript; charset=utf-8';
+                    else if (name.endsWith('.png')) ct = 'image/png';
+                    let data = sea.getAsset(key);
+                    if (!data) return reply.code(404).send('Not found');
+
+                    // Normalize to Buffer or string
+                    let payload = data;
+                    if (Buffer.isBuffer(data)) {
+                        payload = data;
+                    } else if (typeof data === 'string') {
+                        payload = data;
+                    } else if (data instanceof Uint8Array) {
+                        payload = Buffer.from(data);
+                    } else if (data instanceof ArrayBuffer) {
+                        payload = Buffer.from(data);
+                    } else if (data && typeof data === 'object' && data.buffer instanceof ArrayBuffer) {
+                        payload = Buffer.from(data.buffer);
+                    } else {
+                        // Last resort
+                        payload = Buffer.from(String(data));
+                    }
+
+                    return reply.type(ct).send(payload);
+                } catch (e) {
+                    globals.logger.warn(`SWAGGER: Failed to serve SEA asset: ${e.message}`);
+                    return reply.code(500).send('Error');
+                }
+            });
+        }
+
+        // Provide embedded logo to Swagger UI in SEA to avoid fs lookups
+        let swaggerLogoBuf = null;
+        try {
+            if (sea.isSea()) {
+                swaggerLogoBuf = sea.getAsset('/logo.svg');
+            } else {
+                swaggerLogoBuf = fs.readFileSync(path.resolve(globals.appBasePath, 'static/logo.svg'));
+            }
+        } catch (_) {
+            // Optional: If not found, Swagger UI will fall back to its default
+            swaggerLogoBuf = null;
+        }
+
         await restServer.register(FastifySwaggerUi, {
             routePrefix: '/documentation',
             uiConfig: {
@@ -213,6 +272,7 @@ async function build(opts = {}) {
                 deepLinking: true,
                 operationsSorter: 'alpha', // can be 'alpha' or a function
             },
+            logo: swaggerLogoBuf ? { type: 'image/svg+xml', content: swaggerLogoBuf } : undefined,
         });
 
         // Loads all plugins defined in routes
@@ -277,7 +337,6 @@ async function build(opts = {}) {
                 const { url } = request.raw;
                 const { 'x-http-method-override': method = 'POST' } = request.headers;
 
-                // eslint-disable-next-line no-param-reassign
                 reply.request.raw.method = method;
                 reply.from(url, {
                     rewriteRequestHeaders: (originalReq, headers) => {
@@ -332,13 +391,73 @@ async function build(opts = {}) {
         globals.logger.verbose(`CONFIG VIS: Directory contents of "${globals.appBasePath}": ${dirContents}`);
 
         const htmlDir = path.resolve(globals.appBasePath, 'static/configvis');
-        globals.logger.info(`CONFIG VIS: Serving static files from ${htmlDir}`);
+        const useSeaStatic = sea.isSea() && !fs.existsSync(htmlDir);
+        if (useSeaStatic) {
+            globals.logger.info('CONFIG VIS: Serving embedded static assets from SEA (wildcard)');
 
-        await configVisServer.register(FastifyStatic, {
-            root: htmlDir,
-            constraints: {}, // optional: default {}. Example: { host: 'example.com' }
-            redirect: true, // Redirect to trailing '/' when the pathname is a dir
-        });
+            // Wildcard asset handler for everything except the root '/'
+            configVisServer.get('/:file(.*)', async (request, reply) => {
+                const file = request.params.file || '';
+                if (file === '') {
+                    // Root is handled by '/' route below
+                    return reply.code(404).send('Not found');
+                }
+
+                // Determine MIME type
+                let ct = 'application/octet-stream';
+                if (file.endsWith('.css')) ct = 'text/css; charset=utf-8';
+                else if (file.endsWith('.js')) ct = 'application/javascript; charset=utf-8';
+                else if (file.endsWith('.svg')) ct = 'image/svg+xml';
+                else if (file.endsWith('.png')) ct = 'image/png';
+                else if (file.endsWith('.css.map') || file.endsWith('.js.map')) ct = 'application/json; charset=utf-8';
+
+                const keyWithSlash = `/${file}`;
+                try {
+                    let buf = null;
+                    try {
+                        buf = sea.getAsset(keyWithSlash);
+                    } catch (_) {
+                        // Try without leading slash as fallback
+                        buf = sea.getAsset(file);
+                    }
+                    if (!buf) return reply.code(404).send('Not found');
+
+                    // Ensure payload is Buffer or string
+                    let payload = buf;
+                    if (Buffer.isBuffer(buf)) {
+                        payload = buf;
+                    } else if (typeof buf === 'string') {
+                        payload = buf;
+                    } else if (buf instanceof Uint8Array) {
+                        payload = Buffer.from(buf);
+                    } else if (buf instanceof ArrayBuffer) {
+                        payload = Buffer.from(buf);
+                    } else if (buf && typeof buf === 'object' && buf.buffer instanceof ArrayBuffer) {
+                        payload = Buffer.from(buf.buffer);
+                    } else {
+                        // Last resort: try to stringify non-binary objects
+                        try {
+                            payload = Buffer.from(String(buf));
+                        } catch (e2) {
+                            globals.logger.warn(`CONFIG VIS: Unsupported asset payload type for "${file}"`);
+                            return reply.code(500).send('Error');
+                        }
+                    }
+
+                    return reply.type(ct).send(payload);
+                } catch (e) {
+                    globals.logger.warn(`CONFIG VIS: Failed serving asset "${file}": ${e.message}`);
+                    return reply.code(500).send('Error');
+                }
+            });
+        } else {
+            globals.logger.info(`CONFIG VIS: Serving static files from ${htmlDir}`);
+            await configVisServer.register(FastifyStatic, {
+                root: htmlDir,
+                constraints: {}, // optional: default {}. Example: { host: 'example.com' }
+                redirect: true, // Redirect to trailing '/' when the pathname is a dir
+            });
+        }
 
         configVisServer.get('/', async (request, reply) => {
             // Obfuscate the config object before sending it to the client
@@ -361,8 +480,13 @@ async function build(opts = {}) {
             // dirname points to the directory where this file (app.js) is located, taking into account
             // if the app is running as a packaged app or as a Node.js app.
             globals.logger.verbose(`----------------3: ${globals.appBasePath}`);
-            const filePath = path.resolve(globals.appBasePath, 'static/configvis', 'index.html');
-            const template = fs.readFileSync(filePath, 'utf8');
+            let template;
+            if (sea.isSea() && useSeaStatic) {
+                template = sea.getAsset('/index.html', 'utf8');
+            } else {
+                const filePath = path.resolve(globals.appBasePath, 'static/configvis', 'index.html');
+                template = fs.readFileSync(filePath, 'utf8');
+            }
 
             // Compile handlebars template
             const compiledTemplate = handlebars.compile(template);
@@ -386,7 +510,6 @@ async function build(opts = {}) {
             loadSchedulesFromDisk();
             // scheduler.launchAllSchedules();
         } else {
-            // eslint-disable-next-line quotes
             globals.logger.info("MAIN: Didn't load schedules from file");
         }
     }
