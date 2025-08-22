@@ -28,6 +28,7 @@ jobs:
                           pwd
                           dir
 
+                          # -------------------
                           # Remove the signature from the executable
                           $processOptions1 = @{
                             FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
@@ -39,24 +40,8 @@ jobs:
                           Start-Process @processOptions1
 
                           npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
-
-                          # # Extract signing certificate to files on disk
-                          # New-Item -ItemType directory -Path certificate
-                          # Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
-                          # certutil -decode certificate\certificate.txt certificate\certificate.pfx
-                          # Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
-                          # certutil -decode certificate\intermediate.txt certificate\intermediate.crt
-
-                          # # Sign the executable
-                          # $processOptions = @{
-                            #   FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-                            #   Wait = $true
-                            #   ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
-                            #   WorkingDirectory = "."
-                            #   NoNewWindow = $true
-                            # }
-                            # Start-Process @processOptions
                             
+                          # -------------------
                           # Sign the executable
                           # 1st signing
                           $processOptions1 = @{
@@ -68,6 +53,7 @@ jobs:
                           }
                           Start-Process @processOptions1
 
+                          # -------------------
                           # 2nd signing
                           $processOptions2 = @{
                             FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
@@ -78,15 +64,7 @@ jobs:
                           }
                           Start-Process @processOptions2
 
-                          # Remove-Item -Recurse -Force certificate
-
-                          # # Create release binary
-                          # mkdir release-binaries-win
-                          # Copy-Item -Path ".\${env:DIST_FILE_NAME}.exe" -Destination "release-binaries-win\"
-
-                          # dir
-                          # dir release-binaries-win
-
+                          # -------------------
                           # Create insider's build zip
                           $compress = @{
                             Path = "./${env:DIST_FILE_NAME}.exe"
@@ -95,13 +73,14 @@ jobs:
                           }
                           Compress-Archive @compress
 
+                          # -------------------
                           # Add following directories & files to the created zip file, in the ./config directory.
                           # - ./src/config/log_appender_xml
                           # - ./src/config/email_templates
                           # - ./src/config/slack_templates
                           # - ./src/config/teams_templates
-                          # - ./src/config⁄production_template.yaml
-                          # - ./src/config⁄schedule_template.yaml
+                          # - ./src/config/production_template.yaml
+                          # - ./src/config/schedule_template.yaml
                           mkdir config
                           Copy-Item -Path ./src/config/log_appender_xml/ -Destination ./config/ -Recurse
                           Copy-Item -Path ./src/config/email_templates/ -Destination ./config/ -Recurse
@@ -112,6 +91,7 @@ jobs:
 
                           Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}--win-x64--${{ github.sha }}.zip"
 
+                          # -------------------
                           # Clean up
                           Remove-Item -Force build/build.cjs
 
@@ -218,8 +198,8 @@ jobs:
                           # - ./src/config/email_templates
                           # - ./src/config/slack_templates
                           # - ./src/config/teams_templates
-                          # - ./src/config⁄production_template.yaml
-                          # - ./src/config⁄schedule_template.yaml
+                          # - ./src/config/production_template.yaml
+                          # - ./src/config/schedule_template.yaml
                           cd src
                           zip -u -r "../${DIST_FILE_NAME}--macos-x64--${{ github.sha }}.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
                           cd ..
@@ -344,8 +324,8 @@ jobs:
                           # - ./src/config/email_templates
                           # - ./src/config/slack_templates
                           # - ./src/config/teams_templates
-                          # - ./src/config⁄production_template.yaml
-                          # - ./src/config⁄schedule_template.yaml
+                          # - ./src/config/production_template.yaml
+                          # - ./src/config/schedule_template.yaml
                           cd src
                           zip -u -r "../${DIST_FILE_NAME}--macos-arm64--${{ github.sha }}.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
                           cd ..
@@ -394,8 +374,8 @@ jobs:
                           # - ./src/config/email_templates
                           # - ./src/config/slack_templates
                           # - ./src/config/teams_templates
-                          # - ./src/config⁄production_template.yaml
-                          # - ./src/config⁄schedule_template.yaml
+                          # - ./src/config/production_template.yaml
+                          # - ./src/config/schedule_template.yaml
                           echo "Creating temp notarization archive for insider build"
                           zip -9 -r "./${DIST_FILE_NAME}--linux-x64--${{ github.sha }}.zip" "${DIST_FILE_NAME}" 
 
@@ -431,12 +411,16 @@ jobs:
                   npm ci
 
             - name: Run Snyk to check for vulnerabilities
+              # Snyk can be used to break the build when it detects security issues.
+              # In this case we want to upload the SAST issues to GitHub Code Scanning
+              #uses: snyk/actions/setup@806182742461562b67788a64410098c9d9b96adb
               if: |
                   github.repository_owner == 'ptarmiganlabs' &&
                   matrix.os == 'ubuntu-latest'
               continue-on-error: true
               uses: snyk/actions/node@master
               env:
+                  # This is where you will need to introduce the Snyk API token created with your Snyk account
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
                   args: --file=./package.json --sarif-file-output=snyk.sarif
@@ -462,19 +446,10 @@ jobs:
                   PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
                   PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
                   PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
-                  # CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
-                  # CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
-                  # CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
                   CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
               run: |
                   pwd
                   ${{ matrix.build }}
-
-            # - name: Upload release artifacts to GitHub
-            #   uses: actions/upload-artifact@v3
-            #   with:
-            #     name: ${{ matrix.artifact_release_name }}
-            #     path: ${{ matrix.artifact_release_path }}
 
             - name: Upload insider build artifacts to GitHub
               uses: actions/upload-artifact@v4

@@ -89,6 +89,62 @@ jobs:
                   git commit -m "Auto-adding API docs" --allow-empty
                   git push
 
+    sbom-build:
+        needs: release-please
+        runs-on: ubuntu-latest
+
+        if: needs.release-please.outputs.releases_created == 'true'
+        env:
+            DIST_FILE_NAME: butler-sos
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: |
+                  npm ci --include=prod
+
+            - name: Generate SBOM
+              run: |
+                  curl -Lo $RUNNER_TEMP/sbom-tool https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
+                  chmod +x $RUNNER_TEMP/sbom-tool
+
+                  mkdir -p ./build
+
+                  $RUNNER_TEMP/sbom-tool generate -b ./build -bc . -pn ${DIST_FILE_NAME} -pv ${{ needs.release-please.outputs.release_version }} -ps "Ptarmigan Labs" -nsb https://sbom.ptarmiganlabs.com -V verbose
+
+            - name: List generated SBOM files (debug)
+              run: |
+                  echo "=== Build directory structure ==="
+                  find ./build -type f -name "*.json" -o -name "*.spdx*" | head -20
+                  echo "=== File sizes ==="
+                  find ./build -type f -name "*.json" -o -name "*.spdx*" -exec ls -la {} \;
+
+            - name: Upload SBOM to Release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
+                  # artifactContentType: raw
+                  draft: true
+                  artifacts: './build/**/*.spdx.json'
+                  token: ${{ github.token }}
+                  tag: ${{ needs.release-please.outputs.release_tag_name }}
+
+            - name: Upload SBOM as Workflow Artifact (backup)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: sbom-${{ needs.release-please.outputs.release_version }}
+                  path: './build/'
+                  retention-days: 3
+
     release-macos-x64:
         needs: release-please
         runs-on:
@@ -136,7 +192,11 @@ jobs:
             - name: Build binaries
               run: |
                   pwd
+
+                  # Create a single JS file using esbuild
                   ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+
+                  # Generate blob to be injected into the binary
                   node --experimental-sea-config build-script/sea-config.json
 
                   # Get a copy of the Node executable
@@ -155,7 +215,6 @@ jobs:
                   ls -la
 
                   # Start signing of the binary
-
                   # -------------------
                   # We need to create a new keychain, otherwise using the certificate will prompt
                   # with a UI dialog asking for the certificate password, which we can't
@@ -222,8 +281,8 @@ jobs:
                   # - ./src/config/email_templates
                   # - ./src/config/slack_templates
                   # - ./src/config/teams_templates
-                  # - ./src/config⁄production_template.yaml
-                  # - ./src/config⁄schedule_template.yaml
+                  # - ./src/config/production_template.yaml
+                  # - ./src/config/schedule_template.yaml
                   echo "Creating temp notarization archive for release binary"
                   zip -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip" "./${DIST_FILE_NAME}" -x "*.DS_Store"
                   # ditto -c -k --keepParent "./${DIST_FILE_NAME}" "./${DIST_FILE_NAME}.zip"
@@ -321,7 +380,11 @@ jobs:
             - name: Build binaries
               run: |
                   pwd
+
+                  # Create a single JS file using esbuild
                   ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+
+                  # Generate blob to be injected into the binary
                   node --experimental-sea-config build-script/sea-config.json
 
                   # Get a copy of the Node executable
@@ -409,8 +472,8 @@ jobs:
                   # - ./src/config/email_templates
                   # - ./src/config/slack_templates
                   # - ./src/config/teams_templates
-                  # - ./src/config⁄production_template.yaml
-                  # - ./src/config⁄schedule_template.yaml
+                  # - ./src/config/production_template.yaml
+                  # - ./src/config/schedule_template.yaml
                   cd src
                   zip -u -r "../${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml" -x "*.DS_Store"
                   cd ..
@@ -467,9 +530,6 @@ jobs:
         env:
             DIST_FILE_NAME: butler
             GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-            # CODESIGN_PWD: ${{ secrets.WIN_CODESIGN_PWD}}
-            # CODESIGN_INTERMEDIATE_BASE64: ${{ secrets.WIN_CODESIGN_INTERMEDIATE_BASE64 }}
-            # CODESIGN_BASE64: ${{ secrets.WIN_CODESIGN_BASE64}}
             CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
         steps:
             - name: Release tag and upload url from previous job
@@ -497,12 +557,16 @@ jobs:
 
             - name: Build binaries
               run: |
+                  # Create a single JS file using esbuild
                   ./node_modules/.bin/esbuild src/butler.js --bundle --external:axios --external:xdg-open --external:enigma.js --outfile=./build/build.cjs --format=cjs --platform=node --target=node22 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+
+                  # Generate blob to be injected into the binary
                   node --experimental-sea-config build-script/sea-config.json
 
                   # Get a copy of the Node executable
                   node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe')" 
 
+                  # -------------------
                   # Remove the signature from the executable
                   $processOptions1 = @{
                     FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
@@ -515,23 +579,8 @@ jobs:
 
                   npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
 
-                  # # Extract signing certificate to files on disk
-                  # New-Item -ItemType directory -Path certificate
-                  # Set-Content -Path certificate\certificate.txt -Value $env:CODESIGN_BASE64
-                  # certutil -decode certificate\certificate.txt certificate\certificate.pfx
-                  # Set-Content -Path certificate\intermediate.txt -Value $env:CODESIGN_INTERMEDIATE_BASE64
-                  # certutil -decode certificate\intermediate.txt certificate\intermediate.crt
-
-                  # # Sign the executable
-                  # $processOptions = @{
-                    #   FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-                    #   Wait = $true
-                    #   ArgumentList = "sign", "/fd", "SHA256", "/p", "$env:CODESIGN_PWD", "/ac", "certificate\intermediate.crt", "/f", "certificate\certificate.pfx", "/tr", "http://timestamp.sectigo.com/rfc3161", "/td", "sha256", "./${env:DIST_FILE_NAME}.exe"
-                    #   WorkingDirectory = "."
-                    #   NoNewWindow = $true
-                    # }
-                    # Start-Process @processOptions
                     
+                  # -------------------
                   # Sign the executable
                   # 1st signing
                   $processOptions1 = @{
@@ -543,6 +592,7 @@ jobs:
                   }
                   Start-Process @processOptions1
 
+                  # -------------------
                   # 2nd signing
                   $processOptions2 = @{
                     FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
@@ -553,8 +603,7 @@ jobs:
                   }
                   Start-Process @processOptions2
 
-                  # Remove-Item -Recurse -Force certificate
-
+                  # -------------------
                   # Create release binary zip
                   $compress = @{
                     Path = "./${env:DIST_FILE_NAME}.exe"
@@ -563,13 +612,14 @@ jobs:
                   }
                   Compress-Archive @compress
 
+                  # -------------------
                   # Add following directories & files to the created zip file, in the ./config directory.
                   # - ./src/config/log_appender_xml
                   # - ./src/config/email_templates
                   # - ./src/config/slack_templates
                   # - ./src/config/teams_templates
-                  # - ./src/config⁄production_template.yaml
-                  # - ./src/config⁄schedule_template.yaml
+                  # - ./src/config/production_template.yaml
+                  # - ./src/config/schedule_template.yaml
                   mkdir config
                   Copy-Item -Path ./src/config/log_appender_xml/ -Destination ./config/ -Recurse
                   Copy-Item -Path ./src/config/email_templates/ -Destination ./config/ -Recurse
@@ -656,8 +706,8 @@ jobs:
                   # - ./src/config/email_templates
                   # - ./src/config/slack_templates
                   # - ./src/config/teams_templates
-                  # - ./src/config⁄production_template.yaml
-                  # - ./src/config⁄schedule_template.yaml
+                  # - ./src/config/production_template.yaml
+                  # - ./src/config/schedule_template.yaml
 
                   ls -la
                   zip -9 -r "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-linux.zip" ${DIST_FILE_NAME} 
