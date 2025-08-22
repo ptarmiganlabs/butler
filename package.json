@@ -88,7 +88,6 @@
         "i": "^0.3.7",
         "influx": "^5.10.0",
         "is-unc-path": "^1.0.0",
-        "jjsontree.js": "^2.9.0",
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "luxon": "^3.7.1",
@@ -126,7 +125,6 @@
         "jsdoc-to-markdown": "^9.1.2",
         "license-checker-rseidelsohn": "^4.4.2",
         "lockfile-lint": "^4.14.1",
-        "npm-check": "^6.0.1",
         "npm-check-updates": "^18.0.2",
         "prettier": "^3.6.2",
         "snyk": "^1.1298.3"
