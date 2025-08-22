@@ -14,19 +14,19 @@ describe('System Information Configuration', () => {
         expect(confifgFileSchema.properties.Butler.properties.systemInfo).toBeDefined();
         expect(confifgFileSchema.properties.Butler.properties.systemInfo.properties.enable).toBeDefined();
         expect(confifgFileSchema.properties.Butler.properties.systemInfo.properties.enable.type).toBe('boolean');
-        
+
         // Check that systemInfo is in required fields
         expect(confifgFileSchema.properties.Butler.required).toContain('systemInfo');
     });
 
     test('Should include systemInfo in YAML template', () => {
         // This is more of an integration test to ensure our template includes systemInfo
-        
+
         try {
             const templatePath = './src/config/production_template.yaml';
             const templateContent = fs.readFileSync(templatePath, 'utf8');
             const parsedYaml = yaml.load(templateContent);
-            
+
             expect(parsedYaml.Butler.systemInfo).toBeDefined();
             expect(parsedYaml.Butler.systemInfo.enable).toBeDefined();
             expect(typeof parsedYaml.Butler.systemInfo.enable).toBe('boolean');
@@ -39,7 +39,7 @@ describe('System Information Configuration', () => {
     test('Should verify systemInfo schema structure', () => {
         // Test the schema structure in detail
         const systemInfoSchema = confifgFileSchema.properties.Butler.properties.systemInfo;
-        
+
         expect(systemInfoSchema.type).toBe('object');
         expect(systemInfoSchema.properties).toBeDefined();
         expect(systemInfoSchema.properties.enable).toBeDefined();

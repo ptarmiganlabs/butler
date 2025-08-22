@@ -40,8 +40,14 @@ const start = async () => {
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
 
-    const { configFileEmailAssert, configFileStructureAssert, configFileNewRelicAssert, configFileInfluxDbAssert, configFileQsAssert, configFileAppAssert } =
-        await import('./lib/assert/assert_config_file.js');
+    const {
+        configFileEmailAssert,
+        configFileStructureAssert,
+        configFileNewRelicAssert,
+        configFileInfluxDbAssert,
+        configFileQsAssert,
+        configFileAppAssert,
+    } = await import('./lib/assert/assert_config_file.js');
 
     let resAssert;
 

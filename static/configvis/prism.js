@@ -24,7 +24,7 @@ var _self =
                         return Object.prototype.toString.call(e).slice(8, -1);
                     },
                     objId: function (e) {
-                        return e.__id || Object.defineProperty(e, '__id', { value: ++t }), e.__id;
+                        return (e.__id || Object.defineProperty(e, '__id', { value: ++t }), e.__id);
                     },
                     clone: function e(n, t) {
                         var r, i;
@@ -58,7 +58,7 @@ var _self =
                         return 'none';
                     },
                     setLanguage: function (e, t) {
-                        (e.className = e.className.replace(RegExp(n, 'gi'), '')), e.classList.add('language-' + t);
+                        ((e.className = e.className.replace(RegExp(n, 'gi'), '')), e.classList.add('language-' + t));
                     },
                     currentScript: function () {
                         if ('undefined' == typeof document) return null;
@@ -135,9 +135,9 @@ var _self =
                         container: e,
                         selector: 'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code',
                     };
-                    a.hooks.run('before-highlightall', r),
+                    (a.hooks.run('before-highlightall', r),
                         (r.elements = Array.prototype.slice.apply(r.container.querySelectorAll(r.selector))),
-                        a.hooks.run('before-all-elements-highlight', r);
+                        a.hooks.run('before-all-elements-highlight', r));
                     for (var i, l = 0; (i = r.elements[l++]); ) a.highlightElement(i, !0 === n, r.callback);
                 },
                 highlightElement: function (n, t, r) {
@@ -148,12 +148,12 @@ var _self =
                     o && 'pre' === o.nodeName.toLowerCase() && a.util.setLanguage(o, i);
                     var s = { element: n, language: i, grammar: l, code: n.textContent };
                     function u(e) {
-                        (s.highlightedCode = e),
+                        ((s.highlightedCode = e),
                             a.hooks.run('before-insert', s),
                             (s.element.innerHTML = s.highlightedCode),
                             a.hooks.run('after-highlight', s),
                             a.hooks.run('complete', s),
-                            r && r.call(s.element);
+                            r && r.call(s.element));
                     }
                     if (
                         (a.hooks.run('before-sanity-check', s),
@@ -163,14 +163,14 @@ var _self =
                             o.setAttribute('tabindex', '0'),
                         !s.code)
                     )
-                        return a.hooks.run('complete', s), void (r && r.call(s.element));
+                        return (a.hooks.run('complete', s), void (r && r.call(s.element)));
                     if ((a.hooks.run('before-highlight', s), s.grammar))
                         if (t && e.Worker) {
                             var c = new Worker(a.filename);
-                            (c.onmessage = function (e) {
+                            ((c.onmessage = function (e) {
                                 u(e.data);
                             }),
-                                c.postMessage(JSON.stringify({ language: s.language, code: s.code, immediateClose: !0 }));
+                                c.postMessage(JSON.stringify({ language: s.language, code: s.code, immediateClose: !0 })));
                         } else u(a.highlight(s.code, s.grammar, s.language));
                     else u(a.util.encode(s.code));
                 },
@@ -195,7 +195,7 @@ var _self =
                         u(a, a.head, e),
                         o(e, a, n, a.head, 0),
                         (function (e) {
-                            for (var n = [], t = e.head.next; t !== e.tail; ) n.push(t.value), (t = t.next);
+                            for (var n = [], t = e.head.next; t !== e.tail; ) (n.push(t.value), (t = t.next));
                             return n;
                         })(a)
                     );
@@ -204,7 +204,7 @@ var _self =
                     all: {},
                     add: function (e, n) {
                         var t = a.hooks.all;
-                        (t[e] = t[e] || []), t[e].push(n);
+                        ((t[e] = t[e] || []), t[e].push(n));
                     },
                     run: function (e, n) {
                         var t = a.hooks.all[e];
@@ -214,14 +214,14 @@ var _self =
                 Token: i,
             };
         function i(e, n, t, r) {
-            (this.type = e), (this.content = n), (this.alias = t), (this.length = 0 | (r || '').length);
+            ((this.type = e), (this.content = n), (this.alias = t), (this.length = 0 | (r || '').length));
         }
         function l(e, n, t, r) {
             e.lastIndex = n;
             var a = e.exec(t);
             if (a && r && a[1]) {
                 var i = a[1].length;
-                (a.index += i), (a[0] = a[0].slice(i));
+                ((a.index += i), (a[0] = a[0].slice(i)));
             }
             return a;
         }
@@ -259,8 +259,8 @@ var _self =
                                     for (j += w.value.length; S >= j; ) j += (w = w.next).value.length;
                                     if (((A = j -= w.value.length), w.value instanceof i)) continue;
                                     for (var C = w; C !== n.tail && (j < O || 'string' == typeof C.value); C = C.next)
-                                        L++, (j += C.value.length);
-                                    L--, (E = e.slice(A, j)), (P.index -= A);
+                                        (L++, (j += C.value.length));
+                                    (L--, (E = e.slice(A, j)), (P.index -= A));
                                 } else if (!(P = l(b, 0, E, m))) continue;
                                 S = P.index;
                                 var N = P[0],
@@ -277,7 +277,7 @@ var _self =
                                     L > 1)
                                 ) {
                                     var I = { cause: f + ',' + d, reach: W };
-                                    o(e, n, t, w.prev, A, I), g && I.reach > g.reach && (g.reach = I.reach);
+                                    (o(e, n, t, w.prev, A, I), g && I.reach > g.reach && (g.reach = I.reach));
                                 }
                             }
                         }
@@ -287,16 +287,16 @@ var _self =
         function s() {
             var e = { value: null, prev: null, next: null },
                 n = { value: null, prev: e, next: null };
-            (e.next = n), (this.head = e), (this.tail = n), (this.length = 0);
+            ((e.next = n), (this.head = e), (this.tail = n), (this.length = 0));
         }
         function u(e, n, t) {
             var r = n.next,
                 a = { value: t, prev: n, next: r };
-            return (n.next = a), (r.prev = a), e.length++, a;
+            return ((n.next = a), (r.prev = a), e.length++, a);
         }
         function c(e, n, t) {
             for (var r = n.next, a = 0; a < t && r !== e.tail; a++) r = r.next;
-            (n.next = r), (r.prev = n), (e.length -= a);
+            ((n.next = r), (r.prev = n), (e.length -= a));
         }
         if (
             ((e.Prism = a),
@@ -313,7 +313,7 @@ var _self =
                 }
                 var i = { type: n.type, content: e(n.content, t), tag: 'span', classes: ['token', n.type], attributes: {}, language: t },
                     l = n.alias;
-                l && (Array.isArray(l) ? Array.prototype.push.apply(i.classes, l) : i.classes.push(l)), a.hooks.run('wrap', i);
+                (l && (Array.isArray(l) ? Array.prototype.push.apply(i.classes, l) : i.classes.push(l)), a.hooks.run('wrap', i));
                 var o = '';
                 for (var s in i.attributes) o += ' ' + s + '="' + (i.attributes[s] || '').replace(/"/g, '&quot;') + '"';
                 return '<' + i.tag + ' class="' + i.classes.join(' ') + '"' + o + '>' + i.content + '</' + i.tag + '>';
@@ -329,7 +329,7 @@ var _self =
                                   r = t.language,
                                   i = t.code,
                                   l = t.immediateClose;
-                              e.postMessage(a.highlight(i, a.languages[r], r)), l && e.close();
+                              (e.postMessage(a.highlight(i, a.languages[r], r)), l && e.close());
                           },
                           !1,
                       ),
@@ -349,8 +349,8 @@ var _self =
         }
         return a;
     })(_self);
-'undefined' != typeof module && module.exports && (module.exports = Prism), 'undefined' != typeof global && (global.Prism = Prism);
-(Prism.languages.markup = {
+('undefined' != typeof module && module.exports && (module.exports = Prism), 'undefined' != typeof global && (global.Prism = Prism));
+((Prism.languages.markup = {
     comment: { pattern: /<!--(?:(?!<!--)[\s\S])*?-->/, greedy: !0 },
     prolog: { pattern: /<\?[\s\S]+?\?>/, greedy: !0 },
     doctype: {
@@ -394,12 +394,12 @@ var _self =
     Object.defineProperty(Prism.languages.markup.tag, 'addInlined', {
         value: function (a, e) {
             var s = {};
-            (s['language-' + e] = { pattern: /(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i, lookbehind: !0, inside: Prism.languages[e] }),
-                (s.cdata = /^<!\[CDATA\[|\]\]>$/i);
+            ((s['language-' + e] = { pattern: /(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i, lookbehind: !0, inside: Prism.languages[e] }),
+                (s.cdata = /^<!\[CDATA\[|\]\]>$/i));
             var t = { 'included-cdata': { pattern: /<!\[CDATA\[[\s\S]*?\]\]>/i, inside: s } };
             t['language-' + e] = { pattern: /[\s\S]+/, inside: Prism.languages[e] };
             var n = {};
-            (n[a] = {
+            ((n[a] = {
                 pattern: RegExp(
                     '(<__[^>]*>)(?:<!\\[CDATA\\[(?:[^\\]]|\\](?!\\]>))*\\]\\]>|(?!<!\\[CDATA\\[)[^])*?(?=</__>)'.replace(
                         /__/g,
@@ -413,7 +413,7 @@ var _self =
                 greedy: !0,
                 inside: t,
             }),
-                Prism.languages.insertBefore('markup', 'cdata', n);
+                Prism.languages.insertBefore('markup', 'cdata', n));
         },
     }),
     Object.defineProperty(Prism.languages.markup.tag, 'addAttribute', {
@@ -445,7 +445,7 @@ var _self =
     (Prism.languages.xml = Prism.languages.extend('markup', {})),
     (Prism.languages.ssml = Prism.languages.xml),
     (Prism.languages.atom = Prism.languages.xml),
-    (Prism.languages.rss = Prism.languages.xml);
+    (Prism.languages.rss = Prism.languages.xml));
 !(function (e) {
     var n = /[*&][^\s[\]{},]+/,
         r = /!(?:<[\w\-%#;/?:@&=+$,.!~*'()[\]]+>|(?:[a-zA-Z\d-]*!)?[\w\-%#;/?:@&=+$.~*'()]+)?/,
@@ -469,7 +469,7 @@ var _self =
             });
         return RegExp(r, n);
     }
-    (e.languages.yaml = {
+    ((e.languages.yaml = {
         scalar: {
             pattern: RegExp(
                 '([\\-:]\\s*(?:\\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\\S[^\r\n]*(?:\\2[^\r\n]+)*)'.replace(
@@ -516,7 +516,7 @@ var _self =
         important: n,
         punctuation: /---|[:[\]{}\-,|>?]|\.\.\./,
     }),
-        (e.languages.yml = e.languages.yaml);
+        (e.languages.yml = e.languages.yaml));
 })(Prism);
 !(function () {
     if ('undefined' != typeof Prism && 'undefined' != typeof document) {
@@ -529,7 +529,7 @@ var _self =
                         if (i) {
                             var r = parseInt(n.getAttribute('data-start'), 10) || 1,
                                 s = r + (i.children.length - 1);
-                            t < r && (t = r), t > s && (t = s);
+                            (t < r && (t = r), t > s && (t = s));
                             var l = t - r;
                             return i.children[l];
                         }
@@ -541,7 +541,7 @@ var _self =
                 assumeViewportIndependence: !0,
             }),
             i = void 0;
-        window.addEventListener('resize', function () {
+        (window.addEventListener('resize', function () {
             (t.assumeViewportIndependence && i === window.innerWidth) ||
                 ((i = window.innerWidth), r(Array.prototype.slice.call(document.querySelectorAll('pre.line-numbers'))));
         }),
@@ -550,25 +550,25 @@ var _self =
                     var i = t.element,
                         s = i.parentNode;
                     if (s && /pre/i.test(s.nodeName) && !i.querySelector('.line-numbers-rows') && Prism.util.isActive(i, e)) {
-                        i.classList.remove(e), s.classList.add(e);
+                        (i.classList.remove(e), s.classList.add(e));
                         var l,
                             o = t.code.match(n),
                             a = o ? o.length + 1 : 1,
                             u = new Array(a + 1).join('<span></span>');
-                        (l = document.createElement('span')).setAttribute('aria-hidden', 'true'),
+                        ((l = document.createElement('span')).setAttribute('aria-hidden', 'true'),
                             (l.className = 'line-numbers-rows'),
                             (l.innerHTML = u),
                             s.hasAttribute('data-start') &&
                                 (s.style.counterReset = 'linenumber ' + (parseInt(s.getAttribute('data-start'), 10) - 1)),
                             t.element.appendChild(l),
                             r([s]),
-                            Prism.hooks.run('line-numbers', t);
+                            Prism.hooks.run('line-numbers', t));
                     }
                 }
             }),
             Prism.hooks.add('line-numbers', function (e) {
-                (e.plugins = e.plugins || {}), (e.plugins.lineNumbers = !0);
-            });
+                ((e.plugins = e.plugins || {}), (e.plugins.lineNumbers = !0));
+            }));
     }
     function r(e) {
         if (
@@ -586,26 +586,26 @@ var _self =
                     if (t && i) {
                         var r = e.querySelector('.line-numbers-sizer'),
                             s = t.textContent.split(n);
-                        r || (((r = document.createElement('span')).className = 'line-numbers-sizer'), t.appendChild(r)),
+                        (r || (((r = document.createElement('span')).className = 'line-numbers-sizer'), t.appendChild(r)),
                             (r.innerHTML = '0'),
-                            (r.style.display = 'block');
+                            (r.style.display = 'block'));
                         var l = r.getBoundingClientRect().height;
-                        return (r.innerHTML = ''), { element: e, lines: s, lineHeights: [], oneLinerHeight: l, sizer: r };
+                        return ((r.innerHTML = ''), { element: e, lines: s, lineHeights: [], oneLinerHeight: l, sizer: r });
                     }
                 })
                 .filter(Boolean);
-            t.forEach(function (e) {
+            (t.forEach(function (e) {
                 var n = e.sizer,
                     t = e.lines,
                     i = e.lineHeights,
                     r = e.oneLinerHeight;
-                (i[t.length - 1] = void 0),
+                ((i[t.length - 1] = void 0),
                     t.forEach(function (e, t) {
                         if (e && e.length > 1) {
                             var s = n.appendChild(document.createElement('span'));
-                            (s.style.display = 'block'), (s.textContent = e);
+                            ((s.style.display = 'block'), (s.textContent = e));
                         } else i[t] = r;
-                    });
+                    }));
             }),
                 t.forEach(function (e) {
                     for (var n = e.sizer, t = e.lineHeights, i = 0, r = 0; r < t.length; r++)
@@ -614,12 +614,12 @@ var _self =
                 t.forEach(function (e) {
                     var n = e.sizer,
                         t = e.element.querySelector('.line-numbers-rows');
-                    (n.style.display = 'none'),
+                    ((n.style.display = 'none'),
                         (n.innerHTML = ''),
                         e.lineHeights.forEach(function (e, n) {
                             t.children[n].style.height = e + 'px';
-                        });
-                });
+                        }));
+                }));
         }
     }
 })();
