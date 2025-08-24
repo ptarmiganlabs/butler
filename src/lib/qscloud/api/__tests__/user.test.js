@@ -28,7 +28,7 @@ const { getQlikSenseCloudUserInfo } = await import('../user.js');
 describe('QS Cloud User API', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         // Set up default config values
         mockGlobals.config.get.mockImplementation((path) => {
             const configs = {
@@ -73,9 +73,7 @@ describe('QS Cloud User API', () => {
             const result = await getQlikSenseCloudUserInfo('user123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Error: Network error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Error: Network error');
         });
 
         test('should handle invalid JSON response', async () => {
@@ -103,7 +101,7 @@ describe('QS Cloud User API', () => {
             expect(mockAxios.request).toHaveBeenCalledWith(
                 expect.objectContaining({
                     url: '/api/v1/users/',
-                })
+                }),
             );
         });
 
@@ -113,7 +111,7 @@ describe('QS Cloud User API', () => {
             expect(mockAxios.request).toHaveBeenCalledWith(
                 expect.objectContaining({
                     url: '/api/v1/users/null',
-                })
+                }),
             );
         });
     });

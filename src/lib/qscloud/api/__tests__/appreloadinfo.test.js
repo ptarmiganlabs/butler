@@ -39,17 +39,17 @@ jest.unstable_mockModule('../../../../globals.js', () => ({
 jest.unstable_mockModule('luxon', () => mockLuxon);
 
 // Import the module under test
-const { 
+const {
     getQlikSenseCloudAppReloadScriptLog,
     getQlikSenseCloudAppReloadScriptLogHead,
     getQlikSenseCloudAppReloadScriptLogTail,
-    getQlikSenseCloudAppReloadInfo
+    getQlikSenseCloudAppReloadInfo,
 } = await import('../appreloadinfo.js');
 
 describe('QS Cloud App Reload Info API', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         // Set up default config values
         mockGlobals.config.get.mockImplementation((path) => {
             const configs = {
@@ -63,7 +63,7 @@ describe('QS Cloud App Reload Info API', () => {
     describe('getQlikSenseCloudAppReloadScriptLog', () => {
         test('should successfully retrieve script log', async () => {
             const mockLogData = 'Line 1\r\nLine 2\r\nLine 3\r\nLine 4';
-            
+
             mockAxios.request.mockResolvedValue({
                 data: mockLogData,
             });
@@ -86,9 +86,7 @@ describe('QS Cloud App Reload Info API', () => {
                 responseType: 'application/json',
             });
 
-            expect(mockGlobals.logger.verbose).toHaveBeenCalledWith(
-                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Done getting script log'
-            );
+            expect(mockGlobals.logger.verbose).toHaveBeenCalledWith('[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Done getting script log');
         });
 
         test('should handle axios request errors', async () => {
@@ -98,9 +96,7 @@ describe('QS Cloud App Reload Info API', () => {
             const result = await getQlikSenseCloudAppReloadScriptLog('app123', 'reload456');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Error: Network error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Error: Network error');
         });
 
         test('should handle empty log data', async () => {
@@ -133,18 +129,18 @@ describe('QS Cloud App Reload Info API', () => {
     describe('getQlikSenseCloudAppReloadScriptLogHead', () => {
         test('should return head lines when count > 0', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, 2);
 
             expect(result).toBe('Line 1\r\nLine 2');
             expect(mockGlobals.logger.debug).toHaveBeenCalledWith(
-                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\nLine 1\r\nLine 2'
+                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log head:\nLine 1\r\nLine 2',
             );
         });
 
         test('should return empty string when count is 0', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, 0);
 
             expect(result).toBe('');
@@ -153,7 +149,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle count larger than array length', () => {
             const scriptLogFull = ['Line 1', 'Line 2'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, 5);
 
             expect(result).toBe('Line 1\r\nLine 2');
@@ -161,7 +157,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle empty array', () => {
             const scriptLogFull = [];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, 2);
 
             expect(result).toBe('');
@@ -169,7 +165,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle negative count', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogHead(scriptLogFull, -1);
 
             expect(result).toBe('');
@@ -179,18 +175,18 @@ describe('QS Cloud App Reload Info API', () => {
     describe('getQlikSenseCloudAppReloadScriptLogTail', () => {
         test('should return tail lines when count > 0', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, 2);
 
             expect(result).toBe('Line 3\r\nLine 4');
             expect(mockGlobals.logger.debug).toHaveBeenCalledWith(
-                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\nLine 3\r\nLine 4'
+                '[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Script log tails:\nLine 3\r\nLine 4',
             );
         });
 
         test('should return empty string when count is 0', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, 0);
 
             expect(result).toBe('');
@@ -199,7 +195,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle count larger than array length', () => {
             const scriptLogFull = ['Line 1', 'Line 2'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, 5);
 
             expect(result).toBe('Line 1\r\nLine 2');
@@ -207,7 +203,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle empty array', () => {
             const scriptLogFull = [];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, 2);
 
             expect(result).toBe('');
@@ -215,7 +211,7 @@ describe('QS Cloud App Reload Info API', () => {
 
         test('should handle negative count', () => {
             const scriptLogFull = ['Line 1', 'Line 2', 'Line 3', 'Line 4'];
-            
+
             const result = getQlikSenseCloudAppReloadScriptLogTail(scriptLogFull, -1);
 
             expect(result).toBe('');
@@ -265,28 +261,30 @@ describe('QS Cloud App Reload Info API', () => {
 
             const result = await getQlikSenseCloudAppReloadInfo('reload123');
 
-            expect(result).toEqual(expect.objectContaining({
-                id: 'reload123',
-                status: 'SUCCEEDED',
-                appId: 'app456',
-                executionDuration: {
-                    hours: 1,
-                    minutes: 30,
-                    seconds: 45,
-                },
-                executionCreationTime: expect.objectContaining({
-                    creationTimeUTC: '2023-01-01T10:00:00Z',
-                    creationTimeLocal1: '2023-01-01 12:00:00',
+            expect(result).toEqual(
+                expect.objectContaining({
+                    id: 'reload123',
+                    status: 'SUCCEEDED',
+                    appId: 'app456',
+                    executionDuration: {
+                        hours: 1,
+                        minutes: 30,
+                        seconds: 45,
+                    },
+                    executionCreationTime: expect.objectContaining({
+                        creationTimeUTC: '2023-01-01T10:00:00Z',
+                        creationTimeLocal1: '2023-01-01 12:00:00',
+                    }),
+                    executionStartTime: expect.objectContaining({
+                        startTimeUTC: '2023-01-01T11:00:00Z',
+                        startTimeLocal1: '2023-01-01 12:00:00',
+                    }),
+                    executionStopTime: expect.objectContaining({
+                        stopTimeUTC: '2023-01-01T12:30:45Z',
+                        stopTimeLocal1: '2023-01-01 12:00:00',
+                    }),
                 }),
-                executionStartTime: expect.objectContaining({
-                    startTimeUTC: '2023-01-01T11:00:00Z',
-                    startTimeLocal1: '2023-01-01 12:00:00',
-                }),
-                executionStopTime: expect.objectContaining({
-                    stopTimeUTC: '2023-01-01T12:30:45Z',
-                    stopTimeLocal1: '2023-01-01 12:00:00',
-                }),
-            }));
+            );
 
             expect(mockAxios.request).toHaveBeenCalledWith({
                 url: '/api/v1/reloads/reload123',
@@ -307,9 +305,7 @@ describe('QS Cloud App Reload Info API', () => {
             const result = await getQlikSenseCloudAppReloadInfo('reload123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: Error: API error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: Error: API error');
         });
 
         test('should handle invalid JSON response', async () => {

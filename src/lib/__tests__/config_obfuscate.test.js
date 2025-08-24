@@ -222,12 +222,28 @@ describe('lib/config_obfuscate', () => {
 
         const result = configObfuscate(testConfig);
 
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[0].directory).toBe('**********');
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[0].userId).toBe('**********');
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[0].directory).toBe('**********');
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[0].userId).toBe('**********');
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[0]).toBe('user1**********');
-        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[1]).toBe('user2**********');
+        expect(
+            result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[0]
+                .directory,
+        ).toBe('**********');
+        expect(
+            result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.user[0]
+                .userId,
+        ).toBe('**********');
+        expect(
+            result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[0]
+                .directory,
+        ).toBe('**********');
+        expect(
+            result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.excludeOwner.user[0]
+                .userId,
+        ).toBe('**********');
+        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[0]).toBe(
+            'user1**********',
+        );
+        expect(result.Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[1]).toBe(
+            'user2**********',
+        );
     });
 
     test('preserves original config structure without modifying it', () => {

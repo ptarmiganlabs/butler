@@ -29,16 +29,12 @@ jest.unstable_mockModule('../../../guid_util.js', () => ({
 }));
 
 // Import the module under test
-const { 
-    getQlikSenseCloudAppInfo, 
-    getQlikSenseCloudAppMetadata, 
-    getQlikSenseCloudAppItems 
-} = await import('../app.js');
+const { getQlikSenseCloudAppInfo, getQlikSenseCloudAppMetadata, getQlikSenseCloudAppItems } = await import('../app.js');
 
 describe('QS Cloud App API', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         // Set up default config values
         mockGlobals.config.get.mockImplementation((path) => {
             const configs = {
@@ -86,9 +82,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppInfo('invalid-guid');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid');
             expect(mockAxios.request).not.toHaveBeenCalled();
         });
 
@@ -99,9 +93,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppInfo('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] SENSE CLOUD GET APP INFO: Error: Network error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP INFO: Error: Network error');
         });
 
         test('should handle invalid JSON response', async () => {
@@ -148,9 +140,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppMetadata('invalid-guid');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid');
         });
 
         test('should handle axios request errors', async () => {
@@ -160,9 +150,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppMetadata('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] SENSE CLOUD GET APP METADATA: Error: API error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP METADATA: Error: API error');
         });
     });
 
@@ -207,9 +195,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppItems('invalid-guid');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP ITEMS: Invalid appId: invalid-guid');
         });
 
         test('should handle axios request errors', async () => {
@@ -219,9 +205,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppItems('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                '[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Error: Items API error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Error: Items API error');
         });
 
         test('should handle empty app ID', async () => {
