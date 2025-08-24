@@ -1,5 +1,59 @@
 # Changelog
 
+## [14.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.2...butler-v14.0.0) (2025-08-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add new setting to control gathering of detailsed host  information
+
+### Features
+
+* add first set of tests in the new unit test suite ([a3cf65e](https://github.com/ptarmiganlabs/butler/commit/a3cf65e03f7a573bbcf2541f8a76a50f4e98aa4c))
+* Add new setting to control gathering of detailsed host  information ([dab5e28](https://github.com/ptarmiganlabs/butler/commit/dab5e2869150e415efe1eef4360c0a2b0439ec46)), closes [#1347](https://github.com/ptarmiganlabs/butler/issues/1347)
+* implement conditional configuration validation and update dependencies ([dd85636](https://github.com/ptarmiganlabs/butler/commit/dd856365ae389ba1a5a38493c84263eb999be0ed))
+* **tests:** add comprehensive API schema tests for key-value store and scheduler ([513df1f](https://github.com/ptarmiganlabs/butler/commit/513df1f8ead91a7d586335b76f84b70608e3ba20))
+* **tests:** add comprehensive unit tests for API schemas and utility functions ([7459d05](https://github.com/ptarmiganlabs/butler/commit/7459d05bb9ee21ad82238b0db5633158a79cc4e4))
+* **tests:** add MQTT API schema tests and configure comprehensive coverage collection ([777eddf](https://github.com/ptarmiganlabs/butler/commit/777eddf9095d592425404d4e789da694eb70bac2))
+* **tests:** implement comprehensive unit tests for API schemas and utility functions ([7b04e2f](https://github.com/ptarmiganlabs/butler/commit/7b04e2f4cd1ad1b91af090646a71550cc35d2826))
+
+
+### Bug Fixes
+
+* Disable custom property reload task in production template configuration ([d0d0ca6](https://github.com/ptarmiganlabs/butler/commit/d0d0ca67073eeb812a5ef3d946a7bda52446a911))
+* Make template config file contain more realistic sample values ([5de0ace](https://github.com/ptarmiganlabs/butler/commit/5de0aceb0cfd67989a32c5c160dfb38332da3dd5))
+* Make template config file contain more realistic sample values ([7f5b673](https://github.com/ptarmiganlabs/butler/commit/7f5b6730085c99ec4ba439553a26017029f6324d))
+
+
+### Miscellaneous
+
+* add build script for macOS ([cbe4711](https://github.com/ptarmiganlabs/butler/commit/cbe4711d71cba189806538cb7693e3626ced0c48))
+* add console logs for executable path in standalone and non-packaged environments ([5a04fa4](https://github.com/ptarmiganlabs/butler/commit/5a04fa472ba8b454246acc3926c1d34a378d3960))
+* add JSDoc comments for improved code documentation ([2692e7a](https://github.com/ptarmiganlabs/butler/commit/2692e7a18b26571fe4291f3fc0018442947fc183))
+* add macOS ARM64 (I.e. Apple Silicon) release job to CI workflows ([1ec7c50](https://github.com/ptarmiganlabs/butler/commit/1ec7c509062962ef7957adbbe700818dfea04554))
+* Add SBOM generation job to CI workflow ([42ebed6](https://github.com/ptarmiganlabs/butler/commit/42ebed65dc6a8b8c96e5f913214672f004267ca6))
+* **deos:** update nodemailer to version 7.0.5 ([7e836b7](https://github.com/ptarmiganlabs/butler/commit/7e836b7dbcaa9a8bc56aed477f129d1b2e3f6da6))
+* **deps:** update actions/checkout action to v5 ([627196f](https://github.com/ptarmiganlabs/butler/commit/627196f4cdac4feb9b1af3f164ab5d1aec0dd256))
+* **deps:** update actions/checkout action to v5 ([12868b4](https://github.com/ptarmiganlabs/butler/commit/12868b41a52bd9ec7195a8d5823cd5d6b61c87db))
+* **deps:** update dependencies to latest versions ([e455bbf](https://github.com/ptarmiganlabs/butler/commit/e455bbf3478054910e956a20ef5042029007c71c))
+* **deps:** update dependencies to latest versions ([e7a1d52](https://github.com/ptarmiganlabs/butler/commit/e7a1d5203d30ddbe17f975e7f69ee26621433b51))
+* **deps:** update dependencies to latest versions ([45e0a86](https://github.com/ptarmiganlabs/butler/commit/45e0a86f7b4ee9ce2150730e5905ffb76249c1ff))
+* **deps:** update dependency eslint-plugin-jsdoc to v54 ([8b624b3](https://github.com/ptarmiganlabs/butler/commit/8b624b3bc33ed06e1333e46aa712389e264a6745))
+* enhance macOS signing and notarization process in CI workflows ([f9006c8](https://github.com/ptarmiganlabs/butler/commit/f9006c8cef70e699ca1d42507d0ea21afda60562))
+* enhance macOS signing and notarization process in CI workflows ([77616fb](https://github.com/ptarmiganlabs/butler/commit/77616fb4984496af1a6040ce42b240ffde2f2e98))
+* Make insiders build and regular build using Node SEA when creating binaries. ([d171b19](https://github.com/ptarmiganlabs/butler/commit/d171b197bc30f863ba9991087e992bc43dcc3999))
+* remove redundant logging statement in build function ([2fd1b87](https://github.com/ptarmiganlabs/butler/commit/2fd1b8753b07d2a455ce8cf1712e6d49cae63a89))
+* update base image to Node 22-bullseye-slim in Dockerfile ([461aae5](https://github.com/ptarmiganlabs/butler/commit/461aae58aa4ca2b9729ad782696e4701811967ce))
+* update dependencies to latest versions ([d81e64f](https://github.com/ptarmiganlabs/butler/commit/d81e64f2cec0b8ec3f8e3503697819839d1b003e))
+* update mqtt and snyk dependencies to latest versions ([465bd9e](https://github.com/ptarmiganlabs/butler/commit/465bd9e504fdbae05338ee04717688b37c4ef412))
+* update package.json with new scripts and dependencies ([6278ebf](https://github.com/ptarmiganlabs/butler/commit/6278ebfb285c3da6f6f157141677569ba6411d91))
+
+
+### Documentation
+
+* update copilot instructions to require Copilot to use conventional commits ([b67bfeb](https://github.com/ptarmiganlabs/butler/commit/b67bfeb1857a7972ca56f9759ef125904613f728))
+* update copilot instructions to require Copilot to use conventional commits ([5386db6](https://github.com/ptarmiganlabs/butler/commit/5386db6e8a74ddad97df7ba015ce0366b5199386))
+
 ## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
 
 
