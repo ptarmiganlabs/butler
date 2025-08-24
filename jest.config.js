@@ -21,7 +21,13 @@ const config = {
     collectCoverage: true,
 
     // An array of glob patterns indicating a set of files for which coverage information should be collected
-    // collectCoverageFrom: undefined,
+    // Globs are relative to rootDir (which is set to 'src' below)
+    collectCoverageFrom: [
+        '**/*.js',
+        '!**/*.test.js',
+        '!**/__tests__/**',
+        '!coverage/**', // exclude generated coverage artifacts under src/coverage
+    ],
 
     // The directory where Jest should output its coverage files
     coverageDirectory: 'coverage',
@@ -129,7 +135,6 @@ const config = {
 
     // The paths to modules that run some code to configure or set up the testing environment before each test
     // setupFiles: [],
-    // setupFiles: ['<rootDir>/__tests__/env.js'],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     // setupFilesAfterEnv: [],
