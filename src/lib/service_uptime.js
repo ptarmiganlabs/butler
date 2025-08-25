@@ -17,10 +17,8 @@ function serviceUptimeStart() {
     const formatter = new Intl.NumberFormat('en-US');
 
     // Log uptime to console
-    // eslint-disable-next-line no-extend-native, func-names
     Number.prototype.toTime = function (isSec) {
         const ms = isSec ? this * 1e3 : this;
-        // eslint-disable-next-line no-bitwise
         const lm = ~(4 * !!isSec);
         /* limit fraction */
         const fmt = new Date(ms).toISOString().slice(11, lm);
@@ -28,7 +26,6 @@ function serviceUptimeStart() {
         if (ms >= 8.64e7) {
             /* >= 24 hours */
             const parts = fmt.split(/:(?=\d{2}:)/);
-            // eslint-disable-next-line no-bitwise
             parts[0] -= -24 * ((ms / 8.64e7) | 0);
             return parts.join(':');
         }

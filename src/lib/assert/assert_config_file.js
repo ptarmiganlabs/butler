@@ -801,10 +801,10 @@ export async function configFileStructureAssert() {
 
 /**
  * Validates that required fields are present when their associated features are enabled.
- * 
+ *
  * This function performs conditional validation that checks fields are present only when
  * the feature they belong to is enabled (when enable: true).
- * 
+ *
  * @param {object} config - The configuration object to verify
  * @param {object} logger - The logger object for logging messages
  * @returns {Promise<boolean>} A promise that resolves to true if all checks pass, false otherwise
@@ -813,7 +813,11 @@ export const configFileConditionalAssert = async (config, logger) => {
     try {
         // Validate configVisualisation fields when enabled
         if (config.has('Butler.configVisualisation.enable') && config.get('Butler.configVisualisation.enable')) {
-            const requiredFields = ['Butler.configVisualisation.host', 'Butler.configVisualisation.port', 'Butler.configVisualisation.obfuscate'];
+            const requiredFields = [
+                'Butler.configVisualisation.host',
+                'Butler.configVisualisation.port',
+                'Butler.configVisualisation.obfuscate',
+            ];
             for (const field of requiredFields) {
                 if (!config.has(field)) {
                     logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when configVisualisation is enabled.`);
@@ -846,7 +850,12 @@ export const configFileConditionalAssert = async (config, logger) => {
 
         // Validate uptimeMonitor fields when enabled
         if (config.has('Butler.uptimeMonitor.enable') && config.get('Butler.uptimeMonitor.enable')) {
-            const requiredFields = ['Butler.uptimeMonitor.frequency', 'Butler.uptimeMonitor.logLevel', 'Butler.uptimeMonitor.storeInInfluxdb', 'Butler.uptimeMonitor.storeNewRelic'];
+            const requiredFields = [
+                'Butler.uptimeMonitor.frequency',
+                'Butler.uptimeMonitor.logLevel',
+                'Butler.uptimeMonitor.storeInInfluxdb',
+                'Butler.uptimeMonitor.storeNewRelic',
+            ];
             for (const field of requiredFields) {
                 if (!config.has(field)) {
                     logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when uptimeMonitor is enabled.`);
@@ -861,11 +870,13 @@ export const configFileConditionalAssert = async (config, logger) => {
                     'Butler.uptimeMonitor.storeNewRelic.url',
                     'Butler.uptimeMonitor.storeNewRelic.header',
                     'Butler.uptimeMonitor.storeNewRelic.metric',
-                    'Butler.uptimeMonitor.storeNewRelic.attribute'
+                    'Butler.uptimeMonitor.storeNewRelic.attribute',
                 ];
                 for (const field of newRelicFields) {
                     if (!config.has(field)) {
-                        logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when uptimeMonitor.storeNewRelic is enabled.`);
+                        logger.error(
+                            `ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when uptimeMonitor.storeNewRelic is enabled.`,
+                        );
                         return false;
                     }
                 }
@@ -883,7 +894,7 @@ export const configFileConditionalAssert = async (config, logger) => {
             }
         }
 
-        // Validate keyValueStore fields when enabled  
+        // Validate keyValueStore fields when enabled
         if (config.has('Butler.keyValueStore.enable') && config.get('Butler.keyValueStore.enable')) {
             const requiredFields = ['Butler.keyValueStore.maxMemoryUsage', 'Butler.keyValueStore.ttl'];
             for (const field of requiredFields) {
@@ -927,7 +938,7 @@ export const configFileConditionalAssert = async (config, logger) => {
             }
         }
 
-        // Validate teamsNotification fields when enabled  
+        // Validate teamsNotification fields when enabled
         if (config.has('Butler.teamsNotification.enable') && config.get('Butler.teamsNotification.enable')) {
             const requiredFields = ['Butler.teamsNotification.restMessage'];
             for (const field of requiredFields) {

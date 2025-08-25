@@ -760,7 +760,6 @@ const schedulerReloadTaskSuccess = async (msg) => {
         let taskInfo;
         let retryCount = 0;
         while (retryCount < 5) {
-            // eslint-disable-next-line no-await-in-loop
             taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
 
             if (
@@ -792,7 +791,6 @@ const schedulerReloadTaskSuccess = async (msg) => {
                 `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
             );
 
-            // eslint-disable-next-line no-await-in-loop
             await globals.sleep(1000);
         }
 
@@ -885,7 +883,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
  */
 const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
-    // eslint-disable-next-line no-unused-vars
+
     globals.udpServerReloadTaskSocket.on('listening', (message, remote) => {
         const address = globals.udpServerReloadTaskSocket.address();
 
@@ -906,7 +904,7 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Handler for UDP error event
-    // eslint-disable-next-line no-unused-vars
+
     globals.udpServerReloadTaskSocket.on('error', (message, remote) => {
         try {
             const address = globals.udpServerReloadTaskSocket.address();
@@ -930,7 +928,7 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Main handler for UDP messages relating to failed tasks
-    // eslint-disable-next-line no-unused-vars
+
     globals.udpServerReloadTaskSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===

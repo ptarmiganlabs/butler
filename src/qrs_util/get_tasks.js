@@ -34,7 +34,6 @@ const getTasks = async (filter) => {
 
                 if (result.statusCode === 200 && result.body.length > 0) {
                     // At least one task matches the tag
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const task of result.body) {
                         tasks.push({ taskId: task.id, taskName: task.name });
                     }
@@ -56,7 +55,6 @@ const getTasks = async (filter) => {
 
                 if (result.statusCode === 200 && result.body.length > 0) {
                     // At least one task matches the tag
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const task of result.body) {
                         tasks.push({ taskId: task.id, taskName: task.name });
                     }

@@ -13,7 +13,6 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -79,7 +78,6 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -87,7 +85,6 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
 
     // Add feature specific tags in configTags variable
     if (configTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
@@ -147,7 +144,6 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -155,7 +151,6 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
 
     // Add feature specific tags in configTags variable
     if (configTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
@@ -259,7 +254,6 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -267,7 +261,6 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
 
     // Add feature specific tags in configTags variable
     if (configTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
@@ -419,7 +412,6 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -430,7 +422,6 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
 
     // Add feature specific tags in configTags variable
     if (configTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
@@ -493,7 +484,6 @@ export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
 
     // Add static tags to tags object
     if (configStaticTags) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
@@ -552,7 +542,6 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 
         // Add static tags to tags object
         if (configStaticTags) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
@@ -611,7 +600,6 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags') === true) {
             // Add app tags to InfluxDB datapoint
             if (reloadParams.appTags) {
-                // eslint-disable-next-line no-restricted-syntax
                 for (const item of reloadParams.appTags) {
                     datapoint[0].tags[`appTag_${item}`] = 'true';
                 }
@@ -622,7 +610,6 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags') === true) {
             // Add task tags to InfluxDB datapoint
             if (reloadParams.taskTags) {
-                // eslint-disable-next-line no-restricted-syntax
                 for (const item of reloadParams.taskTags) {
                     datapoint[0].tags[`taskTag_${item}`] = 'true';
                 }
@@ -632,7 +619,6 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
         // Add any static tags (defined in the config file)
         const staticTags = globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.static');
         if (staticTags) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const item of staticTags) {
                 datapoint[0].tags[item.name] = item.value;
             }
@@ -673,7 +659,6 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
 
         // Add static tags to tags object
         if (configStaticTags) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
@@ -775,7 +760,6 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         // Add any static tags (defined in the config file)
         const staticTags = globals.config.get('Butler.influxDb.reloadTaskFailure.tag.static');
         if (staticTags) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const item of staticTags) {
                 datapoint[0].tags[item.name] = item.value;
             }

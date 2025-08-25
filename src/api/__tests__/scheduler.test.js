@@ -1,4 +1,4 @@
-import { 
+import {
     apiGETSchedules,
     apiPOSTSchedules,
     apiDELETESchedules,
@@ -6,7 +6,7 @@ import {
     apiPUTSchedulesStop,
     apiPUTSchedulesStartAll,
     apiPUTSchedulesStopAll,
-    apiGETSchedulerStatus
+    apiGETSchedulerStatus,
 } from '../scheduler.js';
 
 describe('scheduler API schemas', () => {
@@ -19,14 +19,14 @@ describe('scheduler API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiGETSchedules;
-            
+
             expect(schema.summary).toBe('Get all information available for existing schedule(s).');
             expect(schema.description).toContain('If a schedule ID is specified using a query parameter');
         });
 
         test('should have querystring schema for optional id parameter', () => {
             const { querystring } = apiGETSchedules.schema;
-            
+
             expect(querystring).toBeDefined();
             expect(querystring.type).toBe('object');
             expect(querystring.properties.id).toBeDefined();
@@ -37,7 +37,7 @@ describe('scheduler API schemas', () => {
 
         test('should have valid 200 response as array', () => {
             const response200 = apiGETSchedules.schema.response[200];
-            
+
             expect(response200.description).toBe('Schedule successfully retrieved.');
             expect(response200.type).toBe('array');
             expect(response200.items).toBeDefined();
@@ -47,9 +47,9 @@ describe('scheduler API schemas', () => {
 
         test('should have comprehensive schedule object properties', () => {
             const scheduleProps = apiGETSchedules.schema.response[200].items.properties;
-            
+
             const expectedProps = ['id', 'created', 'name', 'cronSchedule', 'timezone', 'qlikSenseTaskId'];
-            expectedProps.forEach(prop => {
+            expectedProps.forEach((prop) => {
                 expect(scheduleProps[prop]).toBeDefined();
                 expect(scheduleProps[prop].type).toBe('string');
                 expect(scheduleProps[prop].examples).toBeDefined();
@@ -66,13 +66,13 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for creation', () => {
             const { schema } = apiPOSTSchedules;
-            
+
             expect(schema.summary).toBe('Create a new schedule.');
         });
 
         test('should have body schema for creating schedules', () => {
             const { body } = apiPOSTSchedules.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
@@ -88,7 +88,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for deletion', () => {
             const { schema } = apiDELETESchedules;
-            
+
             expect(schema.summary).toBe('Delete a schedule.');
         });
     });
@@ -102,7 +102,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for starting schedule', () => {
             const { schema } = apiPUTSchedulesStart;
-            
+
             expect(schema.summary).toBe('Start a schedule.');
         });
     });
@@ -116,7 +116,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for stopping schedule', () => {
             const { schema } = apiPUTSchedulesStop;
-            
+
             expect(schema.summary).toBe('Stop a schedule.');
         });
     });
@@ -130,7 +130,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for starting all schedules', () => {
             const { schema } = apiPUTSchedulesStartAll;
-            
+
             expect(schema.summary).toBe('Start all schedules.');
         });
     });
@@ -144,7 +144,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for stopping all schedules', () => {
             const { schema } = apiPUTSchedulesStopAll;
-            
+
             expect(schema.summary).toBe('Stop all schedules.');
         });
     });
@@ -158,7 +158,7 @@ describe('scheduler API schemas', () => {
 
         test('should have correct summary for status check', () => {
             const { schema } = apiGETSchedulerStatus;
-            
+
             expect(schema.summary).toBe('Get scheduler status.');
         });
     });
@@ -173,10 +173,10 @@ describe('scheduler API schemas', () => {
                 apiPUTSchedulesStop,
                 apiPUTSchedulesStartAll,
                 apiPUTSchedulesStopAll,
-                apiGETSchedulerStatus
+                apiGETSchedulerStatus,
             ];
 
-            schemas.forEach(apiSchema => {
+            schemas.forEach((apiSchema) => {
                 expect(apiSchema.schema).toBeDefined();
                 expect(apiSchema.schema.summary).toBeDefined();
                 expect(typeof apiSchema.schema.summary).toBe('string');
@@ -193,10 +193,10 @@ describe('scheduler API schemas', () => {
                 apiPUTSchedulesStop,
                 apiPUTSchedulesStartAll,
                 apiPUTSchedulesStopAll,
-                apiGETSchedulerStatus
+                apiGETSchedulerStatus,
             ];
 
-            schemas.forEach(apiSchema => {
+            schemas.forEach((apiSchema) => {
                 expect(apiSchema.schema.response).toBeDefined();
                 expect(typeof apiSchema.schema.response).toBe('object');
             });
@@ -211,10 +211,10 @@ describe('scheduler API schemas', () => {
                 apiPUTSchedulesStop,
                 apiPUTSchedulesStartAll,
                 apiPUTSchedulesStopAll,
-                apiGETSchedulerStatus
+                apiGETSchedulerStatus,
             ];
 
-            schemas.forEach(schema => {
+            schemas.forEach((schema) => {
                 expect(() => JSON.stringify(schema)).not.toThrow();
             });
         });
@@ -222,8 +222,8 @@ describe('scheduler API schemas', () => {
         test('schemas with schedule IDs should have consistent ID format', () => {
             // Check that schedule ID examples follow GUID format
             const schemasWithIds = [apiGETSchedules];
-            
-            schemasWithIds.forEach(apiSchema => {
+
+            schemasWithIds.forEach((apiSchema) => {
                 if (apiSchema.schema.querystring?.properties?.id?.examples) {
                     const idExample = apiSchema.schema.querystring.properties.id.examples[0];
                     // Should be GUID format

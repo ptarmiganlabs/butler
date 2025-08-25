@@ -4,7 +4,6 @@ import Keyv from '@keyvhq/core';
 import globals from '../globals.js';
 
 // Main key-value store
-// eslint-disable-next-line prefer-const
 let kvStore = [];
 
 /**
@@ -124,7 +123,6 @@ export async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
             });
         } else {
             // Namespace already exists
-            // eslint-disable-next-line no-lonely-if
             if (ttl > 0) {
                 await kv.keyv.set(newKey, newValue, ttl);
                 // hasTTL = true;

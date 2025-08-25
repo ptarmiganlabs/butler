@@ -1,11 +1,11 @@
-import { 
+import {
     apiGetAllNamespaces,
     apiGetKVPair,
     apiGetKVExists,
     apiPostKVPair,
     apiDeleteKVPair,
     apiDeleteNamespace,
-    apiGetKeysInNamespace
+    apiGetKeysInNamespace,
 } from '../key_value_store.js';
 
 describe('key_value_store API schemas', () => {
@@ -18,21 +18,21 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiGetAllNamespaces;
-            
+
             expect(schema.summary).toBe('List all currently defined namespaces.');
             expect(schema.description).toBe('');
         });
 
         test('should have valid response schemas', () => {
             const { response } = apiGetAllNamespaces.schema;
-            
+
             expect(response).toBeDefined();
             expect(Object.keys(response)).toEqual(['200', '500']);
         });
 
         test('should have valid 200 response as array of strings', () => {
             const response200 = apiGetAllNamespaces.schema.response[200];
-            
+
             expect(response200.description).toBe('Array of all namespaces.');
             expect(response200.type).toBe('array');
             expect(response200.items).toBeDefined();
@@ -51,14 +51,14 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiGetKVPair;
-            
+
             expect(schema.summary).toBe('Get the value associated with a key, in a specific namespace.');
             expect(schema.description).toBe('');
         });
 
         test('should have valid params schema for namespace', () => {
             const { params } = apiGetKVPair.schema;
-            
+
             expect(params).toBeDefined();
             expect(params.type).toBe('object');
             expect(params.properties.namespace).toBeDefined();
@@ -68,7 +68,7 @@ describe('key_value_store API schemas', () => {
 
         test('should have valid querystring schema for key', () => {
             const { querystring } = apiGetKVPair.schema;
-            
+
             expect(querystring).toBeDefined();
             expect(querystring.type).toBe('object');
             expect(querystring.properties.key).toBeDefined();
@@ -86,7 +86,7 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct summary', () => {
             const { schema } = apiGetKVExists;
-            
+
             expect(schema.summary).toBe('Checks if a key exists in a namespace.');
         });
     });
@@ -100,13 +100,13 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct summary for POST operation', () => {
             const { schema } = apiPostKVPair;
-            
+
             expect(schema.summary).toBe('Create a new key-value pair in the specified namespace.');
         });
 
         test('should have body schema for POST data', () => {
             const { body } = apiPostKVPair.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
@@ -122,7 +122,7 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct summary for DELETE operation', () => {
             const { schema } = apiDeleteKVPair;
-            
+
             expect(schema.summary).toBe('Delete a key-value pair in a specific namespace.');
         });
     });
@@ -136,7 +136,7 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct summary for namespace deletion', () => {
             const { schema } = apiDeleteNamespace;
-            
+
             expect(schema.summary).toBe('Delete a namespace and all key-value pairs in it.');
         });
     });
@@ -150,7 +150,7 @@ describe('key_value_store API schemas', () => {
 
         test('should have correct summary for listing keys', () => {
             const { schema } = apiGetKeysInNamespace;
-            
+
             expect(schema.summary).toBe('Retrieve a list of all keys present in the specified namespace.');
         });
     });
@@ -164,10 +164,10 @@ describe('key_value_store API schemas', () => {
                 apiPostKVPair,
                 apiDeleteKVPair,
                 apiDeleteNamespace,
-                apiGetKeysInNamespace
+                apiGetKeysInNamespace,
             ];
 
-            schemas.forEach(apiSchema => {
+            schemas.forEach((apiSchema) => {
                 expect(apiSchema.schema).toBeDefined();
                 expect(apiSchema.schema.summary).toBeDefined();
                 expect(typeof apiSchema.schema.summary).toBe('string');
@@ -183,10 +183,10 @@ describe('key_value_store API schemas', () => {
                 apiPostKVPair,
                 apiDeleteKVPair,
                 apiDeleteNamespace,
-                apiGetKeysInNamespace
+                apiGetKeysInNamespace,
             ];
 
-            schemas.forEach(apiSchema => {
+            schemas.forEach((apiSchema) => {
                 const responses = apiSchema.schema.response;
                 if (responses && responses['500']) {
                     expect(responses['500'].properties).toBeDefined();
@@ -207,10 +207,10 @@ describe('key_value_store API schemas', () => {
                 apiPostKVPair,
                 apiDeleteKVPair,
                 apiDeleteNamespace,
-                apiGetKeysInNamespace
+                apiGetKeysInNamespace,
             ];
 
-            schemas.forEach(schema => {
+            schemas.forEach((schema) => {
                 expect(() => JSON.stringify(schema)).not.toThrow();
             });
         });
@@ -222,10 +222,10 @@ describe('key_value_store API schemas', () => {
                 apiPostKVPair,
                 apiDeleteKVPair,
                 apiDeleteNamespace,
-                apiGetKeysInNamespace
+                apiGetKeysInNamespace,
             ];
 
-            schemasWithParams.forEach(apiSchema => {
+            schemasWithParams.forEach((apiSchema) => {
                 if (apiSchema.schema.params) {
                     expect(apiSchema.schema.params.properties.namespace).toBeDefined();
                     expect(apiSchema.schema.params.properties.namespace.type).toBe('string');
