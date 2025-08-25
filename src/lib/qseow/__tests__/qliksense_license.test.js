@@ -588,6 +588,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseLicenseRelease: should handle different license configurations', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseRelease: {
@@ -612,6 +614,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseLicenseMonitor: should handle webhook destinations', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseMonitor: {
@@ -646,6 +650,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseServerLicenseMonitor: should handle MQTT destinations', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 serverLicenseMonitor: {
@@ -675,6 +681,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseLicenseRelease: should handle disabled configuration', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseRelease: {
@@ -692,6 +700,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseLicenseMonitor: should handle disabled configuration', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseMonitor: {
@@ -709,6 +719,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('setupQlikSenseServerLicenseMonitor: should handle disabled configuration', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         cfg.Butler = {
             qlikSenseLicense: {
                 serverLicenseMonitor: {
@@ -726,6 +738,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('should handle QRS API errors gracefully', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         // Mock QRS to return error
         qrsOverrides.get['/license'] = { statusCode: 500, body: 'Internal Server Error' };
 
@@ -753,6 +767,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('should handle cron job creation errors', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         // Force a cron job error by using invalid cron expression
         cfg.Butler = {
             qlikSenseLicense: {
@@ -776,6 +792,8 @@ describe('qseow/qliksense_license', () => {
     });
 
     test('should handle missing license data gracefully', async () => {
+        const mod = await import('../qliksense_license.js');
+        
         // Mock QRS to return empty data
         qrsOverrides.get['/license'] = { statusCode: 200, body: null };
 

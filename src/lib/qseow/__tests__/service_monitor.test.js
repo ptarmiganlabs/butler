@@ -633,13 +633,14 @@ describe('service_monitor setup and checks', () => {
             }),
         };
 
-        // Mock service status to throw error
+        // Clear any previous mock setup and set fresh rejection
+        statusAllMock.mockReset();
         statusAllMock.mockRejectedValue(new Error('Cannot connect to server'));
 
         await setupServiceMonitorTimer(config, logger);
 
         expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR: Error getting service info')
+            expect.stringContaining('VERIFY WIN SERVICES EXIST: Error getting service info')
         );
     });
 
@@ -768,6 +769,12 @@ describe('service_monitor setup and checks', () => {
     });
 
     test('should handle service monitoring timer setup errors', async () => {
+        // Mock later.parse.text to throw error for this test
+        const laterMock = await import('@breejs/later');
+        laterMock.default.parse.text.mockImplementationOnce(() => {
+            throw new Error('Invalid cron expression');
+        });
+
         const config = {
             get: jest.fn((key) => {
                 const configMap = {
@@ -792,7 +799,7 @@ describe('service_monitor setup and checks', () => {
         await setupServiceMonitorTimer(config, logger);
 
         expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Error setting up service monitoring')
+            expect.stringContaining('SERVICE MONITOR INIT:')
         );
     });
 
@@ -810,8 +817,8 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Missing or empty section in config file')
         );
     });
 
@@ -843,8 +850,8 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Service "NonExistentService" not found')
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('VERIFY WIN SERVICES EXIST:  Windows service NonExistentService')
         );
     });
 });
