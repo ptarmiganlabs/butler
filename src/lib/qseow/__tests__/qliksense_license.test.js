@@ -338,4 +338,250 @@ describe('qseow/qliksense_license', () => {
         // Ensure multiple calls were made (both license types)
         expect(postReleasedMock).toHaveBeenCalledTimes(2);
     });
+
+    test('server license monitor with disabled destination skips that destination', async () => {
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.enable = false;
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.mqtt.enable = false;
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(postServerStatusMock).not.toHaveBeenCalled();
+        expect(mqttPublishMock).not.toHaveBeenCalled();
+        expect(webhookServerLicenseMock).not.toHaveBeenCalled();
+    });
+
+    test('server license monitor handles QRS error gracefully', async () => {
+        qrsOverrides.get['license'] = { statusCode: 500, body: null };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('HTTP status code 500'));
+        expect(postServerStatusMock).not.toHaveBeenCalled();
+    });
+
+    test('server license monitor handles empty response body', async () => {
+        qrsOverrides.get['license'] = { statusCode: 200, body: null };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('HTTP status code 200'));
+        expect(postServerStatusMock).not.toHaveBeenCalled();
+    });
+
+    test('server license with about to expire alert sends webhook and MQTT notifications', async () => {
+        const soon = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+        qrsOverrides.get['license'] = {
+            statusCode: 200,
+            body: {
+                isExpired: false,
+                keyDetails: `Serial: 0000\nValid To: ${soon}\nOther: x`,
+            },
+        };
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays = 5;
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendAlert.enable = true;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        // About to expire webhook alert should be sent
+        expect(webhookServerLicenseMock).toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'server license about to expire alert' })
+        );
+        
+        // MQTT expire topic should be used
+        expect(mqttPublishMock).toHaveBeenCalledWith(
+            cfg.Butler.mqttConfig.qlikSenseServerLicenseExpireTopic,
+            expect.stringContaining('expires soon')
+        );
+    });
+
+    test('access license monitor handles QRS error gracefully', async () => {
+        qrsOverrides.get['license/professionalaccesstype'] = { statusCode: 500, body: null };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIK SENSE ACCESS LICENSE MONITOR'));
+        expect(postLicenseStatusMock).not.toHaveBeenCalled();
+    });
+
+    test('access license monitor with disabled influx destination skips posting', async () => {
+        cfg.Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(postLicenseStatusMock).not.toHaveBeenCalled();
+    });
+
+    test('license release with analyzer disabled skips analyzer license release', async () => {
+        cfg.Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        // Only professional license should be released
+        expect(postReleasedMock).toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'professional' }));
+        expect(postReleasedMock).not.toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'analyzer' }));
+        expect(postReleasedMock).toHaveBeenCalledTimes(1);
+    });
+
+    test('license release with professional disabled skips professional license release', async () => {
+        cfg.Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        // Only analyzer license should be released
+        expect(postReleasedMock).toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'analyzer' }));
+        expect(postReleasedMock).not.toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'professional' }));
+        expect(postReleasedMock).toHaveBeenCalledTimes(1);
+    });
+
+    test('license release with both license types disabled skips all releases', async () => {
+        cfg.Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable = false;
+        cfg.Butler.qlikSenseLicense.licenseRelease.licenseType.analyzer.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(postReleasedMock).not.toHaveBeenCalled();
+    });
+
+    test('license release handles delete error gracefully', async () => {
+        qrsOverrides.get['license/professionalaccesstype'] = {
+            statusCode: 200,
+            body: [{ id: 'BAD-LICENSE' }],
+        };
+        // Override DELETE to return error
+        const qrsInstance = makeQrs();
+        qrsInstance.Delete = jest.fn().mockRejectedValue(new Error('Delete failed'));
+        jest.unstable_mockModule('qrs-interact', () => ({
+            default: function QrsInteract() {
+                return qrsInstance;
+            },
+        }));
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Delete failed'));
+    });
+
+    test('license release with no licenses to release logs info', async () => {
+        qrsOverrides.get['license/professionalaccesstype'] = { statusCode: 200, body: [] };
+        qrsOverrides.get['license/analyzeraccesstype'] = { statusCode: 200, body: [] };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No professional licenses to release'));
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No analyzer licenses to release'));
+    });
+
+    test('server license monitor with webhook alert disabled skips alert webhook', async () => {
+        const soon = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+        qrsOverrides.get['license'] = {
+            statusCode: 200,
+            body: {
+                isExpired: false,
+                keyDetails: `Serial: 0000\nValid To: ${soon}\nOther: x`,
+            },
+        };
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.alert.thresholdDays = 5;
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendAlert.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        // Recurring webhook should still be sent
+        expect(webhookServerLicenseMock).toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'server license status' })
+        );
+        // But no alert webhook
+        expect(webhookServerLicenseMock).not.toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'server license about to expire alert' })
+        );
+    });
+
+    test('server license monitor with recurring webhook disabled skips recurring webhook', async () => {
+        cfg.Butler.qlikSenseLicense.serverLicenseMonitor.destination.webhook.sendRecurring.enable = false;
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(webhookServerLicenseMock).not.toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'server license status' })
+        );
+    });
+
+    test('license release with invalid professional license list logs error', async () => {
+        qrsOverrides.get['license/professionalaccesstype'] = { statusCode: 200, body: null };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIK SENSE LICENSE RELEASE PROFESSIONAL'));
+        expect(postReleasedMock).not.toHaveBeenCalled();
+    });
+
+    test('license release with invalid analyzer license list logs error', async () => {
+        qrsOverrides.get['license/analyzeraccesstype'] = { statusCode: 200, body: null };
+        
+        const mod = await import('../qliksense_license.js');
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIK SENSE LICENSE RELEASE ANALYZER'));
+        // Professional should still work
+        expect(postReleasedMock).toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'professional' }));
+    });
 });

@@ -247,4 +247,323 @@ describe('service_monitor setup and checks', () => {
         // Influx
         expect(postInflux).toHaveBeenCalledWith(expect.objectContaining({ serviceStatus: 'STOPPED' }));
     });
+
+    test('service monitor with disabled destinations skips those destinations', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        // Disable all destinations
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.webhook.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.slack.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.teams.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.email.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.newRelic.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.mqtt.enable', false);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.influxDb.enable', false);
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D', startType: 'Auto', dependencies: [], exePath: 'x' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // State change to STOPPED
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('STOPPED');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D', startType: 'Auto', dependencies: [], exePath: 'x' });
+        
+        scheduled.cb();
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // No destinations should be called
+        expect(sendWebhook).not.toHaveBeenCalled();
+        expect(sendSlack).not.toHaveBeenCalled();
+        expect(sendTeams).not.toHaveBeenCalled();
+        expect(sendEmail).not.toHaveBeenCalled();
+        expect(newRelic.sendServiceMonitorEvent).not.toHaveBeenCalled();
+        expect(globalsMock.mqttClient.publish).not.toHaveBeenCalled();
+        expect(postInflux).not.toHaveBeenCalled();
+    });
+
+    test('service monitor handles winsvc errors gracefully', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        // Services exist check passes
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        
+        // But initial check fails
+        statusAllMock.mockRejectedValueOnce(new Error('WinSvc failed'));
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR: Error getting status of all services'));
+    });
+
+    test('service monitor handles status() errors for individual services', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockRejectedValueOnce(new Error('Status failed'));
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR: Error getting status of service svc1'));
+    });
+
+    test('service monitor handles details() errors for individual services', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockRejectedValueOnce(new Error('Details failed'));
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR: Error getting details of service svc1'));
+    });
+
+    test('service monitor with multiple services handles mixed states', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ 
+                host: 'H1', 
+                services: [
+                    { name: 'svc1', friendlyName: 'Svc1' },
+                    { name: 'svc2', friendlyName: 'Svc2' }
+                ] 
+            }],
+        });
+        
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.webhook.enable', true);
+        
+        // Services exist check
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }, { name: 'svc2' }]);
+        
+        // Initial check - both running
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }, { name: 'svc2' }]);
+        statusMock.mockResolvedValueOnce('RUNNING').mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' }).mockResolvedValueOnce({ displayName: 'Svc2 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // State change - one stops
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }, { name: 'svc2' }]);
+        statusMock.mockResolvedValueOnce('RUNNING').mockResolvedValueOnce('STOPPED');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' }).mockResolvedValueOnce({ displayName: 'Svc2 D' });
+        
+        scheduled.cb();
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // Only svc2 should trigger alert
+        expect(sendWebhook).toHaveBeenCalledWith(expect.objectContaining({ 
+            serviceName: 'svc2',
+            serviceStatus: 'STOPPED',
+            stateChanged: true 
+        }));
+    });
+
+    test('service monitor with multiple hosts handles services on different hosts', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [
+                { host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] },
+                { host: 'H2', services: [{ name: 'svc2', friendlyName: 'Svc2' }] }
+            ],
+        });
+        
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.webhook.enable', true);
+        
+        // Services exist check for both hosts
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]).mockResolvedValueOnce([{ name: 'svc2' }]);
+        
+        // Initial check for both hosts
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]).mockResolvedValueOnce([{ name: 'svc2' }]);
+        statusMock.mockResolvedValueOnce('RUNNING').mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' }).mockResolvedValueOnce({ displayName: 'Svc2 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // State change on H2
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]).mockResolvedValueOnce([{ name: 'svc2' }]);
+        statusMock.mockResolvedValueOnce('RUNNING').mockResolvedValueOnce('STOPPED');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' }).mockResolvedValueOnce({ displayName: 'Svc2 D' });
+        
+        scheduled.cb();
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(sendWebhook).toHaveBeenCalledWith(expect.objectContaining({ 
+            host: 'H2',
+            serviceName: 'svc2',
+            serviceStatus: 'STOPPED'
+        }));
+    });
+
+    test('service monitor with no state change does not trigger alerts', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.webhook.enable', true);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.mqtt.enable', true);
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // No change - still running
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        scheduled.cb();
+        await new Promise((r) => setTimeout(r, 10));
+        
+        // No alerts should be sent due to no state change
+        expect(sendWebhook).not.toHaveBeenCalled();
+        // Status MQTT should still be sent
+        expect(globalsMock.mqttClient.publish).toHaveBeenCalled();
+    });
+
+    test('service monitor handles MQTT publishing errors gracefully', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        globalsConfigStore.set('Butler.mqttConfig.enable', true);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.mqtt.enable', true);
+        globalsConfigStore.set('Butler.mqttConfig.serviceStatusTopic', 'topic/status');
+        
+        // Mock MQTT publish to throw error
+        globalsMock.mqttClient.publish.mockImplementationOnce(() => {
+            throw new Error('MQTT error');
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('MQTT error'));
+    });
+
+    test('service monitor handles InfluxDB posting errors gracefully', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        globalsConfigStore.set('Butler.influxDb.enable', true);
+        globalsConfigStore.set('Butler.serviceMonitor.alertDestination.influxDb.enable', true);
+        
+        // Mock InfluxDB post to throw error
+        postInflux.mockRejectedValueOnce(new Error('InfluxDB error'));
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INFLUXDB'));
+    });
+
+    test('service monitor logs service state machine transitions correctly', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('RUNNING');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Service svc1 on host H1 is RUNNING'));
+        
+        // State change to STOPPED
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('STOPPED');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        scheduled.cb();
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Service svc1 on host H1 changed from RUNNING to STOPPED'));
+    });
+
+    test('service monitor handles unknown service state gracefully', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        statusMock.mockResolvedValueOnce('UNKNOWN_STATE');
+        detailsMock.mockResolvedValueOnce({ displayName: 'Svc1 D' });
+        
+        await setupServiceMonitorTimer(config, logger);
+        await new Promise((r) => setTimeout(r, 10));
+        
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Unknown service state: UNKNOWN_STATE'));
+    });
+
+    test('service monitor disabled skips all monitoring setup', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': false,
+        });
+        
+        await setupServiceMonitorTimer(config, logger);
+        
+        expect(statusAllMock).not.toHaveBeenCalled();
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Windows service monitoring is DISABLED'));
+    });
+
+    test('service monitor with missing frequency config uses default', async () => {
+        const config = makeConfig({
+            'Butler.serviceMonitor.enable': true,
+            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
+            // Don't set frequency
+        });
+        
+        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
+        
+        await setupServiceMonitorTimer(config, logger);
+        
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Windows service monitoring is ENABLED'));
+    });
 });

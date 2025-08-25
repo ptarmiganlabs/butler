@@ -247,4 +247,243 @@ describe('smtp.js', () => {
         await mod.sendEmailBasic('from@example.com', ['u@example.com'], 'normal', 'Hello', 'Body');
         expect(sendMailMock).not.toHaveBeenCalled();
     });
+
+    test('sendReloadTaskFailureNotificationEmail handles rate limiting', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.rateLimit = 1; // 1 second rate limit
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        const params = makeReloadParams();
+        
+        // Send first email
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        // Try to send second email immediately (should be rate limited)
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        // Should only have sent one email due to rate limiting
+        expect(sendMailMock).toHaveBeenCalledTimes(1);
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
+    });
+
+    test('sendReloadTaskSuccessNotificationEmail handles rate limiting', async () => {
+        cfg.Butler.emailNotification.reloadTaskSuccess.rateLimit = 1;
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        const params = makeReloadParams();
+        
+        await mod.sendReloadTaskSuccessNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        await mod.sendReloadTaskSuccessNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalledTimes(1);
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
+    });
+
+    test('sendReloadTaskAbortedNotificationEmail handles rate limiting', async () => {
+        cfg.Butler.emailNotification.reloadTaskAborted.rateLimit = 1;
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        const params = makeReloadParams();
+        
+        await mod.sendReloadTaskAbortedNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        await mod.sendReloadTaskAbortedNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalledTimes(1);
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
+    });
+
+    test('sendEmailBasic handles smtp error gracefully', async () => {
+        sendMailMock.mockRejectedValueOnce(new Error('SMTP error'));
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const result = await mod.sendEmailBasic('from@example.com', ['u@example.com'], 'normal', 'Hello', 'Body');
+        expect(result).toBe(false);
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SMTP error'));
+    });
+
+    test('isSmtpConfigOk returns true when email enabled and has required config', async () => {
+        cfg.Butler.emailNotification.enable = true;
+        cfg.Butler.emailNotification.smtp = { host: 'smtp.example.com' };
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        expect(mod.isSmtpConfigOk()).toBe(true);
+    });
+
+    test('isSmtpConfigOk returns false when smtp config missing', async () => {
+        cfg.Butler.emailNotification.enable = true;
+        delete cfg.Butler.emailNotification.smtp;
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        expect(mod.isSmtpConfigOk()).toBe(false);
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Missing SMTP config'));
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with custom property alert enabled uses task custom properties', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable = true;
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName = 'AlertLevel';
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue = 'High';
+        
+        // Mock task custom property check to return true (alert enabled)
+        jest.unstable_mockModule('../../../qrs_util/task_cp_util.js', () => ({
+            getTaskCustomPropertyValues: jest.fn().mockResolvedValue([]),
+            isCustomPropertyValueSet: jest.fn().mockResolvedValue(true),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        params.qs_taskCustomProperties = [{ definition: { name: 'AlertLevel' }, value: 'High' }];
+        
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalled();
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with custom property alert disabled skips sending', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enable = true;
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.customPropertyName = 'AlertLevel';
+        cfg.Butler.emailNotification.reloadTaskFailure.alertEnableByCustomProperty.enabledValue = 'High';
+        
+        // Mock task custom property check to return false (alert disabled)
+        jest.unstable_mockModule('../../../qrs_util/task_cp_util.js', () => ({
+            getTaskCustomPropertyValues: jest.fn().mockResolvedValue([]),
+            isCustomPropertyValueSet: jest.fn().mockResolvedValue(false),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).not.toHaveBeenCalled();
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Not sending reload failure alert email'));
+    });
+
+    test('sendServiceMonitorNotificationEmail sends email for service events', async () => {
+        cfg.Butler.serviceMonitor.alertDestination.email.enable = true;
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const serviceEvent = {
+            serviceStatus: 'STOPPED',
+            serviceName: 'TestService',
+            serviceDisplayName: 'Test Service',
+            host: 'localhost',
+            serviceStartType: 'Automatic',
+            serviceExePath: 'C:\\test.exe'
+        };
+        
+        await mod.sendServiceMonitorNotificationEmail(serviceEvent);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(createTransportMock).toHaveBeenCalled();
+        expect(sendMailMock).toHaveBeenCalled();
+    });
+
+    test('sendServiceMonitorNotificationEmail handles rate limiting', async () => {
+        cfg.Butler.serviceMonitor.alertDestination.email.enable = true;
+        cfg.Butler.emailNotification.serviceStopped.rateLimit = 1;
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const serviceEvent = { serviceStatus: 'STOPPED', serviceName: 'TestService', host: 'localhost' };
+        
+        await mod.sendServiceMonitorNotificationEmail(serviceEvent);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        await mod.sendServiceMonitorNotificationEmail(serviceEvent);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalledTimes(1);
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
+    });
+
+    test('sendServiceMonitorNotificationEmail with service disabled skips sending', async () => {
+        cfg.Butler.serviceMonitor.alertDestination.email.enable = false;
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const serviceEvent = { serviceStatus: 'STOPPED', serviceName: 'TestService' };
+        await mod.sendServiceMonitorNotificationEmail(serviceEvent);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Service monitor email notifications are disabled'));
+    });
+
+    test('sendEmailBasic with authentication enabled includes auth in transport config', async () => {
+        cfg.Butler.emailNotification.smtp.auth = {
+            enable: true,
+            user: 'test@example.com',
+            password: 'password123'
+        };
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        await mod.sendEmailBasic('from@example.com', ['u@example.com'], 'normal', 'Hello', 'Body');
+        
+        expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({
+            auth: expect.objectContaining({
+                user: 'test@example.com',
+                pass: 'password123'
+            })
+        }));
+    });
+
+    test('sendEmailBasic with no authentication does not include auth in transport config', async () => {
+        cfg.Butler.emailNotification.smtp.auth = { enable: false };
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        await mod.sendEmailBasic('from@example.com', ['u@example.com'], 'normal', 'Hello', 'Body');
+        
+        expect(createTransportMock).toHaveBeenCalledWith(expect.not.objectContaining({
+            auth: expect.anything()
+        }));
+    });
+
+    test('sendEmailBasic handles verification error', async () => {
+        verifyMock.mockRejectedValueOnce(new Error('Verification failed'));
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const result = await mod.sendEmailBasic('from@example.com', ['u@example.com'], 'normal', 'Hello', 'Body');
+        expect(result).toBe(false);
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Verification failed'));
+    });
+
+    test('sendServiceMonitorNotificationEmail sends started service email', async () => {
+        cfg.Butler.serviceMonitor.alertDestination.email.enable = true;
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const serviceEvent = {
+            serviceStatus: 'RUNNING',
+            serviceName: 'TestService',
+            host: 'localhost'
+        };
+        
+        await mod.sendServiceMonitorNotificationEmail(serviceEvent);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalled();
+        const callArgs = sendMailMock.mock.calls[0][0];
+        expect(callArgs.to).toContain('ops@example.com');
+        expect(callArgs.subject).toContain('Started');
+    });
 });
