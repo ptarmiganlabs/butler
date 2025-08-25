@@ -21,9 +21,15 @@ jest.unstable_mockModule('https', () => ({ default: { Agent } }));
 
 // fs interactions
 const fsWrites = { mkdir: [], write: [] };
+let fsMkdirBehavior = null; // null = normal, 'error' = throw error
 jest.unstable_mockModule('fs', () => ({
     default: {
-        mkdirSync: (...args) => fsWrites.mkdir.push(args),
+        mkdirSync: (...args) => {
+            if (fsMkdirBehavior === 'error') {
+                throw new Error('Permission denied');
+            }
+            return fsWrites.mkdir.push(args);
+        },
         writeFileSync: (...args) => fsWrites.write.push(args),
     },
 }));
@@ -145,10 +151,10 @@ test('getReloadTaskExecutionResults handles 1753 dates (null dates)', async () =
     result.body.operational.lastExecutionResult.startTime = '1753-01-01T00:00:00.000Z';
     result.body.operational.lastExecutionResult.stopTime = '1753-01-01T00:00:00.000Z';
     result.body.operational.lastExecutionResult.details = [
-        { detailCreatedDate: '1753-01-01T00:00:00.000Z', message: 'Old entry', detailsType: 1 }
+        { detailCreatedDate: '1753-01-01T00:00:00.000Z', message: 'Old entry', detailsType: 1 },
     ];
     qrsGetMock.mockResolvedValueOnce(result);
-    
+
     const res = await scriptlog.getReloadTaskExecutionResults('task-1');
     expect(res.executionStartTime.startTimeUTC).toBe('-');
     expect(res.executionStopTime.stopTimeUTC).toBe('-');
@@ -158,7 +164,7 @@ test('getReloadTaskExecutionResults handles 1753 dates (null dates)', async () =
 test('getScriptLog handles axios errors', async () => {
     qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
     axiosReqMock.mockRejectedValueOnce(new Error('Network error'));
-    
+
     const res = await scriptlog.getScriptLog('task-1', 1, 1);
     expect(res).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Network error'));
@@ -167,7 +173,7 @@ test('getScriptLog handles axios errors', async () => {
 test('getScriptLog handles empty head/tail line counts', async () => {
     qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
     axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3\r\nrow4' });
-    
+
     const res = await scriptlog.getScriptLog('task-1', 0, 0);
     expect(res.scriptLogHead).toBe('');
     expect(res.scriptLogTail).toBe('');
@@ -183,7 +189,7 @@ test('failedTaskStoreLogOnDisk handles empty scriptLogFull array', async () => {
         taskId: 't1',
         scriptLog: { scriptLogFull: [] },
     };
-    
+
     const ok = await scriptlog.failedTaskStoreLogOnDisk(rp);
     expect(ok).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('but it is empty'));
@@ -197,7 +203,7 @@ test('failedTaskStoreLogOnDisk handles short script logs with warning', async ()
         taskId: 't1',
         scriptLog: { scriptLogFull: ['line1', 'line2'] }, // Less than 10 lines
     };
-    
+
     const ok = await scriptlog.failedTaskStoreLogOnDisk(rp);
     expect(ok).toBe(true);
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('but it is very short'));
@@ -212,7 +218,7 @@ test('failedTaskStoreLogOnDisk handles normal script logs', async () => {
         taskId: 't1',
         scriptLog: { scriptLogFull },
     };
-    
+
     const ok = await scriptlog.failedTaskStoreLogOnDisk(rp);
     expect(ok).toBe(true);
     expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Script log is available and has 15 rows'));
@@ -220,35 +226,21 @@ test('failedTaskStoreLogOnDisk handles normal script logs', async () => {
 
 test('failedTaskStoreLogOnDisk handles fs errors', async () => {
     globalsMock.config.get = (k) => ({ 'Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.logDirectory': '/tmp/logs' })[k];
-    
-    // Mock fs.mkdirSync to throw an error
-    const originalMkdir = fsWrites.mkdir;
-    jest.unstable_mockModule('fs', () => ({
-        default: {
-            mkdirSync: () => { throw new Error('Permission denied'); },
-            writeFileSync: (...args) => fsWrites.write.push(args),
-        },
-    }));
-    
-    // Re-import to get the module with the new mock
-    const scriptlogNew = await import('../scriptlog.js');
-    
+
+    // Configure fs mock to throw an error
+    fsMkdirBehavior = 'error';
+
     const rp = {
         logTimeStamp: '2025-08-24 12:34:56',
         appId: 'app1',
         taskId: 't1',
         scriptLog: { scriptLogFull: ['line1'] },
     };
-    
-    const ok = await scriptlogNew.failedTaskStoreLogOnDisk(rp);
+
+    const ok = await scriptlog.failedTaskStoreLogOnDisk(rp);
     expect(ok).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Permission denied'));
-    
-    // Restore original mock
-    jest.unstable_mockModule('fs', () => ({
-        default: {
-            mkdirSync: (...args) => originalMkdir.push(args),
-            writeFileSync: (...args) => fsWrites.write.push(args),
-        },
-    }));
+
+    // Reset fs mock behavior
+    fsMkdirBehavior = null;
 });

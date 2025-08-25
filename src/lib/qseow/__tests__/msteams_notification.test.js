@@ -16,6 +16,15 @@ jest.unstable_mockModule('ms-teams-wrapper', () => ({
 // Mock FS to avoid template file access when not needed
 jest.unstable_mockModule('fs', () => ({ default: { existsSync: jest.fn(), readFileSync: jest.fn() } }));
 
+// Mock rate-limiter-flexible to avoid rate limiting interference between tests
+const mockRateLimiter = {
+    attempt: jest.fn().mockResolvedValue(true),
+    consume: jest.fn().mockResolvedValue({ msBeforeNext: 0, remainingHits: 1 }),
+};
+jest.unstable_mockModule('rate-limiter-flexible', () => ({
+    RateLimiterMemory: jest.fn().mockImplementation(() => mockRateLimiter),
+}));
+
 // Mock helpers used by the module
 jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
     default: jest.fn().mockResolvedValue({ userName: 'owner', directory: 'DIR', userId: 'uid', emails: ['owner@example.com'] }),
@@ -43,16 +52,21 @@ jest.unstable_mockModule('../../../globals.js', () => ({ default: globalsMock })
 
 let sendReloadTaskFailureNotificationTeams;
 let sendServiceMonitorNotificationTeams;
+let sendReloadTaskAbortedNotificationTeams;
 
 beforeAll(async () => {
     const mod = await import('../msteams_notification.js');
-    ({ sendReloadTaskFailureNotificationTeams, sendServiceMonitorNotificationTeams } = mod);
+    ({ sendReloadTaskFailureNotificationTeams, sendServiceMonitorNotificationTeams, sendReloadTaskAbortedNotificationTeams } = mod);
 });
 
 beforeEach(() => {
     jest.clearAllMocks();
     webhookCalls.length = 0;
     cfg.clear();
+
+    // Reset rate limiter mock to default success behavior
+    mockRateLimiter.attempt.mockReset().mockResolvedValue(true);
+    mockRateLimiter.consume.mockReset().mockResolvedValue({ msBeforeNext: 0, remainingHits: 1 });
 
     // Enable Teams notifications (basic template)
     cfg.set('Butler.teamsNotification.reloadTaskFailure.enable', true);
@@ -172,35 +186,35 @@ describe('msteams_notification', () => {
         const fs = await import('fs');
         fs.default.existsSync.mockReturnValue(true);
         fs.default.readFileSync.mockReturnValue('{"title": "Failed {{taskName}}"}');
-        
+
         cfg.set('Butler.teamsNotification.reloadTaskFailure.messageType', 'formatted');
         cfg.set('Butler.teamsNotification.reloadTaskFailure.templateFile', '/path/to/template.json');
         sendReloadTaskFailureNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 50));
-        
+
         expect(fs.default.existsSync).toHaveBeenCalledWith('/path/to/template.json');
-        expect(fs.default.readFileSync).toHaveBeenCalledWith('/path/to/template.json');
+        expect(fs.default.readFileSync).toHaveBeenCalledWith('/path/to/template.json', 'utf8');
         expect(sendMessageMock).toHaveBeenCalledTimes(1);
     });
 
     test('reload failure with formatted messageType and missing file logs error and skips sending', async () => {
         const fs = await import('fs');
         fs.default.existsSync.mockReturnValue(false);
-        
+
         cfg.set('Butler.teamsNotification.reloadTaskFailure.messageType', 'formatted');
         cfg.set('Butler.teamsNotification.reloadTaskFailure.templateFile', '/path/to/missing.json');
         sendReloadTaskFailureNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 30));
-        
+
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Teams formatting template file '));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Could not open Teams template file'));
     });
 
     test('sendReloadTaskFailureNotificationTeams handles webhook send error', async () => {
         sendMessageMock.mockRejectedValueOnce(new Error('Webhook failed'));
         sendReloadTaskFailureNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 50));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS RELOAD TASK FAILED'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SEND'));
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Webhook failed'));
     });
 
@@ -210,7 +224,7 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Teams service monitor notifications are disabled'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SERVICE MONITOR notifications are disabled'));
     });
 
     test('service monitor STOPPED sends to stopped webhook url', async () => {
@@ -234,7 +248,7 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid message type'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid Teams message type'));
     });
 
     test('service monitor with invalid stopped message type logs error and skips sending', async () => {
@@ -243,7 +257,7 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid message type'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid Teams message type'));
     });
 
     test('service monitor with missing started template logs error and skips sending', async () => {
@@ -252,7 +266,7 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('No basic message template specified'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('service started basic message text'));
     });
 
     test('service monitor with missing stopped template logs error and skips sending', async () => {
@@ -261,7 +275,7 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('No basic message template specified'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('service stopped basic message text'));
     });
 
     test('service monitor with formatted type and missing template file logs error', async () => {
@@ -271,37 +285,37 @@ describe('msteams_notification', () => {
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Message template file not specified'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('message template file not specified'));
     });
 
     test('service monitor with formatted type uses template file', async () => {
         const fs = await import('fs');
         fs.default.existsSync.mockReturnValue(true);
         fs.default.readFileSync.mockReturnValue('{"title": "Service {{serviceName}} status changed"}');
-        
+
         cfg.set('Butler.teamsNotification.serviceStarted.messageType', 'formatted');
         cfg.set('Butler.teamsNotification.serviceStarted.templateFile', '/path/to/service.json');
         const svc = { host: 'H1', serviceName: 'svc1', serviceStatus: 'RUNNING', serviceDetails: {} };
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 50));
-        
+
         expect(fs.default.existsSync).toHaveBeenCalledWith('/path/to/service.json');
-        expect(fs.default.readFileSync).toHaveBeenCalledWith('/path/to/service.json');
+        expect(fs.default.readFileSync).toHaveBeenCalledWith('/path/to/service.json', 'utf8');
         expect(sendMessageMock).toHaveBeenCalledTimes(1);
     });
 
     test('service monitor with formatted type and missing file logs error', async () => {
         const fs = await import('fs');
         fs.default.existsSync.mockReturnValue(false);
-        
+
         cfg.set('Butler.teamsNotification.serviceStarted.messageType', 'formatted');
         cfg.set('Butler.teamsNotification.serviceStarted.templateFile', '/path/to/missing-service.json');
         const svc = { host: 'H1', serviceName: 'svc1', serviceStatus: 'RUNNING', serviceDetails: {} };
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 30));
-        
+
         expect(sendMessageMock).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Teams formatting template file '));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Could not open Teams template file'));
     });
 
     test('service monitor with webhook send error logs error message', async () => {
@@ -309,20 +323,30 @@ describe('msteams_notification', () => {
         const svc = { host: 'H1', serviceName: 'svc1', serviceStatus: 'RUNNING', serviceDetails: {} };
         sendServiceMonitorNotificationTeams(svc);
         await new Promise((r) => setTimeout(r, 50));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SERVICE MONITOR'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SEND'));
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Service webhook failed'));
     });
 
     test('reload failure with rate limiting suppresses duplicate sends', async () => {
+        // Setup rate limiter to succeed first time, fail second time
+        mockRateLimiter.consume
+            .mockResolvedValueOnce({ msBeforeNext: 0, remainingHits: 0 })
+            .mockRejectedValueOnce(new Error('Rate limit exceeded'));
+
         cfg.set('Butler.teamsNotification.reloadTaskFailure.rateLimit', 1);
         sendReloadTaskFailureNotificationTeams(baseReloadParams);
         sendReloadTaskFailureNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 100));
         expect(sendMessageMock).toHaveBeenCalledTimes(1);
-        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Rate limiting failed'));
     });
 
     test('service monitor with rate limiting suppresses duplicate sends', async () => {
+        // Setup rate limiter to succeed first time, fail second time
+        mockRateLimiter.consume
+            .mockResolvedValueOnce({ msBeforeNext: 0, remainingHits: 0 })
+            .mockRejectedValueOnce(new Error('Rate limit exceeded'));
+
         cfg.set('Butler.teamsNotification.serviceStopped.rateLimit', 1);
         const svc = { host: 'H1', serviceName: 'svc1', serviceStatus: 'STOPPED', serviceDetails: {} };
         sendServiceMonitorNotificationTeams(svc);
@@ -336,15 +360,15 @@ describe('msteams_notification', () => {
         // Import the sendReloadTaskAbortedNotificationTeams function
         const mod = await import('../msteams_notification.js');
         const { sendReloadTaskAbortedNotificationTeams } = mod;
-        
+
         cfg.set('Butler.teamsNotification.reloadTaskAborted.enable', true);
         cfg.set('Butler.teamsNotification.reloadTaskAborted.messageType', 'basic');
         cfg.set('Butler.teamsNotification.reloadTaskAborted.basicMsgTemplate', 'Aborted {{taskName}}');
         cfg.set('Butler.teamsNotification.reloadTaskAborted.webhookURL', 'https://teams.example.com/aborted');
-        
+
         sendReloadTaskAbortedNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 50));
-        
+
         expect(sendMessageMock).toHaveBeenCalledTimes(1);
         expect(webhookCalls[0].url).toBe('https://teams.example.com/aborted');
         expect(webhookCalls[0].msg.title).toContain('Aborted Task A');
@@ -353,7 +377,7 @@ describe('msteams_notification', () => {
     test('reload aborted with disabled notifications logs error and skips sending', async () => {
         const mod = await import('../msteams_notification.js');
         const { sendReloadTaskAbortedNotificationTeams } = mod;
-        
+
         cfg.set('Butler.teamsNotification.reloadTaskAborted.enable', false);
         sendReloadTaskAbortedNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 30));
@@ -364,7 +388,7 @@ describe('msteams_notification', () => {
     test('reload aborted with invalid message type logs error and skips sending', async () => {
         const mod = await import('../msteams_notification.js');
         const { sendReloadTaskAbortedNotificationTeams } = mod;
-        
+
         cfg.set('Butler.teamsNotification.reloadTaskAborted.enable', true);
         cfg.set('Butler.teamsNotification.reloadTaskAborted.messageType', 'invalid');
         sendReloadTaskAbortedNotificationTeams(baseReloadParams);
@@ -376,13 +400,18 @@ describe('msteams_notification', () => {
     test('reload aborted with rate limiting suppresses duplicate sends', async () => {
         const mod = await import('../msteams_notification.js');
         const { sendReloadTaskAbortedNotificationTeams } = mod;
-        
+
+        // Setup rate limiter to succeed first time, fail second time
+        mockRateLimiter.consume
+            .mockResolvedValueOnce({ msBeforeNext: 0, remainingHits: 0 })
+            .mockRejectedValueOnce(new Error('Rate limit exceeded'));
+
         cfg.set('Butler.teamsNotification.reloadTaskAborted.enable', true);
         cfg.set('Butler.teamsNotification.reloadTaskAborted.messageType', 'basic');
         cfg.set('Butler.teamsNotification.reloadTaskAborted.basicMsgTemplate', 'Aborted {{taskName}}');
         cfg.set('Butler.teamsNotification.reloadTaskAborted.webhookURL', 'https://teams.example.com/aborted');
         cfg.set('Butler.teamsNotification.reloadTaskAborted.rateLimit', 1);
-        
+
         sendReloadTaskAbortedNotificationTeams(baseReloadParams);
         sendReloadTaskAbortedNotificationTeams(baseReloadParams);
         await new Promise((r) => setTimeout(r, 100));

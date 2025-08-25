@@ -219,8 +219,8 @@ describe('winsvc helpers', () => {
     test('statusAll() filters and parses service blocks correctly', async () => {
         const result = await statusAll(logger);
         expect(result.length).toBe(3);
-        
-        const spooler = result.find(s => s.name === 'Spooler');
+
+        const spooler = result.find((s) => s.name === 'Spooler');
         expect(spooler).toBeDefined();
         expect(spooler.displayName).toBe('Print Spooler');
         expect(spooler.stateText).toBe('RUNNING');
@@ -232,7 +232,7 @@ describe('winsvc helpers', () => {
         // The mock already includes an empty first line which should be removed
         const result = await statusAll(logger);
         expect(result.length).toBeGreaterThan(0);
-        expect(result.every(s => s.name)).toBe(true);
+        expect(result.every((s) => s.name)).toBe(true);
     });
 
     test('statusAll() handles malformed service block gracefully', async () => {
@@ -240,28 +240,36 @@ describe('winsvc helpers', () => {
             const stdout = [
                 'SERVICE_NAME: ValidService',
                 'DISPLAY_NAME: Valid Service',
+                'TYPE               : 10  WIN32_OWN_PROCESS',
                 '        STATE              : 4  RUNNING',
+                '                           : (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)',
+                '        WIN32_EXIT_CODE    : 0  (0x0)',
+                '        SERVICE_EXIT_CODE  : 0  (0x0)',
                 '',
                 'INVALID_BLOCK',
                 '',
                 'SERVICE_NAME: AnotherService',
                 'DISPLAY_NAME: Another Service',
+                'TYPE               : 10  WIN32_OWN_PROCESS',
                 '        STATE              : 1  STOPPED',
+                '                           : (STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)',
+                '        WIN32_EXIT_CODE    : 0  (0x0)',
+                '        SERVICE_EXIT_CODE  : 0  (0x0)',
                 '',
             ].join('\r\n');
             cb(null, stdout);
         });
-        
+
         const result = await statusAll(logger);
         expect(result.length).toBe(2); // Should filter out invalid block
-        expect(result.map(s => s.name)).toEqual(['ValidService', 'AnotherService']);
+        expect(result.map((s) => s.name)).toEqual(['ValidService', 'AnotherService']);
     });
 
     test('status() handles different service states', async () => {
         // Test that status function can handle the actual parsing logic
         const runningStatus = await status(logger, 'RunningService');
         expect(runningStatus).toBe('RUNNING');
-        
+
         const stoppedStatus = await status(logger, 'StoppedService');
         expect(stoppedStatus).toBe('STOPPED');
     });
@@ -278,19 +286,19 @@ describe('winsvc helpers', () => {
         const info = await details(logger, 'MyService');
         expect(info.dependencies).toBeDefined();
         expect(info.dependencies.length).toBeGreaterThan(0);
-        const cleanDeps = info.dependencies.map(d => d.trim()).filter(Boolean);
+        const cleanDeps = info.dependencies.map((d) => d.trim()).filter(Boolean);
         expect(cleanDeps).toContain('TcpIp');
         expect(cleanDeps).toContain('EventLog');
     });
 
     test('exists() checks service existence correctly', async () => {
         const mod = await import('../winsvc.js');
-        
+
         // Existing service should return true
         const existsTrue = await mod.exists(logger, 'RunningService');
         expect(existsTrue).toBe(true);
         expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Found! Service RunningService exists'));
-        
+
         // Non-existing service should return false
         const existsFalse = await mod.exists(logger, 'NonExistentService');
         expect(existsFalse).toBe(false);
@@ -308,10 +316,10 @@ describe('winsvc helpers', () => {
             expect(cmd).toContain('\\\\TESTHOST');
             cb(null, 'SERVICE_NAME: TestSvc\r\n        STATE              : 4  RUNNING');
         });
-        
+
         const result = await status(logger, 'TestSvc', 'TESTHOST');
         expect(result).toBe('RUNNING');
-        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Getting status of service TestSvc on host TESTHOST'));
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Service TestSvc is RUNNING on host TESTHOST'));
     });
 
     test('details() handles service query with host parameter', async () => {
@@ -326,13 +334,13 @@ describe('winsvc helpers', () => {
             ].join('\r\n');
             cb(null, stdout);
         });
-        
+
         const result = await details(logger, 'TestSvc', 'TESTHOST');
         expect(result.name).toBe('TestSvc');
         expect(result.displayName).toBe('Test Service');
         expect(result.startType).toBe('Manual');
         expect(result.exePath).toBe('C:\\test.exe');
-        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Getting details of service TestSvc on host TESTHOST'));
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Service TestSvc is Manual on host TESTHOST'));
     });
 
     test('details() handles different start types', async () => {
@@ -346,7 +354,7 @@ describe('winsvc helpers', () => {
             ].join('\r\n');
             cb(null, stdout);
         });
-        
+
         const result = await details(logger, 'ManualSvc');
         expect(result.startType).toBe('Manual');
     });
@@ -362,7 +370,7 @@ describe('winsvc helpers', () => {
             ].join('\r\n');
             cb(null, stdout);
         });
-        
+
         const result = await details(logger, 'DisabledSvc');
         expect(result.startType).toBe('Disabled');
     });
@@ -378,16 +386,16 @@ describe('winsvc helpers', () => {
             ].join('\r\n');
             cb(null, stdout);
         });
-        
+
         const result = await details(logger, 'NoDepsService');
         expect(result.dependencies).toBeDefined();
-        expect(result.dependencies.filter(d => d.trim())).toEqual([]);
+        expect(result.dependencies.filter((d) => d.trim())).toEqual([]);
     });
 
     test('status() logs debug information correctly', async () => {
         await status(logger, 'RunningService');
         expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Running command'));
-        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Getting status of service RunningService'));
+        expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Service RunningService is RUNNING on host null'));
     });
 
     test('all() logs debug and verbose information correctly', async () => {
