@@ -827,7 +827,7 @@ export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
                     return 1;
                 }
 
-                sendOutgoingWebhook(webhookConfig, reloadParams);
+                await sendOutgoingWebhook(webhookConfig, reloadParams);
             } catch (err) {
                 globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK FAILED: ${err}`);
             }
@@ -865,7 +865,7 @@ export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
                     return 1;
                 }
 
-                sendOutgoingWebhook(webhookConfig, reloadParams);
+                await sendOutgoingWebhook(webhookConfig, reloadParams);
             } catch (err) {
                 globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK ABORTED: ${err}`);
             }
@@ -901,7 +901,7 @@ export function sendServiceMonitorWebhook(svc) {
                     return 1;
                 }
 
-                sendOutgoingWebhookServiceMonitor(webhookConfig, {
+                await sendOutgoingWebhookServiceMonitor(webhookConfig, {
                     host: svc.host,
                     serviceName: svc.serviceName,
                     serviceDisplayName: svc.serviceDetails.displayName,

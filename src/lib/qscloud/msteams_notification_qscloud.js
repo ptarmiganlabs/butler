@@ -348,10 +348,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     qlikSenseHub: senseUrls.hubUrl,
                     genericUrls,
 
-                    appOwnerName: appOwner.name,
-                    appOwnerUserId: appOwner.id,
-                    appOwnerPicture: appOwner.picture,
-                    appOwnerEmail: appOwner.email,
+                    appOwnerName: appOwner === undefined ? 'Unknown' : appOwner.name,
+                    appOwnerUserId: appOwner === undefined ? 'Unknown' : appOwner.id,
+                    appOwnerPicture: appOwner === undefined ? '' : appOwner.picture,
+                    appOwnerEmail: appOwner === undefined ? 'Unknown' : appOwner.email,
                 };
 
                 // Check if script log is longer than 3000 characters. Truncate if so.
@@ -404,7 +404,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 }
 
                 const { webhookUrl } = teamsConfig;
-                sendTeams(webhookUrl, teamsConfig, templateContext, 'qscloud-app-reload');
+                await sendTeams(webhookUrl, teamsConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
                 globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${err}`);
             }
