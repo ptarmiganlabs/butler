@@ -556,4 +556,295 @@ describe('service_monitor setup and checks', () => {
 
         expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services'));
     });
+
+    test('should handle service status changes and recovery', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */2 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Main Server',
+                            },
+                            services: [
+                                {
+                                    name: 'QlikSenseEngineService',
+                                    friendlyName: 'Qlik Sense Engine Service',
+                                },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                    'Butler.serviceMonitor.alertDestination.newRelic.enable': false,
+                    'Butler.serviceMonitor.alertDestination.email.enable': false,
+                    'Butler.serviceMonitor.alertDestination.mqtt.enable': false,
+                    'Butler.serviceMonitor.alertDestination.slack.enable': false,
+                    'Butler.serviceMonitor.alertDestination.teams.enable': false,
+                    'Butler.serviceMonitor.alertDestination.webhook.enable': false,
+                };
+                return configMap[key];
+            }),
+        };
+
+        // Mock service transitions: running -> stopped -> running
+        statusAllMock.mockResolvedValueOnce([
+            { name: 'QlikSenseEngineService', state: 'running' },
+        ]);
+        statusAllMock.mockResolvedValueOnce([
+            { name: 'QlikSenseEngineService', state: 'stopped' },
+        ]);
+        statusAllMock.mockResolvedValueOnce([
+            { name: 'QlikSenseEngineService', state: 'running' },
+        ]);
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        );
+    });
+
+    test('should handle service discovery errors', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */2 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'unreachable-server',
+                                description: 'Unreachable Server',
+                            },
+                            services: [
+                                {
+                                    name: 'SomeService',
+                                    friendlyName: 'Some Service',
+                                },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                };
+                return configMap[key];
+            }),
+        };
+
+        // Mock service status to throw error
+        statusAllMock.mockRejectedValue(new Error('Cannot connect to server'));
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR: Error getting service info')
+        );
+    });
+
+    test('should handle different service states', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */1 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Test Server',
+                            },
+                            services: [
+                                { name: 'Service1', friendlyName: 'Service One' },
+                                { name: 'Service2', friendlyName: 'Service Two' },
+                                { name: 'Service3', friendlyName: 'Service Three' },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                };
+                return configMap[key];
+            }),
+        };
+
+        // Mock services with different states
+        statusAllMock.mockResolvedValueOnce([
+            { name: 'Service1', state: 'running' },
+            { name: 'Service2', state: 'stopped' },
+            { name: 'Service3', state: 'paused' },
+        ]);
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        );
+    });
+
+    test('should handle multiple hosts configuration', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */5 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Primary Server',
+                            },
+                            services: [
+                                { name: 'Service1', friendlyName: 'Service One' },
+                            ],
+                        },
+                        {
+                            host: {
+                                host: 'server2',
+                                description: 'Secondary Server',
+                            },
+                            services: [
+                                { name: 'Service2', friendlyName: 'Service Two' },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                    'Butler.serviceMonitor.alertDestination.email.enable': true,
+                };
+                return configMap[key];
+            }),
+        };
+
+        statusAllMock.mockResolvedValue([
+            { name: 'Service1', state: 'running' },
+            { name: 'Service2', state: 'running' },
+        ]);
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        );
+    });
+
+    test('should handle alert destination configurations', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */2 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Main Server',
+                            },
+                            services: [
+                                { name: 'TestService', friendlyName: 'Test Service' },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                    'Butler.serviceMonitor.alertDestination.newRelic.enable': true,
+                    'Butler.serviceMonitor.alertDestination.email.enable': true,
+                    'Butler.serviceMonitor.alertDestination.mqtt.enable': true,
+                    'Butler.serviceMonitor.alertDestination.slack.enable': true,
+                    'Butler.serviceMonitor.alertDestination.teams.enable': true,
+                    'Butler.serviceMonitor.alertDestination.webhook.enable': true,
+                };
+                return configMap[key];
+            }),
+        };
+
+        statusAllMock.mockResolvedValue([
+            { name: 'TestService', state: 'running' },
+        ]);
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        );
+    });
+
+    test('should handle service monitoring timer setup errors', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': 'invalid-cron-expression',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Main Server',
+                            },
+                            services: [
+                                { name: 'TestService', friendlyName: 'Test Service' },
+                            ],
+                        },
+                    ],
+                };
+                return configMap[key];
+            }),
+        };
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Error setting up service monitoring')
+        );
+    });
+
+    test('should handle empty service monitor configuration', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */2 * * * *',
+                    'Butler.serviceMonitor.monitor': [], // Empty array
+                };
+                return configMap[key];
+            }),
+        };
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
+        );
+    });
+
+    test('should handle services that do not exist on target host', async () => {
+        const config = {
+            get: jest.fn((key) => {
+                const configMap = {
+                    'Butler.serviceMonitor.enable': true,
+                    'Butler.serviceMonitor.frequency': '0 */2 * * * *',
+                    'Butler.serviceMonitor.monitor': [
+                        {
+                            host: {
+                                host: 'server1',
+                                description: 'Main Server',
+                            },
+                            services: [
+                                { name: 'NonExistentService', friendlyName: 'Non-Existent Service' },
+                            ],
+                        },
+                    ],
+                    'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
+                };
+                return configMap[key];
+            }),
+        };
+
+        // Mock that the service doesn't exist
+        statusAllMock.mockResolvedValue([]); // Empty array means service not found
+
+        await setupServiceMonitorTimer(config, logger);
+
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('SERVICE MONITOR INIT: Service "NonExistentService" not found')
+        );
+    });
 });

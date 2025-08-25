@@ -168,4 +168,196 @@ describe('lib/post_to_influxdb', () => {
             '[QSEOW] END USER ACCESS LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB',
         );
     });
+
+    test('postReloadTaskSuccessInfluxDB: should handle task tags and app tags', async () => {
+        const configWithTags = {
+            ...baseConfig,
+            get: jest.fn((k) => {
+                const map = {
+                    ...baseConfig.get(k),
+                    'Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags': true,
+                    'Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags': true,
+                    'Butler.influxDb.reloadTaskSuccess.tag.static': [
+                        { name: 'environment', value: 'test' },
+                    ],
+                };
+                return map[k];
+            }),
+        };
+
+        globals.config = configWithTags;
+
+        const reloadParams = {
+            taskId: 'task123',
+            taskName: 'Test Task',
+            appId: 'app456',
+            appName: 'Test App',
+            appDescription: 'Test Description',
+            scriptLog: {
+                executionId: 'exec789',
+                scriptLogSize: 1024,
+                scriptLogTailCount: 20,
+            },
+            tags: {
+                appTags: [
+                    { name: 'Department', value: 'Sales' },
+                    { name: 'Region', value: 'EMEA' },
+                ],
+                taskTags: [
+                    { name: 'Priority', value: 'High' },
+                    { name: 'Schedule', value: 'Daily' },
+                ],
+            },
+        };
+
+        await mod.postReloadTaskSuccessInfluxDB(reloadParams);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.tags.Department).toBe('Sales');
+        expect(row.tags.Region).toBe('EMEA');
+        expect(row.tags.Priority).toBe('High');
+        expect(row.tags.Schedule).toBe('Daily');
+        expect(row.tags.environment).toBe('test');
+    });
+
+    test('postReloadTaskFailureInfluxDB: should handle missing tags gracefully', async () => {
+        const reloadParams = {
+            taskId: 'task123',
+            taskName: 'Test Task',
+            appId: 'app456',
+            appName: 'Test App',
+            appDescription: 'Test Description',
+            taskExecutionId: 'exec123',
+            executingNodeName: 'node1',
+            executionStatusNum: -1,
+            executionStatusText: 'Failed',
+            scriptLog: {
+                executionId: 'exec789',
+                scriptLogSize: 1024,
+                scriptLogTailCount: 20,
+            },
+            // No tags provided
+        };
+
+        await mod.postReloadTaskFailureInfluxDB(reloadParams);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+    });
+
+    test('postReloadTaskFailureInfluxDB: should handle different status codes', async () => {
+        const reloadParams = {
+            taskId: 'task123',
+            taskName: 'Test Task',
+            appId: 'app456',
+            appName: 'Test App',
+            executionStatusNum: 7, // Different status
+            executionStatusText: 'Aborted',
+            scriptLog: {
+                executionId: 'exec789',
+                scriptLogSize: 2048,
+                scriptLogTailCount: 50,
+            },
+        };
+
+        await mod.postReloadTaskFailureInfluxDB(reloadParams);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.fields.reload_task_execution_status_num).toBe(7);
+        expect(row.fields.reload_task_execution_status_text).toBe('Aborted');
+    });
+
+    test('postButlerUptimeInfluxDB: should post uptime data with various fields', async () => {
+        const uptimeData = {
+            uptimeMillisec: 3600000,
+            heapUsedBytes: 134217728,
+            heapTotalBytes: 268435456,
+            externalBytes: 1048576,
+            processMemoryBytes: 402653184,
+        };
+
+        await mod.postButlerUptimeInfluxDB(uptimeData);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.measurement).toBe('butler_memory_usage');
+        expect(row.fields.butler_uptime_milliseconds).toBe(3600000);
+        expect(row.fields.heap_used_bytes).toBe(134217728);
+        expect(row.fields.heap_total_bytes).toBe(268435456);
+        expect(row.fields.external_bytes).toBe(1048576);
+        expect(row.fields.process_memory_bytes).toBe(402653184);
+    });
+
+    test('postQlikSenseVersionInfluxDB: should handle different version formats', async () => {
+        const versionData = {
+            productName: 'Qlik Sense Enterprise',
+            version: '14.56.2',
+            buildDate: '2023-10-15T10:30:00.000Z',
+            buildNumber: '12345',
+            releaseLabel: 'November 2023 Patch 1',
+        };
+
+        await mod.postQlikSenseVersionInfluxDB(versionData);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.measurement).toBe('qlik_sense_version');
+        expect(row.fields.product_name).toBe('Qlik Sense Enterprise');
+        expect(row.fields.version).toBe('14.56.2');
+        expect(row.fields.build_number).toBe('12345');
+    });
+
+    test('postQlikSenseLicenseStatusInfluxDB: should handle empty license data', async () => {
+        const licenseData = [];
+
+        await mod.postQlikSenseLicenseStatusInfluxDB(licenseData);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const rows = writePoints.mock.calls[0][0];
+        expect(rows).toHaveLength(0);
+    });
+
+    test('postQlikSenseLicenseReleasedToInfluxDB: should handle missing optional fields', async () => {
+        const release = {
+            licenseType: 'analyzer',
+            userDir: 'CORP',
+            userId: 'jane.doe',
+            // daysSinceLastUse missing
+        };
+
+        await mod.postQlikSenseLicenseReleasedToInfluxDB(release);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.measurement).toBe('qlik_sense_license_release');
+        expect(row.tags.user).toBe('CORP\\jane.doe');
+        expect(row.fields.days_since_last_use).toBeUndefined();
+    });
+
+    test('should handle InfluxDB connection errors gracefully', async () => {
+        writePoints.mockRejectedValue(new Error('InfluxDB connection failed'));
+
+        const uptimeData = {
+            uptimeMillisec: 3600000,
+            heapUsedBytes: 134217728,
+        };
+
+        // Should not throw
+        await expect(mod.postButlerUptimeInfluxDB(uptimeData)).resolves.not.toThrow();
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('InfluxDB connection failed')
+        );
+    });
+
+    test('postReloadTaskSuccessInfluxDB: should handle null/undefined parameters', async () => {
+        await mod.postReloadTaskSuccessInfluxDB(null);
+        // Should not crash and not call writePoints
+        expect(writePoints).not.toHaveBeenCalled();
+    });
+
+    test('postReloadTaskFailureInfluxDB: should handle null/undefined parameters', async () => {
+        await mod.postReloadTaskFailureInfluxDB(undefined);
+        // Should not crash and not call writePoints
+        expect(writePoints).not.toHaveBeenCalled();
+    });
 });

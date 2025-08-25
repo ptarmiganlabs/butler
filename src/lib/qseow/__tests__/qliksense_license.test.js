@@ -586,4 +586,220 @@ describe('qseow/qliksense_license', () => {
         // Professional should still work
         expect(postReleasedMock).toHaveBeenCalledWith(expect.objectContaining({ licenseType: 'professional' }));
     });
+
+    test('setupQlikSenseLicenseRelease: should handle different license configurations', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseRelease: {
+                    enable: true,
+                    frequency: '0 */5 * * * *', // Every 5 minutes
+                    licenseType: ['professional', 'analyzer', 'analyzer_capacity'],
+                    destination: {
+                        influxDb: { enable: true },
+                        webhook: { enable: false },
+                        mqtt: { enable: false },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        
+        expect(logger.verbose).toHaveBeenCalledWith(
+            expect.stringContaining('Setting up Qlik Sense license release monitoring')
+        );
+    });
+
+    test('setupQlikSenseLicenseMonitor: should handle webhook destinations', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseMonitor: {
+                    enable: true,
+                    frequency: '0 */10 * * * *',
+                    alertIfWithinDays: 30,
+                    destination: {
+                        influxDb: { enable: false },
+                        webhook: { 
+                            enable: true,
+                            rateLimit: 15,
+                            webhooks: [
+                                {
+                                    description: 'License webhook',
+                                    webhookURL: 'https://example.com/webhook',
+                                    httpMethod: 'POST',
+                                }
+                            ]
+                        },
+                        mqtt: { enable: false },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        
+        expect(logger.verbose).toHaveBeenCalledWith(
+            expect.stringContaining('Setting up Qlik Sense license monitoring')
+        );
+    });
+
+    test('setupQlikSenseServerLicenseMonitor: should handle MQTT destinations', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                serverLicenseMonitor: {
+                    enable: true,
+                    frequency: '0 0 6 * * *', // Daily at 6 AM
+                    destination: {
+                        influxDb: { enable: false },
+                        webhook: { enable: false },
+                        mqtt: { 
+                            enable: true,
+                            mqttConfig: {
+                                brokerHost: 'localhost',
+                                brokerPort: 1883,
+                            }
+                        },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        
+        expect(logger.verbose).toHaveBeenCalledWith(
+            expect.stringContaining('Setting up Qlik Sense server license monitoring')
+        );
+    });
+
+    test('setupQlikSenseLicenseRelease: should handle disabled configuration', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseRelease: {
+                    enable: false,
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseRelease(configObj, logger);
+        
+        expect(logger.debug).toHaveBeenCalledWith(
+            'QLIK SENSE LICENSE RELEASE: License release monitoring is disabled in config file.'
+        );
+    });
+
+    test('setupQlikSenseLicenseMonitor: should handle disabled configuration', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseMonitor: {
+                    enable: false,
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        
+        expect(logger.debug).toHaveBeenCalledWith(
+            'QLIK SENSE LICENSE MONITOR: License monitoring is disabled in config file.'
+        );
+    });
+
+    test('setupQlikSenseServerLicenseMonitor: should handle disabled configuration', async () => {
+        cfg.Butler = {
+            qlikSenseLicense: {
+                serverLicenseMonitor: {
+                    enable: false,
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+        
+        expect(logger.debug).toHaveBeenCalledWith(
+            'QLIK SENSE SERVER LICENSE MONITOR: Server license monitoring is disabled in config file.'
+        );
+    });
+
+    test('should handle QRS API errors gracefully', async () => {
+        // Mock QRS to return error
+        qrsOverrides.get['/license'] = { statusCode: 500, body: 'Internal Server Error' };
+
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseMonitor: {
+                    enable: true,
+                    frequency: '0 */1 * * * *',
+                    alertIfWithinDays: 30,
+                    destination: {
+                        influxDb: { enable: true },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('Error getting Qlik Sense license info')
+        );
+    });
+
+    test('should handle cron job creation errors', async () => {
+        // Force a cron job error by using invalid cron expression
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseMonitor: {
+                    enable: true,
+                    frequency: 'invalid-cron-expression',
+                    alertIfWithinDays: 30,
+                    destination: {
+                        influxDb: { enable: true },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('Error starting Qlik Sense license monitoring')
+        );
+    });
+
+    test('should handle missing license data gracefully', async () => {
+        // Mock QRS to return empty data
+        qrsOverrides.get['/license'] = { statusCode: 200, body: null };
+
+        cfg.Butler = {
+            qlikSenseLicense: {
+                licenseMonitor: {
+                    enable: true,
+                    frequency: '0 */1 * * * *',
+                    alertIfWithinDays: 30,
+                    destination: {
+                        influxDb: { enable: true },
+                    },
+                },
+            },
+        };
+
+        const configObj = { get: (p) => getByPath(cfg, p) };
+        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        await Promise.resolve();
+        await new Promise((r) => setImmediate(r));
+
+        // Should handle null data gracefully
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('Error getting Qlik Sense license info')
+        );
+    });
 });

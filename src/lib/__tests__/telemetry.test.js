@@ -78,5 +78,90 @@ describe('lib/telemetry', () => {
                 'TELEMETRY: Error: PostHog setup error'
             );
         });
+
+        test('should handle missing host info', () => {
+            setupAnonUsageReportTimer(mockGlobals.logger, null);
+
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('TELEMETRY:')
+            );
+        });
+
+        test('should handle incomplete host info', () => {
+            const incompleteHostInfo = {
+                id: 'test-host-id',
+                // Missing other required fields
+            };
+
+            setupAnonUsageReportTimer(mockGlobals.logger, incompleteHostInfo);
+
+            expect(mockPostHog).toHaveBeenCalled();
+        });
+
+        test('should handle PostHog capture errors', () => {
+            mockPostHogInstance.capture.mockImplementation(() => {
+                throw new Error('Capture error');
+            });
+
+            setupAnonUsageReportTimer(mockGlobals.logger, mockGlobals.hostInfo);
+
+            // Trigger the timer callback manually if possible
+            expect(mockPostHog).toHaveBeenCalled();
+        });
+
+        test('should set up different timer intervals', () => {
+            // Test with different configuration values
+            mockGlobals.config.get.mockReturnValue(60000); // 1 minute
+
+            setupAnonUsageReportTimer(mockGlobals.logger, mockGlobals.hostInfo);
+
+            expect(mockPostHog).toHaveBeenCalled();
+        });
+
+        test('should handle system info variations', () => {
+            const dockerHostInfo = {
+                ...mockGlobals.hostInfo,
+                isRunningInDocker: true,
+                si: {
+                    ...mockGlobals.hostInfo.si,
+                    system: { virtual: true }
+                }
+            };
+
+            setupAnonUsageReportTimer(mockGlobals.logger, dockerHostInfo);
+
+            expect(mockPostHog).toHaveBeenCalled();
+        });
+
+        test('should handle different OS platforms', () => {
+            const windowsHostInfo = {
+                ...mockGlobals.hostInfo,
+                si: {
+                    ...mockGlobals.hostInfo.si,
+                    os: { 
+                        arch: 'x64', 
+                        platform: 'win32', 
+                        release: '10.0.19042', 
+                        distro: 'Windows', 
+                        codename: '' 
+                    }
+                }
+            };
+
+            setupAnonUsageReportTimer(mockGlobals.logger, windowsHostInfo);
+
+            expect(mockPostHog).toHaveBeenCalled();
+        });
+
+        test('should handle node version variations', () => {
+            const differentNodeHostInfo = {
+                ...mockGlobals.hostInfo,
+                node: { nodeVersion: 'v18.17.0' }
+            };
+
+            setupAnonUsageReportTimer(mockGlobals.logger, differentNodeHostInfo);
+
+            expect(mockPostHog).toHaveBeenCalled();
+        });
     });
 });
