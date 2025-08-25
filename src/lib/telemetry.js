@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { PostHog } from 'posthog-node';
 
 import globals from '../globals.js';
