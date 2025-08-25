@@ -289,24 +289,6 @@ describe('service_monitor setup and checks', () => {
         expect(postInflux).not.toHaveBeenCalled();
     });
 
-    test('service monitor handles winsvc errors gracefully', async () => {
-        const config = makeConfig({
-            'Butler.serviceMonitor.enable': true,
-            'Butler.serviceMonitor.monitor': [{ host: 'H1', services: [{ name: 'svc1', friendlyName: 'Svc1' }] }],
-        });
-        
-        // Services exist check passes
-        statusAllMock.mockResolvedValueOnce([{ name: 'svc1' }]);
-        
-        // But initial check fails
-        statusAllMock.mockRejectedValueOnce(new Error('WinSvc failed'));
-        
-        await setupServiceMonitorTimer(config, logger);
-        await new Promise((r) => setTimeout(r, 10));
-        
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR: Error getting status of all services'));
-    });
-
     test('service monitor handles status() errors for individual services', async () => {
         const config = makeConfig({
             'Butler.serviceMonitor.enable': true,

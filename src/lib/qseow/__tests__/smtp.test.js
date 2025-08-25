@@ -486,4 +486,211 @@ describe('smtp.js', () => {
         expect(callArgs.to).toContain('ops@example.com');
         expect(callArgs.subject).toContain('Started');
     });
+
+    test('sendReloadTaskFailureNotificationEmail with app owner alerts enabled includes app owner', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.appOwnerAlert = {
+            enable: true,
+            includeOwner: { includeAll: true },
+            excludeOwner: { user: [] }
+        };
+        
+        // Mock app owner with email
+        jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
+            default: jest.fn().mockResolvedValue({
+                userName: 'appowner',
+                directory: 'DIR',
+                userId: 'uid',
+                emails: ['appowner@example.com']
+            }),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalled();
+        // Check that app owner was included in recipients
+        const callArgs = sendMailMock.mock.calls[0][0];
+        expect(callArgs.to).toContain('appowner@example.com');
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with app owner alerts but no owner email warns', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.appOwnerAlert = {
+            enable: true,
+            includeOwner: { includeAll: true },
+            excludeOwner: { user: [] }
+        };
+        
+        // Mock app owner without email
+        jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
+            default: jest.fn().mockResolvedValue({
+                userName: 'appowner',
+                directory: 'DIR',
+                userId: 'uid',
+                emails: [] // No email
+            }),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('No email address for owner'));
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with selective app owner inclusion works', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.appOwnerAlert = {
+            enable: true,
+            includeOwner: { 
+                includeAll: false,
+                user: [{ directory: 'DIR', userId: 'uid' }]
+            },
+            excludeOwner: { user: [] }
+        };
+        
+        jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
+            default: jest.fn().mockResolvedValue({
+                userName: 'appowner',
+                directory: 'DIR',
+                userId: 'uid',
+                emails: ['appowner@example.com']
+            }),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalled();
+        const callArgs = sendMailMock.mock.calls[0][0];
+        expect(callArgs.to).toContain('appowner@example.com');
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with app owner exclusion removes owner', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.appOwnerAlert = {
+            enable: true,
+            includeOwner: { includeAll: true },
+            excludeOwner: { 
+                user: [{ directory: 'DIR', userId: 'uid' }]
+            }
+        };
+        
+        jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
+            default: jest.fn().mockResolvedValue({
+                userName: 'appowner',
+                directory: 'DIR',
+                userId: 'uid',
+                emails: ['appowner@example.com']
+            }),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(sendMailMock).toHaveBeenCalled();
+        const callArgs = sendMailMock.mock.calls[0][0];
+        expect(callArgs.to).not.toContain('appowner@example.com');
+    });
+
+    test('sendReloadTaskFailureNotificationEmail with selective inclusion but owner not on list warns', async () => {
+        cfg.Butler.emailNotification.reloadTaskFailure.appOwnerAlert = {
+            enable: true,
+            includeOwner: { 
+                includeAll: false,
+                user: [{ directory: 'OTHER', userId: 'other-uid' }] // Different user
+            },
+            excludeOwner: { user: [] }
+        };
+        
+        jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
+            default: jest.fn().mockResolvedValue({
+                userName: 'appowner',
+                directory: 'DIR',
+                userId: 'uid',
+                emails: ['appowner@example.com']
+            }),
+        }));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('No app owners on include list'));
+    });
+
+    test('sendReloadTaskFailureNotificationEmail handles sendMail error gracefully', async () => {
+        sendMailMock.mockRejectedValueOnce(new Error('Send mail failed'));
+        mockQlikHelpers();
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        const params = makeReloadParams();
+        await mod.sendReloadTaskFailureNotificationEmail(params);
+        await new Promise((r) => setTimeout(r, 0));
+        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Send mail failed'));
+    });
+
+    test('sendEmailBasic validates all email recipients', async () => {
+        // Mix of valid and invalid emails
+        const emailValidateMock = jest.fn()
+            .mockReturnValueOnce(true)  // valid@example.com
+            .mockReturnValueOnce(false) // invalid-email
+            .mockReturnValueOnce(true); // another@example.com
+            
+        jest.unstable_mockModule('email-validator', () => ({ 
+            default: { validate: emailValidateMock } 
+        }));
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        await mod.sendEmailBasic(
+            'from@example.com', 
+            ['valid@example.com', 'invalid-email', 'another@example.com'], 
+            'normal', 
+            'Hello', 
+            'Body'
+        );
+        
+        expect(emailValidateMock).toHaveBeenCalledTimes(3);
+        expect(sendMailMock).toHaveBeenCalledTimes(2); // Only valid emails
+    });
+
+    test('sendEmailBasic handles TLS configuration', async () => {
+        cfg.Butler.emailNotification.smtp.tls = {
+            rejectUnauthorized: true,
+            serverName: 'mail.example.com',
+            ignoreTLS: false,
+            requireTLS: true
+        };
+        mockGlobals();
+        const mod = await import('../smtp.js');
+        
+        await mod.sendEmailBasic('from@example.com', ['user@example.com'], 'normal', 'Hello', 'Body');
+        
+        expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({
+            tls: expect.objectContaining({
+                rejectUnauthorized: true,
+                serverName: 'mail.example.com',
+                ignoreTLS: false,
+                requireTLS: true
+            })
+        }));
+    });
 });
