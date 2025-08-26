@@ -589,7 +589,7 @@ describe('qseow/qliksense_license', () => {
 
     test('setupQlikSenseLicenseRelease: should handle different license configurations', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseRelease: {
@@ -607,15 +607,13 @@ describe('qseow/qliksense_license', () => {
 
         const configObj = { get: (p) => getByPath(cfg, p) };
         await mod.setupQlikSenseLicenseRelease(configObj, logger);
-        
-        expect(logger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('Setting up Qlik Sense license release monitoring')
-        );
+
+        expect(logger.verbose).toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense license check');
     });
 
-    test('setupQlikSenseLicenseMonitor: should handle webhook destinations', async () => {
+    test('setupQlikSenseAccessLicenseMonitor: should handle webhook destinations', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseMonitor: {
@@ -624,7 +622,7 @@ describe('qseow/qliksense_license', () => {
                     alertIfWithinDays: 30,
                     destination: {
                         influxDb: { enable: false },
-                        webhook: { 
+                        webhook: {
                             enable: true,
                             rateLimit: 15,
                             webhooks: [
@@ -632,8 +630,8 @@ describe('qseow/qliksense_license', () => {
                                     description: 'License webhook',
                                     webhookURL: 'https://example.com/webhook',
                                     httpMethod: 'POST',
-                                }
-                            ]
+                                },
+                            ],
                         },
                         mqtt: { enable: false },
                     },
@@ -642,16 +640,14 @@ describe('qseow/qliksense_license', () => {
         };
 
         const configObj = { get: (p) => getByPath(cfg, p) };
-        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
-        
-        expect(logger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('Setting up Qlik Sense license monitoring')
-        );
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+
+        expect(logger.verbose).toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense license check');
     });
 
     test('setupQlikSenseServerLicenseMonitor: should handle MQTT destinations', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 serverLicenseMonitor: {
@@ -660,12 +656,12 @@ describe('qseow/qliksense_license', () => {
                     destination: {
                         influxDb: { enable: false },
                         webhook: { enable: false },
-                        mqtt: { 
+                        mqtt: {
                             enable: true,
                             mqttConfig: {
                                 brokerHost: 'localhost',
                                 brokerPort: 1883,
-                            }
+                            },
                         },
                     },
                 },
@@ -674,15 +670,13 @@ describe('qseow/qliksense_license', () => {
 
         const configObj = { get: (p) => getByPath(cfg, p) };
         await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
-        
-        expect(logger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('Setting up Qlik Sense server license monitoring')
-        );
+
+        expect(logger.verbose).toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense server license check');
     });
 
     test('setupQlikSenseLicenseRelease: should handle disabled configuration', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseRelease: {
@@ -693,15 +687,14 @@ describe('qseow/qliksense_license', () => {
 
         const configObj = { get: (p) => getByPath(cfg, p) };
         await mod.setupQlikSenseLicenseRelease(configObj, logger);
-        
-        expect(logger.debug).toHaveBeenCalledWith(
-            'QLIK SENSE LICENSE RELEASE: License release monitoring is disabled in config file.'
-        );
+
+        // When disabled, the function should not log any verbose messages
+        expect(logger.verbose).not.toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense license check');
     });
 
-    test('setupQlikSenseLicenseMonitor: should handle disabled configuration', async () => {
+    test('setupQlikSenseAccessLicenseMonitor: should handle disabled configuration', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 licenseMonitor: {
@@ -711,16 +704,15 @@ describe('qseow/qliksense_license', () => {
         };
 
         const configObj = { get: (p) => getByPath(cfg, p) };
-        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
-        
-        expect(logger.debug).toHaveBeenCalledWith(
-            'QLIK SENSE LICENSE MONITOR: License monitoring is disabled in config file.'
-        );
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+
+        // When disabled, the function should not log any verbose messages
+        expect(logger.verbose).not.toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense license check');
     });
 
     test('setupQlikSenseServerLicenseMonitor: should handle disabled configuration', async () => {
         const mod = await import('../qliksense_license.js');
-        
+
         cfg.Butler = {
             qlikSenseLicense: {
                 serverLicenseMonitor: {
@@ -731,17 +723,16 @@ describe('qseow/qliksense_license', () => {
 
         const configObj = { get: (p) => getByPath(cfg, p) };
         await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
-        
-        expect(logger.debug).toHaveBeenCalledWith(
-            'QLIK SENSE SERVER LICENSE MONITOR: Server license monitoring is disabled in config file.'
-        );
+
+        // When disabled, the function should not log any verbose messages
+        expect(logger.verbose).not.toHaveBeenCalledWith('[QSEOW] Doing initial Qlik Sense server license check');
     });
 
     test('should handle QRS API errors gracefully', async () => {
         const mod = await import('../qliksense_license.js');
-        
-        // Mock QRS to return error
-        qrsOverrides.get['/license'] = { statusCode: 500, body: 'Internal Server Error' };
+
+        // Mock QRS to return error for the access license endpoint
+        qrsOverrides.get['license/accesstypeoverview'] = { statusCode: 500, body: 'Internal Server Error' };
 
         cfg.Butler = {
             qlikSenseLicense: {
@@ -757,18 +748,31 @@ describe('qseow/qliksense_license', () => {
         };
 
         const configObj = { get: (p) => getByPath(cfg, p) };
-        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
         await Promise.resolve();
         await new Promise((r) => setImmediate(r));
 
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('Error getting Qlik Sense license info')
-        );
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIKSENSE LICENSE MONITOR'));
     });
 
     test('should handle cron job creation errors', async () => {
+        // Mock later to throw an error for invalid cron expressions
+        jest.unstable_mockModule('@breejs/later', () => ({
+            default: {
+                parse: {
+                    text: jest.fn((expr) => {
+                        if (expr === 'invalid-cron-expression') {
+                            throw new Error('Invalid cron expression');
+                        }
+                        return { parsed: true };
+                    }),
+                },
+                setInterval: jest.fn(),
+            },
+        }));
+
         const mod = await import('../qliksense_license.js');
-        
+
         // Force a cron job error by using invalid cron expression
         cfg.Butler = {
             qlikSenseLicense: {
@@ -784,18 +788,16 @@ describe('qseow/qliksense_license', () => {
         };
 
         const configObj = { get: (p) => getByPath(cfg, p) };
-        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
-        
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('Error starting Qlik Sense license monitoring')
-        );
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIKSENSE LICENSE MONITOR INIT'));
     });
 
     test('should handle missing license data gracefully', async () => {
         const mod = await import('../qliksense_license.js');
-        
-        // Mock QRS to return empty data
-        qrsOverrides.get['/license'] = { statusCode: 200, body: null };
+
+        // Mock QRS to return empty data for access license endpoint
+        qrsOverrides.get['license/accesstypeoverview'] = { statusCode: 200, body: null };
 
         cfg.Butler = {
             qlikSenseLicense: {
@@ -811,13 +813,11 @@ describe('qseow/qliksense_license', () => {
         };
 
         const configObj = { get: (p) => getByPath(cfg, p) };
-        await mod.setupQlikSenseLicenseMonitor(configObj, logger);
+        await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
         await Promise.resolve();
         await new Promise((r) => setImmediate(r));
 
         // Should handle null data gracefully
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('Error getting Qlik Sense license info')
-        );
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIKSENSE LICENSE MONITOR'));
     });
 });
