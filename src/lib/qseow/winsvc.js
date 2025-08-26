@@ -169,6 +169,8 @@ export function statusAll(logger, host = null) {
             const serviceStatusAll = stdoutTmp
                 .toString()
                 .split('\r\n\r\n')
+                // Filter out any empty blocks or blocks lacking required markers
+                .filter((block) => block && block.indexOf('SERVICE_NAME') !== -1)
                 .map((block) => {
                     const lines = block.split('\r\n');
                     // The state line has format "<statenum><one or more spaces><statetext>"

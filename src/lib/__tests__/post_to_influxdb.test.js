@@ -168,4 +168,21 @@ describe('lib/post_to_influxdb', () => {
             '[QSEOW] END USER ACCESS LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB',
         );
     });
+
+    test('postQlikSenseLicenseReleasedToInfluxDB: should handle missing optional fields', async () => {
+        const release = {
+            licenseType: 'analyzer',
+            userDir: 'CORP',
+            userId: 'jane.doe',
+            // daysSinceLastUse missing
+        };
+
+        await mod.postQlikSenseLicenseReleasedToInfluxDB(release);
+        expect(writePoints).toHaveBeenCalledTimes(1);
+        
+        const row = writePoints.mock.calls[0][0][0];
+        expect(row.measurement).toBe('qlik_sense_license_release');
+        expect(row.tags.user).toBe('CORP\\jane.doe');
+        expect(row.fields.days_since_last_use).toBeUndefined();
+    });
 });

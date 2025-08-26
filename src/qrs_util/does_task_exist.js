@@ -8,7 +8,6 @@ import globals from '../globals.js';
  * @returns {Promise<object>} - Returns an object indicating whether the task exists and its details.
  */
 const doesTaskExist = async (taskId) => {
-    // eslint-disable-next-line no-unused-vars
     try {
         // Get http headers from Butler config file
         const httpHeaders = globals.getQRSHttpHeaders();

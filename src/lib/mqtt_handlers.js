@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 // Load global variables and functions
 import globals from '../globals.js';
 import { handleQlikSenseCloudAppReloadFinished } from './qscloud/mqtt_event_app_reload_finished.js';
+import senseStartTask from '../qrs_util/sense_start_task.js';
 
 const { config, logger } = globals;
 

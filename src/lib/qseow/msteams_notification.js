@@ -579,7 +579,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 }
 
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
-                sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
+                await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${err}`);
             }
@@ -774,7 +774,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 }
 
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
-                sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
+                await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${err}`);
             }
@@ -830,10 +830,10 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
 
                 if (serviceParams.serviceStatus === 'STOPPED') {
                     const webhookUrl = globals.config.get('Butler.teamsNotification.serviceStopped.webhookURL');
-                    sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStopped');
+                    await sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStopped');
                 } else if (serviceParams.serviceStatus === 'RUNNING') {
                     const webhookUrl = globals.config.get('Butler.teamsNotification.serviceStarted.webhookURL');
-                    sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
+                    await sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
                 globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${err}`);

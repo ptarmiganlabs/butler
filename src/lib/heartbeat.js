@@ -9,8 +9,7 @@ import axios from 'axios';
 const callRemoteURL = (remoteURL, logger) => {
     axios
         .get(remoteURL)
-        // eslint-disable-next-line no-unused-vars
-        .then((response) => {
+        .then(() => {
             // handle success
             logger.debug(`HEARTBEAT: Sent heartbeat to ${remoteURL}`);
         })

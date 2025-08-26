@@ -29,9 +29,7 @@ function addCronEntry(newSchedule) {
             senseStartTask(newSchedule.qlikSenseTaskId);
         },
         {
-            start:
-                // eslint-disable-next-line no-unneeded-ternary
-                newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? true : false,
+            start: newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? true : false,
             timeZone: newSchedule.timeZone,
         },
     );
@@ -48,7 +46,6 @@ export function addSchedule(newSchedule) {
 
         globals.configSchedule.push(newSchedule);
 
-        // eslint-disable-next-line no-param-reassign
         newSchedule.lastKnownState = newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? 'started' : 'stopped';
 
         // Persist schedule to disk
@@ -101,7 +98,6 @@ export function startAllSchedules() {
         globals.logger.debug('SCHEDULER: Starting all schedules');
 
         try {
-            // eslint-disable-next-line no-restricted-syntax
             for (const element of globals.configSchedule) {
                 cronManager.start(element.id.toString());
                 element.lastKnownState = 'started'; // Set schedule status
@@ -127,7 +123,6 @@ export function stopAllSchedules() {
         globals.logger.debug('SCHEDULER: Stopping all schedules');
 
         try {
-            // eslint-disable-next-line no-restricted-syntax
             for (const element of globals.configSchedule) {
                 cronManager.stop(element.id.toString());
                 element.lastKnownState = 'stopped'; // Set schedule status

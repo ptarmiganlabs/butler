@@ -636,7 +636,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                sendSlack(slackConfig, templateContext, 'reload');
+                await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${err}`);
             }
@@ -831,7 +831,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                sendSlack(slackConfig, templateContext, 'reload');
+                await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
                 globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${err}`);
             }
@@ -887,9 +887,9 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
                 };
 
                 if (serviceParams.serviceStatus === 'STOPPED') {
-                    sendSlack(slackConfig, templateContext, 'serviceStopped');
+                    await sendSlack(slackConfig, templateContext, 'serviceStopped');
                 } else if (serviceParams.serviceStatus === 'RUNNING') {
-                    sendSlack(slackConfig, templateContext, 'serviceStarted');
+                    await sendSlack(slackConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
                 globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${err}`);

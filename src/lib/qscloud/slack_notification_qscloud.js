@@ -437,7 +437,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     templateContext.scriptLogTail = `----Script log truncated by Butler----\\n${templateContext.scriptLogTail}`;
                 }
 
-                sendSlack(slackConfig, templateContext, 'qscloud-app-reload');
+                await sendSlack(slackConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
                 globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${err}`);
             }

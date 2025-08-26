@@ -1,10 +1,4 @@
-import { 
-    apiFileCopy, 
-    apiFileMove, 
-    apiFileDelete, 
-    apiCreateDir, 
-    apiCreateDirQvd 
-} from '../disk_utils.js';
+import { apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd } from '../disk_utils.js';
 
 describe('disk_utils API schemas', () => {
     describe('apiFileCopy', () => {
@@ -16,24 +10,24 @@ describe('disk_utils API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiFileCopy;
-            
+
             expect(schema.description).toContain('Copying of files is only posttible between pre-approved directories');
             expect(schema.summary).toBe('Copy file(s) between well defined, approved locations.');
         });
 
         test('should have valid request body schema', () => {
             const { body } = apiFileCopy.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
-            
+
             // Check required properties
             expect(body.properties.fromFile).toBeDefined();
             expect(body.properties.toFile).toBeDefined();
             expect(body.properties.overwrite).toBeDefined();
             expect(body.properties.preserveTimestamp).toBeDefined();
-            
+
             // Check property types
             expect(body.properties.fromFile.type).toBe('string');
             expect(body.properties.toFile.type).toBe('string');
@@ -43,18 +37,18 @@ describe('disk_utils API schemas', () => {
 
         test('should have valid response schemas', () => {
             const { response } = apiFileCopy.schema;
-            
+
             expect(response).toBeDefined();
             expect(Object.keys(response)).toEqual(['201', '400', '403', '500']);
         });
 
         test('should have valid 201 success response', () => {
             const response201 = apiFileCopy.schema.response[201];
-            
+
             expect(response201.description).toBe('File copied.');
             expect(response201.type).toBe('object');
             expect(response201.properties).toBeDefined();
-            
+
             // Should mirror the request body properties
             expect(response201.properties.fromFile).toBeDefined();
             expect(response201.properties.toFile).toBeDefined();
@@ -72,18 +66,18 @@ describe('disk_utils API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiFileMove;
-            
+
             expect(schema.description).toContain('Moving of files is only posttible between pre-approved directories');
             expect(schema.summary).toBe('Move file(s) between well defined, approved locations.');
         });
 
         test('should have valid request body schema', () => {
             const { body } = apiFileMove.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
-            
+
             // Check properties (should have one less than copy - no preserveTimestamp)
             expect(body.properties.fromFile).toBeDefined();
             expect(body.properties.toFile).toBeDefined();
@@ -93,7 +87,7 @@ describe('disk_utils API schemas', () => {
 
         test('should have valid response schemas', () => {
             const { response } = apiFileMove.schema;
-            
+
             expect(response).toBeDefined();
             expect(Object.keys(response)).toEqual(['201', '400', '403', '500']);
         });
@@ -108,14 +102,14 @@ describe('disk_utils API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiFileDelete;
-            
+
             expect(schema.description).toContain('It is only possible to delete files in pre-approved directories');
             expect(schema.summary).toBe('Delete file(s) in well defined, approved locations.');
         });
 
         test('should have valid request body schema', () => {
             const { body } = apiFileDelete.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
@@ -125,7 +119,7 @@ describe('disk_utils API schemas', () => {
 
         test('should have 204 success response (no content)', () => {
             const response204 = apiFileDelete.schema.response[204];
-            
+
             expect(response204).toBeDefined();
             expect(response204.description).toBe('File deleted.');
             expect(response204.type).toBe('object');
@@ -133,7 +127,7 @@ describe('disk_utils API schemas', () => {
 
         test('should have valid response schemas', () => {
             const { response } = apiFileDelete.schema;
-            
+
             expect(response).toBeDefined();
             expect(Object.keys(response)).toEqual(['204', '400', '403', '500']);
         });
@@ -148,14 +142,14 @@ describe('disk_utils API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiCreateDir;
-            
+
             expect(schema.description).toContain('If the directory already exists nothing will happen');
             expect(schema.summary).toBe('Creates a directory anywhere in the file system.');
         });
 
         test('should have valid request body schema', () => {
             const { body } = apiCreateDir.schema;
-            
+
             expect(body).toBeDefined();
             expect(body.type).toBe('object');
             expect(body.properties).toBeDefined();
@@ -166,7 +160,7 @@ describe('disk_utils API schemas', () => {
 
         test('should have valid response schemas', () => {
             const { response } = apiCreateDir.schema;
-            
+
             expect(response).toBeDefined();
             expect(Object.keys(response)).toEqual(['201', '400', '500']);
         });
@@ -181,7 +175,7 @@ describe('disk_utils API schemas', () => {
 
         test('should have correct basic schema properties', () => {
             const { schema } = apiCreateDirQvd;
-            
+
             expect(schema.description).toBe("Creates a directory in QVD directory (which is defined in Butler's config file).");
             expect(schema.summary).toBe('Creates a directory in designated QVD directory.');
         });
@@ -189,7 +183,7 @@ describe('disk_utils API schemas', () => {
         test('should have different directory example than apiCreateDir', () => {
             const createDirExample = apiCreateDir.schema.body.properties.directory.examples[0];
             const createDirQvdExample = apiCreateDirQvd.schema.body.properties.directory.examples[0];
-            
+
             expect(createDirExample).not.toBe(createDirQvdExample);
             expect(createDirQvdExample).toBe('subfolder/2020-10');
         });
@@ -198,10 +192,10 @@ describe('disk_utils API schemas', () => {
     describe('Schema consistency', () => {
         test('all schemas should have standard error response structures', () => {
             const schemas = [apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd];
-            
-            schemas.forEach(apiSchema => {
+
+            schemas.forEach((apiSchema) => {
                 const responses = apiSchema.schema.response;
-                
+
                 // Each should have at least 400 and 500 error responses
                 if (responses['400']) {
                     expect(responses['400'].properties).toBeDefined();
@@ -211,7 +205,7 @@ describe('disk_utils API schemas', () => {
                     expect(responses['400'].properties.message).toBeDefined();
                     expect(responses['400'].properties.time).toBeDefined();
                 }
-                
+
                 if (responses['500']) {
                     expect(responses['500'].properties).toBeDefined();
                     expect(responses['500'].properties.statusCode).toBeDefined();
@@ -225,16 +219,16 @@ describe('disk_utils API schemas', () => {
 
         test('all schemas should be JSON serializable', () => {
             const schemas = [apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd];
-            
-            schemas.forEach(schema => {
+
+            schemas.forEach((schema) => {
                 expect(() => JSON.stringify(schema)).not.toThrow();
             });
         });
 
         test('file operation schemas should have body parameters', () => {
             const fileSchemas = [apiFileCopy, apiFileMove, apiFileDelete, apiCreateDir, apiCreateDirQvd];
-            
-            fileSchemas.forEach(schema => {
+
+            fileSchemas.forEach((schema) => {
                 expect(schema.schema.body).toBeDefined();
                 expect(schema.schema.body.type).toBe('object');
                 expect(schema.schema.body.properties).toBeDefined();

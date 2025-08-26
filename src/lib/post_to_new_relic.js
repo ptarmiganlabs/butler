@@ -1,4 +1,3 @@
-/* eslint-disable guard-for-in */
 import axios from 'axios';
 
 import globals from '../globals.js';
@@ -26,7 +25,6 @@ export async function postButlerUptimeToNewRelic(fields) {
         if (globals.config.has('Butler.uptimeMonitor.storeNewRelic.attribute.static')) {
             const staticAttributes = globals.config.get('Butler.uptimeMonitor.storeNewRelic.attribute.static');
 
-            // eslint-disable-next-line no-restricted-syntax
             for (const item of staticAttributes) {
                 attributes[item.name] = item.value;
             }
@@ -105,7 +103,6 @@ export async function postButlerUptimeToNewRelic(fields) {
         };
 
         if (globals.config.get('Butler.uptimeMonitor.storeNewRelic.header') !== null) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const header of globals.config.get('Butler.uptimeMonitor.storeNewRelic.header')) {
                 headers[header.name] = header.value;
             }
@@ -126,7 +123,6 @@ export async function postButlerUptimeToNewRelic(fields) {
         globals.logger.verbose(`NEW RELIC UPTIME: Destination account names for uptime data: ${JSON.stringify(nrDestAccounts, null, 2)}`);
 
         if (nrDestAccounts) {
-            // eslint-disable-next-line no-restricted-syntax
             for (const accountName of globals.config.Butler.uptimeMonitor.storeNewRelic.destinationAccount) {
                 globals.logger.debug(`NEW RELIC UPTIME: Current loop New Relic config=${JSON.stringify(accountName)}`);
 
@@ -139,7 +135,6 @@ export async function postButlerUptimeToNewRelic(fields) {
                 } else {
                     headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
-                    // eslint-disable-next-line no-await-in-loop
                     const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
 
                     globals.logger.debug(

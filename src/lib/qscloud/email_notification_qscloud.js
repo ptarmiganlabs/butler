@@ -44,21 +44,39 @@ function getAppReloadFailedEmailConfig() {
             ),
         );
 
+        // Coerce/guard config values to sensible defaults when missing or of wrong type
+        const rawEnableByTag = globals.config.get(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.alertEnableByTag.enable',
+        );
+        const emailAlertByTagEnable = typeof rawEnableByTag === 'boolean' ? rawEnableByTag : false;
+
+        const rawTagName = globals.config.get(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.alertEnableByTag.tag',
+        );
+        const emailAlertByTagName = typeof rawTagName === 'string' ? rawTagName : '';
+
+        const rawHeadLines = Number(
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines'),
+        );
+        const headScriptLogLines = Number.isNaN(rawHeadLines) ? 0 : rawHeadLines;
+
+        const rawTailLines = Number(
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines'),
+        );
+        const tailScriptLogLines = Number.isNaN(rawTailLines) ? 0 : rawTailLines;
+
+        const rawGlobalSendList = globals.config.get(
+            'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients',
+        );
+        const globalSendList = Array.isArray(rawGlobalSendList) ? rawGlobalSendList : [];
+
         return {
-            emailAlertByTagEnable: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.alertEnableByTag.enable',
-            ),
-            emailAlertByTagName: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.alertEnableByTag.tag',
-            ),
+            emailAlertByTagEnable,
+            emailAlertByTagName,
             appOwnerAlert,
             rateLimit: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.rateLimit'),
-            headScriptLogLines: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines',
-            ),
-            tailScriptLogLines: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
-            ),
+            headScriptLogLines,
+            tailScriptLogLines,
             priority: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.priority'),
             subject: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.subject'),
             bodyFileDirectory: globals.config.get(
@@ -68,9 +86,7 @@ function getAppReloadFailedEmailConfig() {
                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.htmlTemplateFile',
             ),
             fromAddress: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.fromAddress'),
-            globalSendList: globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients',
-            ),
+            globalSendList,
         };
     } catch (err) {
         globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
@@ -80,8 +96,16 @@ function getAppReloadFailedEmailConfig() {
 
 /**
  * Sends an email notification for a Qlik Sense Cloud app reload failure.
+ *
+ * Behavior and safeguards:
+ * - Respects config toggles: if alerts are disabled or config invalid, returns early (no email).
+ * - Recipient resolution: supports global recipients, optional tag-gated apps, and (optionally) app owner.
+ * - Dedupes recipients and validates SMTP config before sending; returns false if no recipients or SMTP invalid.
+ * - Script log handling: if scriptLog === false, safely defaults all script log fields (no slicing calls).
+ * - Rate limiting: per-recipient and per-appId to avoid flooding.
+ *
  * @param {Object} reloadParams - The parameters related to the app reload.
- * @returns {boolean} True if the email was sent successfully, false otherwise.
+ * @returns {boolean} True when processing completes without internal errors; false if skipped due to validation.
  */
 export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams) {
     try {
@@ -218,11 +242,11 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         // Get script logs, if enabled in the config file
         // If the value is false, the script log could not be obtained
         let scriptLogData = {};
-
         if (reloadParams.scriptLog === false) {
             scriptLogData = {
                 scriptLogFull: [],
                 scriptLogSizeRows: 0,
+                scriptLogSizeCharacters: 0,
                 scriptLogHead: '',
                 scriptLogHeadCount: 0,
                 scriptLogTail: '',
@@ -290,12 +314,12 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
 
             appId: reloadParams.appId,
             appName: reloadParams.appName,
-            appDescription: reloadParams.appInfo.attributes.description,
+            appDescription: reloadParams.appInfo?.attributes?.description || '',
             appUrl: reloadParams.appUrl,
-            appHasSectionAccess: reloadParams.appInfo.attributes.hasSectionAccess,
-            appIsPublished: reloadParams.appInfo.attributes.published,
-            appPublishTime: reloadParams.appInfo.attributes.publishTime,
-            appThumbnail: reloadParams.appInfo.attributes.thumbnail,
+            appHasSectionAccess: reloadParams.appInfo?.attributes?.hasSectionAccess ?? false,
+            appIsPublished: reloadParams.appInfo?.attributes?.published ?? false,
+            appPublishTime: reloadParams.appInfo?.attributes?.publishTime || '',
+            appThumbnail: reloadParams.appInfo?.attributes?.thumbnail || '',
 
             reloadTrigger: reloadParams.reloadTrigger,
             source: reloadParams.source,
@@ -307,14 +331,14 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             isSessionApp: reloadParams.isSessionApp,
             isSkipStore: reloadParams.isSkipStore,
 
-            peakMemoryBytes: reloadParams.peakMemoryBytes.toLocaleString(),
+            peakMemoryBytes: Number(reloadParams.peakMemoryBytes || 0).toLocaleString(),
             reloadId: reloadParams.reloadId,
-            rowLimit: reloadParams.rowLimit.toLocaleString(),
+            rowLimit: Number(reloadParams.rowLimit || 0).toLocaleString(),
             statements: reloadParams.statements,
             status: reloadParams.status,
             usageDuration: reloadParams.duration,
-            sizeMemoryBytes: reloadParams.sizeMemory.toLocaleString(),
-            appFileSize: reloadParams.appItems.resourceSize.appFile.toLocaleString(),
+            sizeMemoryBytes: Number(reloadParams.sizeMemory || 0).toLocaleString(),
+            appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
 
             errorCode: reloadParams.reloadInfo.errorCode,
             errorMessage: reloadParams.reloadInfo.errorMessage,
@@ -325,7 +349,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             executionStatusText: reloadParams.reloadInfo.status,
             scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
             scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
-            scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
+            scriptLogSizeCharacters: Number(scriptLogData.scriptLogSizeCharacters || 0).toLocaleString(),
             scriptLogHead: scriptLogData.scriptLogHead,
             scriptLogTail: scriptLogData.scriptLogTail,
             scriptLogTailCount: scriptLogData.scriptLogTailCount,
@@ -335,10 +359,10 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             qlikSenseHub: senseUrls.hubUrl,
             genericUrls,
 
-            appOwnerName: appOwner.name,
-            appOwnerUserId: appOwner.id,
-            appOwnerPicture: appOwner.picture,
-            appOwnerEmail: appOwner.email,
+            appOwnerName: appOwner?.name || 'Unknown',
+            appOwnerUserId: appOwner?.id || '',
+            appOwnerPicture: appOwner?.picture || '',
+            appOwnerEmail: appOwner?.email || '',
         };
 
         // Send alert emails
@@ -346,7 +370,6 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         for (const recipientEmailAddress of globalSendList) {
             rateLimiterMemoryFailedReloads
                 .consume(`${reloadParams.appId}|${recipientEmailAddress}`, 1)
-                // eslint-disable-next-line no-loop-func
                 .then(async (rateLimiterRes) => {
                     try {
                         globals.logger.info(
