@@ -577,14 +577,14 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 // This is needed to avoid breaking the Slack message JSON
                 const regExpSingle = /'/gm;
                 const regExpDouble = /"/gm;
-                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
-                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "\\'").replace(regExpDouble, '\\"');
+                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "\\'").replace(regExpDouble, '\\"');
 
                 // Replace all single and double quotes in executionDetailsConcatenated with escaped ditto
                 // This is needed to avoid breaking the Slack message JSON
                 templateContext.executionDetailsConcatenated = templateContext.executionDetailsConcatenated
                     .replace(regExpSingle, "\\'")
-                    .replace(regExpDouble, "\\'");
+                    .replace(regExpDouble, '\\"');
 
                 // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
                 // https://api.slack.com/reference/block-kit/blocks#section_fields

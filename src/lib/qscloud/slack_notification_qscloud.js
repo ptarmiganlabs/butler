@@ -381,12 +381,12 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                 // This is needed to avoid breaking the Slack message JSON
                 const regExpSingle = /'/gm;
                 const regExpDouble = /"/gm;
-                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
-                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "\\'").replace(regExpDouble, '\\"');
+                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "\\'").replace(regExpDouble, '\\"');
 
                 // Replace all single and double quotes in logMessage with escaped ditto
                 // This is needed to avoid breaking the Slack message JSON
-                templateContext.logMessage = templateContext.logMessage.replace(regExpSingle, "\\'").replace(regExpDouble, "\\'");
+                templateContext.logMessage = templateContext.logMessage.replace(regExpSingle, "\\'").replace(regExpDouble, '\\"');
 
                 // Check if script log is longer than 3000 characters. Truncate if so.
                 if (templateContext.scriptLogHead.length >= 3000) {
