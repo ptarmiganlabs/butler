@@ -896,7 +896,7 @@ export const configFileConditionalAssert = async (config, logger) => {
 
         // Validate keyValueStore fields when enabled
         if (config.has('Butler.keyValueStore.enable') && config.get('Butler.keyValueStore.enable')) {
-            const requiredFields = ['Butler.keyValueStore.maxMemoryUsage', 'Butler.keyValueStore.ttl'];
+            const requiredFields = ['Butler.keyValueStore.maxKeysPerNamespace'];
             for (const field of requiredFields) {
                 if (!config.has(field)) {
                     logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when keyValueStore is enabled.`);
@@ -940,10 +940,61 @@ export const configFileConditionalAssert = async (config, logger) => {
 
         // Validate teamsNotification fields when enabled
         if (config.has('Butler.teamsNotification.enable') && config.get('Butler.teamsNotification.enable')) {
-            const requiredFields = ['Butler.teamsNotification.restMessage'];
+            const requiredFields = [
+                'Butler.teamsNotification.reloadTaskFailure.enable',
+                'Butler.teamsNotification.reloadTaskAborted.enable',
+            ];
             for (const field of requiredFields) {
                 if (!config.has(field)) {
                     logger.error(`ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when teamsNotification is enabled.`);
+                    return false;
+                }
+            }
+        }
+
+        // Validate teamsNotification.reloadTaskFailure fields when enabled
+        if (
+            config.has('Butler.teamsNotification.reloadTaskFailure.enable') &&
+            config.get('Butler.teamsNotification.reloadTaskFailure.enable')
+        ) {
+            const requiredFields = [
+                'Butler.teamsNotification.reloadTaskFailure.webhookURL',
+                'Butler.teamsNotification.reloadTaskFailure.messageType',
+                'Butler.teamsNotification.reloadTaskFailure.basicMsgTemplate',
+                'Butler.teamsNotification.reloadTaskFailure.rateLimit',
+                'Butler.teamsNotification.reloadTaskFailure.headScriptLogLines',
+                'Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines',
+                'Butler.teamsNotification.reloadTaskFailure.templateFile',
+            ];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(
+                        `ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when teamsNotification.reloadTaskFailure is enabled.`,
+                    );
+                    return false;
+                }
+            }
+        }
+
+        // Validate teamsNotification.reloadTaskAborted fields when enabled
+        if (
+            config.has('Butler.teamsNotification.reloadTaskAborted.enable') &&
+            config.get('Butler.teamsNotification.reloadTaskAborted.enable')
+        ) {
+            const requiredFields = [
+                'Butler.teamsNotification.reloadTaskAborted.webhookURL',
+                'Butler.teamsNotification.reloadTaskAborted.messageType',
+                'Butler.teamsNotification.reloadTaskAborted.basicMsgTemplate',
+                'Butler.teamsNotification.reloadTaskAborted.rateLimit',
+                'Butler.teamsNotification.reloadTaskAborted.headScriptLogLines',
+                'Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines',
+                'Butler.teamsNotification.reloadTaskAborted.templateFile',
+            ];
+            for (const field of requiredFields) {
+                if (!config.has(field)) {
+                    logger.error(
+                        `ASSERT CONFIG CONDITIONAL: Missing required field '${field}' when teamsNotification.reloadTaskAborted is enabled.`,
+                    );
                     return false;
                 }
             }
