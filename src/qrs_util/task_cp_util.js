@@ -126,17 +126,17 @@ export async function getReloadTasksCustomProperties(config, configQRS, logger) 
     logger.debug('GETRELOADTASKSCP: Retrieving all custom properties that are available for reload tasks');
 
     try {
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getQRSHttpHeaders();
+
         const cfg = {
             hostname: config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: config.get('Butler.configQRS.port'),
+            headers: httpHeaders,
             certificates: {
                 certFile: configQRS.certPaths.certPath,
                 keyFile: configQRS.certPaths.keyPath,
             },
-        };
-
-        cfg.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
         const qrsInstance = new QrsInteract(cfg);

@@ -308,15 +308,12 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
     const cfg = {
         hostname: config.get('Butler.configQRS.host'),
-        portNumber: 4242,
+        portNumber: config.get('Butler.configQRS.port'),
+        headers: globals.getQRSHttpHeaders(),
         certificates: {
             certFile: configQRS.certPaths.certPath,
             keyFile: configQRS.certPaths.keyPath,
         },
-    };
-
-    cfg.headers = {
-        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
     };
 
     const qrsInstance = new QrsInteract(cfg);
