@@ -61,11 +61,16 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
-            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
+        };
+
+        // Merge YAML-configured headers with hardcoded headers
+        configQRS.headers = {
+            ...globals.getQRSHttpHeaders(),
+            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
         const qrsInstance = new QrsInteract(configQRS);
@@ -197,11 +202,16 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
-            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
+        };
+
+        // Merge YAML-configured headers with hardcoded headers
+        configQRS.headers = {
+            ...globals.getQRSHttpHeaders(),
+            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
         const qrsInstance = new QrsInteract(configQRS);
