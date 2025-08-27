@@ -29,6 +29,7 @@ jest.unstable_mockModule('../../../globals.js', () => ({
             debug: jest.fn(),
         },
         configFileExpanded: '/path/to/config.yaml',
+        getQRSHttpHeaders: jest.fn(() => ({ 'X-QRS': '1' })),
     },
 }));
 

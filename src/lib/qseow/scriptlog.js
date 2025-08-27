@@ -60,14 +60,16 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
         };
 
+        // Merge YAML-configured headers with hardcoded headers
         configQRS.headers = {
+            ...globals.getQRSHttpHeaders(),
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
@@ -199,14 +201,16 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
         };
 
+        // Merge YAML-configured headers with hardcoded headers
         configQRS.headers = {
+            ...globals.getQRSHttpHeaders(),
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
@@ -235,10 +239,11 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             // Add x-qlik-xrfkey to headers
             httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
+            const protocol = globals.configQRS.useSSL ? 'https' : 'http';
             const axiosConfig = {
                 url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
                 method: 'get',
-                baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
+                baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
                 headers: httpHeaders,
                 timeout: 10000,
                 responseType: 'text',

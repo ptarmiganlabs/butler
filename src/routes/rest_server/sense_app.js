@@ -73,7 +73,7 @@ async function handlerPutAppReload(request, reply) {
                     host: globals.configEngine.host,
                     port: globals.configEngine.port,
                     prefix: '',
-                    secure: true,
+                    secure: globals.configEngine.isSecure,
                     appId: request.params.appId,
                 }),
                 createSocket: (url) =>

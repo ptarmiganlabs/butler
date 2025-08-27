@@ -308,14 +308,16 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     // Set up shared Sense repository service configuration
     const cfg = {
         hostname: config.get('Butler.configQRS.host'),
-        portNumber: 4242,
+        portNumber: config.get('Butler.configQRS.port'),
         certificates: {
             certFile: configQRS.certPaths.certPath,
             keyFile: configQRS.certPaths.keyPath,
         },
     };
 
+    // Merge YAML-configured headers with hardcoded headers
     cfg.headers = {
+        ...globals.getQRSHttpHeaders(),
         'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
     };
 

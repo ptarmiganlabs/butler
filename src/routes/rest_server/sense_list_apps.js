@@ -55,9 +55,10 @@ async function handlerGetSenseListApps(request, reply) {
         const httpHeaders = globals.getEngineHttpHeaders();
 
         // Create a new session
+        const protocol = globals.configEngine.isSecure ? 'wss' : 'ws';
         const configEnigma = {
             schema: qixSchema,
-            url: `wss://${globals.configEngine.host}:${globals.configEngine.port}`,
+            url: `${protocol}://${globals.configEngine.host}:${globals.configEngine.port}`,
             createSocket: (url) =>
                 new WebSocket(url, {
                     key: globals.configEngine.key,
