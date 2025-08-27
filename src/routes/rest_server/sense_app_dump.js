@@ -69,7 +69,7 @@ async function handlerGetSenseAppDump(request, reply) {
                     host: globals.configEngine.host,
                     port: globals.configEngine.port,
                     prefix: '',
-                    secure: true,
+                    secure: globals.configEngine.isSecure,
                 }),
                 createSocket: (url) =>
                     new WebSocket(url, {

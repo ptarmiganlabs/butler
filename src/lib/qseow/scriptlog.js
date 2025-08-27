@@ -229,10 +229,11 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             // Add x-qlik-xrfkey to headers
             httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
+            const protocol = globals.configQRS.useSSL ? 'https' : 'http';
             const axiosConfig = {
                 url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
                 method: 'get',
-                baseURL: `https://${globals.configQRS.host}:${globals.configQRS.port}`,
+                baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
                 headers: httpHeaders,
                 timeout: 10000,
                 responseType: 'text',
