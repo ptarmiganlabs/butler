@@ -4,6 +4,7 @@
     "description": "Superpowers for Qlik Sense. Task scheduling, key-value store, advanced alerting and more.",
     "scripts": {
         "build:docs": "npx jsdoc-to-markdown 'src/**/*.js' > docs/src-code-overview.md",
+        "build:docker": "docker build -t butler:latest -t butler:$(node -p \"require('./package.json').version\") .",
         "build:macos": "./build-script/build-macos.sh",
         "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit --coverage",
         "test:watch": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit --watch --coverage",
