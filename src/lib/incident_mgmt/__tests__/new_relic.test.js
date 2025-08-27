@@ -52,6 +52,7 @@ describe('lib/incident_mgmt/new_relic', () => {
                 verbose: jest.fn(),
             },
             appVersion: '13.1.2',
+            getQRSHttpHeaders: jest.fn(() => ({ 'X-QRS': '1' })),
         };
 
         // Mock rate-limiter-flexible

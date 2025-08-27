@@ -192,6 +192,7 @@ describe('qseow/qliksense_license', () => {
                 },
                 configQRS: { certPaths: { certPath: '/tmp/cert.pem', keyPath: '/tmp/key.pem' } },
                 mqttClient: { publish: mqttPublishMock },
+                getQRSHttpHeaders: jest.fn(() => ({ 'X-QRS': '1' })),
             },
         }));
 

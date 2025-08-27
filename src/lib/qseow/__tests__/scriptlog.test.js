@@ -48,6 +48,7 @@ const globalsMock = {
         certPaths: { certPath: '/cert', keyPath: '/key' },
     },
     getEngineHttpHeaders: () => ({ 'x-qlik-user': 'foo' }),
+    getQRSHttpHeaders: () => ({ 'X-QRS': '1' }),
 };
 jest.unstable_mockModule('../../../globals.js', () => ({ default: globalsMock }));
 
