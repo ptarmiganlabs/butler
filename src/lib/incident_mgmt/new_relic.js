@@ -10,15 +10,12 @@ import globals from '../../globals.js';
 function getQRSConfig() {
     const cfg = {
         hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: 4242,
+        portNumber: globals.config.get('Butler.configQRS.port'),
+        headers: globals.getQRSHttpHeaders(),
         certificates: {
             certFile: globals.configQRS.certPaths.certPath,
             keyFile: globals.configQRS.certPaths.keyPath,
         },
-    };
-
-    cfg.headers = {
-        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
     };
 
     return cfg;

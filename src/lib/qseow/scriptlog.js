@@ -60,15 +60,12 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
-        };
-
-        configQRS.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
         const qrsInstance = new QrsInteract(configQRS);
@@ -199,15 +196,12 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
-        };
-
-        configQRS.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
         const qrsInstance = new QrsInteract(configQRS);

@@ -20,16 +20,14 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
         };
 
-        configQRS.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-        };
         const qrsInstance = new QrsInteract(configQRS);
 
         // Get Qlik Sense server license info
@@ -218,16 +216,14 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
         };
 
-        configQRS.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-        };
         const qrsInstance = new QrsInteract(configQRS);
 
         // Get Qlik Sense access license info
@@ -852,16 +848,14 @@ async function checkQlikSenseLicenseRelease(config, logger) {
         // Set up Sense repository service configuration
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: 4242,
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            headers: globals.getQRSHttpHeaders(),
             certificates: {
                 certFile: globals.configQRS.certPaths.certPath,
                 keyFile: globals.configQRS.certPaths.keyPath,
             },
         };
 
-        configQRS.headers = {
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-        };
         const qrsInstance = new QrsInteract(configQRS);
 
         // Is license release enabled for professional access licenses?
