@@ -309,11 +309,16 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     const cfg = {
         hostname: config.get('Butler.configQRS.host'),
         portNumber: config.get('Butler.configQRS.port'),
-        headers: globals.getQRSHttpHeaders(),
         certificates: {
             certFile: configQRS.certPaths.certPath,
             keyFile: configQRS.certPaths.keyPath,
         },
+    };
+
+    // Merge YAML-configured headers with hardcoded headers
+    cfg.headers = {
+        ...globals.getQRSHttpHeaders(),
+        'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
     };
 
     const qrsInstance = new QrsInteract(cfg);
