@@ -15,6 +15,9 @@ RUN npm install
 # Copy app's source files
 COPY . .
 
+# Install wget for easier Docker health checks
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
 # Create and use non-root user 
 RUN groupadd -r nodejs \
    && useradd -m -r -g nodejs nodejs
