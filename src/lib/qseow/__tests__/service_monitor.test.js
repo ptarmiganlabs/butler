@@ -590,21 +590,13 @@ describe('service_monitor setup and checks', () => {
         };
 
         // Mock service transitions: running -> stopped -> running
-        statusAllMock.mockResolvedValueOnce([
-            { name: 'QlikSenseEngineService', state: 'running' },
-        ]);
-        statusAllMock.mockResolvedValueOnce([
-            { name: 'QlikSenseEngineService', state: 'stopped' },
-        ]);
-        statusAllMock.mockResolvedValueOnce([
-            { name: 'QlikSenseEngineService', state: 'running' },
-        ]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'QlikSenseEngineService', state: 'running' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'QlikSenseEngineService', state: 'stopped' }]);
+        statusAllMock.mockResolvedValueOnce([{ name: 'QlikSenseEngineService', state: 'running' }]);
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
-        );
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services'));
     });
 
     test('should handle service discovery errors', async () => {
@@ -639,9 +631,7 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('VERIFY WIN SERVICES EXIST: Error getting service info')
-        );
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('VERIFY WIN SERVICES EXIST: Error getting service info'));
     });
 
     test('should handle different service states', async () => {
@@ -678,9 +668,7 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
-        );
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services'));
     });
 
     test('should handle multiple hosts configuration', async () => {
@@ -695,18 +683,14 @@ describe('service_monitor setup and checks', () => {
                                 host: 'server1',
                                 description: 'Primary Server',
                             },
-                            services: [
-                                { name: 'Service1', friendlyName: 'Service One' },
-                            ],
+                            services: [{ name: 'Service1', friendlyName: 'Service One' }],
                         },
                         {
                             host: {
                                 host: 'server2',
                                 description: 'Secondary Server',
                             },
-                            services: [
-                                { name: 'Service2', friendlyName: 'Service Two' },
-                            ],
+                            services: [{ name: 'Service2', friendlyName: 'Service Two' }],
                         },
                     ],
                     'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
@@ -723,9 +707,7 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
-        );
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services'));
     });
 
     test('should handle alert destination configurations', async () => {
@@ -740,9 +722,7 @@ describe('service_monitor setup and checks', () => {
                                 host: 'server1',
                                 description: 'Main Server',
                             },
-                            services: [
-                                { name: 'TestService', friendlyName: 'Test Service' },
-                            ],
+                            services: [{ name: 'TestService', friendlyName: 'Test Service' }],
                         },
                     ],
                     'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
@@ -757,15 +737,11 @@ describe('service_monitor setup and checks', () => {
             }),
         };
 
-        statusAllMock.mockResolvedValue([
-            { name: 'TestService', state: 'running' },
-        ]);
+        statusAllMock.mockResolvedValue([{ name: 'TestService', state: 'running' }]);
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services')
-        );
+        expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Setting up monitor for Windows services'));
     });
 
     test('should handle service monitoring timer setup errors', async () => {
@@ -786,9 +762,7 @@ describe('service_monitor setup and checks', () => {
                                 host: 'server1',
                                 description: 'Main Server',
                             },
-                            services: [
-                                { name: 'TestService', friendlyName: 'Test Service' },
-                            ],
+                            services: [{ name: 'TestService', friendlyName: 'Test Service' }],
                         },
                     ],
                 };
@@ -798,9 +772,7 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT:')
-        );
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT:'));
     });
 
     test('should handle empty service monitor configuration', async () => {
@@ -817,9 +789,7 @@ describe('service_monitor setup and checks', () => {
 
         await setupServiceMonitorTimer(config, logger);
 
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('SERVICE MONITOR INIT: Missing or empty section in config file')
-        );
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR INIT: Missing or empty section in config file'));
     });
 
     test('should handle services that do not exist on target host', async () => {
@@ -834,9 +804,7 @@ describe('service_monitor setup and checks', () => {
                                 host: 'server1',
                                 description: 'Main Server',
                             },
-                            services: [
-                                { name: 'NonExistentService', friendlyName: 'Non-Existent Service' },
-                            ],
+                            services: [{ name: 'NonExistentService', friendlyName: 'Non-Existent Service' }],
                         },
                     ],
                     'Butler.serviceMonitor.alertDestination.influxDb.enable': true,
@@ -851,7 +819,7 @@ describe('service_monitor setup and checks', () => {
         await setupServiceMonitorTimer(config, logger);
 
         expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('VERIFY WIN SERVICES EXIST:  Windows service NonExistentService')
+            expect.stringContaining('VERIFY WIN SERVICES EXIST:  Windows service NonExistentService'),
         );
     });
 });

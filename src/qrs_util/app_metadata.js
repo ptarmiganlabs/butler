@@ -1,5 +1,5 @@
 import path from 'path';
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../lib/qrs_client.js';
 import globals from '../globals.js';
 
 /**
@@ -15,7 +15,7 @@ async function getAppMetadata(appId) {
         // Get http headers from Butler config file
         const httpHeaders = globals.getQRSHttpHeaders();
 
-        const qrsInstance = new QrsInteract({
+        const qrsInstance = new QrsClient({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
             headers: httpHeaders,

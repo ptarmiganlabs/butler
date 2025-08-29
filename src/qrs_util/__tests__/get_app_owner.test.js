@@ -11,7 +11,7 @@ describe('qrs_util/get_app_owner', () => {
 
     beforeAll(async () => {
         mockQrs = { Get: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         getAppOwner = (await import('../get_app_owner.js')).default;
     });

@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 
 describe('lib/telemetry', () => {
     let setupAnonUsageReportTimer;
-    
+
     const mockGlobals = {
         config: {
             has: jest.fn(),
@@ -21,10 +21,10 @@ describe('lib/telemetry', () => {
             isRunningInDocker: false,
             si: {
                 os: { arch: 'x64', platform: 'linux', release: '5.4.0', distro: 'Ubuntu', codename: 'focal' },
-                system: { virtual: false }
+                system: { virtual: false },
             },
-            node: { nodeVersion: 'v20.19.4' }
-        }
+            node: { nodeVersion: 'v20.19.4' },
+        },
     };
 
     const mockPostHogInstance = { capture: jest.fn() };
@@ -33,7 +33,7 @@ describe('lib/telemetry', () => {
     beforeAll(async () => {
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         await jest.unstable_mockModule('posthog-node', () => ({ PostHog: mockPostHog }));
-        
+
         global.setInterval = jest.fn();
 
         const module = await import('../telemetry.js');
@@ -58,12 +58,12 @@ describe('lib/telemetry', () => {
                     flushInterval: 60 * 1000,
                     requestTimeout: 30 * 1000,
                     disableGeoip: false,
-                })
+                }),
             );
 
             expect(global.setInterval).toHaveBeenCalledWith(
                 expect.any(Function),
-                1000 * 60 * 60 * 12 // 12 hours
+                1000 * 60 * 60 * 12, // 12 hours
             );
         });
 
@@ -74,17 +74,13 @@ describe('lib/telemetry', () => {
 
             setupAnonUsageReportTimer(mockGlobals.logger, mockGlobals.hostInfo);
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                'TELEMETRY: Error: PostHog setup error'
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('TELEMETRY: Error: PostHog setup error');
         });
 
         test('should handle missing host info', () => {
             setupAnonUsageReportTimer(mockGlobals.logger, null);
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('TELEMETRY:')
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('TELEMETRY:'));
         });
 
         test('should handle incomplete host info', () => {
@@ -124,8 +120,8 @@ describe('lib/telemetry', () => {
                 isRunningInDocker: true,
                 si: {
                     ...mockGlobals.hostInfo.si,
-                    system: { virtual: true }
-                }
+                    system: { virtual: true },
+                },
             };
 
             setupAnonUsageReportTimer(mockGlobals.logger, dockerHostInfo);
@@ -138,14 +134,14 @@ describe('lib/telemetry', () => {
                 ...mockGlobals.hostInfo,
                 si: {
                     ...mockGlobals.hostInfo.si,
-                    os: { 
-                        arch: 'x64', 
-                        platform: 'win32', 
-                        release: '10.0.19042', 
-                        distro: 'Windows', 
-                        codename: '' 
-                    }
-                }
+                    os: {
+                        arch: 'x64',
+                        platform: 'win32',
+                        release: '10.0.19042',
+                        distro: 'Windows',
+                        codename: '',
+                    },
+                },
             };
 
             setupAnonUsageReportTimer(mockGlobals.logger, windowsHostInfo);
@@ -156,7 +152,7 @@ describe('lib/telemetry', () => {
         test('should handle node version variations', () => {
             const differentNodeHostInfo = {
                 ...mockGlobals.hostInfo,
-                node: { nodeVersion: 'v18.17.0' }
+                node: { nodeVersion: 'v18.17.0' },
             };
 
             setupAnonUsageReportTimer(mockGlobals.logger, differentNodeHostInfo);

@@ -2,13 +2,13 @@ import { jest } from '@jest/globals';
 
 // Mocks for QRS, axios, https, luxon formatting is not critical here.
 const qrsGetMock = jest.fn();
-class QrsInteractMock {
+class QrsClientMock {
     constructor() {}
     Get(path) {
         return qrsGetMock(path);
     }
 }
-jest.unstable_mockModule('qrs-interact', () => ({ default: QrsInteractMock }));
+jest.unstable_mockModule('../../qrs_client.js', () => ({ default: QrsClientMock }));
 
 const axiosReqMock = jest.fn();
 jest.unstable_mockModule('axios', () => ({ default: { request: axiosReqMock } }));

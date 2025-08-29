@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 // Mock external dependencies
-jest.unstable_mockModule('qrs-interact', () => ({
+jest.unstable_mockModule('../../qrs_client.js', () => ({
     default: jest.fn(),
 }));
 
@@ -77,8 +77,8 @@ describe('assert_config_file', () => {
     let taskCpUtilMock;
 
     beforeAll(async () => {
-        const qrsInteractLib = await import('qrs-interact');
-        qrsInteractMock = qrsInteractLib.default;
+        const qrsClientLib = await import('../../qrs_client.js');
+        qrsInteractMock = qrsClientLib.default;
 
         const fsLib = await import('fs/promises');
         fsMock = fsLib.default || fsLib;

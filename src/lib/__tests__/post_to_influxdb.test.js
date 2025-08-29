@@ -179,7 +179,7 @@ describe('lib/post_to_influxdb', () => {
 
         await mod.postQlikSenseLicenseReleasedToInfluxDB(release);
         expect(writePoints).toHaveBeenCalledTimes(1);
-        
+
         const row = writePoints.mock.calls[0][0][0];
         expect(row.measurement).toBe('qlik_sense_license_release');
         expect(row.tags.user).toBe('CORP\\jane.doe');

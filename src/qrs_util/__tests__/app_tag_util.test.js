@@ -11,7 +11,7 @@ describe('qrs_util/app_tag_util.getAppTags', () => {
 
     beforeAll(async () => {
         mockQrs = { Get: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         getAppTags = (await import('../app_tag_util.js')).default;
     });

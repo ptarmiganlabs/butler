@@ -1,10 +1,18 @@
 import { jest } from '@jest/globals';
 
 describe('lib/scheduler', () => {
-    let addSchedule, loadSchedulesFromDisk, startAllSchedules, stopAllSchedules, 
-        getSchedulesStatus, getAllSchedules, getSchedule, existsSchedule, 
-        deleteSchedule, startSchedule, stopSchedule;
-    
+    let addSchedule,
+        loadSchedulesFromDisk,
+        startAllSchedules,
+        stopAllSchedules,
+        getSchedulesStatus,
+        getAllSchedules,
+        getSchedule,
+        existsSchedule,
+        deleteSchedule,
+        startSchedule,
+        stopSchedule;
+
     const mockGlobals = {
         config: {
             has: jest.fn(),
@@ -72,7 +80,7 @@ describe('lib/scheduler', () => {
             if (key === 'Butler.scheduler.configfile') return './test-schedule.yaml';
             return true;
         });
-        
+
         mockYaml.dump.mockReturnValue('butlerSchedule: []');
         mockYaml.load.mockReturnValue({ butlerSchedule: [] });
         mockFs.writeFileSync.mockReturnValue(true);
@@ -87,7 +95,7 @@ describe('lib/scheduler', () => {
                 cronSchedule: '0 */2 * * *',
                 qlikSenseTaskId: 'task123',
                 startupState: 'started',
-                timeZone: 'UTC'
+                timeZone: 'UTC',
             };
 
             addSchedule(testSchedule);
@@ -103,8 +111,8 @@ describe('lib/scheduler', () => {
         test('should load schedules when enabled', () => {
             mockYaml.load.mockReturnValue({
                 butlerSchedule: [
-                    { id: 1, name: 'Test Schedule', cronSchedule: '0 */2 * * *', qlikSenseTaskId: 'task123', startupState: 'started' }
-                ]
+                    { id: 1, name: 'Test Schedule', cronSchedule: '0 */2 * * *', qlikSenseTaskId: 'task123', startupState: 'started' },
+                ],
             });
 
             loadSchedulesFromDisk();
@@ -139,9 +147,7 @@ describe('lib/scheduler', () => {
 
             loadSchedulesFromDisk();
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('Failed loading schedules from file')
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Failed loading schedules from file'));
         });
     });
 
@@ -158,7 +164,10 @@ describe('lib/scheduler', () => {
 
     describe('getSchedule', () => {
         test('should return specific schedule by ID', () => {
-            mockGlobals.configSchedule = [{ id: 1, name: 'First' }, { id: 2, name: 'Second' }];
+            mockGlobals.configSchedule = [
+                { id: 1, name: 'First' },
+                { id: 2, name: 'Second' },
+            ];
 
             const result = getSchedule(1);
 
@@ -181,9 +190,7 @@ describe('lib/scheduler', () => {
             const result = existsSchedule(1);
 
             expect(result).toBe(true);
-            expect(mockGlobals.logger.debug).toHaveBeenCalledWith(
-                'SCHEDULER: Does schedule id 1 exist: true'
-            );
+            expect(mockGlobals.logger.debug).toHaveBeenCalledWith('SCHEDULER: Does schedule id 1 exist: true');
         });
 
         test('should return false for non-existent schedule', () => {
@@ -192,9 +199,7 @@ describe('lib/scheduler', () => {
             const result = existsSchedule(999);
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.debug).toHaveBeenCalledWith(
-                'SCHEDULER: Does schedule id 999 exist: false'
-            );
+            expect(mockGlobals.logger.debug).toHaveBeenCalledWith('SCHEDULER: Does schedule id 999 exist: false');
         });
     });
 });

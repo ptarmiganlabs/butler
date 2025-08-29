@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 
 describe('lib/qscloud/email_notification_qscloud', () => {
     let sendQlikSenseCloudAppReloadFailureNotificationEmail;
-    
+
     const mockGlobals = {
         config: {
             has: jest.fn(),
@@ -26,19 +26,19 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
     beforeAll(async () => {
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
-        await jest.unstable_mockModule('../api/user.js', () => ({ 
-            getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo 
+        await jest.unstable_mockModule('../api/user.js', () => ({
+            getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo,
         }));
-        await jest.unstable_mockModule('../util.js', () => ({ 
-            getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls 
+        await jest.unstable_mockModule('../util.js', () => ({
+            getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls,
         }));
-        await jest.unstable_mockModule('../../qseow/smtp.js', () => ({ 
+        await jest.unstable_mockModule('../../qseow/smtp.js', () => ({
             sendEmail: mockSendEmail,
-            isSmtpConfigOk: mockIsSmtpConfigOk 
+            isSmtpConfigOk: mockIsSmtpConfigOk,
         }));
-        await jest.unstable_mockModule('../api/appreloadinfo.js', () => ({ 
+        await jest.unstable_mockModule('../api/appreloadinfo.js', () => ({
             getQlikSenseCloudAppReloadScriptLogHead: mockGetQlikSenseCloudAppReloadScriptLogHead,
-            getQlikSenseCloudAppReloadScriptLogTail: mockGetQlikSenseCloudAppReloadScriptLogTail 
+            getQlikSenseCloudAppReloadScriptLogTail: mockGetQlikSenseCloudAppReloadScriptLogTail,
         }));
 
         const module = await import('../email_notification_qscloud.js');
@@ -47,24 +47,26 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         mockGlobals.config.has.mockReturnValue(true);
         mockGlobals.config.get.mockImplementation((key) => {
             if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable') return true;
-            if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients') return ['test@example.com'];
-            if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert') return { enable: false };
+            if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients')
+                return ['test@example.com'];
+            if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert')
+                return { enable: false };
             return 'default-value';
         });
 
         mockGetQlikSenseCloudUserInfo.mockResolvedValue({
             id: 'user123',
             name: 'Test User',
-            email: 'user@example.com'
+            email: 'user@example.com',
         });
 
         mockGetQlikSenseCloudUrls.mockReturnValue({
             qmcUrl: 'https://tenant.qlikcloud.com/qmc',
-            hubUrl: 'https://tenant.qlikcloud.com/hub'
+            hubUrl: 'https://tenant.qlikcloud.com/hub',
         });
 
         mockIsSmtpConfigOk.mockReturnValue(true);
@@ -84,18 +86,18 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             appName: 'Test App',
             appUrl: 'https://tenant.qlikcloud.com/app/app123',
             appInfo: { attributes: { description: 'Test app' } },
-            appItems: { 
+            appItems: {
                 meta: { tags: [] },
-                resourceSize: { appFile: 1024000 }
+                resourceSize: { appFile: 1024000 },
             },
             reloadInfo: {
                 errorCode: 500,
                 errorMessage: 'Script error',
-                log: 'Detailed error log'
+                log: 'Detailed error log',
             },
             scriptLog: {
-                scriptLogFull: ['Line 1', 'Line 2']
-            }
+                scriptLogFull: ['Line 1', 'Line 2'],
+            },
         };
 
         test('should return 1 when email notifications are disabled', async () => {
@@ -107,9 +109,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 
             expect(result).toBe(1);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('Email alerts on failed reloads are disabled')
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Email alerts on failed reloads are disabled'));
         });
 
         test('should handle missing config and return 1', async () => {
@@ -121,7 +121,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
             expect(result).toBe(1);
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: Config error')
+                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: Config error'),
             );
         });
 
@@ -129,16 +129,15 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable') return true;
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients') return [];
-                if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert') return { enable: false };
+                if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert')
+                    return { enable: false };
                 return 'default';
             });
 
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(
-                expect.stringContaining('No email addresses found to send alert email')
-            );
+            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('No email addresses found to send alert email'));
         });
 
         test('should return false when SMTP config is invalid', async () => {
@@ -152,7 +151,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
         test('should handle scriptLog as false', async () => {
             const reloadParamsNoLog = {
                 ...basicReloadParams,
-                scriptLog: false
+                scriptLog: false,
             };
 
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParamsNoLog);
@@ -166,8 +165,8 @@ describe('lib/qscloud/email_notification_qscloud', () => {
                 ...basicReloadParams,
                 reloadInfo: {
                     ...basicReloadParams.reloadInfo,
-                    log: undefined
-                }
+                    log: undefined,
+                },
             };
 
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParamsNoLog);
@@ -179,7 +178,8 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.genericUrls') return undefined;
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.enable') return true;
-                if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients') return ['test@example.com'];
+                if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients')
+                    return ['test@example.com'];
                 return 'default';
             });
 
@@ -195,7 +195,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
             expect(result).toBe(true);
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: API Error')
+                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: API Error'),
             );
         });
     });

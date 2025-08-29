@@ -1,4 +1,4 @@
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../qrs_client.js';
 import { load } from 'js-yaml';
 import fs from 'fs/promises';
 import { default as Ajv } from 'ajv';
@@ -321,7 +321,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
         'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
     };
 
-    const qrsInstance = new QrsInteract(cfg);
+    const qrsInstance = new QrsClient(cfg);
 
     // ------------------------------------------
     // The custom property specified by
