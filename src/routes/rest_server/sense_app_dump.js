@@ -1,4 +1,4 @@
-import serializeApp from 'serializeapp';
+import serializeApp from '../../lib/serialize_app.js';
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import WebSocket from 'ws';

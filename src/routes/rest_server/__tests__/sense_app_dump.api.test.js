@@ -14,7 +14,7 @@ describe('REST: sense_app_dump routes', () => {
         await jest.unstable_mockModule('fs', () => ({ readFileSync: jest.fn(() => '{}') }));
 
         mockSerialize = jest.fn(async () => ({ dumped: true, via: 'serializeapp' }));
-        await jest.unstable_mockModule('serializeapp', () => ({ default: mockSerialize }));
+        await jest.unstable_mockModule('../../../lib/serialize_app.js', () => ({ default: mockSerialize }));
 
         mockSession = {
             open: jest.fn(async () => ({
