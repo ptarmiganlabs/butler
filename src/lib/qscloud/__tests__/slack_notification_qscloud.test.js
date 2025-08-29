@@ -195,9 +195,11 @@ describe('qscloud slack notification - reload failures', () => {
         expect(slackSend).toHaveBeenCalledTimes(1);
         const sent = slackSend.mock.calls[0][0];
         expect(typeof sent.text).toBe('string');
-        // Expect escaped single backslashes -> double backslashes
-        expect(sent.text).toMatch(/C:\\\\/); // C:\\ in string
-        expect(sent.text).toMatch(/D:\\\\folder/);
+        // Expect escaped single backslashes -> double backslashes after JSON.stringify escaping
+        const ok = /C:\\\\\\\\/.test(sent.text) || /C:\\\\/.test(sent.text);
+        expect(ok).toBe(true);
+        const ok2 = /D:\\\\\\\\folder/.test(sent.text) || /D:\\\\folder/.test(sent.text);
+        expect(ok2).toBe(true);
     });
 
     test('disabled in config -> no Slack call and error logged', async () => {
