@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import fs from 'fs';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
@@ -400,20 +398,6 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                         return a === b;
                     });
 
-                    if (msgType === 'reload') {
-                        // Escape any back slashes in the script logs
-                        const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(
-                            `[QSEOW] SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
-                        );
-                        globals.logger.debug(
-                            `[QSEOW] SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
-                        );
-
-                        templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
-                        templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
-                    }
-
                     // Render Slack message using template. Do not convert to &lt; and &gt; as Slack will not render the message correctly
                     slackMsg = compiledTemplate(templateContext);
 
@@ -573,18 +557,16 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
-                // Replace all single and double quotes in scriptLogHead and scriptLogTail with escaped dittos
-                // This is needed to avoid breaking the Slack message JSON
-                const regExpSingle = /'/gm;
-                const regExpDouble = /"/gm;
-                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
-                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                // Properly escape strings for JSON embedding using JSON.stringify
+                // This ensures all special characters are correctly escaped for JSON
+                const escapeForJson = (str) => {
+                    // Use JSON.stringify to handle all escaping, then remove outer quotes
+                    return JSON.stringify(str).slice(1, -1);
+                };
 
-                // Replace all single and double quotes in executionDetailsConcatenated with escaped ditto
-                // This is needed to avoid breaking the Slack message JSON
-                templateContext.executionDetailsConcatenated = templateContext.executionDetailsConcatenated
-                    .replace(regExpSingle, "\\'")
-                    .replace(regExpDouble, "\\'");
+                templateContext.scriptLogHead = escapeForJson(templateContext.scriptLogHead);
+                templateContext.scriptLogTail = escapeForJson(templateContext.scriptLogTail);
+                templateContext.executionDetailsConcatenated = escapeForJson(templateContext.executionDetailsConcatenated);
 
                 // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
                 // https://api.slack.com/reference/block-kit/blocks#section_fields

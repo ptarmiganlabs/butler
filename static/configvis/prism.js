@@ -31,7 +31,7 @@ var _self =
                         switch (((t = t || {}), a.util.type(n))) {
                             case 'Object':
                                 if (((i = a.util.objId(n)), t[i])) return t[i];
-                                for (var l in ((r = {}), (t[i] = r), n)) n.hasOwnProperty(l) && (r[l] = e(n[l], t));
+                                for (var l in ((r = {}), (t[i] = r), n)) Object.prototype.hasOwnProperty.call(n, l) && (r[l] = e(n[l], t));
                                 return r;
                             case 'Array':
                                 return (
@@ -98,9 +98,9 @@ var _self =
                         var i = (r = r || a.languages)[e],
                             l = {};
                         for (var o in i)
-                            if (i.hasOwnProperty(o)) {
-                                if (o == n) for (var s in t) t.hasOwnProperty(s) && (l[s] = t[s]);
-                                t.hasOwnProperty(o) || (l[o] = i[o]);
+                            if (Object.prototype.hasOwnProperty.call(i, o)) {
+                                if (o == n) for (var s in t) Object.prototype.hasOwnProperty.call(t, s) && (l[s] = t[s]);
+                                Object.prototype.hasOwnProperty.call(t, o) || (l[o] = i[o]);
                             }
                         var u = r[e];
                         return (
@@ -115,7 +115,7 @@ var _self =
                         i = i || {};
                         var l = a.util.objId;
                         for (var o in n)
-                            if (n.hasOwnProperty(o)) {
+                            if (Object.prototype.hasOwnProperty.call(n, o)) {
                                 t.call(n, o, n[o], r || o);
                                 var s = n[o],
                                     u = a.util.type(s);
@@ -227,7 +227,7 @@ var _self =
         }
         function o(e, n, t, r, s, g) {
             for (var f in t)
-                if (t.hasOwnProperty(f) && t[f]) {
+                if (Object.prototype.hasOwnProperty.call(t, f) && t[f]) {
                     var h = t[f];
                     h = Array.isArray(h) ? h : [h];
                     for (var d = 0; d < h.length; ++d) {

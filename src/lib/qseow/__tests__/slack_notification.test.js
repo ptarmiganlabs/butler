@@ -324,8 +324,8 @@ describe('slack_notification', () => {
         expect(slackSendMock).toHaveBeenCalled();
         const arg = slackSendMock.mock.calls.pop()[0];
         // Backslashes should be preserved in some form; check minimally that a backslash path appears
-        // Accept either single-escaped (rendered) or double-escaped (JSON) variants
-        const ok = /C:\\temp/.test(arg.text) || /C:\\\\temp/.test(arg.text);
+        // With JSON.stringify escaping, backslashes are properly escaped for JSON
+        const ok = /C:\\\\temp/.test(arg.text) || /C:\\\\\\\\temp/.test(arg.text);
         expect(ok).toBe(true);
     });
 
