@@ -49,21 +49,38 @@ class QrsClient {
             httpsAgent = new https.Agent(agentConfig);
         }
 
+        // Generate random xrfkey for CSRF protection
+        const xrfkey = this.generateXrfKey();
+
         // Create axios instance
         this.axiosInstance = axios.create({
             baseURL: this.baseURL,
             timeout: 30000,
             headers: {
                 'Content-Type': 'application/json',
-                'x-qlik-xrfkey': 'abcdefghijklmnop',
+                'x-qlik-xrfkey': xrfkey,
                 ...this.config.headers,
             },
             httpsAgent,
             // Add xrfkey parameter to all requests
             params: {
-                xrfkey: 'abcdefghijklmnop',
+                xrfkey: xrfkey,
             },
         });
+    }
+
+    /**
+     * Generate a random 16-character string for xrfkey
+     * @private
+     * @returns {string} Random 16-character string
+     */
+    generateXrfKey() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 16; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
     }
 
     /**
