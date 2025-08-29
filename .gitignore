@@ -57,6 +57,9 @@ build/Release
 node_modules
 jspm_packages
 
+# jjsontree upgrade backups
+backup/
+
 # Optional npm cache directory
 .npm
 
