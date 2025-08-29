@@ -1,5 +1,5 @@
 import later from '@breejs/later';
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../qrs_client.js';
 
 import globals from '../../globals.js';
 import {
@@ -33,7 +33,7 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
-        const qrsInstance = new QrsInteract(configQRS);
+        const qrsInstance = new QrsClient(configQRS);
 
         // Get Qlik Sense server license info
         const result = await qrsInstance.Get(`license`);
@@ -234,7 +234,7 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
-        const qrsInstance = new QrsInteract(configQRS);
+        const qrsInstance = new QrsClient(configQRS);
 
         // Get Qlik Sense access license info
         const result1 = await qrsInstance.Get(`license/accesstypeoverview`);
@@ -871,7 +871,7 @@ async function checkQlikSenseLicenseRelease(config, logger) {
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
-        const qrsInstance = new QrsInteract(configQRS);
+        const qrsInstance = new QrsClient(configQRS);
 
         // Is license release enabled for professional access licenses?
         if (config.get('Butler.qlikSenseLicense.licenseRelease.licenseType.professional.enable') === true) {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../qrs_client.js';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 
@@ -683,7 +683,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
 
                 // Set up Sense repository service configuration
                 const cfg = getQRSConfig();
-                const qrsInstance = new QrsInteract(cfg);
+                const qrsInstance = new QrsClient(cfg);
 
                 // Array that will hold all NR accounts the event should be sent to
                 const tmpDestNewRelicAccounts = [];
@@ -827,7 +827,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
 
                 // Set up Sense repository service configuration
                 const cfg = getQRSConfig();
-                const qrsInstance = new QrsInteract(cfg);
+                const qrsInstance = new QrsClient(cfg);
 
                 // Array that will hold all NR accounts the log entry should be sent to
                 const tmpDestNewRelicAccounts = [];
@@ -973,7 +973,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
 
                 // Set up Sense repository service configuration
                 const cfg = getQRSConfig();
-                const qrsInstance = new QrsInteract(cfg);
+                const qrsInstance = new QrsClient(cfg);
 
                 // Array that will hold all NR accounts the event should be sent to
                 const tmpDestNewRelicAccounts = [];
@@ -1119,7 +1119,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
 
                 // Set up Sense repository service configuration
                 const cfg = getQRSConfig();
-                const qrsInstance = new QrsInteract(cfg);
+                const qrsInstance = new QrsClient(cfg);
 
                 // Array that will hold all NR accounts the log entry should be sent to
                 const tmpDestNewRelicAccounts = [];

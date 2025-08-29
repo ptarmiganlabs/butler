@@ -14,7 +14,7 @@ describe('qrs_util/task_cp_util', () => {
 
     beforeAll(async () => {
         mockQrs = { Get: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         const mod = await import('../task_cp_util.js');
         isCustomPropertyValueSet = mod.isCustomPropertyValueSet;

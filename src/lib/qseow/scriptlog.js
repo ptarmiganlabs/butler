@@ -1,4 +1,4 @@
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../qrs_client.js';
 import axios from 'axios';
 import https from 'https';
 import { Duration, DateTime } from 'luxon';
@@ -73,7 +73,7 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
-        const qrsInstance = new QrsInteract(configQRS);
+        const qrsInstance = new QrsClient(configQRS);
 
         // Step 1
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
@@ -214,7 +214,7 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
             'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
         };
 
-        const qrsInstance = new QrsInteract(configQRS);
+        const qrsInstance = new QrsClient(configQRS);
 
         // Only get script log if there is a valid fileReferenceId
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);

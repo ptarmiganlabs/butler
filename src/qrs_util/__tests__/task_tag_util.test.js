@@ -11,7 +11,7 @@ describe('qrs_util/task_tag_util.getTaskTags', () => {
 
     beforeAll(async () => {
         mockQrs = { Get: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         getTaskTags = (await import('../task_tag_util.js')).default;
     });

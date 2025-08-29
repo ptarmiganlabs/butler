@@ -1,4 +1,4 @@
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../lib/qrs_client.js';
 import globals from '../globals.js';
 
 /**
@@ -12,7 +12,7 @@ const getAppOwner = async (appId) => {
         // Get http headers from Butler config file
         const httpHeaders = globals.getQRSHttpHeaders();
 
-        const qrsInstance = new QrsInteract({
+        const qrsInstance = new QrsClient({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
             headers: httpHeaders,
