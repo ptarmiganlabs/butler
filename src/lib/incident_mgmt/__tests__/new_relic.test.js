@@ -61,7 +61,7 @@ describe('lib/incident_mgmt/new_relic', () => {
         }));
 
         await jest.unstable_mockModule('axios', () => ({ default: mockAxios }));
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: mockQrsInteract }));
+        await jest.unstable_mockModule('../../qrs_client.js', () => ({ default: mockQrsInteract }));
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
 
         const module = await import('../new_relic.js');

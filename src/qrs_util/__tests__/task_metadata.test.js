@@ -12,7 +12,7 @@ describe('qrs_util/task_metadata', () => {
 
     beforeAll(async () => {
         mockQrs = { Get: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         getTaskMetadata = (await import('../task_metadata.js')).default;
     });

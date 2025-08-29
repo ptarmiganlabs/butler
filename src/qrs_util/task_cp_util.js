@@ -1,5 +1,5 @@
 import path from 'path';
-import QrsInteract from 'qrs-interact';
+import QrsClient from '../lib/qrs_client.js';
 import globals from '../globals.js';
 
 /**
@@ -20,7 +20,7 @@ export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) 
         // Get http headers from Butler config file
         const httpHeaders = globals.getQRSHttpHeaders();
 
-        const qrsInstance = new QrsInteract({
+        const qrsInstance = new QrsClient({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
             headers: httpHeaders,
@@ -72,7 +72,7 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
         // Get http headers from Butler config file
         const httpHeaders = globals.getQRSHttpHeaders();
 
-        const qrsInstance = new QrsInteract({
+        const qrsInstance = new QrsClient({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
             headers: httpHeaders,
@@ -142,7 +142,7 @@ export async function getReloadTasksCustomProperties(config, configQRS, logger) 
             },
         };
 
-        const qrsInstance = new QrsInteract(cfg);
+        const qrsInstance = new QrsClient(cfg);
 
         // Get info about the task
         try {

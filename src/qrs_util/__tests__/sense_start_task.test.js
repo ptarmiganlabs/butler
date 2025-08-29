@@ -11,7 +11,7 @@ describe('qrs_util/sense_start_task', () => {
 
     beforeAll(async () => {
         mockQrs = { Post: jest.fn() };
-        await jest.unstable_mockModule('qrs-interact', () => ({ default: jest.fn(() => mockQrs) }));
+        await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({ default: jest.fn(() => mockQrs) }));
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         startTask = (await import('../sense_start_task.js')).default;
     });

@@ -176,8 +176,8 @@ describe('qseow/qliksense_license', () => {
             },
         }));
 
-        jest.unstable_mockModule('qrs-interact', () => ({
-            default: function QrsInteract() {
+        jest.unstable_mockModule('../../qrs_client.js', () => ({
+            default: function QrsClient() {
                 return makeQrs();
             },
         }));
@@ -494,8 +494,8 @@ describe('qseow/qliksense_license', () => {
         // Override DELETE to return error
         const qrsInstance = makeQrs();
         qrsInstance.Delete = jest.fn().mockRejectedValue(new Error('Delete failed'));
-        jest.unstable_mockModule('qrs-interact', () => ({
-            default: function QrsInteract() {
+        jest.unstable_mockModule('../../qrs_client.js', () => ({
+            default: function QrsClient() {
                 return qrsInstance;
             },
         }));
