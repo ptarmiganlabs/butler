@@ -8,7 +8,8 @@ import fs from 'fs';
 import path from 'path';
 
 describe('JsonTree.js library validation', () => {
-    const configVisPath = '/home/runner/work/butler/butler/static/configvis';
+    const workspaceRoot = process.cwd(); // Get current working directory
+    const configVisPath = path.join(workspaceRoot, 'static', 'configvis');
     const jsontreeFiles = {
         js: path.join(configVisPath, 'jsontree.js'),
         css: path.join(configVisPath, 'jsontree.js.css'),
