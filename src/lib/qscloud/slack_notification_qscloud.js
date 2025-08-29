@@ -169,32 +169,6 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                         return a === b;
                     });
 
-                    if (msgType === 'reload') {
-                        // Escape any back slashes in the script logs
-                        const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(
-                            `[QSCLOUD] SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
-                        );
-                        globals.logger.debug(
-                            `[QSCLOUD] SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
-                        );
-
-                        templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
-                        templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
-                    } else if (msgType === 'qscloud-app-reload') {
-                        // Escape any back slashes in the script logs
-                        const regExpText = /(?!\\n)\\{1}/gm;
-                        globals.logger.debug(
-                            `[QSCLOUD] SLACK SEND: Script log head escaping: ${regExpText.exec(templateContext.scriptLogHead)}`,
-                        );
-                        globals.logger.debug(
-                            `[QSCLOUD] SLACK SEND: Script log tail escaping: ${regExpText.exec(templateContext.scriptLogTail)}`,
-                        );
-
-                        templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpText, '\\\\');
-                        templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpText, '\\\\');
-                    }
-
                     slackMsg = compiledTemplate(templateContext);
 
                     globals.logger.debug(`[QSCLOUD] SLACK SEND: Rendered message:\n${slackMsg}`);
@@ -377,16 +351,16 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     appOwnerEmail: appOwner.email,
                 };
 
-                // Replace all single and double quotes in scriptLogHead and scriptLogTail with escaped dittos
-                // This is needed to avoid breaking the Slack message JSON
-                const regExpSingle = /'/gm;
-                const regExpDouble = /"/gm;
-                templateContext.scriptLogHead = templateContext.scriptLogHead.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
-                templateContext.scriptLogTail = templateContext.scriptLogTail.replace(regExpSingle, "'").replace(regExpDouble, "\\'");
+                // Properly escape strings for JSON embedding using JSON.stringify
+                // This ensures all special characters are correctly escaped for JSON
+                const escapeForJson = (str) => {
+                    // Use JSON.stringify to handle all escaping, then remove outer quotes
+                    return JSON.stringify(str).slice(1, -1);
+                };
 
-                // Replace all single and double quotes in logMessage with escaped ditto
-                // This is needed to avoid breaking the Slack message JSON
-                templateContext.logMessage = templateContext.logMessage.replace(regExpSingle, "\\'").replace(regExpDouble, "\\'");
+                templateContext.scriptLogHead = escapeForJson(templateContext.scriptLogHead);
+                templateContext.scriptLogTail = escapeForJson(templateContext.scriptLogTail);
+                templateContext.logMessage = escapeForJson(templateContext.logMessage);
 
                 // Check if script log is longer than 3000 characters. Truncate if so.
                 if (templateContext.scriptLogHead.length >= 3000) {
