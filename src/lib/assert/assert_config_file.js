@@ -94,7 +94,9 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
-            logger.debug(`ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${res1}`);
+            logger.debug(
+                `ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${JSON.stringify(res1, null, 2)}`,
+            );
 
             if (
                 res1.findIndex(
@@ -141,7 +143,9 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
-            logger.debug(`ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${res1}`);
+            logger.debug(
+                `ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${JSON.stringify(res1, null, 2)}`,
+            );
 
             if (
                 res1.findIndex(
@@ -188,7 +192,9 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
         // Check if the custom properties exist in the Qlik Sense environment
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
-            logger.debug(`ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${res1}`);
+            logger.debug(
+                `ASSERT CONFIG EMAIL: The following custom properties are available for reload tasks: ${JSON.stringify(res1, null, 2)}`,
+            );
 
             if (
                 res1.findIndex(
@@ -247,7 +253,9 @@ export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
         // Get custom property values
         try {
             const res1 = await getReloadTasksCustomProperties(config, configQRS, logger);
-            logger.debug(`ASSERT CONFIG INFLUXDB: The following custom properties are available for reload tasks: ${res1}`);
+            logger.debug(
+                `ASSERT CONFIG INFLUXDB: The following custom properties are available for reload tasks: ${JSON.stringify(res1, null, 2)}`,
+            );
 
             // CEnsure that the CP name specified in the config file is found in the list of available CPs
             // CP name is case sensitive and found in the "name" property of the CP object
