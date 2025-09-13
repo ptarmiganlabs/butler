@@ -68,7 +68,7 @@
         "ajv": "^8.17.1",
         "ajv-keywords": "^5.1.0",
         "any-base": "^1.1.0",
-        "axios": "^1.11.0",
+        "axios": "^1.12.1",
         "commander": "^14.0.0",
         "config": "^4.1.1",
         "cron-job-manager": "^2.3.1",
