@@ -109,6 +109,16 @@ describe('REST: Scheduler routes', () => {
         const created = JSON.parse(res.body);
         expect(created.name).toBe('C');
         expect(created.id).toBeTruthy();
+
+        // Test UUID functionality specifically
+        expect(typeof created.id).toBe('string');
+        expect(created.id.length).toBe(36);
+        // Test UUID v4 format
+        const uuidv4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        expect(created.id).toMatch(uuidv4Regex);
+        // Test that it includes timestamp
+        expect(created.created).toBeTruthy();
+        expect(new Date(created.created)).toBeInstanceOf(Date);
     });
 
     test('DELETE /v4/schedules/:scheduleId deletes or errors', async () => {

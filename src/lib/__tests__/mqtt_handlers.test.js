@@ -436,6 +436,62 @@ describe('lib/mqtt_handlers', () => {
         );
     });
 
+    test('validates different UUID formats correctly', async () => {
+        const validUuids = [
+            '550e8400-e29b-41d4-a716-446655440000',
+            'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+            '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        ];
+
+        const invalidUuids = ['invalid-uuid', '550e8400-e29b-41d4-a716', '550e8400-e29b-41d4-a716-44665544000g', ''];
+
+        // Test with valid UUIDs
+        for (const uuid of validUuids) {
+            mockValidate.mockReturnValue(true);
+            mockSenseStartTask.mockResolvedValue(true);
+
+            await loadModule({
+                'Butler.mqttConfig.enable': true,
+                'Butler.mqttConfig.azureEventGrid.enable': false,
+                'Butler.mqttConfig.brokerHost': 'mqtt-host',
+                'Butler.mqttConfig.brokerPort': 1883,
+                'Butler.mqttConfig.subscriptionRootTopic': 'root/#',
+                'Butler.mqttConfig.taskStartTopic': 'qliksense/start_task',
+            });
+
+            mqttInitHandlers();
+
+            const messageHandler = mockClient.on.mock.calls.find((call) => call[0] === 'message')[1];
+            await messageHandler('qliksense/start_task', Buffer.from(uuid));
+
+            expect(mockValidate).toHaveBeenCalledWith(uuid);
+        }
+
+        // Test with invalid UUIDs
+        for (const uuid of invalidUuids) {
+            mockValidate.mockReturnValue(false);
+            jest.clearAllMocks();
+
+            await loadModule({
+                'Butler.mqttConfig.enable': true,
+                'Butler.mqttConfig.azureEventGrid.enable': false,
+                'Butler.mqttConfig.brokerHost': 'mqtt-host',
+                'Butler.mqttConfig.brokerPort': 1883,
+                'Butler.mqttConfig.subscriptionRootTopic': 'root/#',
+                'Butler.mqttConfig.taskStartTopic': 'qliksense/start_task',
+            });
+
+            mqttInitHandlers();
+
+            const messageHandler = mockClient.on.mock.calls.find((call) => call[0] === 'message')[1];
+            await messageHandler('qliksense/start_task', Buffer.from(uuid));
+
+            expect(mockValidate).toHaveBeenCalledWith(uuid);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(`MQTT IN: Invalid task ID ${uuid}.`);
+            expect(mockSenseStartTask).not.toHaveBeenCalled();
+        }
+    });
+
     test('handles MQTT setup error for QS Cloud', async () => {
         // Force an error by making mqtt.connect throw on second call
         mockMqtt.connect
