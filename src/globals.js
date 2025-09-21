@@ -143,16 +143,36 @@ class Settings {
             // Get value of env variable NODE_ENV
             const env = process.env.NODE_ENV;
 
+            // Check if NODE_ENV is set
+            if (!env || env.trim() === '') {
+                console.log('\nError: No config file specified via command line and NODE_ENV environment variable is not set.');
+                console.log('Please either:');
+                console.log(
+                    '  1. Specify a config file using: "butler -c /path/to/config.yaml" or "butler --configfile /path/to/config.yaml"',
+                );
+                console.log('  2. Set NODE_ENV environment variable (e.g., NODE_ENV=production)');
+                console.log('\nExample usage:');
+                console.log('  NODE_ENV=production butler');
+                console.log('  butler -c ./config/production.yaml');
+                process.exit(1);
+            }
+
             // Get path to config file
             const filename = fileURLToPath(import.meta.url);
             const dirname = upath.dirname(filename);
             this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
+
+            // Log which config file we're looking for
+            console.log(`Looking for config file: ${this.configFileExpanded}`);
+
+            // Set environment variable early to suppress config warning
+            process.env.SUPPRESS_NO_CONFIG_WARNING = process.env.SUPPRESS_NO_CONFIG_WARNING || 'true';
+
             // If CLI loglevel is provided without -c, inject it via NODE_CONFIG so it overrides file configs
             if (this.options.loglevel && this.options.loglevel.length > 0) {
                 try {
                     const cfgObj = { Butler: { logLevel: this.options.loglevel } };
                     process.env.NODE_CONFIG = JSON.stringify(cfgObj);
-                    process.env.SUPPRESS_NO_CONFIG_WARNING = process.env.SUPPRESS_NO_CONFIG_WARNING || 'true';
                 } catch (_) {
                     // no-op
                 }
