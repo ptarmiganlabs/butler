@@ -70,7 +70,19 @@ class Settings {
             .description(
                 'Butler gives superpowers to client-managed Qlik Sense Enterprise on Windows!\nAdvanced reload failure alerts, task scheduler, key-value store, file system access and much more.',
             )
-            .option('-c, --configfile <file>', 'path to config file')
+            .addHelpText(
+                'after',
+                `
+Configuration File:
+  Butler requires a configuration file to run. You must specify one using the -c option.
+  
+  Example config files can be found in:
+    ./src/config/production_template.yaml
+    ./src/config/schedule_template.yaml
+  
+  For more information visit: https://butler.ptarmiganlabs.com`,
+            )
+            .option('-c, --configfile <file>', 'path to config file (REQUIRED)')
             .addOption(new Option('-l, --loglevel <level>', 'log level').choices(['error', 'warn', 'info', 'verbose', 'debug', 'silly']))
             .option(
                 '--new-relic-account-name  <name...>',
@@ -96,6 +108,11 @@ class Settings {
         program.parse(process.argv);
         this.options = program.opts();
 
+        // Check if config file is provided - if not, show help and exit
+        if (!this.options.configfile || this.options.configfile.length === 0) {
+            program.help();
+        }
+
         // Utility functions
         this.checkFileExistsSync = Settings.checkFileExistsSync;
         this.sleep = Settings.sleep;
@@ -107,6 +124,8 @@ class Settings {
         let configFileBasename;
         let configFileExtension;
 
+        // Since configfile is required, this check should always pass
+        // but we'll keep it for safety
         if (this.options.configfile && this.options.configfile.length > 0) {
             configFileOption = this.options.configfile;
             this.configFileExpanded = upath.resolve(this.options.configfile);
@@ -115,7 +134,13 @@ class Settings {
             configFileBasename = upath.basename(this.configFileExpanded, configFileExtension);
 
             if (configFileExtension.toLowerCase() !== '.yaml') {
-                console.log('Error: Config file extension must be yaml');
+                console.log('\n*** Invalid config file extension ***');
+                console.log('='.repeat(40));
+                console.log('Butler configuration files must have a .yaml extension.');
+                console.log('');
+                console.log(`You specified: ${this.options.configfile}`);
+                console.log('Please use a .yaml file instead.');
+                console.log('='.repeat(40));
                 process.exit(1);
             }
 
@@ -132,51 +157,39 @@ class Settings {
                     process.env.NODE_CONFIG = JSON.stringify(cfgObj);
                     process.env.SUPPRESS_NO_CONFIG_WARNING = 'true';
                 } catch (e) {
-                    console.log(`Error: Failed reading/parsing config file ${this.configFileExpanded}: ${e.message}`);
+                    console.log('\n*** Config file error ***');
+                    console.log('='.repeat(40));
+                    console.log(`Failed to read or parse config file: ${this.configFileExpanded}`);
+                    console.log(`Error: ${e.message}`);
+                    console.log('');
+                    console.log('Please check that:');
+                    console.log('• The file exists and is readable');
+                    console.log('• The YAML syntax is valid');
+                    console.log('• The file is not corrupted');
+                    console.log('='.repeat(40));
                     process.exit(1);
                 }
             } else {
-                console.log('Error: Specified config file does not exist');
+                console.log('\n*** Config file not found ***');
+                console.log('='.repeat(40));
+                console.log(`The specified config file does not exist: ${this.options.configfile}`);
+                console.log(`Resolved path: ${this.configFileExpanded}`);
+                console.log('');
+                console.log('Please check that:');
+                console.log('• The file path is correct');
+                console.log('• The file exists');
+                console.log('• You have read permissions');
+                console.log('='.repeat(40));
                 process.exit(1);
             }
         } else {
-            // Get value of env variable NODE_ENV
-            const env = process.env.NODE_ENV;
-
-            // Check if NODE_ENV is set
-            if (!env || env.trim() === '') {
-                console.log('\nError: No config file specified via command line and NODE_ENV environment variable is not set.');
-                console.log('Please either:');
-                console.log(
-                    '  1. Specify a config file using: "butler -c /path/to/config.yaml" or "butler --configfile /path/to/config.yaml"',
-                );
-                console.log('  2. Set NODE_ENV environment variable (e.g., NODE_ENV=production)');
-                console.log('\nExample usage:');
-                console.log('  NODE_ENV=production butler');
-                console.log('  butler -c ./config/production.yaml');
-                process.exit(1);
-            }
-
-            // Get path to config file
-            const filename = fileURLToPath(import.meta.url);
-            const dirname = upath.dirname(filename);
-            this.configFileExpanded = upath.resolve(dirname, `./config/${env}.yaml`);
-
-            // Log which config file we're looking for
-            console.log(`Looking for config file: ${this.configFileExpanded}`);
-
-            // Set environment variable early to suppress config warning
-            process.env.SUPPRESS_NO_CONFIG_WARNING = process.env.SUPPRESS_NO_CONFIG_WARNING || 'true';
-
-            // If CLI loglevel is provided without -c, inject it via NODE_CONFIG so it overrides file configs
-            if (this.options.loglevel && this.options.loglevel.length > 0) {
-                try {
-                    const cfgObj = { Butler: { logLevel: this.options.loglevel } };
-                    process.env.NODE_CONFIG = JSON.stringify(cfgObj);
-                } catch (_) {
-                    // no-op
-                }
-            }
+            // This should never happen since configfile is now required,
+            // but just in case...
+            console.log('\n*** No configuration file specified ***');
+            console.log('='.repeat(50));
+            console.log('This should not happen - please report this as a bug.');
+            console.log('='.repeat(50));
+            process.exit(1);
         }
 
         // Load YAML parser before loading the 'config' package so YAML support is available in bundled/SEA builds
@@ -243,7 +256,7 @@ class Settings {
         this.execPath = this.isSea ? upath.dirname(process.execPath) : process.cwd();
 
         // Are we running as standalone app or not?
-        if (this.isSea && configFileOption === undefined) {
+        if (this.isSea && !this.options.configfile) {
             // Show help if running as standalone app and mandatory options (e.g. config file) are not specified
             program.help({ error: true });
         }
