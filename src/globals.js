@@ -76,9 +76,9 @@ class Settings {
 Configuration File:
   Butler requires a configuration file to run. You must specify one using the -c option.
   
-  Example config files can be found in:
-    ./src/config/production_template.yaml
-    ./src/config/schedule_template.yaml
+  Example config files are included in the distribution ZIP file, as well as online at:
+    https://github.com/ptarmiganlabs/butler/tree/master/src/config
+
   
   For more information visit: https://butler.ptarmiganlabs.com`,
             )
