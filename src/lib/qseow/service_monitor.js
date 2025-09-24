@@ -615,8 +615,9 @@ async function setupServiceMonitorTimer(config, logger) {
             }
         }
     } catch (err) {
-        logger.error(`SERVICE MONITOR INIT: ${err}`);
-        if (err.stack) {
+        if (globals.isSea) {
+            logger.error(`SERVICE MONITOR INIT: ${err.message}`);
+        } else {
             logger.error(`SERVICE MONITOR INIT: ${err.stack}`);
         }
     }

@@ -346,7 +346,7 @@ describe('lib/incident_mgmt/new_relic', () => {
 
             await sendNewRelicLog(incidentConfig, { scriptLog: { scriptLogFull: [] } }, ['test-account']);
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('NEW RELIC 2 message: Log network error'));
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('NEW RELIC 2 stack: Error: Log network error'));
         });
     });
 
@@ -628,7 +628,7 @@ describe('lib/incident_mgmt/new_relic', () => {
             await sendReloadTaskFailureEvent(reloadParams);
 
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('NEW RELIC RELOADFAILEDEVENT message: Config error'),
+                expect.stringContaining('NEW RELIC RELOADFAILEDEVENT stack: Error: Config error'),
             );
         });
 

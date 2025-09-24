@@ -1,4 +1,5 @@
 import _ from 'lodash';
+
 import globals from '../globals.js';
 
 export function postButlerMemoryUsageToInfluxdb(memory) {
@@ -46,7 +47,11 @@ export function postButlerMemoryUsageToInfluxdb(memory) {
             globals.logger.verbose('MEMORY USAGE: Sent Butler memory usage data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(`MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.stack}`);
+            if (globals.isSea) {
+                globals.logger.error(`MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.message}`);
+            } else {
+                globals.logger.error(`MEMORY USAGE: Error saving Butler memory usage to InfluxDB! ${err.stack}`);
+            }
         });
 }
 
@@ -525,7 +530,11 @@ export function postWindowsServiceStatusToInfluxDB(serviceStatus) {
             globals.logger.verbose('WINDOWS SERVICE STATUS: Sent Windows service status data to InfluxDB');
         })
         .catch((err) => {
-            globals.logger.error(`WINDOWS SERVICE STATUS: Error saving Windows service status to InfluxDB! ${err.stack}`);
+            if (globals.isSea) {
+                globals.logger.error(`WINDOWS SERVICE STATUS: Error saving Windows service status to InfluxDB! ${err.message}`);
+            } else {
+                globals.logger.error(`WINDOWS SERVICE STATUS: Error saving Windows service status to InfluxDB! ${err.stack}`);
+            }
         });
 }
 
@@ -639,7 +648,11 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
                 globals.logger.verbose('[QSEOW] RELOAD TASK SUCCESS: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                if (globals.isSea) {
+                    globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.message}`);
+                } else {
+                    globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                }
             });
     } catch (err) {
         globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: ${err}`);
@@ -780,7 +793,11 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
                 globals.logger.verbose('[QSEOW] RELOAD TASK FAILED: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
-                globals.logger.error(`[QSEOW] RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                if (globals.isSea) {
+                    globals.logger.error(`[QSEOW] RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.message}`);
+                } else {
+                    globals.logger.error(`[QSEOW] RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${err.stack}`);
+                }
             });
     } catch (err) {
         globals.logger.error(`[QSEOW] RELOAD TASK FAILED: ${err}`);

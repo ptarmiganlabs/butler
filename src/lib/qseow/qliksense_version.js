@@ -55,8 +55,9 @@ async function checkQlikSenseVersion(config, logger) {
             await postQlikSenseVersionToInfluxDB(result.data);
         }
     } catch (err) {
-        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err}`);
-        if (err.stack) {
+        if (globals.isSea) {
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err.message}`);
+        } else {
             logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err.stack}`);
         }
     }
@@ -80,8 +81,9 @@ export async function setupQlikSenseVersionMonitor(config, logger) {
             checkQlikSenseVersion(config, logger, true);
         }
     } catch (err) {
-        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err}`);
-        if (err.stack) {
+        if (globals.isSea) {
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err.message}`);
+        } else {
             logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err.stack}`);
         }
     }

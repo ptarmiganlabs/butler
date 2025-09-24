@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import QrsClient from '../qrs_client.js';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
@@ -141,11 +142,9 @@ function getReloadFailedEventConfig() {
 
         return cfg;
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`NEW RELIC RELOADFAILEDEVENT message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC RELOADFAILEDEVENT stack: ${err.stack}`);
         }
 
@@ -221,11 +220,9 @@ function getReloadFailedLogConfig() {
 
         return cfg;
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`NEW RELIC RELOADFAILEDLOG message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC RELOADFAILEDLOG stack: ${err.stack}`);
         }
 
@@ -304,11 +301,9 @@ function getReloadAbortedEventConfig() {
 
         return cfg;
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`NEW RELIC RELOADABORTEDEVENT message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC RELOADABORTEDEVENT stack: ${err.stack}`);
         }
 
@@ -384,11 +379,9 @@ function getReloadAbortedLogConfig() {
 
         return cfg;
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`NEW RELIC RELOADABORTEDLOG message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC RELOADABORTEDLOG stack: ${err.stack}`);
         }
 
@@ -477,9 +470,7 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
     } catch (err) {
         if (err.message) {
             globals.logger.error(`NEW RELIC 1 message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC 1 stack: ${err.stack}`);
         }
 
@@ -616,11 +607,9 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
             }
         }
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`NEW RELIC 2 message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`NEW RELIC 2 stack: ${err.stack}`);
         }
 
@@ -753,11 +742,9 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                 sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                if (err.message) {
+                if (globals.isSea) {
                     globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 message: ${err.message}`);
-                }
-
-                if (err.stack) {
+                } else {
                     globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 stack: ${err.stack}`);
                 }
 
@@ -897,11 +884,9 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                 sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                if (err.message) {
+                if (globals.isSea) {
                     globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 message: ${err.message}`);
-                }
-
-                if (err.stack) {
+                } else {
                     globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 stack: ${err.stack}`);
                 }
 
@@ -1043,11 +1028,9 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                 sendNewRelicEvent(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                if (err.message) {
+                if (globals.isSea) {
                     globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 message: ${err.message}`);
-                }
-
-                if (err.stack) {
+                } else {
                     globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 stack: ${err.stack}`);
                 }
 
@@ -1189,11 +1172,9 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                 sendNewRelicLog(incidentConfig, params, destNewRelicAccounts);
                 return null;
             } catch (err) {
-                if (err.message) {
+                if (globals.isSea) {
                     globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 message: ${err.message}`);
-                }
-
-                if (err.stack) {
+                } else {
                     globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 stack: ${err.stack}`);
                 }
 

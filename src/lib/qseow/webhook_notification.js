@@ -431,11 +431,9 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
             globals.logger.info('[QSEOW] WEBHOOKOUT: No outgoing webhooks to process');
         }
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`[QSEOW] WEBHOOKOUT 1 message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`[QSEOW] WEBHOOKOUT 1 stack: ${err.stack}`);
         }
 
@@ -612,11 +610,9 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
             globals.logger.info('SERVICE MONITOR WEBHOOKOUT: No outgoing webhooks to process');
         }
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 stack: ${err.stack}`);
         }
 
@@ -790,11 +786,9 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
             globals.logger.info('[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: No outgoing webhooks to process');
         }
     } catch (err) {
-        if (err.message) {
+        if (globals.isSea) {
             globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message: ${err.message}`);
-        }
-
-        if (err.stack) {
+        } else {
             globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack: ${err.stack}`);
         }
 
