@@ -152,7 +152,11 @@ const start = async () => {
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: Could not set up config visualisation server on ${address}`);
-                    globals.logger.error(`MAIN: ${err.stack}`);
+                    if (globals.isSea) {
+                        globals.logger.error(`MAIN: ${err.message}`);
+                    } else {
+                        globals.logger.error(`MAIN: ${err.stack}`);
+                    }
                     configVisServer.log.error(err);
                     process.exit(1);
                 }
@@ -180,7 +184,11 @@ const start = async () => {
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: Background REST server could not listen on ${address}`);
-                    globals.logger.error(`MAIN: ${err.stack}`);
+                    if (globals.isSea) {
+                        globals.logger.error(`MAIN: ${err.message}`);
+                    } else {
+                        globals.logger.error(`MAIN: ${err.stack}`);
+                    }
                     restServer.log.error(err);
                     process.exit(1);
                 }
@@ -201,7 +209,11 @@ const start = async () => {
             (err, address) => {
                 if (err) {
                     globals.logger.error(`MAIN: REST server could not listen on ${address}`);
-                    globals.logger.error(`MAIN: ${err.stack}`);
+                    if (globals.isSea) {
+                        globals.logger.error(`MAIN: ${err.message}`);
+                    } else {
+                        globals.logger.error(`MAIN: ${err.stack}`);
+                    }
                     proxyRestServer.log.error(err);
                     process.exit(1);
                 }

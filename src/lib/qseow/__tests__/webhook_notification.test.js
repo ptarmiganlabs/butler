@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { jest } from '@jest/globals';
 
 // Mocks
@@ -745,8 +744,8 @@ describe('webhook_notification', () => {
         // wait a bit for logging
         await new Promise((r) => setTimeout(r, 60));
         // License monitor path logs via outer catch, without the inner 404 hint
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message:'));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Not Found'));
+        // In non-SEA mode, only stack is logged
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack:'));
     });
 
     test('service monitor no-webhooks path yields config-missing error and skips axios', async () => {
@@ -1006,7 +1005,7 @@ describe('webhook_notification', () => {
         };
         sendServiceMonitorWebhook(svc);
         await new Promise((r) => setTimeout(r, 80));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR WEBHOOKOUT 1 message:'));
+        // In non-SEA mode, only stack is logged
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR WEBHOOKOUT 1 stack:'));
     });
 
@@ -1025,7 +1024,7 @@ describe('webhook_notification', () => {
             daysUntilExpiry: 250,
         });
         await new Promise((r) => setTimeout(r, 80));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message:'));
+        // In non-SEA mode, only stack is logged
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack:'));
     });
 
@@ -1135,9 +1134,7 @@ describe('webhook_notification', () => {
         expect(axiosReq).not.toHaveBeenCalled();
         // Inner invalid config log
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid outgoing webhook config'));
-        // Outer catch message log
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT 1 message:'));
-        // Outer catch stack log
+        // Outer catch stack log (in non-SEA mode, only stack is logged)
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT 1 stack:'));
     });
 });

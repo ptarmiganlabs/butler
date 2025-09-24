@@ -147,8 +147,11 @@ async function build(opts = {}) {
             globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
     } catch (err) {
-        globals.logger.error(`CONFIG: Error initiating host info: ${err}`);
-        globals.logger.error(`CONFIG: Error initiating host info, stack trace: ${err.stack}`);
+        if (globals.isSea) {
+            globals.logger.error(`CONFIG: Error initiating host info: ${err.message}`);
+        } else {
+            globals.logger.error(`CONFIG: Error initiating host info, stack trace: ${err.stack}`);
+        }
     }
 
     // Set up REST server, if enabled
@@ -208,7 +211,7 @@ async function build(opts = {}) {
         });
 
         // In SEA, serve Swagger UI static files from embedded assets to avoid fs lookups
-        if (sea.isSea()) {
+        if (globals.isSea) {
             const swaggerAssetMap = {
                 'swagger-ui.css': '/swagger-ui.css',
                 'index.css': '/index.css',
@@ -255,7 +258,7 @@ async function build(opts = {}) {
         // Provide embedded logo to Swagger UI in SEA to avoid fs lookups
         let swaggerLogoBuf = null;
         try {
-            if (sea.isSea()) {
+            if (globals.isSea) {
                 swaggerLogoBuf = sea.getAsset('/logo.svg');
             } else {
                 swaggerLogoBuf = fs.readFileSync(path.resolve(globals.appBasePath, 'static/logo.svg'));

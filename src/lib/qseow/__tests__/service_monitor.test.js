@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { jest } from '@jest/globals';
 
 // Capture scheduled interval callback

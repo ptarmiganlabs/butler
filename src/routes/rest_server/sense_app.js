@@ -173,13 +173,14 @@ async function handlerPutAppReload(request, reply) {
             }
         }
     } catch (err) {
-        globals.logger.error(
-            `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error is: ${JSON.stringify(
-                err,
-                null,
-                2,
-            )}, stack: ${err.stack}.`,
-        );
+        let errorMsg = '';
+        if (globals.isSea) {
+            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${err.message}`;
+        } else {
+            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${err.stack}`;
+        }
+
+        globals.logger.error(errorMsg);
         reply.send(httpErrors(500, 'Failed getting list of Sense apps'));
     }
 }
