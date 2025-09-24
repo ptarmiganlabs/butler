@@ -124,7 +124,7 @@ Configuration File:
         let configFileBasename;
         let configFileExtension;
 
-        // Since configfile is now required, this check should always pass
+        // Since configfile is required, this check should always pass
         // but we'll keep it for safety
         if (this.options.configfile && this.options.configfile.length > 0) {
             configFileOption = this.options.configfile;
