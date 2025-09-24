@@ -35,7 +35,7 @@ class Settings {
         const filenamePackage = `./package.json`;
 
         // Are we running as a packaged app?
-        if (globals.isSea) {
+        if (sea.isSea()) {
             // Get contents of package.json file, including version number
             const packageJson = sea.getAsset('package.json', 'utf8');
             this.appVersion = JSON.parse(packageJson).version;
@@ -459,7 +459,7 @@ Configuration File:
         try {
             cert = fs.readFileSync(filename);
         } catch (err) {
-            if (globals.isSea) {
+            if (sea.isSea()) {
                 this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${err.message}`);
             } else {
                 this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${err.stack}`);
@@ -487,7 +487,7 @@ Configuration File:
     getCertificatePaths() {
         // Use the same logic as in app.js for path resolution
         let dirname;
-        if (globals.isSea) {
+        if (sea.isSea()) {
             const filename = fileURLToPath(import.meta.url);
             dirname = upath.dirname(filename);
         } else {
@@ -742,7 +742,7 @@ Configuration File:
             return hostInfo;
         } catch (err) {
             this.logger.error(`CONFIG: Getting host info: ${err}`);
-            if (globals.isSea) {
+            if (sea.isSea()) {
                 this.logger.error(`CONFIG: Getting host info: ${err.message}`);
             } else {
                 this.logger.error(`CONFIG: Getting host info, stack trace: ${err.stack}`);
@@ -785,7 +785,7 @@ Configuration File:
                                         this.logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
                                     })
                                     .catch((err) => {
-                                        if (globals.isSea) {
+                                        if (sea.isSea()) {
                                             this.logger.error(
                                                 `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.message}`,
                                             );
@@ -797,7 +797,7 @@ Configuration File:
                                     });
                             })
                             .catch((err) => {
-                                if (globals.isSea) {
+                                if (sea.isSea()) {
                                     this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.message}`);
                                 } else {
                                     this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.stack}`);
@@ -808,7 +808,7 @@ Configuration File:
                     }
                 })
                 .catch((err) => {
-                    if (globals.isSea) {
+                    if (sea.isSea()) {
                         this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${err.message}`);
                     } else {
                         this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${err.stack}`);
