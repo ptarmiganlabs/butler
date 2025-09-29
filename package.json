@@ -63,7 +63,7 @@
         "@fastify/static": "^8.2.0",
         "@fastify/swagger": "^9.5.1",
         "@fastify/swagger-ui": "^5.2.3",
-        "@keyvhq/core": "^2.1.7",
+        "@keyvhq/core": "^2.1.11",
         "@xstate/fsm": "^2.1.0",
         "ajv": "^8.17.1",
         "ajv-keywords": "^5.1.0",
