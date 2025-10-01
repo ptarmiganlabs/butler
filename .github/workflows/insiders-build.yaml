@@ -12,9 +12,10 @@ jobs:
                 include:
                     - os: win-code-sign
                       build: |
-                          # Inject git SHA into package.json
+                          # Inject git SHA and date into package.json
                           $GIT_SHA = (git rev-parse --short HEAD)
-                          (Get-Content package.json) -replace '"version": "(.*)"', ('"version": "$1-' + $GIT_SHA + '"') | Set-Content package.json
+                          $BUILD_DATE = (Get-Date -Format "yyyyMMdd")
+                          (Get-Content package.json) -replace '"version": "(.*)"', ('"version": "$1-' + $BUILD_DATE + '-' + $GIT_SHA + '"') | Set-Content package.json
 
                           # Create a single JS file using esbuild
                           ./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
@@ -103,10 +104,11 @@ jobs:
                     # x64 build
                     - os: mac-build1
                       build: |
-                          # Inject git SHA into package.json
+                          # Inject git SHA and date into package.json
                           GIT_SHA=$(git rev-parse --short HEAD)
+                          BUILD_DATE=$(date +%Y%m%d)
                           VERSION=$(grep -o '"version": "[^"]*"' package.json | cut -d'"' -f4)
-                          sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION-$GIT_SHA\"/" package.json
+                          sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION-$BUILD_DATE-$GIT_SHA\"/" package.json
 
                           # Create a single JS file using esbuild
                           ./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
@@ -228,10 +230,11 @@ jobs:
                     # Arm 64 build
                     - os: mac-build2
                       build: |
-                          # Inject git SHA into package.json
+                          # Inject git SHA and date into package.json
                           GIT_SHA=$(git rev-parse --short HEAD)
+                          BUILD_DATE=$(date +%Y%m%d)
                           VERSION=$(grep -o '"version": "[^"]*"' package.json | cut -d'"' -f4)
-                          sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION-$GIT_SHA\"/" package.json
+                          sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION-$BUILD_DATE-$GIT_SHA\"/" package.json
 
                           # Create a single JS file using esbuild
                           ./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
@@ -354,10 +357,11 @@ jobs:
                       artifact_insider: butler--macos-arm64--${{ github.sha }}.zip
                     - os: ubuntu-latest
                       build: |
-                          # Inject git SHA into package.json
+                          # Inject git SHA and date into package.json
                           GIT_SHA=$(git rev-parse --short HEAD)
+                          BUILD_DATE=$(date +%Y%m%d)
                           VERSION=$(grep -o '"version": "[^"]*"' package.json | cut -d'"' -f4)
-                          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION-$GIT_SHA\"/" package.json
+                          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION-$BUILD_DATE-$GIT_SHA\"/" package.json
 
                           ./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
                           node --experimental-sea-config build-script/sea-config.json
