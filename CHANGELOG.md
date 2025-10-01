@@ -1,5 +1,111 @@
 # Changelog
 
+## [14.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.2...butler-v14.0.0) (2025-10-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* -c / --configfile option is now mandatory.
+
+### Features
+
+* -c / --configfile option is now mandatory. ([f8a54a5](https://github.com/ptarmiganlabs/butler/commit/f8a54a5b64382672925fb812a68f650b22653711))
+* add first set of tests in the new unit test suite ([a3cf65e](https://github.com/ptarmiganlabs/butler/commit/a3cf65e03f7a573bbcf2541f8a76a50f4e98aa4c))
+* **build:** include build date in insider's build versioning ([247de86](https://github.com/ptarmiganlabs/butler/commit/247de8669dab0b09169a0e4ee7b16565e21e24a4))
+* **ci:** add automatic Windows insider build deployment and log monitoring ([5cf49df](https://github.com/ptarmiganlabs/butler/commit/5cf49df6f36a701c90bbcfe13385d008e12f767d))
+* **ci:** add Windows insider build deployment and log monitoring workflows ([e9df0eb](https://github.com/ptarmiganlabs/butler/commit/e9df0eb7308841d7c0067ee99d4e8826c673b19a))
+* **configvis:** add comprehensive jjsontree upgrade infrastructure ([666a943](https://github.com/ptarmiganlabs/butler/commit/666a943eb2facd037bed676f03ca1a569f2c7e63))
+* **configvis:** upgrade jsontree to v4.7.1 and add comprehensive unit tests ([8559104](https://github.com/ptarmiganlabs/butler/commit/8559104ca60e53b903d2ee51d6151cb98160ee61))
+* enhance log messages when no config file is specified on startup ([8fe18cf](https://github.com/ptarmiganlabs/butler/commit/8fe18cf500ac32b6a2ef94da9a3389caf6fda52b))
+* implement conditional configuration validation and update dependencies ([dd85636](https://github.com/ptarmiganlabs/butler/commit/dd856365ae389ba1a5a38493c84263eb999be0ed))
+* **lib:** replace serializeapp dependency with internal implementation ([fa0a12b](https://github.com/ptarmiganlabs/butler/commit/fa0a12b44f387afbf03b44f148ed5863158a7759))
+* **lib:** replace serializeapp dependency with internal implementation ([2ee49bf](https://github.com/ptarmiganlabs/butler/commit/2ee49bf4f112bf5cf00dce4eb27e52375f65c626))
+* **lib:** replace serializeapp dependency with internal implementation ([b4a5c13](https://github.com/ptarmiganlabs/butler/commit/b4a5c132fd091836607f191c444640c3dd4cae57))
+* **qseow:** implement proper CSRF protection in calls to QRS API ([d78c303](https://github.com/ptarmiganlabs/butler/commit/d78c30329f10dfbb3bd5c96954f75a213ee1c37d))
+* **qseow:** implement proper CSRF protection in calls to QRS API ([d0c5d2d](https://github.com/ptarmiganlabs/butler/commit/d0c5d2d5d5e6fec0cb6ffbb42b4e6beda5bebf64))
+* replace qrs-interact dependency with Axios-based QRS client ([269bfd6](https://github.com/ptarmiganlabs/butler/commit/269bfd60c4cbdc42a06dbac2268bc44cffc9bec1))
+* replace qrs-interact dependency with Axios-based QRS client ([bf22399](https://github.com/ptarmiganlabs/butler/commit/bf22399182d82a365dd93a53a3fb028db8304b19))
+* **static:** upgrade prism.js from v1.29.0 to v1.30.0 with comprehensive tests ([fdd2f2c](https://github.com/ptarmiganlabs/butler/commit/fdd2f2c0e6f45d3cef23a22c83aa1df6ce14e9c0))
+* **svc monitor:** filter out empty service status blocks in statusAll function ([9af44c9](https://github.com/ptarmiganlabs/butler/commit/9af44c9ff4065c789276d21d4370d7c6cf0d4dfb))
+* **tests:** add comprehensive API schema tests for key-value store and scheduler ([513df1f](https://github.com/ptarmiganlabs/butler/commit/513df1f8ead91a7d586335b76f84b70608e3ba20))
+* **tests:** add comprehensive app owner alert tests and TLS configuration tests for smtp module ([70ed05e](https://github.com/ptarmiganlabs/butler/commit/70ed05e0e39897a8e807df2b101356500f1c7615))
+* **tests:** add comprehensive unit tests for API schemas and utility functions ([7459d05](https://github.com/ptarmiganlabs/butler/commit/7459d05bb9ee21ad82238b0db5633158a79cc4e4))
+* **tests:** add comprehensive unit tests for assert_config_file and smtp modules ([e4d7318](https://github.com/ptarmiganlabs/butler/commit/e4d7318cfb0f8e67f5ee771d0c90c2639111e026))
+* **tests:** add comprehensive unit tests for config_obfuscate, qscloud/util, and qseow/get_qs_urls modules ([3b112ec](https://github.com/ptarmiganlabs/butler/commit/3b112ec4efc9ebb8bb4cf9bbab40648fc076f63e))
+* **tests:** add comprehensive unit tests for email notifications, Teams notifications, scheduler, telemetry, and config assertion modules ([466038c](https://github.com/ptarmiganlabs/butler/commit/466038c572b9c604a60d676bc052f1bf6ce40eb8))
+* **tests:** add comprehensive unit tests for incident management modules achieving 85%+ coverage ([cd82abf](https://github.com/ptarmiganlabs/butler/commit/cd82abfba16e0eb09951b36fd9589632175976cb))
+* **tests:** add comprehensive unit tests for QS Cloud API modules ([2be39a2](https://github.com/ptarmiganlabs/butler/commit/2be39a252355d8f2068c6d7ed6b74da861a148df))
+* **tests:** add comprehensive unit tests for qseow modules achieving 85%+ coverage for critical components ([15f5e9e](https://github.com/ptarmiganlabs/butler/commit/15f5e9ec1cec81d1225d29d91b47f77ff5149bdc))
+* **tests:** add comprehensive unit tests for scriptlog, webhook_notification, msteams_notification, smtp, qliksense_license and winsvc modules ([f364379](https://github.com/ptarmiganlabs/butler/commit/f3643797dd39067dcd1fe4858cb115f64c18e7e7))
+* **tests:** Add more unit tests, increasing test coverage ([7999742](https://github.com/ptarmiganlabs/butler/commit/7999742f046e45883f8169895d2aa534605bcd4e))
+* **tests:** add MQTT API schema tests and configure comprehensive coverage collection ([777eddf](https://github.com/ptarmiganlabs/butler/commit/777eddf9095d592425404d4e789da694eb70bac2))
+* **tests:** add unit tests for email_notification_qscloud with tag gating functionality ([fadb32d](https://github.com/ptarmiganlabs/butler/commit/fadb32de8830ffe5733c6e11dd108b91b475a5bc))
+* **tests:** add unit tests for email_notification_qscloud.js achieving 55% coverage from 0% ([712cd15](https://github.com/ptarmiganlabs/butler/commit/712cd158bc9a810edea37eae265572968fd90298))
+* **tests:** add unit tests for support plugin, improving overall test coverage ([54bea3a](https://github.com/ptarmiganlabs/butler/commit/54bea3ad60c250707f00289be4df61bd2d65e6e0))
+* **tests:** add working unit tests for scheduler.js (61% coverage) and telemetry.js (73% coverage) ([620909f](https://github.com/ptarmiganlabs/butler/commit/620909f0bfcf13a26490b9197556dada66770699))
+* **tests:** implement comprehensive unit tests for API schemas and utility functions ([7b04e2f](https://github.com/ptarmiganlabs/butler/commit/7b04e2f4cd1ad1b91af090646a71550cc35d2826))
+* **tests:** improve test coverage for telemetry, post_to_influxdb, qliksense_license, and service_monitor ([722851d](https://github.com/ptarmiganlabs/butler/commit/722851d178cc9f29dd0476f1e8d1ea4b7696d96e))
+
+
+### Bug Fixes
+
+* **build:** add build:docker script for Docker image creation ([fe837f7](https://github.com/ptarmiganlabs/butler/commit/fe837f7df97c8b1ff5afa35f1933893e07da5708))
+* **build:** add build:docker script for Docker image creation ([f35ad89](https://github.com/ptarmiganlabs/butler/commit/f35ad892dfe3e039afea0174d9aa967f6d396803))
+* **config:** merge YAML-configured headers with hardcoded QRS headers ([2fc2103](https://github.com/ptarmiganlabs/butler/commit/2fc2103365c173f73b5068c14124187493e4572d))
+* **config:** merge YAML-configured headers with hardcoded QRS headers ([07de0db](https://github.com/ptarmiganlabs/butler/commit/07de0dbe4972eca43a8734a99b2a56d829422b08))
+* **config:** replace hardcoded QRS and Engine ports/SSL with config values and preserve header merging ([93ee135](https://github.com/ptarmiganlabs/butler/commit/93ee1357892f3efedbe2f2ad24f12236d208f65b))
+* **config:** replace hardcoded QRS port 4242 with config values ([589ea75](https://github.com/ptarmiganlabs/butler/commit/589ea754a339e9dad9b6740565ff3fa610427d6f))
+* **config:** replace hardcoded QRS port 4242 with config values ([2358d75](https://github.com/ptarmiganlabs/butler/commit/2358d757e31927a1d6c657c2123222bd7a4cf6ac))
+* **config:** respect SSL settings for QRS and Engine API calls ([58e45b7](https://github.com/ptarmiganlabs/butler/commit/58e45b72a02ed8b6359be74a063214ce26ba3737))
+* **config:** respect SSL settings for QRS and Engine API calls ([8ad4423](https://github.com/ptarmiganlabs/butler/commit/8ad4423390fbf77b04aeac78d1cafe4aba2873bd))
+* Disable custom property reload task in production template configuration ([d0d0ca6](https://github.com/ptarmiganlabs/butler/commit/d0d0ca67073eeb812a5ef3d946a7bda52446a911))
+* **logging:** improve debug output for custom properties in email and InfluxDB assertions ([eb9e7f1](https://github.com/ptarmiganlabs/butler/commit/eb9e7f1b8726b58957acc47c9598bb05bf685b39))
+* **logging:** improve debug output for custom properties in email and InfluxDB assertions ([6619dbc](https://github.com/ptarmiganlabs/butler/commit/6619dbce9ce2f6e76bd17770c9a65d6284e1c6f7))
+* **logging:** improve debug output for custom properties in email and… ([3670a79](https://github.com/ptarmiganlabs/butler/commit/3670a799e091587b3039f04776e6f038ef404866))
+* Make template config file contain more realistic sample values ([5de0ace](https://github.com/ptarmiganlabs/butler/commit/5de0aceb0cfd67989a32c5c160dfb38332da3dd5))
+* Make template config file contain more realistic sample values ([7f5b673](https://github.com/ptarmiganlabs/butler/commit/7f5b6730085c99ec4ba439553a26017029f6324d))
+* **mqtt:** add broken start-tasks-via-mqtt feature ([8604de7](https://github.com/ptarmiganlabs/butler/commit/8604de72acf05f37b04b48e68b90727460cc4fed))
+* **security:** better, more secure parsing of Slack notification templates ([93d611c](https://github.com/ptarmiganlabs/butler/commit/93d611c08968266b90be24f8fbeba2d7b640a5e1))
+* **security:** resolve critical Slack notification escaping and prototype pollution vulnerabilities ([6335351](https://github.com/ptarmiganlabs/butler/commit/6335351f5e9b53eb7f9b57060a2768f89408beaf))
+* **tests:** add getQRSHttpHeaders mock to various test files ([defadf9](https://github.com/ptarmiganlabs/butler/commit/defadf9f7dca8fb651ad8e41b611000cd572a36f))
+* **tests:** add getQRSHttpHeaders mock to various test files ([8743413](https://github.com/ptarmiganlabs/butler/commit/87434133ada09e9cb9eaa272f51488d8d8073078))
+* **tests:** fix service_monitor test error handling and qliksense_license test imports ([e9d750f](https://github.com/ptarmiganlabs/butler/commit/e9d750ffe673fa35f36ad6551ae6a2f70b86499f))
+* **tests:** remove problematic test files and analyze coverage gaps for targeted test additions ([75dac07](https://github.com/ptarmiganlabs/butler/commit/75dac07d0301a3ee258de26ad06dca7b18fb6445))
+* **tests:** update post_to_influxdb tests with correct function names and working test cases ([4dde3b7](https://github.com/ptarmiganlabs/butler/commit/4dde3b717d3bf75371c21857783bbcc14300504f))
+* update notification functions to use await for asynchronous calls in Teams, Slack, and Webhook notifications ([a14032a](https://github.com/ptarmiganlabs/butler/commit/a14032afa92fedaa0aa5c46cdefc94903d01d618))
+
+
+### Miscellaneous
+
+* **deos:** update nodemailer to version 7.0.5 ([7e836b7](https://github.com/ptarmiganlabs/butler/commit/7e836b7dbcaa9a8bc56aed477f129d1b2e3f6da6))
+* **deps:** update actions/checkout action to v5 ([627196f](https://github.com/ptarmiganlabs/butler/commit/627196f4cdac4feb9b1af3f164ab5d1aec0dd256))
+* **deps:** update actions/checkout action to v5 ([12868b4](https://github.com/ptarmiganlabs/butler/commit/12868b41a52bd9ec7195a8d5823cd5d6b61c87db))
+* **deps:** update actions/setup-node action to v5 ([47658b5](https://github.com/ptarmiganlabs/butler/commit/47658b5ca22394643ec901802c4a657bf929c5ab))
+* **deps:** update actions/setup-node action to v5 ([9fcdbc0](https://github.com/ptarmiganlabs/butler/commit/9fcdbc0ddc1c43a99eb4d516cc98ce07ad055eae))
+* **deps:** update actions/stale action to v10 ([9f77431](https://github.com/ptarmiganlabs/butler/commit/9f7743172bde1ab0d8e2d70d19ca9fc96122e3fe))
+* **deps:** update actions/stale action to v10 ([363561b](https://github.com/ptarmiganlabs/butler/commit/363561bdfc6b5ae37e265ee4cd94a0845376b381))
+* **deps:** update dependencies and UUID related unit tests ([426f710](https://github.com/ptarmiganlabs/butler/commit/426f71029c7bc952c273d2b65c5bf459f730e54c))
+* **deps:** update dependencies to latest versions ([0a8c4d2](https://github.com/ptarmiganlabs/butler/commit/0a8c4d25970115e159ed89ca6200ed9216545da1))
+* **deps:** update dependencies to latest versions ([cc59884](https://github.com/ptarmiganlabs/butler/commit/cc598847fae4bd093a7bcd13b3d7916ddfb30903))
+* **deps:** update dependencies to latest versions ([e455bbf](https://github.com/ptarmiganlabs/butler/commit/e455bbf3478054910e956a20ef5042029007c71c))
+* **deps:** update dependency eslint-plugin-jsdoc to v54 ([8b624b3](https://github.com/ptarmiganlabs/butler/commit/8b624b3bc33ed06e1333e46aa712389e264a6745))
+* **deps:** upgrade jsontree to v4.7.1 and add unit tests ([302d6fd](https://github.com/ptarmiganlabs/butler/commit/302d6fd4493012ad89709de3e87aff4a2fa9452e))
+* **deps:** upgrade prism.js from v1.29.0 to v1.30.0 and add unit tests ([b62d01a](https://github.com/ptarmiganlabs/butler/commit/b62d01aec6d49ed0c36bf07ed06675f85ba84154))
+* update dependencies for fastify, posthog-node, eslint-plugin-jsdoc ([8ddc544](https://github.com/ptarmiganlabs/butler/commit/8ddc544697f3a2da68aa854fa1762285311773e4))
+
+
+### Refactoring
+
+* clean up eslint-disable comments and improve code readability across multiple files ([0b460b3](https://github.com/ptarmiganlabs/butler/commit/0b460b38dff160da43deb093fb61ff8b1387e801))
+* improve error logging when running as a standalone binary ([8e5f710](https://github.com/ptarmiganlabs/butler/commit/8e5f710ff0823645338e96d4978401b1d0224f31))
+
+
+### Documentation
+
+* update configuration file location in help text ([cd9b7ed](https://github.com/ptarmiganlabs/butler/commit/cd9b7ed0383e2423e534b17f08e29b98088ce187))
+* update copilot instructions to require Copilot to use conventional commits ([b67bfeb](https://github.com/ptarmiganlabs/butler/commit/b67bfeb1857a7972ca56f9759ef125904613f728))
+* update copilot instructions to require Copilot to use conventional commits ([5386db6](https://github.com/ptarmiganlabs/butler/commit/5386db6e8a74ddad97df7ba015ce0366b5199386))
+
 ## [13.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v13.1.1...butler-v13.1.2) (2024-11-30)
 
 
