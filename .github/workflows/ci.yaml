@@ -330,7 +330,7 @@ jobs:
         run: |
           pwd
           ls -la 
-          rm build/build.cjs build/sea-prep.blob
+          rm -r build
           rm "./${DIST_FILE_NAME}"
           rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
 
@@ -515,7 +515,7 @@ jobs:
         run: |
           pwd
           ls -la 
-          rm build/build.cjs build/sea-prep.blob
+          rm -r build
           rm "./${DIST_FILE_NAME}"
           rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip"
 
