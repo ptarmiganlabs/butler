@@ -303,14 +303,6 @@ jobs:
           echo "DEBUG: Restoring original keychain list"
           security list-keychains -d user -s ${OLD_KEYCHAIN_NAMES} || echo "WARNING: Failed to restore keychain list, continuing anyway"
 
-
-          # -------------------
-          # Clean up
-          # Delete build keychain
-          security delete-keychain build.keychain
-          rm -r build
-          rm certificate.p12
-
           ls -la
 
       - name: Upload to existing release
@@ -328,8 +320,11 @@ jobs:
 
       - name: Tidy up before existing
         run: |
+          security delete-keychain build.keychain
+
           pwd
           ls -la 
+          rm certificate.p12
           rm -r build
           rm "./${DIST_FILE_NAME}"
           rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos.zip"
@@ -490,14 +485,6 @@ jobs:
           echo "DEBUG: Restoring original keychain list"
           security list-keychains -d user -s ${OLD_KEYCHAIN_NAMES} || echo "WARNING: Failed to restore keychain list, continuing anyway"
 
-
-          # -------------------
-          # Clean up
-          # Delete build keychain
-          security delete-keychain build.keychain
-          rm -r build
-          rm certificate.p12
-
           ls -la
 
       - name: Upload release artifacts to GitHub
@@ -513,9 +500,12 @@ jobs:
 
       - name: Tidy up before existing
         run: |
+          security delete-keychain build.keychain
+
           pwd
           ls -la 
           rm -r build
+          rm certificate.p12
           rm "./${DIST_FILE_NAME}"
           rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip"
 
