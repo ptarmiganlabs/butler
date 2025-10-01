@@ -25,7 +25,8 @@
         "license:report": "license-checker-rseidelsohn --csv --out licenses.csv",
         "license:summary": "license-checker-rseidelsohn --summary",
         "license:json": "license-checker-rseidelsohn --json --out licenses.json",
-        "license:full": "npm run license:summary && npm run license:check && npm run license:report"
+        "license:full": "npm run license:summary && npm run license:check && npm run license:report",
+        "knip": "knip"
     },
     "repository": {
         "type": "git",
@@ -110,6 +111,7 @@
         "@babel/eslint-parser": "^7.28.4",
         "@babel/plugin-syntax-import-assertions": "^7.27.1",
         "@eslint/js": "^9.36.0",
+        "@types/node": "^24.6.1",
         "audit-ci": "^7.1.0",
         "esbuild": "^0.25.10",
         "eslint-config-prettier": "^10.1.8",
@@ -117,10 +119,12 @@
         "eslint-plugin-prettier": "^5.5.4",
         "jest": "^30.2.0",
         "jsdoc-to-markdown": "^9.1.2",
+        "knip": "^5.64.1",
         "license-checker-rseidelsohn": "^4.4.2",
         "lockfile-lint": "^4.14.1",
         "npm-check-updates": "^19.0.0",
         "prettier": "^3.6.2",
-        "snyk": "^1.1299.1"
+        "snyk": "^1.1299.1",
+        "typescript": "^5.9.3"
     }
 }
