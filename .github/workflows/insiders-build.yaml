@@ -555,30 +555,30 @@ jobs:
                       $logDirectory = Join-Path $deployPath "log"
                       Write-Host "Log directory path: $logDirectory"
                       if (Test-Path $logDirectory) {
-                          Write-Host "✅ log directory exists"
+                          Write-Host "[OK] log directory exists"
                           Write-Host "Contents of log directory:"
                           Get-ChildItem -Path $logDirectory -Force | ForEach-Object { Write-Host "  $_" }
                       } else {
-                          Write-Host "⚠️  log directory does not exist"
+                          Write-Host "[WARN] log directory does not exist"
                       }
                       
                       if (Test-Path $serviceErrorLogPath) {
-                          Write-Host "✅ Found service-error.log at: $serviceErrorLogPath"
+                          Write-Host "[OK] Found service-error.log at: $serviceErrorLogPath"
                           Write-Host "Clearing service-error.log..."
                           Clear-Content -Path $serviceErrorLogPath -Force
-                          Write-Host "✅ service-error.log cleared"
+                          Write-Host "[OK] service-error.log cleared"
                       } else {
-                          Write-Host "⚠️  service-error.log not found at: $serviceErrorLogPath"
+                          Write-Host "[WARN] service-error.log not found at: $serviceErrorLogPath"
                           Write-Host "Will be created if needed by the service"
                       }
                       
                       if (Test-Path $dailyLogPath) {
-                          Write-Host "✅ Found daily log file at: $dailyLogPath"
+                          Write-Host "[OK] Found daily log file at: $dailyLogPath"
                           Write-Host "Clearing butler.$currentDate.log..."
                           Clear-Content -Path $dailyLogPath -Force
-                          Write-Host "✅ butler.$currentDate.log cleared"
+                          Write-Host "[OK] butler.$currentDate.log cleared"
                       } else {
-                          Write-Host "⚠️  Daily log file not found at: $dailyLogPath"
+                          Write-Host "[WARN] Daily log file not found at: $dailyLogPath"
                           Write-Host "Will be created if needed by the service"
                       }
                       
@@ -614,10 +614,10 @@ jobs:
                           Write-Host "Service not found. Binary deployed but service needs to be configured manually."
                       }
                       
-                      Write-Host "✅ Deployment completed successfully!"
+                      Write-Host "[OK] Deployment completed successfully!"
                       
                   } catch {
-                      Write-Host "❌ Deployment failed: $($_.Exception.Message)" -ForegroundColor Red
+                      Write-Host "[ERROR] Deployment failed: $($_.Exception.Message)" -ForegroundColor Red
                       Write-Host "Stack trace: $($_.ScriptStackTrace)" -ForegroundColor Red
                       exit 1
                   }
@@ -641,12 +641,12 @@ jobs:
                           # Check for the main executable
                           $executable = Get-ChildItem -Path $deployPath -Name "butler.exe" -Recurse
                           if ($executable) {
-                              Write-Host "✅ Main executable found: $executable"
+                              Write-Host "[OK] Main executable found: $executable"
                           } else {
-                              Write-Host "⚠️  Main executable not found"
+                              Write-Host "[WARN] Main executable not found"
                           }
                       } else {
-                          Write-Host "❌ Deployment directory not found"
+                          Write-Host "[ERROR] Deployment directory not found"
                       }
                       
                       # Check service status
@@ -654,16 +654,16 @@ jobs:
                       if ($service) {
                           Write-Host "Service '$serviceName' status: $($service.Status)"
                           if ($service.Status -eq 'Running') {
-                              Write-Host "✅ Service is running"
+                              Write-Host "[OK] Service is running"
                           } else {
-                              Write-Host "⚠️  Service is not running"
+                              Write-Host "[WARN] Service is not running"
                           }
                       } else {
-                          Write-Host "⚠️  Service '$serviceName' not found"
+                          Write-Host "[WARN] Service '$serviceName' not found"
                       }
                       
                   } catch {
-                      Write-Host "❌ Verification failed: $($_.Exception.Message)" -ForegroundColor Red
+                      Write-Host "[ERROR] Verification failed: $($_.Exception.Message)" -ForegroundColor Red
                   }
 
             - name: Check for errors in log files
@@ -692,33 +692,33 @@ jobs:
                       # Check service-error.log
                       Write-Host "Checking for service-error.log at: $serviceErrorLogPath"
                       if (Test-Path $serviceErrorLogPath) {
-                          Write-Host "✅ Found service-error.log"
+                          Write-Host "[OK] Found service-error.log"
                           $serviceErrorContent = Get-Content -Path $serviceErrorLogPath -ErrorAction SilentlyContinue
                           if ($serviceErrorContent -and $serviceErrorContent.Count -gt 0) {
-                              Write-Host "❌ Errors found in service-error.log:" -ForegroundColor Red
+                              Write-Host "[ERROR] Errors found in service-error.log:" -ForegroundColor Red
                               $serviceErrorContent | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
                               $errorFound = $true
                           } else {
-                              Write-Host "✅ service-error.log is empty (no errors)"
+                              Write-Host "[OK] service-error.log is empty (no errors)"
                           }
                       } else {
-                          Write-Host "⚠️  service-error.log does not exist at: $serviceErrorLogPath"
+                          Write-Host "[WARN] service-error.log does not exist at: $serviceErrorLogPath"
                       }
                       
                       # Check daily log file for error or fatal entries
                       Write-Host "Checking for daily log file at: $dailyLogPath"
                       if (Test-Path $dailyLogPath) {
-                          Write-Host "✅ Found daily log file"
+                          Write-Host "[OK] Found daily log file"
                           $dailyLogContent = Get-Content -Path $dailyLogPath -ErrorAction SilentlyContinue
                           if ($dailyLogContent) {
                               # Match both formats: "error:" and "ERROR" (case-insensitive)
                               $errorEntries = $dailyLogContent | Where-Object { $_ -match "(?i)\b(error|fatal)[\s:]" }
                               if ($errorEntries -and $errorEntries.Count -gt 0) {
-                                  Write-Host "❌ Error/Fatal entries found in butler.$currentDate.log:" -ForegroundColor Red
+                                  Write-Host "[ERROR] Error/Fatal entries found in butler.$currentDate.log:" -ForegroundColor Red
                                   $errorEntries | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
                                   $errorFound = $true
                               } else {
-                                  Write-Host "✅ No error/fatal entries found in butler.$currentDate.log"
+                                  Write-Host "[OK] No error/fatal entries found in butler.$currentDate.log"
                               }
                               
                               Write-Host "Log file summary:"
@@ -728,21 +728,21 @@ jobs:
                               Write-Host "  error entries: $(($dailyLogContent | Where-Object { $_ -match "(?i)\berror[\s:]" }).Count)"
                               Write-Host "  fatal entries: $(($dailyLogContent | Where-Object { $_ -match "(?i)\bfatal[\s:]" }).Count)"
                           } else {
-                              Write-Host "✅ Daily log file is empty or has no content yet"
+                              Write-Host "[OK] Daily log file is empty or has no content yet"
                           }
                       } else {
-                          Write-Host "⚠️  Daily log file does not exist at: $dailyLogPath"
+                          Write-Host "[WARN] Daily log file does not exist at: $dailyLogPath"
                       }
                       
                       if ($errorFound) {
-                          Write-Host "❌ Errors detected in log files - deployment may have issues" -ForegroundColor Red
+                          Write-Host "[ERROR] Errors detected in log files - deployment may have issues" -ForegroundColor Red
                           # Don't fail the build, but make it visible
                           Write-Host "::warning::Errors found in log files after deployment"
                       } else {
-                          Write-Host "✅ No errors found in log files - deployment appears successful"
+                          Write-Host "[OK] No errors found in log files - deployment appears successful"
                       }
                       
                   } catch {
-                      Write-Host "❌ Failed to check log files: $($_.Exception.Message)" -ForegroundColor Red
+                      Write-Host "[ERROR] Failed to check log files: $($_.Exception.Message)" -ForegroundColor Red
                       Write-Host "::warning::Unable to check log files for errors"
                   }
