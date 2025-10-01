@@ -1,5 +1,4 @@
 {
-    "release-as": "14.0.0",
     "release-type": "node",
     "prerelease": false,
     "draft": true,
