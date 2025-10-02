@@ -11,7 +11,7 @@ info:
 
     This page contains the API documentation. Full documentation is available at
     https://butler.ptarmiganlabs.com
-  version: 14.0.0
+  version: 14.0.1
 components:
   schemas: {}
 paths:
