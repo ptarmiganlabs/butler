@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.0...butler-v14.0.1) (2025-10-02)
+
+
+### Bug Fixes
+
+* Windows binary would not start due to a regression. Fixed. ([5a44b30](https://github.com/ptarmiganlabs/butler/commit/5a44b30dd44e7599de57683069a1c7ed97f57356))
+
 ## [14.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.0...butler-v14.0.0) (2025-10-01)
 
 
