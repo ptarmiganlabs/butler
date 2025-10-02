@@ -2,9 +2,17 @@
 # Execute this script from the repository's root folder
 
 # Create a single JS file using esbuild
-./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+./node_modules/.bin/esbuild src/butler.js  \
+  --bundle  \
+  --outfile=./build/build.cjs  \
+  --format=cjs  \
+  --platform=node  \
+  --target=node23  \
+  --minify  \
+  --inject:./src/lib/import-meta-url.js  \
+  --define:import.meta.url=import_meta_url
 
-# Generate blob to be injected into the binary
+# # Generate blob to be injected into the binary
 node --experimental-sea-config ./build-script/sea-config.json
 
 # Get a copy of the Node executable
