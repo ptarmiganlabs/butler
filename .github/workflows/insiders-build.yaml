@@ -414,6 +414,9 @@ jobs:
                   pwd 
                   npm ci
 
+            - name: Run unit tests
+              run: npm run test
+
             - name: Run Snyk to check for vulnerabilities
               # Snyk can be used to break the build when it detects security issues.
               # In this case we want to upload the SAST issues to GitHub Code Scanning
