@@ -1,115 +1,117 @@
 name: Update autorelease label
 
 on:
-    release:
-        types: [published]
-    workflow_dispatch:
-        inputs:
-            release_tag:
-                description: 'Release tag to test with (e.g., butler-v14.0.0)'
-                required: true
-                type: string
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to test with (e.g., butler-v14.0.0)'
+        required: true
+        type: string
 
 jobs:
-    update-label:
-        runs-on: ubuntu-latest
-        if: |
-            github.event_name != 'pull_request' &&
-            github.repository_owner == 'ptarmiganlabs'
+  update-label:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'pull_request' &&
+      github.repository_owner == 'ptarmiganlabs'
 
-        steps:
-            - name: Find PR with autorelease:tagged label
-              id: find-pr
-              uses: actions/github-script@v8
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      // Get the release tag (format: butler-vX.Y.Z)
-                      // Support both real release events and manual workflow_dispatch testing
-                      const releaseTag = context.payload.release?.tag_name || context.payload.inputs?.release_tag || '';
-                      console.log(`Looking for PR associated with release tag: ${releaseTag}`);
+    steps:
+      - name: Find PR with autorelease:tagged label
+        id: find-pr
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Get the release tag (format: butler-vX.Y.Z)
+            // Support both real release events and manual workflow_dispatch testing
+            const releaseTag = context.payload.release?.tag_name || context.payload.inputs?.release_tag || '';
+            console.log(`Looking for PR associated with release tag: ${releaseTag}`);
 
-                      // Search for closed PRs with autorelease:tagged label
-                      const { data: prs } = await github.rest.pulls.list({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        state: 'closed',
-                        sort: 'updated',
-                        direction: 'desc',
-                        per_page: 100
-                      });
+            // Search for closed PRs with autorelease:tagged label
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              sort: 'updated',
+              direction: 'desc',
+              per_page: 100
+            });
 
-                      // Find the LATEST PR with autorelease:tagged label and matching release tag in title or body
-                      // PRs are already sorted by updated date (desc), so the first match is the most recent
-                      let targetPr = null;
-                      for (const pr of prs) {
-                        const hasTaggedLabel = pr.labels.some(label => label.name === 'autorelease: tagged');
-                        
-                        if (hasTaggedLabel) {
-                          // Extract version from tag (butler-v14.0.0 -> 14.0.0)
-                          const version = releaseTag.replace(/^butler-v/, '').replace(/^v/, '');
-                          console.log(`Searching for version: ${version}`);
-                          
-                          // Check if PR title or body contains the release version
-                          const prContainsVersion = pr.title.includes(version) || pr.body?.includes(version);
-                          
-                          if (prContainsVersion && pr.merged_at) {
-                            targetPr = pr;
-                            console.log(`Found latest matching PR #${targetPr.number}: ${targetPr.title}`);
-                            // Break immediately to ensure we only update the FIRST (latest) matching PR
-                            break;
-                          }
-                        }
-                      }
+            // Find the LATEST PR with autorelease:tagged label and matching release tag in title or body
+            // PRs are already sorted by updated date (desc), so the first match is the most recent
+            let targetPr = null;
+            for (const pr of prs) {
+              const hasTaggedLabel = pr.labels.some(label => label.name === 'autorelease: tagged');
+              
+              if (hasTaggedLabel) {
+                // Extract version from tag (butler-v14.0.0 -> 14.0.0)
+                const version = releaseTag.replace(/^butler-v/, '').replace(/^v/, '');
+                console.log(`Searching for version: ${version}`);
+                
+                // Check if PR title or body contains the exact release version
+                // Use word boundaries to match exact version (e.g., "14.0.0" but not "14.0.1")
+                const versionRegex = new RegExp(`\\b${version.replace(/\./g, '\\.')}\\b`);
+                const prContainsVersion = versionRegex.test(pr.title) || versionRegex.test(pr.body || '');
+                
+                if (prContainsVersion && pr.merged_at) {
+                  targetPr = pr;
+                  console.log(`Found latest matching PR #${targetPr.number}: ${targetPr.title}`);
+                  // Break immediately to ensure we only update the FIRST (latest) matching PR
+                  break;
+                }
+              }
+            }
 
-                      if (targetPr) {
-                        console.log(`Will update PR #${targetPr.number}`);
-                        return targetPr.number;
-                      } else {
-                        console.log('No PR found with autorelease:tagged label for this release');
-                        return null;
-                      }
+            if (targetPr) {
+              console.log(`Will update PR #${targetPr.number}`);
+              return targetPr.number;
+            } else {
+              console.log('No PR found with autorelease:tagged label for this release');
+              return null;
+            }
 
-            - name: Update PR label
-              if: steps.find-pr.outputs.result != 'null'
-              uses: actions/github-script@v8
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const prNumber = ${{ steps.find-pr.outputs.result }};
+      - name: Update PR label
+        if: steps.find-pr.outputs.result != 'null'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ steps.find-pr.outputs.result }};
 
-                      try {
-                        // Remove autorelease:tagged label
-                        await github.rest.issues.removeLabel({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          issue_number: prNumber,
-                          name: 'autorelease: tagged'
-                        });
-                        console.log(`Removed 'autorelease: tagged' label from PR #${prNumber}`);
-                      } catch (error) {
-                        if (error.status === 404) {
-                          console.log(`Label 'autorelease: tagged' not found on PR #${prNumber}`);
-                        } else {
-                          throw error;
-                        }
-                      }
+            try {
+              // Remove autorelease:tagged label
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: 'autorelease: tagged'
+              });
+              console.log(`Removed 'autorelease: tagged' label from PR #${prNumber}`);
+            } catch (error) {
+              if (error.status === 404) {
+                console.log(`Label 'autorelease: tagged' not found on PR #${prNumber}`);
+              } else {
+                throw error;
+              }
+            }
 
-                      // Add autorelease:published label
-                      await github.rest.issues.addLabels({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: prNumber,
-                        labels: ['autorelease: published']
-                      });
-                      console.log(`Added 'autorelease: published' label to PR #${prNumber}`);
+            // Add autorelease:published label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['autorelease: published']
+            });
+            console.log(`Added 'autorelease: published' label to PR #${prNumber}`);
 
-                      // Add a comment to the PR
-                      const releaseTag = context.payload.release?.tag_name || context.payload.inputs?.release_tag || 'unknown';
-                      await github.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: prNumber,
-                        body: `🚀 Release \`${releaseTag}\` has been published!\n\nUpdated label from \`autorelease: tagged\` → \`autorelease: published\``
-                      });
-                      console.log(`Added comment to PR #${prNumber}`);
+            // Add a comment to the PR
+            const releaseTag = context.payload.release?.tag_name || context.payload.inputs?.release_tag || 'unknown';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `🚀 Release \`${releaseTag}\` has been published!\n\nUpdated label from \`autorelease: tagged\` → \`autorelease: published\``
+            });
+            console.log(`Added comment to PR #${prNumber}`);
