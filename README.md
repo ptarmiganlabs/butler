@@ -26,8 +26,3 @@ Adapt to your needs - please also consider sharing enhancements with the wider c
 Documentation is available at [https://butler.ptarmiganlabs.com](https://butler.ptarmiganlabs.com).
 
 Commercial getting-started services for Butler are available from Ptarmigan Labs, more info [here](https://ptarmiganlabs.com/services/).
-
-foo2
-foo3
-foo4
-foo5
