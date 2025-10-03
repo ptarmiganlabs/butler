@@ -20,7 +20,7 @@ jobs:
         steps:
             - name: Find PR with autorelease:tagged label
               id: find-pr
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
@@ -72,7 +72,7 @@ jobs:
 
             - name: Update PR label
               if: steps.find-pr.outputs.result != 'null'
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
