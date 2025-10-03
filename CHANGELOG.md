@@ -1,5 +1,29 @@
 # Changelog
 
+## [14.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.1...butler-v14.1.0) (2025-10-03)
+
+
+### Features
+
+* debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release-please ([70ada56](https://github.com/ptarmiganlabs/butler/commit/70ada56bb9afb2d0d68d2b798a841fe49329463a))
+* Debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* Debugging release-please ([ea08255](https://github.com/ptarmiganlabs/butler/commit/ea08255e84bf8d6613d23c4ebcaa1f8cddf5e654))
+
+
+### Bug Fixes
+
+* improve formatting and regex for release tag matching in update-autorelease-label workflow ([d150b1e](https://github.com/ptarmiganlabs/butler/commit/d150b1efdf3a9e43f73fd4de4688d90f6c0b3eef))
+* test suite fails on Windows due to how file timestamp works when copying files ([04fdb41](https://github.com/ptarmiganlabs/butler/commit/04fdb413a542d30ffd041ef1004ae34296ee63b9))
+
+
+### Miscellaneous
+
+* debugging release please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release please ([b27d58e](https://github.com/ptarmiganlabs/butler/commit/b27d58e001b08d15b02e2f549dbb9f595e841eb2))
+* debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release-please ([9ca4b84](https://github.com/ptarmiganlabs/butler/commit/9ca4b848e0699cab5bf82271461d8a77fcbd4e7a))
+
 ## [14.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.0...butler-v14.0.1) (2025-10-02)
 
 
