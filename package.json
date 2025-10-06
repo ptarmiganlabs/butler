@@ -105,7 +105,7 @@
         "winston": "^3.18.3",
         "winston-daily-rotate-file": "^5.0.0",
         "ws": "^8.18.3",
-        "xstate": "^5.22.0"
+        "xstate": "^5.22.1"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.28.4",
