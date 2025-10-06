@@ -4,6 +4,9 @@ describe('lib/heartbeat', () => {
     let setupHeartbeatTimer;
     const mockLater = { parse: { text: jest.fn(() => 'S') }, setInterval: jest.fn((fn) => fn()) };
     const mockAxios = { get: jest.fn(() => Promise.resolve({ status: 200 })) };
+    const mockGlobals = {
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+    };
 
     const logger = { debug: jest.fn(), error: jest.fn() };
     const config = {
@@ -11,8 +14,14 @@ describe('lib/heartbeat', () => {
     };
 
     beforeAll(async () => {
+        await jest.unstable_mockModule('node:sea', () => ({
+            isSea: jest.fn(() => false),
+            getAsset: jest.fn(),
+            getAssetAsBlob: jest.fn(),
+        }));
         await jest.unstable_mockModule('@breejs/later', () => ({ default: mockLater }));
         await jest.unstable_mockModule('axios', () => ({ default: mockAxios }));
+        await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         ({ default: setupHeartbeatTimer } = await import('../heartbeat.js'));
     });
 

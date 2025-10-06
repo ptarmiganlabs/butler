@@ -67,7 +67,7 @@ export function isSmtpConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -89,7 +89,7 @@ function isEmailReloadSuccessNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -111,7 +111,7 @@ function isEmailReloadFailedNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -133,7 +133,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -158,7 +158,7 @@ function isEmailServiceMonitorNotificationConfig() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -269,7 +269,7 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -325,7 +325,7 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] SMTP BASIC: ${err}`);
+        globals.logger.error(`[QSEOW] SMTP BASIC: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -651,7 +651,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -979,7 +979,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -1236,7 +1236,7 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -1342,7 +1342,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                         globals.logger.warn(`[QSEOW] EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
                 }
             })
             // eslint-disable-next-line no-loop-func

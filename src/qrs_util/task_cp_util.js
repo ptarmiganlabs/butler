@@ -49,11 +49,11 @@ export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) 
             // Value not set for the CP
             return false;
         } catch (err) {
-            localLogger.error(`ISCPVALUESET: Error while getting CP: ${err.message}`);
+            localLogger.error(`ISCPVALUESET: Error while getting CP: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        localLogger.error(`ISCPVALUESET: Error while getting CP: ${err}`);
+        localLogger.error(`ISCPVALUESET: Error while getting CP: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -104,11 +104,11 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
             // The task and/or the CP does not exist
             return [];
         } catch (err) {
-            globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err.message}`);
+            globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${globals.getErrorMessage(err)}`);
             return [];
         }
     } catch (err) {
-        globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${err}`);
+        globals.logger.error(`GETTASKCPVALUE: Error while getting CP: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -159,11 +159,11 @@ export async function getReloadTasksCustomProperties(config, configQRS, logger) 
             // The task and/or the CP does not exist
             return [];
         } catch (err) {
-            logger.error(`GETRELOADTASKSCP: Error while getting CP: ${err.message}`);
+            logger.error(`GETRELOADTASKSCP: Error while getting CP: ${globals.getErrorMessage(err)}`);
             return [];
         }
     } catch (err) {
-        logger.error(`GETRELOADTASKSCP: Error while getting CP: ${err}`);
+        logger.error(`GETRELOADTASKSCP: Error while getting CP: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

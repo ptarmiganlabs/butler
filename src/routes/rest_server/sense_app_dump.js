@@ -94,12 +94,12 @@ async function handlerGetSenseAppDump(request, reply) {
             try {
                 await session.close();
             } catch (err) {
-                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${globals.getErrorMessage(err)}`);
                 reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
             }
         }
     } catch (err) {
-        globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed dumping app'));
     }
 }

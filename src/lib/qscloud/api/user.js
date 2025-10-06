@@ -26,7 +26,7 @@ export async function getQlikSenseCloudUserInfo(userId) {
 
         return appInfo;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

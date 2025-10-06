@@ -72,6 +72,7 @@ const logger = { info: jest.fn(), verbose: jest.fn(), debug: jest.fn(), warn: je
 const globalsConfigStore = new Map();
 const globalsMock = {
     logger,
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     config: { has: (k) => globalsConfigStore.has(k), get: (k) => globalsConfigStore.get(k) },
     mqttClient: { publish: jest.fn() },
     initHostInfo: jest.fn(async () => ({ si: { os: { platform: 'Windows', distro: 'Win', release: '10' } } })),

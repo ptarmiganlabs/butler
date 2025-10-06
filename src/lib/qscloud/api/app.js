@@ -32,7 +32,7 @@ export async function getQlikSenseCloudAppInfo(appId) {
 
         return appInfo;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP INFO: ${err}`);
+        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP INFO: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -67,7 +67,7 @@ export async function getQlikSenseCloudAppMetadata(appId) {
 
         return appMetadata;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP METADATA: ${err}`);
+        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP METADATA: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -113,7 +113,7 @@ export async function getQlikSenseCloudAppItems(appId) {
 
         return appItems;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

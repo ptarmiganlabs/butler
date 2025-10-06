@@ -40,7 +40,7 @@ export async function deleteNamespace(namespaceName) {
         const tmpNamespaceArray = kvStore.filter((x) => x.namespace !== namespaceName);
         kvStore = tmpNamespaceArray;
     } catch (err) {
-        globals.logger.error(`Failed removing namespace from keyv: ${err}`);
+        globals.logger.error(`Failed removing namespace from keyv: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -59,7 +59,7 @@ export async function getValue(namespace, key) {
 
         return null;
     } catch (err) {
-        globals.logger.error(`Error getting value for KV pair: ${err}`);
+        globals.logger.error(`Error getting value for KV pair: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -79,7 +79,7 @@ export async function deleteKeyValuePair(namespace, key) {
 
         return null;
     } catch (err) {
-        globals.logger.error(`Error deleting KV pair: ${err}`);
+        globals.logger.error(`Error deleting KV pair: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -132,6 +132,6 @@ export async function addKeyValuePair(newNamespace, newKey, newValue, newTtl) {
             }
         }
     } catch (err) {
-        globals.logger.error(`Error while adding new KV pair: ${err}`);
+        globals.logger.error(`Error while adding new KV pair: ${globals.getErrorMessage(err)}`);
     }
 }

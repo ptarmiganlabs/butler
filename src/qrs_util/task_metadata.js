@@ -40,11 +40,11 @@ async function getTaskMetadata(taskId) {
             // The task does not exist
             return [];
         } catch (err) {
-            globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${err.message}`);
+            globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${err}`);
+        globals.logger.error(`GETTASKMETADATA: Error while getting task metadata: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

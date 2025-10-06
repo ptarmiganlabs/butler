@@ -38,7 +38,7 @@ async function handlerGetNamespaceList(request, reply) {
 
         reply.code(200).send(ns);
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed getting all namespaces, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`KEYVALUE: Failed getting all namespaces, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed getting all namespaces'));
     }
 }
@@ -293,7 +293,7 @@ async function handlerDeleteNamespace(request, reply) {
             }
         }
     } catch (err) {
-        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`KEYVALUE: Failed clearing namespace: ${request.params.namespace}, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed clearing namespace'));
     }
 }

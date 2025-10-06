@@ -45,11 +45,11 @@ const doesTaskExist = async (taskId) => {
                 task: {},
             };
         } catch (err) {
-            globals.logger.error(`TASKEXISTS: Error while getting task: ${err.message}`);
+            globals.logger.error(`TASKEXISTS: Error while getting task: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`TASKEXISTS: Error while checking if task exists: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`TASKEXISTS: Error while checking if task exists: ${globals.getErrorMessage(err)}`);
         return false;
     }
 };

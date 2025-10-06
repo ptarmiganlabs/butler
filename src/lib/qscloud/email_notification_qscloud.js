@@ -89,7 +89,7 @@ function getAppReloadFailedEmailConfig() {
             globalSendList,
         };
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -396,7 +396,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                             );
                         }
                     } catch (err) {
-                        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
+                        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
                     }
                 })
                 .catch((err) => {
@@ -409,7 +409,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
                 });
         }
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
     }
 
     return true;

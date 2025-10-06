@@ -207,7 +207,7 @@ async function handlerGETSchedulesStatus(request, reply) {
         const status = getSchedulesStatus();
         reply.code(200).send(status);
     } catch (err) {
-        globals.logger.error(`REST SCHEDULER: Failed retrieving scheduler status, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`REST SCHEDULER: Failed retrieving scheduler status, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed retrieving scheduler status'));
     }
 }

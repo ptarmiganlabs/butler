@@ -952,7 +952,7 @@ const udpInitTaskErrorServer = () => {
                 }
             }
         } catch (err) {
-            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${err}`);
+            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${globals.getErrorMessage(err)}`);
         }
     });
 
@@ -1097,7 +1097,9 @@ const udpInitTaskErrorServer = () => {
                 globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message format: "${msg[0]}"`);
             }
         } catch (err) {
-            globals.logger.error(`[QSEOW] UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${err}`);
+            globals.logger.error(
+                `[QSEOW] UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${globals.getErrorMessage(err)}`,
+            );
             globals.logger.error(`[QSEOW] UDP HANDLER: Incoming log message was\n${message}`);
         }
     });

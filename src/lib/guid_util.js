@@ -16,7 +16,7 @@ export const verifyGuid = (guid) => {
         }
         globals.logger.warn(`GUID VERIFY: GUID not valid: ${guid}`);
     } catch (err) {
-        globals.logger.error(`GUID VERIFY: Error verifying GUID: ${err}`);
+        globals.logger.error(`GUID VERIFY: Error verifying GUID: ${globals.getErrorMessage(err)}`);
     }
     return false;
 };

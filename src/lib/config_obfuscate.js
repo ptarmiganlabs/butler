@@ -233,9 +233,9 @@ function configObfuscate(config) {
         return obfuscatedConfig;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`CONFIG OBFUSCATE: Error obfuscating config: ${err.message}`);
+            globals.logger.error(`CONFIG OBFUSCATE: Error obfuscating config: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`CONFIG OBFUSCATE: ${err.stack}`);
+            globals.logger.error(`CONFIG OBFUSCATE: ${globals.getErrorMessage(err)}`);
         }
         throw err;
     }

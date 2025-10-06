@@ -143,14 +143,14 @@ function getReloadFailedEventConfig() {
         return cfg;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDEVENT: ${globals.getErrorMessage(err)}`);
         }
 
         return false;
@@ -221,14 +221,14 @@ function getReloadFailedLogConfig() {
         return cfg;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`NEW RELIC RELOADFAILEDLOG message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC RELOADFAILEDLOG stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC RELOADFAILEDLOG: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADFAILEDLOG: ${globals.getErrorMessage(err)}`);
         }
 
         return false;
@@ -302,14 +302,14 @@ function getReloadAbortedEventConfig() {
         return cfg;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDEVENT: ${globals.getErrorMessage(err)}`);
         }
 
         return false;
@@ -380,14 +380,14 @@ function getReloadAbortedLogConfig() {
         return cfg;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`NEW RELIC RELOADABORTEDLOG message: ${err.message}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC RELOADABORTEDLOG stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC RELOADABORTEDLOG: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC RELOADABORTEDLOG: ${globals.getErrorMessage(err)}`);
         }
 
         return false;
@@ -469,14 +469,14 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
         }
     } catch (err) {
         if (err.message) {
-            globals.logger.error(`NEW RELIC 1 message: ${err.message}`);
+            globals.logger.error(`NEW RELIC 1 message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC 1 stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC 1 stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC 1: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -621,14 +621,14 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
         }
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`NEW RELIC 2 message: ${err.message}`);
+            globals.logger.error(`NEW RELIC 2 message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`NEW RELIC 2 stack: ${err.stack}`);
+            globals.logger.error(`NEW RELIC 2 stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`NEW RELIC 2: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -732,7 +732,7 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`SCRIPTLOG: ${err}`);
+                        globals.logger.error(`SCRIPTLOG: ${globals.getErrorMessage(err)}`);
                     }
                 }
 
@@ -756,14 +756,14 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (globals.isSea) {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 message: ${globals.getErrorMessage(err)}`);
                 } else {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1 stack: ${globals.getErrorMessage(err)}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 1: ${globals.getErrorMessage(err)}`);
                 }
 
                 return null;
@@ -874,7 +874,7 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`[QSEOW] Get value of reload task custom property: ${err}`);
+                        globals.logger.error(`[QSEOW] Get value of reload task custom property: ${globals.getErrorMessage(err)}`);
                     }
                 }
 
@@ -898,14 +898,14 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (globals.isSea) {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 message: ${globals.getErrorMessage(err)}`);
                 } else {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2 stack: ${globals.getErrorMessage(err)}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK FAILED NEW RELIC 2: ${globals.getErrorMessage(err)}`);
                 }
 
                 return null;
@@ -1018,7 +1018,7 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${err}`);
+                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${globals.getErrorMessage(err)}`);
                     }
                 }
 
@@ -1042,14 +1042,14 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                 return null;
             } catch (err) {
                 if (globals.isSea) {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 message: ${globals.getErrorMessage(err)}`);
                 } else {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1 stack: ${globals.getErrorMessage(err)}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 1: ${globals.getErrorMessage(err)}`);
                 }
 
                 return null;
@@ -1162,7 +1162,7 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                             }
                         }
                     } catch (err) {
-                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${err}`);
+                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${globals.getErrorMessage(err)}`);
                     }
                 }
 
@@ -1186,14 +1186,14 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                 return null;
             } catch (err) {
                 if (globals.isSea) {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 message: ${err.message}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 message: ${globals.getErrorMessage(err)}`);
                 } else {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 stack: ${err.stack}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2 stack: ${globals.getErrorMessage(err)}`);
                 }
 
                 // If neither message nor stack is available, just log the error object
                 if (!err.message && !err.stack) {
-                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2: ${JSON.stringify(err, null, 2)}`);
+                    globals.logger.error(`[QSEOW] TASK ABORT NEW RELIC 2: ${globals.getErrorMessage(err)}`);
                 }
 
                 return null;

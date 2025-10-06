@@ -518,7 +518,7 @@ const callRemoteURL = async () => {
         if (err.response) {
             globals.logger.error(`     Error: ${err.response.status} (${err.response.statusText}).`);
         } else {
-            globals.logger.error(`     Error: ${err}`);
+            globals.logger.error(`     Error: ${globals.getErrorMessage(err)}`);
         }
         globals.logger.error('❤️  Thank you for supporting Butler by allowing telemetry! ❤️');
     }
@@ -550,6 +550,6 @@ export default function setupAnonUsageReportTimer(logger, hostInfo) {
         // Do an initial report to the remote URL
         callRemoteURL(logger, hostInfo);
     } catch (err) {
-        logger.error(`TELEMETRY: ${err}`);
+        logger.error(`TELEMETRY: ${globals.getErrorMessage(err)}`);
     }
 }

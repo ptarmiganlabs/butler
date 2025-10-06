@@ -26,7 +26,7 @@ function sendTestEmail(emailAddress, fromAddress) {
             );
         }
     } catch (err) {
-        globals.logger.error(`EMAIL TEST: ${err}`);
+        globals.logger.error(`EMAIL TEST: ${globals.getErrorMessage(err)}`);
     }
 }
 

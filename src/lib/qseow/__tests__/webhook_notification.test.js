@@ -22,6 +22,7 @@ const logger = { info: jest.fn(), verbose: jest.fn(), debug: jest.fn(), error: j
 const configStore = new Map();
 const globalsMock = {
     logger,
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     config: {
         has: (k) => configStore.has(k),
         get: (k) => configStore.get(k),
@@ -1074,7 +1075,7 @@ describe('webhook_notification', () => {
         });
         await new Promise((r) => setTimeout(r, 60));
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Webhook call failed:'));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('[object Object]'));
     });
 
     test('service monitor webhook logs fallback when error has no message/stack', async () => {
@@ -1092,7 +1093,7 @@ describe('webhook_notification', () => {
         sendServiceMonitorWebhook(svc);
         await new Promise((r) => setTimeout(r, 60));
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR WEBHOOKOUT 1:'));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('[object Object]'));
     });
 
     test('license monitor webhook logs fallback when error has no message/stack', async () => {
@@ -1110,7 +1111,7 @@ describe('webhook_notification', () => {
         });
         await new Promise((r) => setTimeout(r, 60));
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1:'));
-        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('[object Object]'));
     });
 
     test('reload failure invalid URL logs invalid config and outer message', async () => {

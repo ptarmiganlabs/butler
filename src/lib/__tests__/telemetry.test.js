@@ -15,6 +15,7 @@ describe('lib/telemetry', () => {
             debug: jest.fn(),
             verbose: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         appVersion: '13.1.2',
         hostInfo: {
             id: 'test-host-id',
@@ -74,7 +75,7 @@ describe('lib/telemetry', () => {
 
             setupAnonUsageReportTimer(mockGlobals.logger, mockGlobals.hostInfo);
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('TELEMETRY: Error: PostHog setup error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('TELEMETRY: PostHog setup error');
         });
 
         test('should handle missing host info', () => {

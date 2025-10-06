@@ -44,6 +44,7 @@ const mockGlobals = {
         },
     },
     logger: { debug: jest.fn(), error: jest.fn(), info: jest.fn(), verbose: jest.fn(), warn: jest.fn() },
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 
 describe('REST: New Relic Event', () => {

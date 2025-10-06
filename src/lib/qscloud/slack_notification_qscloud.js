@@ -94,7 +94,7 @@ function getAppReloadFailedSlackConfig() {
             channel: globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.channel'),
         };
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${err}`);
+        globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -176,7 +176,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     globals.logger.error(`[QSCLOUD] SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`[QSCLOUD] SLACK SEND: Error processing Slack template file: ${err}`);
+                globals.logger.error(`[QSCLOUD] SLACK SEND: Error processing Slack template file: ${globals.getErrorMessage(err)}`);
             }
         }
 
@@ -191,7 +191,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] SLACK SEND: ${err}`);
+        globals.logger.error(`[QSCLOUD] SLACK SEND: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -413,7 +413,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
 
                 await sendSlack(slackConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
-                globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${err}`);
+                globals.logger.error(`[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })

@@ -40,11 +40,11 @@ async function getAppMetadata(appId) {
             // The task does not exist
             return {};
         } catch (err) {
-            globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${err.message}`);
+            globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${err}`);
+        globals.logger.error(`[QSEOW] GET APP METADATA: Error while getting app metadata: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

@@ -37,6 +37,7 @@ jest.unstable_mockModule('fs', () => ({
 const logger = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn(), verbose: jest.fn() };
 const globalsMock = {
     logger,
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     config: {
         get: (k) => ({ 'Butler.configQRS.host': 'sense.local' })[k] ?? undefined,
     },

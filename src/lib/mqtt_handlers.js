@@ -123,7 +123,7 @@ function mqttInitHandlers() {
                         // Have Butler listen to all messages in the topic subtree specified in the config file
                         mqttClient.subscribe(config.get('Butler.mqttConfig.subscriptionRootTopic'));
                     } catch (err) {
-                        logger.error(`MQTT CONNECT: Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`MQTT CONNECT: Error=${globals.getErrorMessage(err)}`);
                     }
                 });
 
@@ -153,7 +153,7 @@ function mqttInitHandlers() {
                             }
                         }
                     } catch (err) {
-                        logger.error(`MQTT MESSAGE: Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`MQTT MESSAGE: Error=${globals.getErrorMessage(err)}`);
                     }
                 });
 
@@ -168,7 +168,7 @@ function mqttInitHandlers() {
             }
         }
     } catch (err) {
-        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for QSEoW: ${err}`);
+        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for QSEoW: ${globals.getErrorMessage(err)}`);
     }
 
     // ----------------------------
@@ -218,7 +218,7 @@ function mqttInitHandlers() {
                             config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.subscriptionRoot'),
                         );
                     } catch (err) {
-                        logger.error(`MQTT QS CLOUD EVENT CONNECT: Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`MQTT QS CLOUD EVENT CONNECT: Error=${globals.getErrorMessage(err)}`);
                     }
                 });
 
@@ -245,13 +245,13 @@ function mqttInitHandlers() {
                             const appReloadResult = await handleQlikSenseCloudAppReloadFinished(messageObj);
                         }
                     } catch (err) {
-                        logger.error(`MQTT QS CLOUD MESSAGE: Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`MQTT QS CLOUD MESSAGE: Error=${globals.getErrorMessage(err)}`);
                     }
                 });
             }
         }
     } catch (err) {
-        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for Qlik Sense Cloud: ${err}`);
+        logger.error(`MQTT INIT HANDLERS: Could not set up MQTT for Qlik Sense Cloud: ${globals.getErrorMessage(err)}`);
     }
 }
 

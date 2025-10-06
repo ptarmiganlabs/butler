@@ -118,7 +118,7 @@ function getSlackReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -193,7 +193,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -321,7 +321,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -406,7 +406,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     globals.logger.error(`[QSEOW] SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK SEND: Error processing Slack template file: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK SEND: Error processing Slack template file: ${globals.getErrorMessage(err)}`);
             }
         }
 
@@ -418,7 +418,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK SEND: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK SEND: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -626,7 +626,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
 
                 await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -827,7 +827,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
 
                 await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -886,7 +886,7 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
                     await sendSlack(slackConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })

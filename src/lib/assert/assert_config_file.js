@@ -126,7 +126,7 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
                 return false;
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG EMAIL: ${err}`);
+            logger.error(`ASSERT CONFIG EMAIL: ${globals.getErrorMessage(err)}`);
         }
     }
 
@@ -175,7 +175,7 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
                 return false;
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG EMAIL: ${err}`);
+            logger.error(`ASSERT CONFIG EMAIL: ${globals.getErrorMessage(err)}`);
         }
     }
 
@@ -224,7 +224,7 @@ export const configFileEmailAssert = async (config, configQRS, logger) => {
                 return false;
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG EMAIL: ${err}`);
+            logger.error(`ASSERT CONFIG EMAIL: ${globals.getErrorMessage(err)}`);
         }
     }
 
@@ -296,7 +296,7 @@ export const configFileInfluxDbAssert = async (config, configQRS, logger) => {
                 return false;
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG INFLUXDB: ${err}`);
+            logger.error(`ASSERT CONFIG INFLUXDB: ${globals.getErrorMessage(err)}`);
         }
     }
     return true;
@@ -406,7 +406,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 }
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${globals.getErrorMessage(err)}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -498,7 +498,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 }
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${globals.getErrorMessage(err)}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -588,7 +588,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 }
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${globals.getErrorMessage(err)}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -680,7 +680,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                 }
             }
         } catch (err) {
-            logger.error(`ASSERT CONFIG NEW RELIC: ${err}`);
+            logger.error(`ASSERT CONFIG NEW RELIC: ${globals.getErrorMessage(err)}`);
         }
     } else {
         // eslint-disable-next-line no-lonely-if
@@ -773,7 +773,7 @@ export async function configFileStructureAssert() {
         try {
             parsedFileContent = load(fileContent);
         } catch (err) {
-            throw new Error(`ASSERT CONFIG: Config file is not valid YAML: ${err}`);
+            throw new Error(`ASSERT CONFIG: Config file is not valid YAML: ${globals.getErrorMessage(err)}`);
         }
 
         // Validate the parsed YAML file against the schema
@@ -803,7 +803,7 @@ export async function configFileStructureAssert() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`VERIFY CONFIG FILE: ${err}`);
+        globals.logger.error(`VERIFY CONFIG FILE: ${globals.getErrorMessage(err)}`);
 
         return false;
     }
@@ -1012,7 +1012,7 @@ export const configFileConditionalAssert = async (config, logger) => {
 
         return true;
     } catch (err) {
-        logger.error(`ASSERT CONFIG CONDITIONAL: ${err}`);
+        logger.error(`ASSERT CONFIG CONDITIONAL: ${globals.getErrorMessage(err)}`);
         return false;
     }
 };

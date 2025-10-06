@@ -168,16 +168,16 @@ async function handlerPutAppReload(request, reply) {
                     );
                 }
             } catch (err) {
-                globals.logger.error(`APPRELOAD: Error closing connection to Sense engine: ${JSON.stringify(err, null, 2)}`);
+                globals.logger.error(`APPRELOAD: Error closing connection to Sense engine: ${globals.getErrorMessage(err)}`);
                 reply.send(httpErrors(500, 'Error closing connection to Sense server'));
             }
         }
     } catch (err) {
         let errorMsg = '';
         if (globals.isSea) {
-            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${err.message}`;
+            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${globals.getErrorMessage(err)}`;
         } else {
-            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${err.stack}`;
+            errorMsg = `APPRELOAD: Failed reloading app ${request.params.appId} on host ${globals.configEngine.host}, error: ${globals.getErrorMessage(err)}`;
         }
 
         globals.logger.error(errorMsg);

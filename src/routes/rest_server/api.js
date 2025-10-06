@@ -18,7 +18,7 @@ async function handlerGetAPIEndpointsEnabled(request, reply) {
 
         return globals.endpointsEnabled;
     } catch (err) {
-        globals.logger.error(`API: Failed retrieving list of enabled API endpoints, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`API: Failed retrieving list of enabled API endpoints, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed retrieving list of enabled API endpoints'));
         return null;
     }

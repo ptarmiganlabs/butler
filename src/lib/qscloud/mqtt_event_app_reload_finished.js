@@ -95,7 +95,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     try {
                         scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId);
                     } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app reload script log. Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`[QSCLOUD] Could not get app reload script log. Error=${globals.getErrorMessage(err)}`);
                     }
 
                     // If return value is false, the script log could not be obtained
@@ -115,7 +115,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         logger.verbose(`[QSCLOUD] App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
                         logger.debug(`[QSCLOUD] App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
                     } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app reload info. Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`[QSCLOUD] Could not get app reload info. Error=${globals.getErrorMessage(err)}`);
                     }
 
                     // App info is available via "GET /v1/apps/{appId}"
@@ -126,7 +126,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         logger.verbose(`[QSCLOUD] App info obtained. App ID="${appId}"`);
                         logger.debug(`[QSCLOUD] App info: ${JSON.stringify(appInfo, null, 2)}`);
                     } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app info. Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`[QSCLOUD] Could not get app info. Error=${globals.getErrorMessage(err)}`);
                     }
 
                     // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
@@ -137,7 +137,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         logger.verbose(`[QSCLOUD] App metadata obtained. App ID="${appId}"`);
                         logger.debug(`[QSCLOUD] App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
                     } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app metadata. Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`[QSCLOUD] Could not get app metadata. Error=${globals.getErrorMessage(err)}`);
                     }
 
                     // App items are available via "GET /v1/items"
@@ -163,7 +163,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                         logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
                     } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app items. Error=${JSON.stringify(err, null, 2)}`);
+                        logger.error(`[QSCLOUD] Could not get app items. Error=${globals.getErrorMessage(err)}`);
                     }
 
                     // Get info from config file
@@ -202,7 +202,9 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             logger.info(`[QSCLOUD] Writing failed task script log: ${fileName}`);
                             fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
                         } catch (err) {
-                            logger.error(`[QSCLOUD] Could not store script log to disk file. File="${fileName}", error=${err}`);
+                            logger.error(
+                                `[QSCLOUD] Could not store script log to disk file. File="${fileName}", error=${globals.getErrorMessage(err)}`,
+                            );
                         }
                     }
 
@@ -384,7 +386,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
         return true;
     } catch (err) {
-        logger.error(`[QSCLOUD] Qlik Sense Cloud app reload finished event handling error: ${err}`);
+        logger.error(`[QSCLOUD] Qlik Sense Cloud app reload finished event handling error: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

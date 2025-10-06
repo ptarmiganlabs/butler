@@ -26,7 +26,7 @@ export const configVerifyAllTaskId = () => {
             }
         }
     } catch (err) {
-        globals.logger.error(`CONFIG VERIFY: Error verifying all task IDs: ${err}`);
+        globals.logger.error(`CONFIG VERIFY: Error verifying all task IDs: ${globals.getErrorMessage(err)}`);
     }
 };
 
@@ -43,7 +43,7 @@ export const verifyTaskId = (taskId) => {
         }
         globals.logger.warn(`TASK ID VERIFY: Task ID not valid: ${taskId}`);
     } catch (err) {
-        globals.logger.error(`TASK ID VERIFY: Error verifying task ID: ${err}`);
+        globals.logger.error(`TASK ID VERIFY: Error verifying task ID: ${globals.getErrorMessage(err)}`);
     }
     return false;
 };

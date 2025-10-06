@@ -6,6 +6,7 @@ describe('lib/config_obfuscate', () => {
         logger: {
             error: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {

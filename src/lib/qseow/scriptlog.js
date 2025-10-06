@@ -182,7 +182,7 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -355,18 +355,24 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
             // Provide more context for HTTP errors
             if (err.response) {
                 // The request was made and the server responded with a status code outside of 2xx
-                globals.logger.warn(`[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed with HTTP ${err.response.status}: ${err.message}`);
+                globals.logger.warn(
+                    `[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed with HTTP ${err.response.status}: ${globals.getErrorMessage(err)}`,
+                );
             } else if (err.request) {
                 // The request was made but no response was received
-                globals.logger.warn(`[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed - no response received: ${err.message}`);
+                globals.logger.warn(
+                    `[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed - no response received: ${globals.getErrorMessage(err)}`,
+                );
             } else {
                 // Something happened in setting up the request that triggered an error
-                globals.logger.warn(`[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed: ${err.message}`);
+                globals.logger.warn(`[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed: ${globals.getErrorMessage(err)}`);
             }
 
             // If this was the last attempt, log as error and return false
             if (attempt === maxRetries) {
-                globals.logger.error(`[QSEOW] GET SCRIPT LOG: All ${maxRetries} attempts failed. Last error: ${err}`);
+                globals.logger.error(
+                    `[QSEOW] GET SCRIPT LOG: All ${maxRetries} attempts failed. Last error: ${globals.getErrorMessage(err)}`,
+                );
                 return false;
             }
         }
@@ -436,7 +442,7 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
         fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] SCRIPTLOG STORE: ${err}`);
+        globals.logger.error(`[QSEOW] SCRIPTLOG STORE: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

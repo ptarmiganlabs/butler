@@ -46,11 +46,11 @@ async function getTaskTags(taskId) {
             // The task does not exist
             return [];
         } catch (err) {
-            globals.logger.error(`GETTASKTAGS: Error while getting tags: ${err.message}`);
+            globals.logger.error(`GETTASKTAGS: Error while getting tags: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`GETTASKTAGS: Error while getting tags: ${err}`);
+        globals.logger.error(`GETTASKTAGS: Error while getting tags: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

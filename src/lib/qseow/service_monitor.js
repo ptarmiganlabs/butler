@@ -169,7 +169,7 @@ const verifyServicesExist = async (config, logger) => {
                     serviceExists = serviceStatusAll.find((svc) => svc.name === service.name);
                 } catch (err) {
                     logger.error(
-                        `VERIFY WIN SERVICES EXIST: Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${err}`,
+                        `VERIFY WIN SERVICES EXIST: Error verifying existence and reachability of service ${service.name} on host ${host.host}: ${globals.getErrorMessage(err)}`,
                     );
                     result = false;
                 }
@@ -186,7 +186,7 @@ const verifyServicesExist = async (config, logger) => {
                 }
             }
         } catch (err) {
-            logger.error(`VERIFY WIN SERVICES EXIST: Error getting service info for host ${host.host}: ${err.message}`);
+            logger.error(`VERIFY WIN SERVICES EXIST: Error getting service info for host ${host.host}: ${globals.getErrorMessage(err)}`);
             result = false;
         }
     }
@@ -516,7 +516,7 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
                 }
             });
         } catch (err) {
-            logger.error(`SERVICE MONITOR: Error getting service info for host ${host.host}: ${err.message}`);
+            logger.error(`SERVICE MONITOR: Error getting service info for host ${host.host}: ${globals.getErrorMessage(err)}`);
         }
     });
 };
@@ -616,9 +616,9 @@ async function setupServiceMonitorTimer(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`SERVICE MONITOR INIT: ${err.message}`);
+            logger.error(`SERVICE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`SERVICE MONITOR INIT: ${err.stack}`);
+            logger.error(`SERVICE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         }
     }
 }

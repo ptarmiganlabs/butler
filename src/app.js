@@ -147,11 +147,7 @@ async function build(opts = {}) {
             globals.logger.info("--> Replace 0.0.0.0 with one of the Butler host's IP addresses to view the API docs page.");
         }
     } catch (err) {
-        if (globals.isSea) {
-            globals.logger.error(`CONFIG: Error initiating host info: ${err.message}`);
-        } else {
-            globals.logger.error(`CONFIG: Error initiating host info, stack trace: ${err.stack}`);
-        }
+        globals.logger.error(`CONFIG: Error initiating host info: ${globals.getErrorMessage(err)}`);
     }
 
     // Set up REST server, if enabled
@@ -249,7 +245,7 @@ async function build(opts = {}) {
 
                     return reply.type(ct).send(payload);
                 } catch (e) {
-                    globals.logger.warn(`SWAGGER: Failed to serve SEA asset: ${e.message}`);
+                    globals.logger.warn(`SWAGGER: Failed to serve SEA asset: ${globals.getErrorMessage(e)}`);
                     return reply.code(500).send('Error');
                 }
             });
@@ -348,7 +344,7 @@ async function build(opts = {}) {
                     },
                 });
             } catch (err) {
-                globals.logger.error(`Error in POST handler: ${err}`);
+                globals.logger.error(`Error in POST handler: ${globals.getErrorMessage(err)}`);
             }
         });
     } else {
@@ -449,7 +445,7 @@ async function build(opts = {}) {
 
                     return reply.type(ct).send(payload);
                 } catch (e) {
-                    globals.logger.warn(`CONFIG VIS: Failed serving asset "${file}": ${e.message}`);
+                    globals.logger.warn(`CONFIG VIS: Failed serving asset "${file}": ${globals.getErrorMessage(e)}`);
                     return reply.code(500).send('Error');
                 }
             });

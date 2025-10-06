@@ -93,7 +93,7 @@ function getServiceStateEventConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR NEWRELIC EVENT: ${err}`);
+        globals.logger.error(`SERVICE MONITOR NEWRELIC EVENT: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -162,7 +162,7 @@ function getServiceStateLogConfig() {
 
         return cfg;
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR NEWRELIC EVENT: ${err}`);
+        globals.logger.error(`SERVICE MONITOR NEWRELIC EVENT: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -256,7 +256,7 @@ async function sendServiceMonitorEvent(serviceStatusParams) {
                 );
                 return null;
             } catch (err) {
-                globals.logger.error(`SERVICE MONITOR NEWRELIC: ${err}`);
+                globals.logger.error(`SERVICE MONITOR NEWRELIC: ${globals.getErrorMessage(err)}`);
                 return null;
             }
         })
@@ -355,7 +355,7 @@ async function sendServiceMonitorLog(serviceStatusParams) {
                 );
                 return null;
             } catch (err) {
-                globals.logger.error(`SERVICE MONITOR NEWRELIC: ${err}`);
+                globals.logger.error(`SERVICE MONITOR NEWRELIC: ${globals.getErrorMessage(err)}`);
                 return null;
             }
         })

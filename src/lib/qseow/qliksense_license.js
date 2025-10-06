@@ -204,9 +204,9 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -260,9 +260,9 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -341,7 +341,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${globals.getErrorMessage(err)}`,
                     );
                 }
                 return false;
@@ -635,7 +635,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${err.stack}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${globals.getErrorMessage(err)}`,
                     );
                 }
                 return false;
@@ -902,9 +902,9 @@ async function checkQlikSenseLicenseRelease(config, logger) {
         return true;
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: ${globals.getErrorMessage(err)}`);
         }
         return false;
     }
@@ -930,9 +930,9 @@ export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -957,9 +957,9 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -984,9 +984,9 @@ export async function setupQlikSenseServerLicenseMonitor(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
         }
     }
 }

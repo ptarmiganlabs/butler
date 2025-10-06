@@ -109,7 +109,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -178,7 +178,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -294,7 +294,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -380,7 +380,7 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
                     globals.logger.error(`[QSEOW] TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS SEND: Error processing Teams template file: ${err}`);
+                globals.logger.error(`[QSEOW] TEAMS SEND: Error processing Teams template file: ${globals.getErrorMessage(err)}`);
             }
         }
 
@@ -395,7 +395,7 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS SEND: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS SEND: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -587,7 +587,7 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${err}`);
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -788,7 +788,7 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${err}`);
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -848,7 +848,7 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     await sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${err}`);
+                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
