@@ -109,7 +109,7 @@ test('getScriptLog returns no-log structure when fileReference is all zeros', as
     const res1 = makeResult1();
     res1.body.operational.lastExecutionResult.fileReferenceID = '00000000-0000-0000-0000-000000000000';
     qrsGetMock.mockResolvedValueOnce(res1);
-    const res = await scriptlog.getScriptLog('task-1', 1, 1);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1); // maxRetries=1 to avoid retry
     expect(res.scriptLogFull).toBe('');
     expect(res.scriptLogSize).toBe(0);
 });
@@ -163,10 +163,17 @@ test('getReloadTaskExecutionResults handles 1753 dates (null dates)', async () =
 });
 
 test('getScriptLog handles axios errors', async () => {
-    qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-    axiosReqMock.mockRejectedValueOnce(new Error('Network error'));
+    // Provide mocks for all 3 retry attempts - each attempt needs 2 QRS calls
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Attempt 3 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Attempt 3 - scriptlog reference
+    axiosReqMock.mockRejectedValue(new Error('Network error'));
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 10); // 3 retries, 10ms delay
     expect(res).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Network error'));
 });
@@ -244,4 +251,184 @@ test('failedTaskStoreLogOnDisk handles fs errors', async () => {
 
     // Reset fs mock behavior
     fsMkdirBehavior = null;
+});
+
+test('getScriptLog retries on 404 error and eventually succeeds', async () => {
+    // Setup: First two calls return 404, third succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // First attempt - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // First attempt - Get scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Second attempt - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Second attempt - Get scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Third attempt - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Third attempt - Get scriptlog reference
+
+    // Create a proper 404 axios error
+    const error404_1 = new Error('Request failed with status code 404');
+    error404_1.response = { status: 404, statusText: 'Not Found' };
+    error404_1.request = {};
+
+    const error404_2 = new Error('Request failed with status code 404');
+    error404_2.response = { status: 404, statusText: 'Not Found' };
+    error404_2.request = {};
+
+    axiosReqMock
+        .mockRejectedValueOnce(error404_1) // First attempt fails with 404
+        .mockRejectedValueOnce(error404_2) // Second attempt fails with 404
+        .mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3' }); // Third attempt succeeds
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 100); // maxRetries=3, retryDelayMs=100
+
+    // Verify success
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['row1', 'row2', 'row3']);
+    expect(res.scriptLogHead).toBe('row1');
+
+    // Verify retry attempts were logged
+    expect(logger.warn).toHaveBeenCalledTimes(2); // Two failed attempts
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 1 failed with HTTP 404'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 2 failed with HTTP 404'));
+    expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Retry attempt 2 of 3'));
+    expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Retry attempt 3 of 3'));
+
+    // Verify final success
+    expect(logger.verbose).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: Done getting script log');
+});
+
+test('getScriptLog retries on 404 error and eventually fails after max retries', async () => {
+    // Setup: All attempts return 404
+    // Each attempt calls qrsGetMock twice: once for getReloadTaskExecutionResults, once for scriptlog reference
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - scriptlog reference
+        .mockResolvedValueOnce(makeResult1()) // Attempt 3 - getReloadTaskExecutionResults
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Attempt 3 - scriptlog reference
+
+    // Create 404 errors for all attempts
+    const error404 = new Error('Request failed with status code 404');
+    error404.response = { status: 404, statusText: 'Not Found' };
+    error404.request = {};
+
+    axiosReqMock.mockRejectedValue(error404); // All attempts fail with 404
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+
+    // Verify failure
+    expect(res).toBe(false);
+
+    // Verify all retry attempts were logged
+    expect(logger.warn).toHaveBeenCalledTimes(3); // Three failed attempts
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 1 failed with HTTP 404'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 2 failed with HTTP 404'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 3 failed with HTTP 404'));
+
+    // Verify final error was logged
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('All 3 attempts failed'));
+});
+
+test('getScriptLog retries when fileReferenceId is all zeros and eventually gets valid reference', async () => {
+    // Setup: First two attempts return all-zeros fileReferenceId, third attempt returns valid ID
+    const resultWithZeroRef = makeResult1();
+    resultWithZeroRef.body.operational.lastExecutionResult.fileReferenceID = '00000000-0000-0000-0000-000000000000';
+
+    qrsGetMock
+        .mockResolvedValueOnce(resultWithZeroRef) // First attempt - no fileReference yet
+        .mockResolvedValueOnce(resultWithZeroRef) // Second attempt - still no fileReference
+        .mockResolvedValueOnce(makeResult1()) // Third attempt - valid fileReference
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Get scriptlog reference
+
+    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' });
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+
+    // Verify success
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['row1', 'row2']);
+
+    // Verify retry attempts were logged
+    expect(logger.warn).toHaveBeenCalledTimes(2);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log not available yet (fileReferenceId is all zeros)'));
+    expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Retry attempt 2 of 3'));
+    expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Retry attempt 3 of 3'));
+});
+
+test('getScriptLog returns empty result when fileReferenceId remains all zeros after all retries', async () => {
+    // Setup: All attempts return all-zeros fileReferenceId
+    const resultWithZeroRef = makeResult1();
+    resultWithZeroRef.body.operational.lastExecutionResult.fileReferenceID = '00000000-0000-0000-0000-000000000000';
+
+    qrsGetMock.mockResolvedValue(resultWithZeroRef);
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+
+    // Verify empty result (not false, since this is a valid state on the last attempt)
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toBe('');
+    expect(res.scriptLogSize).toBe(0);
+
+    // Verify retry attempts were logged (only 2 warnings, since last attempt returns successfully)
+    expect(logger.warn).toHaveBeenCalledTimes(2);
+    expect(logger.verbose).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: No script log available after all retry attempts');
+});
+
+test('getScriptLog handles 500 error with retry', async () => {
+    // Setup: First attempt returns 500, second succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
+
+    const error500 = new Error('Request failed with status code 500');
+    error500.response = { status: 500, statusText: 'Internal Server Error' };
+    error500.request = {};
+
+    axiosReqMock.mockRejectedValueOnce(error500).mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' });
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['row1', 'row2']);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 1 failed with HTTP 500'));
+});
+
+test('getScriptLog handles network error (no response) with retry', async () => {
+    // Setup: First attempt has network error, second succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
+
+    const networkError = new Error('Network timeout');
+    networkError.request = {}; // request was made but no response received
+    // No response property indicates network-level error
+
+    axiosReqMock.mockRejectedValueOnce(networkError).mockResolvedValueOnce({ status: 200, data: 'row1' });
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+
+    expect(res).not.toBe(false);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 1 failed - no response received'));
+});
+
+test('getScriptLog handles request setup error with retry', async () => {
+    // Setup: First attempt has request setup error, second succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
+
+    const setupError = new Error('Invalid configuration');
+    // No request or response properties indicates setup error
+
+    axiosReqMock.mockRejectedValueOnce(setupError).mockResolvedValueOnce({ status: 200, data: 'row1' });
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+
+    expect(res).not.toBe(false);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Attempt 1 failed: Invalid configuration'));
 });

@@ -702,53 +702,68 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         // Get script logs
         const scriptLogData = reloadParams.scriptLog;
 
-        // Reduce script log lines to only the ones we want to send to InfluxDB
-        scriptLogData.scriptLogHeadCount = 0;
-        scriptLogData.scriptLogTailCount = globals.config.get('Butler.influxDb.reloadTaskFailure.tailScriptLogLines');
+        // Handle case where scriptLog retrieval failed
+        if (scriptLogData === null || scriptLogData === undefined) {
+            globals.logger.warn(
+                `[QSEOW] RELOAD TASK FAILED INFLUXDB: Script log data is not available. InfluxDB entry will be stored without script log details.`,
+            );
 
-        scriptLogData.scriptLogHead = '';
-        if (scriptLogData?.scriptLogFull?.length > 0) {
-            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                .join('\r\n');
+            // Set minimal fields without script log data
+            datapoint[0].tags.task_executingNodeName = 'unknown';
+            datapoint[0].tags.task_executionStatusNum = -1;
+            datapoint[0].tags.task_exeuctionStatusText = 'Script log not available';
+            datapoint[0].fields.task_scriptLogSize = 0;
+            datapoint[0].fields.task_scriptLogTailCount = 0;
+            datapoint[0].fields.scriptLog = 'Script log not available';
         } else {
-            scriptLogData.scriptLogTail = '';
+            // Reduce script log lines to only the ones we want to send to InfluxDB
+            scriptLogData.scriptLogHeadCount = 0;
+            scriptLogData.scriptLogTailCount = globals.config.get('Butler.influxDb.reloadTaskFailure.tailScriptLogLines');
+
+            scriptLogData.scriptLogHead = '';
+            if (scriptLogData?.scriptLogFull?.length > 0) {
+                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                    .join('\r\n');
+            } else {
+                scriptLogData.scriptLogTail = '';
+            }
+
+            globals.logger.debug(`[QSEOW] RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+
+            // Use script log data to enrich log entry sent to InfluxDB
+            datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
+            datapoint[0].tags.task_executionStatusNum = scriptLogData.executionStatusNum;
+            datapoint[0].tags.task_exeuctionStatusText = scriptLogData.executionStatusText;
+
+            datapoint[0].fields.task_executionStartTime_json = JSON.stringify(scriptLogData.executionStartTime);
+            datapoint[0].fields.task_executionStopTime_json = JSON.stringify(scriptLogData.executionStopTime);
+
+            datapoint[0].fields.task_executionDuration_json = JSON.stringify(scriptLogData.executionDuration);
+            // Add execution duration in seconds
+            datapoint[0].fields.task_executionDuration_sec =
+                scriptLogData.executionDuration.hours * 3600 +
+                scriptLogData.executionDuration.minutes * 60 +
+                scriptLogData.executionDuration.seconds;
+            // Add execution duration in minutes
+            datapoint[0].fields.task_executionDuration_min =
+                scriptLogData.executionDuration.hours * 60 +
+                scriptLogData.executionDuration.minutes +
+                scriptLogData.executionDuration.seconds / 60;
+            // Add execution duration in hours
+            datapoint[0].fields.task_executionDuration_h =
+                scriptLogData.executionDuration.hours +
+                scriptLogData.executionDuration.minutes / 60 +
+                scriptLogData.executionDuration.seconds / 3600;
+
+            datapoint[0].fields.task_scriptLogSize = scriptLogData.scriptLogSize;
+            datapoint[0].fields.task_scriptLogTailCount = scriptLogData.scriptLogTailCount;
+
+            // Set main log message
+            const msg = `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`;
+            datapoint[0].fields.scriptLog = msg;
+            datapoint[0].fields.reload_log = msg;
         }
-
-        globals.logger.debug(`[QSEOW] RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
-        // Use script log data to enrich log entry sent to InfluxDB
-        datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
-        datapoint[0].tags.task_executionStatusNum = scriptLogData.executionStatusNum;
-        datapoint[0].tags.task_exeuctionStatusText = scriptLogData.executionStatusText;
-
-        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(scriptLogData.executionStartTime);
-        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(scriptLogData.executionStopTime);
-
-        datapoint[0].fields.task_executionDuration_json = JSON.stringify(scriptLogData.executionDuration);
-        // Add execution duration in seconds
-        datapoint[0].fields.task_executionDuration_sec =
-            scriptLogData.executionDuration.hours * 3600 +
-            scriptLogData.executionDuration.minutes * 60 +
-            scriptLogData.executionDuration.seconds;
-        // Add execution duration in minutes
-        datapoint[0].fields.task_executionDuration_min =
-            scriptLogData.executionDuration.hours * 60 +
-            scriptLogData.executionDuration.minutes +
-            scriptLogData.executionDuration.seconds / 60;
-        // Add execution duration in hours
-        datapoint[0].fields.task_executionDuration_h =
-            scriptLogData.executionDuration.hours +
-            scriptLogData.executionDuration.minutes / 60 +
-            scriptLogData.executionDuration.seconds / 3600;
-
-        datapoint[0].fields.task_scriptLogSize = scriptLogData.scriptLogSize;
-        datapoint[0].fields.task_scriptLogTailCount = scriptLogData.scriptLogTailCount;
-
-        // Set main log message
-        const msg = `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`;
-
-        datapoint[0].fields.reload_log = msg;
 
         // Should app tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskFailure.tag.dynamic.useAppTags') === true) {

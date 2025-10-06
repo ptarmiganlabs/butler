@@ -521,19 +521,26 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
+
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
     }
 
     globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -842,19 +849,26 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
+
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
     }
 
     globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -1088,23 +1102,30 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
-    }
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.tailScriptLogLines');
 
-    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
-    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
+
+        globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
+        globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
+    }
 
     // Get app owner
     const appOwner = await getAppOwner(reloadParams.appId);

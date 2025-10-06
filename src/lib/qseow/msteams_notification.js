@@ -427,23 +427,29 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Teams
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] TEAMS RELOAD TASK FAILED: Script log data is not available. Teams notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Teams
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
@@ -621,22 +627,28 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Teams
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data is not available. Teams notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Teams
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 

@@ -44,7 +44,16 @@ const schedulerAborted = async (msg) => {
     ) {
         scriptLog = await getScriptLog(msg[5], 1, 1);
 
-        globals.logger.verbose(`[QSEOW] Script log for aborted reload retrieved`);
+        // Check if script log retrieval failed
+        if (scriptLog === false) {
+            globals.logger.warn(
+                `[QSEOW] TASKABORTED: Failed to retrieve script log for task ${msg[5]}. Continuing with other notifications without script log data.`,
+            );
+            // Set scriptLog to null so downstream functions can check for its availability
+            scriptLog = null;
+        } else {
+            globals.logger.verbose(`[QSEOW] Script log for aborted reload retrieved`);
+        }
     }
 
     // TOOD: Add check if task exists in QRS
@@ -326,7 +335,17 @@ const schedulerFailed = async (msg) => {
         globals.config.get('Butler.emailNotification.enable') === true
     ) {
         scriptLog = await getScriptLog(msg[5], 0, 0);
-        globals.logger.verbose(`[QSEOW] Script log for failed reload retrieved`);
+
+        // Check if script log retrieval failed
+        if (scriptLog === false) {
+            globals.logger.warn(
+                `[QSEOW] TASKFAILURE: Failed to retrieve script log for task ${msg[5]}. Continuing with other notifications without script log data.`,
+            );
+            // Set scriptLog to null so downstream functions can check for its availability
+            scriptLog = null;
+        } else {
+            globals.logger.verbose(`[QSEOW] Script log for failed reload retrieved`);
+        }
     }
 
     globals.logger.verbose(
@@ -660,7 +679,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
         return false;
     }
 
-    // Determine if this task should be stored in InflixDB
+    // Determine if this task should be stored in InfluxDB
     let storeInInfluxDb = false;
     if (
         globals.config.get('Butler.influxDb.enable') === true &&
@@ -702,7 +721,17 @@ const schedulerReloadTaskSuccess = async (msg) => {
             globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable') === true)
     ) {
         scriptLog = await getScriptLog(reloadTaskId, 0, 0);
-        globals.logger.verbose(`[QSEOW] Script log for successful reload retrieved`);
+
+        // Check if script log retrieval failed
+        if (scriptLog === false) {
+            globals.logger.warn(
+                `[QSEOW] RELOAD TASK SUCCESS: Failed to retrieve script log for task ${reloadTaskId}. Continuing with other notifications without script log data.`,
+            );
+            // Set scriptLog to null so downstream functions can check for its availability
+            scriptLog = null;
+        } else {
+            globals.logger.verbose(`[QSEOW] Script log for successful reload retrieved`);
+        }
     }
 
     // Get app metadata from QRS

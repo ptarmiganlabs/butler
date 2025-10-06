@@ -503,39 +503,52 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
             // Get script logs
             const scriptLogData = reloadParams.scriptLog;
 
-            // Reduce script log lines to only the ones we want to send to New Relic
-            scriptLogData.scriptLogHeadCount = 0;
-            scriptLogData.scriptLogTailCount = globals.config.get(
-                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines',
-            );
+            // Handle case where scriptLog retrieval failed
+            if (scriptLogData === null || scriptLogData === undefined) {
+                globals.logger.warn(
+                    `[QSEOW] NEW RELIC: Script log data is not available. Log entry will be sent to New Relic without script log details.`,
+                );
 
-            scriptLogData.scriptLogHead = '';
-            if (scriptLogData?.scriptLogFull?.length > 0) {
-                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                    .join('\r\n');
+                // Set minimal log message without script log data
+                const logMessage = {
+                    message: `Script log not available for this reload task.`,
+                };
+                payload[0].logs.push(logMessage);
             } else {
-                scriptLogData.scriptLogTail = '';
+                // Reduce script log lines to only the ones we want to send to New Relic
+                scriptLogData.scriptLogHeadCount = 0;
+                scriptLogData.scriptLogTailCount = globals.config.get(
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.tailScriptLogLines',
+                );
+
+                scriptLogData.scriptLogHead = '';
+                if (scriptLogData?.scriptLogFull?.length > 0) {
+                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                        .join('\r\n');
+                } else {
+                    scriptLogData.scriptLogTail = '';
+                }
+
+                globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+
+                // Use script log data to enrich log entry sent to New Relic
+                payload[0].common.attributes.qs_executingNodeName = scriptLogData.executingNodeName;
+                payload[0].common.attributes.qs_executionStartTime = scriptLogData.executionStartTime;
+                payload[0].common.attributes.qs_executionStopTime = scriptLogData.executionStopTime;
+                payload[0].common.attributes.qs_executionDuration = scriptLogData.executionDuration;
+                payload[0].common.attributes.qs_executionStatusNum = scriptLogData.executionStatusNum;
+                payload[0].common.attributes.qs_exeuctionStatusText = scriptLogData.executionStatusText;
+                payload[0].common.attributes.qs_scriptLogSize = scriptLogData.scriptLogSize;
+                payload[0].common.attributes.qs_scriptLogTailCount = scriptLogData.scriptLogTailCount;
+
+                // Set main log message
+                const logMessage = {
+                    // timestamp: tsTmp,
+                    message: `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`,
+                };
+                payload[0].logs.push(logMessage);
             }
-
-            globals.logger.debug(`NEW RELIC TASK FAILED LOG: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
-            // Use script log data to enrich log entry sent to New Relic
-            payload[0].common.attributes.qs_executingNodeName = scriptLogData.executingNodeName;
-            payload[0].common.attributes.qs_executionStartTime = scriptLogData.executionStartTime;
-            payload[0].common.attributes.qs_executionStopTime = scriptLogData.executionStopTime;
-            payload[0].common.attributes.qs_executionDuration = scriptLogData.executionDuration;
-            payload[0].common.attributes.qs_executionStatusNum = scriptLogData.executionStatusNum;
-            payload[0].common.attributes.qs_exeuctionStatusText = scriptLogData.executionStatusText;
-            payload[0].common.attributes.qs_scriptLogSize = scriptLogData.scriptLogSize;
-            payload[0].common.attributes.qs_scriptLogTailCount = scriptLogData.scriptLogTailCount;
-
-            // Set main log message
-            const logMessage = {
-                // timestamp: tsTmp,
-                message: `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`,
-            };
-            payload[0].logs.push(logMessage);
         } else if (incidentConfig?.logType === 'qs_serviceStateLog') {
             // Set attributes
             payload[0].common.attributes = incidentConfig.attributes;
