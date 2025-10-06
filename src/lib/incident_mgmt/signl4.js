@@ -63,7 +63,7 @@ function getReloadFailedEventConfig() {
             //     : false,
         };
     } catch (err) {
-        globals.logger.error(`SIGNL4: ${err}`);
+        globals.logger.error(`SIGNL4: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -102,7 +102,7 @@ function getReloadAbortedEventConfig() {
             //     : false,
         };
     } catch (err) {
-        globals.logger.error(`SIGNL4: ${err}`);
+        globals.logger.error(`SIGNL4: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -133,7 +133,7 @@ async function sendSignl4(incidentConfig, reloadParams) {
         const response = await axios.request(axiosRequest);
         globals.logger.debug(`SIGNL4: Webhook response: ${response}`);
     } catch (err) {
-        globals.logger.error(`SIGNL4: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`SIGNL4: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -162,7 +162,7 @@ export function sendReloadTaskFailureNotification(reloadParams) {
                 sendSignl4(incidentConfig, reloadParams);
                 return null;
             } catch (err) {
-                globals.logger.error(`SIGNL4 RELOAD TASK FAILED ALERT: ${err}`);
+                globals.logger.error(`SIGNL4 RELOAD TASK FAILED ALERT: ${globals.getErrorMessage(err)}`);
                 return null;
             }
         })
@@ -199,7 +199,7 @@ export function sendReloadTaskAbortedNotification(reloadParams) {
                 sendSignl4(incidentConfig, reloadParams);
                 return null;
             } catch (err) {
-                globals.logger.error(`SIGNL4 RELOAD TASK ABORTED ALERT: ${err}`);
+                globals.logger.error(`SIGNL4 RELOAD TASK ABORTED ALERT: ${globals.getErrorMessage(err)}`);
                 return null;
             }
         })

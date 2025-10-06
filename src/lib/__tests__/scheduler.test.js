@@ -25,6 +25,7 @@ describe('lib/scheduler', () => {
             debug: jest.fn(),
             verbose: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         configSchedule: [],
     };
 

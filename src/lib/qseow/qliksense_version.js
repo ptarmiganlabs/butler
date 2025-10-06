@@ -56,9 +56,9 @@ async function checkQlikSenseVersion(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -82,9 +82,9 @@ export async function setupQlikSenseVersionMonitor(config, logger) {
         }
     } catch (err) {
         if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err.message}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${globals.getErrorMessage(err)}`);
         } else {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${err.stack}`);
+            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${globals.getErrorMessage(err)}`);
         }
     }
 }

@@ -18,7 +18,11 @@ function makeGlobalsMock(overrides = {}) {
         verbose: jest.fn(),
         debug: jest.fn(),
     };
-    return { config: { has, get, set }, logger };
+    return {
+        config: { has, get, set },
+        logger,
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+    };
 }
 
 // Async wait helper

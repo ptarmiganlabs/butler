@@ -4,9 +4,18 @@ describe('lib/slack_api', () => {
     let slackSend;
     const mockAxios = { post: jest.fn() };
     const mockLogger = { debug: jest.fn(), error: jest.fn() };
+    const mockGlobals = {
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+    };
 
     beforeAll(async () => {
+        await jest.unstable_mockModule('node:sea', () => ({
+            isSea: jest.fn(() => false),
+            getAsset: jest.fn(),
+            getAssetAsBlob: jest.fn(),
+        }));
         await jest.unstable_mockModule('axios', () => ({ default: mockAxios }));
+        await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
         ({ default: slackSend } = await import('../slack_api.js'));
     });
 

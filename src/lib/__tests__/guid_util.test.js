@@ -8,6 +8,7 @@ describe('lib/guid_util', () => {
             warn: jest.fn(),
             error: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {

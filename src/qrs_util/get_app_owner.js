@@ -31,7 +31,7 @@ const getAppOwner = async (appId) => {
 
             appOwner = result.body.owner;
         } catch (err) {
-            globals.logger.error(`APPOWNER: Error while getting app owner: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`APPOWNER: Error while getting app owner: ${globals.getErrorMessage(err)}`);
             throw new Error('Error while getting app owner');
         }
 
@@ -55,11 +55,11 @@ const getAppOwner = async (appId) => {
             };
             // }
         } catch (err) {
-            globals.logger.error(`APPOWNER: Error while getting app owner details 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`APPOWNER: Error while getting app owner details 1: ${globals.getErrorMessage(err)}`);
             return false;
         }
     } catch (err) {
-        globals.logger.error(`APPOWNER: Error while getting app owner details 2: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`APPOWNER: Error while getting app owner details 2: ${globals.getErrorMessage(err)}`);
         return false;
     }
 };

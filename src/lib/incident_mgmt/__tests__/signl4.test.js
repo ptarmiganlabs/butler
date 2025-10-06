@@ -27,6 +27,7 @@ describe('lib/incident_mgmt/signl4', () => {
                 info: jest.fn(),
                 verbose: jest.fn(),
             },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         };
 
         // Mock rate-limiter-flexible

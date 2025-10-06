@@ -15,6 +15,7 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
             debug: jest.fn(),
             verbose: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const mockGetQlikSenseCloudUserInfo = jest.fn();

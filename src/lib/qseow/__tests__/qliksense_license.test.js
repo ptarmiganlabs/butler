@@ -186,6 +186,7 @@ describe('qseow/qliksense_license', () => {
         jest.unstable_mockModule('../../../globals.js', () => ({
             default: {
                 logger,
+                getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
                 config: {
                     has: (path) => getByPath(cfg, path) !== undefined,
                     get: (path) => getByPath(cfg, path),

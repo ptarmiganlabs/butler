@@ -23,10 +23,13 @@ const taskStatusLookup = {
 };
 
 /**
- * Compares two task details based on their creation date.
- * @param {Object} a - The first task detail.
- * @param {Object} b - The second task detail.
- * @returns {number} - Returns -1 if a is less than b, 1 if a is greater than b, and 0 if they are equal.
+ * Compares two task detail objects based on their creation date.
+ * Used for sorting task execution details in chronological order.
+ * @param {Object} a - The first task detail object.
+ * @param {string} a.detailCreatedDate - The creation date of the first task detail.
+ * @param {Object} b - The second task detail object.
+ * @param {string} b.detailCreatedDate - The creation date of the second task detail.
+ * @returns {number} - Returns -1 if a is earlier than b, 1 if a is later than b, and 0 if they are equal.
  */
 function compareTaskDetails(a, b) {
     if (a.detailCreatedDate < b.detailCreatedDate) {
@@ -38,7 +41,6 @@ function compareTaskDetails(a, b) {
     return 0;
 }
 
-// eslint-disable-next-line no-unused-vars
 /**
  * Delays execution for a specified number of milliseconds.
  * @param {number} milliseconds - The number of milliseconds to delay.
@@ -51,9 +53,10 @@ function delay(milliseconds) {
 }
 
 /**
- * Gets reload task execution results.
- * @param {string} reloadTaskId - The ID of the reload task.
- * @returns {Object|boolean} - Returns an object with task execution details or false if an error occurs.
+ * Gets reload task execution results from the Qlik Sense QRS API.
+ * Retrieves detailed information about the last execution of a reload task, including status, duration, and execution details.
+ * @param {string} reloadTaskId - The GUID of the reload task.
+ * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (fileReferenceId, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, scriptLogSize, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
  */
 export async function getReloadTaskExecutionResults(reloadTaskId) {
     try {
@@ -94,7 +97,6 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         };
 
         // Get execution details as a single string ny concatenating the individual execution step details
-        // eslint-disable-next-line no-restricted-syntax
         for (const execDetail of taskInfo.executionDetailsSorted) {
             taskInfo.executionDetailsConcatenated = `${taskInfo.executionDetailsConcatenated + execDetail.detailCreatedDate}\t${
                 execDetail.message
@@ -180,103 +182,157 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
 
 /**
- * Gets reload task execution results and script log.
- * @param {string} reloadTaskId - The ID of the reload task.
- * @param {number} headLineCount - The number of lines to include from the start of the script log.
- * @param {number} tailLineCount - The number of lines to include from the end of the script log.
- * @returns {Object|boolean} - Returns an object with task execution details and script log or false if an error occurs.
+ * Gets reload task execution results and downloads the associated script log from the Qlik Sense QRS API.
+ * Retrieves task execution details and the full script log, including head and tail portions based on specified line counts.
+ * Implements retry logic with configurable attempts and delays to handle API timing issues.
+ * @param {string} reloadTaskId - The GUID of the reload task.
+ * @param {number} headLineCount - The number of lines to include from the start of the script log. Set to 0 to exclude head.
+ * @param {number} tailLineCount - The number of lines to include from the end of the script log. Set to 0 to exclude tail.
+ * @param {number} [maxRetries=3] - Maximum number of retry attempts if script log retrieval fails.
+ * @param {number} [retryDelayMs=2000] - Delay in milliseconds between retry attempts.
+ * @returns {Promise<Object|boolean>} - Returns an object containing executingNodeName, executionDetails, executionDetailsConcatenated, executionDuration, executionStartTime, executionStopTime, executionStatusNum, executionStatusText, scriptLogFull (array), scriptLogSize, scriptLogSizeRows, scriptLogSizeCharacters, scriptLogHead, scriptLogHeadCount, scriptLogTail, scriptLogTailCount. Returns false if an error occurs.
  */
-export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
-    try {
-        // Step 1
-        const taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
+export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, maxRetries = 3, retryDelayMs = 2000) {
+    let lastError;
 
-        // Step 2
-        // Set up Sense repository service configuration
-        const configQRS = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-            certificates: {
-                certFile: globals.configQRS.certPaths.certPath,
-                keyFile: globals.configQRS.certPaths.keyPath,
-            },
-        };
+    // Retry loop
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 1) {
+                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Retry attempt ${attempt} of ${maxRetries} for task ${reloadTaskId}`);
+                await delay(retryDelayMs);
+            } else {
+                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Initial attempt (${attempt} of ${maxRetries}) for task ${reloadTaskId}`);
+            }
 
-        // Merge YAML-configured headers with hardcoded headers
-        configQRS.headers = {
-            ...globals.getQRSHttpHeaders(),
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-        };
+            // Step 1
+            const taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
 
-        const qrsInstance = new QrsClient(configQRS);
+            // Check if taskInfo retrieval failed
+            if (!taskInfo) {
+                throw new Error('Failed to get task execution results from QRS');
+            }
 
-        // Only get script log if there is a valid fileReferenceId
-        globals.logger.debug(`[QSEOW] GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
-        if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
-            globals.logger.debug(
-                `[QSEOW] GET SCRIPT LOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
-            );
+            // Check if taskInfo retrieval failed
+            if (!taskInfo) {
+                throw new Error('Failed to get task execution results from QRS');
+            }
 
-            const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
-
-            // Step 3
-            // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
-            const httpsAgent = new https.Agent({
-                rejectUnauthorized: globals.config.get('Butler.configQRS.rejectUnauthorized'),
-                cert: globals.configQRS.cert,
-                key: globals.configQRS.key,
-            });
-
-            // Get http headers from Butler config file
-            const httpHeaders = globals.getEngineHttpHeaders();
-
-            // Add x-qlik-xrfkey to headers
-            httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
-
-            const protocol = globals.configQRS.useSSL ? 'https' : 'http';
-            const axiosConfig = {
-                url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
-                method: 'get',
-                baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
-                headers: httpHeaders,
-                timeout: 10000,
-                responseType: 'text',
-                httpsAgent,
-                //   passphrase: "YYY"
+            // Step 2
+            // Set up Sense repository service configuration
+            const configQRS = {
+                hostname: globals.config.get('Butler.configQRS.host'),
+                portNumber: globals.config.get('Butler.configQRS.port'),
+                certificates: {
+                    certFile: globals.configQRS.certPaths.certPath,
+                    keyFile: globals.configQRS.certPaths.keyPath,
+                },
             };
 
-            const result3 = await axios.request(axiosConfig);
+            // Merge YAML-configured headers with hardcoded headers
+            configQRS.headers = {
+                ...globals.getQRSHttpHeaders(),
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            };
 
-            // Get complete script log as an array of lines
-            const scriptLogFull = result3.data.split('\r\n');
+            const qrsInstance = new QrsClient(configQRS);
 
-            // Get total number of rows and characters in script log
-            const scriptLogSizeCharacters = result3.data.length;
-            const scriptLogSizeRows = scriptLogFull.length;
+            // Only get script log if there is a valid fileReferenceId
+            globals.logger.debug(`[QSEOW] GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
+            if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
+                globals.logger.debug(
+                    `[QSEOW] GET SCRIPT LOG 3: reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
+                );
 
-            // Get head and tail of script log
-            let scriptLogHead = '';
-            let scriptLogTail = '';
+                const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
 
-            if (headLineCount > 0) {
-                scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+                // Step 3
+                // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
+                const httpsAgent = new https.Agent({
+                    rejectUnauthorized: globals.config.get('Butler.configQRS.rejectUnauthorized'),
+                    cert: globals.configQRS.cert,
+                    key: globals.configQRS.key,
+                });
+
+                // Get http headers from Butler config file
+                const httpHeaders = globals.getEngineHttpHeaders();
+
+                // Add x-qlik-xrfkey to headers
+                httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
+
+                const protocol = globals.configQRS.useSSL ? 'https' : 'http';
+                const axiosConfig = {
+                    url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
+                    method: 'get',
+                    baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
+                    headers: httpHeaders,
+                    timeout: 10000,
+                    responseType: 'text',
+                    httpsAgent,
+                    //   passphrase: "YYY"
+                };
+
+                const result3 = await axios.request(axiosConfig);
+
+                // Get complete script log as an array of lines
+                const scriptLogFull = result3.data.split('\r\n');
+
+                // Get total number of rows and characters in script log
+                const scriptLogSizeCharacters = result3.data.length;
+                const scriptLogSizeRows = scriptLogFull.length;
+
+                // Get head and tail of script log
+                let scriptLogHead = '';
+                let scriptLogTail = '';
+
+                if (headLineCount > 0) {
+                    scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+                }
+
+                if (tailLineCount > 0) {
+                    scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
+                }
+
+                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
+                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
+
+                globals.logger.verbose('[QSEOW] GET SCRIPT LOG: Done getting script log');
+
+                return {
+                    executingNodeName: taskInfo.executingNodeName,
+                    executionDetails: taskInfo.executionDetailsSorted,
+                    executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
+                    executionDuration: taskInfo.executionDuration,
+                    executionStartTime: taskInfo.executionStartTime,
+                    executionStopTime: taskInfo.executionStopTime,
+                    executionStatusNum: taskInfo.executionStatusNum,
+                    executionStatusText: taskInfo.executionStatusText,
+                    scriptLogFull,
+                    scriptLogSize: taskInfo.scriptLogSize,
+                    scriptLogSizeRows: scriptLogSizeRows,
+                    scriptLogSizeCharacters: scriptLogSizeCharacters,
+                    scriptLogHead,
+                    scriptLogHeadCount: headLineCount,
+                    scriptLogTail,
+                    scriptLogTailCount: tailLineCount,
+                };
             }
 
-            if (tailLineCount > 0) {
-                scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
+            // No script log is available (fileReferenceId is all zeros)
+            // If this is not the last attempt, throw an error to trigger retry
+            // (the script log might not be ready yet)
+            if (attempt < maxRetries) {
+                throw new Error('Script log not available yet (fileReferenceId is all zeros). Will retry...');
             }
 
-            globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
-            globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
-
-            globals.logger.verbose('[QSEOW] GET SCRIPT LOG: Done getting script log');
-
+            // On the last attempt, accept that no script log is available and return empty result
+            globals.logger.verbose('[QSEOW] GET SCRIPT LOG: No script log available after all retry attempts');
             return {
                 executingNodeName: taskInfo.executingNodeName,
                 executionDetails: taskInfo.executionDetailsSorted,
@@ -286,43 +342,57 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount) {
                 executionStopTime: taskInfo.executionStopTime,
                 executionStatusNum: taskInfo.executionStatusNum,
                 executionStatusText: taskInfo.executionStatusText,
-                scriptLogFull,
-                scriptLogSize: taskInfo.scriptLogSize,
-                scriptLogSizeRows: scriptLogSizeRows,
-                scriptLogSizeCharacters: scriptLogSizeCharacters,
-                scriptLogHead,
-                scriptLogHeadCount: headLineCount,
-                scriptLogTail,
-                scriptLogTailCount: tailLineCount,
+                scriptLogFull: '',
+                scriptLogSize: 0,
+                scriptLogHead: '',
+                scriptLogHeadCount: 0,
+                scriptLogTail: '',
+                scriptLogTailCount: 0,
             };
+        } catch (err) {
+            lastError = err;
+
+            // Provide more context for HTTP errors
+            if (err.response) {
+                // The request was made and the server responded with a status code outside of 2xx
+                globals.logger.warn(
+                    `[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed with HTTP ${err.response.status}: ${globals.getErrorMessage(err)}`,
+                );
+            } else if (err.request) {
+                // The request was made but no response was received
+                globals.logger.warn(
+                    `[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed - no response received: ${globals.getErrorMessage(err)}`,
+                );
+            } else {
+                // Something happened in setting up the request that triggered an error
+                globals.logger.warn(`[QSEOW] GET SCRIPT LOG: Attempt ${attempt} failed: ${globals.getErrorMessage(err)}`);
+            }
+
+            // If this was the last attempt, log as error and return false
+            if (attempt === maxRetries) {
+                globals.logger.error(
+                    `[QSEOW] GET SCRIPT LOG: All ${maxRetries} attempts failed. Last error: ${globals.getErrorMessage(err)}`,
+                );
+                return false;
+            }
         }
-        // No script log is available
-        return {
-            executingNodeName: taskInfo.executingNodeName,
-            executionDetails: taskInfo.executionDetailsSorted,
-            executionDetailsConcatenated: taskInfo.executionDetailsConcatenated,
-            executionDuration: taskInfo.executionDuration,
-            executionStartTime: taskInfo.executionStartTime,
-            executionStopTime: taskInfo.executionStopTime,
-            executionStatusNum: taskInfo.executionStatusNum,
-            executionStatusText: taskInfo.executionStatusText,
-            scriptLogFull: '',
-            scriptLogSize: 0,
-            scriptLogHead: '',
-            scriptLogHeadCount: 0,
-            scriptLogTail: '',
-            scriptLogTailCount: 0,
-        };
-    } catch (err) {
-        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${err}`);
-        return false;
     }
+
+    // This should never be reached, but just in case
+    globals.logger.error(`[QSEOW] GET SCRIPT LOG: Unexpected end of retry loop. Last error: ${lastError}`);
+    return false;
 }
 
 /**
- * Stores the script log of a failed task on disk.
- * @param {Object} reloadParams - The parameters of the reload task.
- * @returns {boolean} - Returns true if the log is successfully stored, false otherwise.
+ * Stores the script log of a failed reload task to disk.
+ * Creates a directory structure based on the log date and saves the script log with a timestamped filename.
+ * @param {Object} reloadParams - The parameters object containing reload task information.
+ * @param {string} reloadParams.logTimeStamp - The timestamp for the log file.
+ * @param {string} reloadParams.appId - The GUID of the Qlik Sense app.
+ * @param {string} reloadParams.taskId - The GUID of the reload task.
+ * @param {Object} reloadParams.scriptLog - The script log object from getScriptLog().
+ * @param {Array<string>} reloadParams.scriptLog.scriptLogFull - Array of script log lines.
+ * @returns {Promise<boolean>} - Returns true if the log is successfully stored on disk, false otherwise.
  */
 export async function failedTaskStoreLogOnDisk(reloadParams) {
     try {
@@ -331,6 +401,12 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
 
         // Get misc script log info
         const { scriptLog } = reloadParams;
+
+        // Handle case where scriptLog retrieval failed
+        if (scriptLog === null || scriptLog === undefined) {
+            globals.logger.warn(`[QSEOW] SCRIPTLOG STORE: Script log data is not available. Cannot store script log to disk.`);
+            return false;
+        }
 
         // Create directory for script log, if needed
         const logDate = reloadParams.logTimeStamp.slice(0, 10);
@@ -366,7 +442,7 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
         fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] SCRIPTLOG STORE: ${err}`);
+        globals.logger.error(`[QSEOW] SCRIPTLOG STORE: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

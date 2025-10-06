@@ -28,6 +28,7 @@ const globalsMock = {
         get: (k) => cfg.get(k),
     },
     configQRS: { cert: 'CERT', key: 'KEY' },
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 jest.unstable_mockModule('../../../globals.js', () => ({ default: globalsMock }));
 

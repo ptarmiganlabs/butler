@@ -47,11 +47,11 @@ async function getAppTags(appId) {
             // The task does not exist
             return [];
         } catch (err) {
-            globals.logger.error(`GETAPPTAGS: Error while getting tags: ${err.message}`);
+            globals.logger.error(`GETAPPTAGS: Error while getting tags: ${globals.getErrorMessage(err)}`);
             return [];
         }
     } catch (err) {
-        globals.logger.error(`GETAPPTAGS: Error while getting tags: ${err}`);
+        globals.logger.error(`GETAPPTAGS: Error while getting tags: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

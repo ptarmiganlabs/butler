@@ -12,6 +12,7 @@ const mockGlobals = {
     logger: {
         error: jest.fn(),
     },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 
 const mockVerifyGuid = jest.fn();
@@ -93,7 +94,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppInfo('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP INFO: Error: Network error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP INFO: Network error');
         });
 
         test('should handle invalid JSON response', async () => {
@@ -150,7 +151,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppMetadata('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP METADATA: Error: API error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP METADATA: API error');
         });
     });
 
@@ -205,7 +206,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppItems('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Error: Items API error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Items API error');
         });
 
         test('should handle empty app ID', async () => {

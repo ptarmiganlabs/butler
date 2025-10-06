@@ -156,7 +156,7 @@ export async function postButlerUptimeToNewRelic(fields) {
         }
     } catch (error) {
         // handle error
-        globals.logger.error(`NEW RELIC UPTIME: Error sending uptime: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error sending uptime: ${globals.getErrorMessage(error)}`);
     }
 }
 
@@ -170,7 +170,7 @@ export async function postFailedReloadEventToNewRelic() {
         //
     } catch (error) {
         // handle error
-        globals.logger.error(`NEW RELIC UPTIME: Error posting reload failed event: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error posting reload failed event: ${globals.getErrorMessage(error)}`);
     }
 }
 
@@ -184,6 +184,6 @@ export async function postAbortedReloadEventToNewRelic() {
         //
     } catch (error) {
         // handle error
-        globals.logger.error(`NEW RELIC UPTIME: Error posting reload aborted event: ${error}`);
+        globals.logger.error(`NEW RELIC UPTIME: Error posting reload aborted event: ${globals.getErrorMessage(error)}`);
     }
 }

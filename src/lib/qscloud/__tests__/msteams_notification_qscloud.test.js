@@ -27,6 +27,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
             verbose: jest.fn(),
             debug: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeEach(async () => {
@@ -578,7 +579,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 50));
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SEND: Error: Webhook failed'));
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS SEND: Webhook failed'));
         });
 
         test('should handle configuration error', async () => {
@@ -593,9 +594,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 50));
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('TEAMS ALERT - APP RELOAD FAILED: Error: Config error'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('TEAMS ALERT - APP RELOAD FAILED: Config error'));
         });
 
         test('should use default rate limiter when config missing', async () => {

@@ -14,6 +14,7 @@ const mockGlobals = {
         verbose: jest.fn(),
         debug: jest.fn(),
     },
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 
 const mockLuxon = {
@@ -96,7 +97,7 @@ describe('QS Cloud App Reload Info API', () => {
             const result = await getQlikSenseCloudAppReloadScriptLog('app123', 'reload456');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Error: Network error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: Network error');
         });
 
         test('should handle empty log data', async () => {
@@ -305,7 +306,7 @@ describe('QS Cloud App Reload Info API', () => {
             const result = await getQlikSenseCloudAppReloadInfo('reload123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: Error: API error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: API error');
         });
 
         test('should handle invalid JSON response', async () => {

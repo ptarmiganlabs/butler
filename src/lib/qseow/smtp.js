@@ -67,7 +67,7 @@ export function isSmtpConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -89,7 +89,7 @@ function isEmailReloadSuccessNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -111,7 +111,7 @@ function isEmailReloadFailedNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -133,7 +133,7 @@ function isEmailReloadAbortedNotificationConfigOk() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -158,7 +158,7 @@ function isEmailServiceMonitorNotificationConfig() {
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -269,7 +269,7 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${err}`);
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -325,7 +325,7 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] SMTP BASIC: ${err}`);
+        globals.logger.error(`[QSEOW] SMTP BASIC: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -521,19 +521,26 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.tailScriptLogLines');
+
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
     }
 
     globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -644,7 +651,7 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK FAILED ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -842,19 +849,26 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.tailScriptLogLines');
+
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
     }
 
     globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
@@ -965,7 +979,7 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -1088,23 +1102,30 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
     // Get script logs, if enabled in the config file
     const scriptLogData = reloadParams.scriptLog;
 
-    // Reduce script log lines to only the ones we want to send in email
-    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.headScriptLogLines');
-    scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.tailScriptLogLines');
-
-    if (scriptLogData?.scriptLogFull?.length > 0) {
-        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-            .join('\r\n');
+    // Handle case where scriptLog retrieval failed
+    if (scriptLogData === null || scriptLogData === undefined) {
+        globals.logger.warn(
+            `[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log data is not available. Email will be sent without script log details.`,
+        );
     } else {
-        scriptLogData.scriptLogHead = '';
-        scriptLogData.scriptLogTail = '';
-    }
+        // Reduce script log lines to only the ones we want to send in email
+        scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.headScriptLogLines');
+        scriptLogData.scriptLogTailCount = globals.config.get('Butler.emailNotification.reloadTaskSuccess.tailScriptLogLines');
 
-    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
-    globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
+        if (scriptLogData?.scriptLogFull?.length > 0) {
+            scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+            scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                .join('\r\n');
+        } else {
+            scriptLogData.scriptLogHead = '';
+            scriptLogData.scriptLogTail = '';
+        }
+
+        globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log head:\n${scriptLogData.scriptLogHead}`);
+        globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: Script log tail:\n${scriptLogData.scriptLogTail}`);
+    }
 
     // Get app owner
     const appOwner = await getAppOwner(reloadParams.appId);
@@ -1215,7 +1236,7 @@ export async function sendReloadTaskSuccessNotificationEmail(reloadParams) {
                         globals.logger.warn(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL RELOAD TASK SUCCESS ALERT: ${globals.getErrorMessage(err)}`);
                 }
             })
             .catch((err) => {
@@ -1321,7 +1342,7 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                         globals.logger.warn(`[QSEOW] EMAIL SERVICE MONITOR: No recipients to send alert email to.`);
                     }
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${err}`);
+                    globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
                 }
             })
             // eslint-disable-next-line no-loop-func

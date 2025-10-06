@@ -30,6 +30,27 @@ class Settings {
         return instance;
     }
 
+    /**
+     * Format error message appropriately for SEA vs non-SEA apps
+     * In SEA apps, stack traces are less useful, so we prefer err.message
+     * In non-SEA apps, we show full stack traces for better debugging
+     *
+     * @param {Error} err - The error object
+     * @returns {string} Formatted error message
+     */
+    getErrorMessage(err) {
+        // Check SEA status - use direct check if isSea hasn't been initialized yet
+        const isSeaApp = this.isSea !== undefined ? this.isSea : sea.isSea();
+
+        if (isSeaApp) {
+            // For SEA apps, prefer cleaner error messages
+            return err.message || err.toString();
+        }
+
+        // For non-SEA apps, show full stack trace for debugging
+        return err.stack || err.message || err.toString();
+    }
+
     async init() {
         // Get app version from package.json file
         const filenamePackage = `./package.json`;
@@ -459,11 +480,7 @@ Configuration File:
         try {
             cert = fs.readFileSync(filename);
         } catch (err) {
-            if (sea.isSea()) {
-                this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${err.message}`);
-            } else {
-                this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${err.stack}`);
-            }
+            this.logger.error(`CONFIG: Error reading certificate file "${filename}"! ${this.getErrorMessage(err)}`);
         }
         return cert;
     }
@@ -534,7 +551,7 @@ Configuration File:
                 });
             }
         } catch (err) {
-            this.logger.error(`CONFIG: Getting approved file copy directories: ${err}`);
+            this.logger.error(`CONFIG: Getting approved file copy directories: ${this.getErrorMessage(err)}`);
         }
 
         try {
@@ -569,7 +586,7 @@ Configuration File:
                 });
             }
         } catch (err) {
-            this.logger.error(`CONFIG: Getting approved file move directories: ${err}`);
+            this.logger.error(`CONFIG: Getting approved file move directories: ${this.getErrorMessage(err)}`);
         }
 
         try {
@@ -598,7 +615,7 @@ Configuration File:
                 });
             }
         } catch (err) {
-            this.logger.error(`CONFIG: Getting approved file delete directories: ${err}`);
+            this.logger.error(`CONFIG: Getting approved file delete directories: ${this.getErrorMessage(err)}`);
         }
     }
 
@@ -741,12 +758,7 @@ Configuration File:
 
             return hostInfo;
         } catch (err) {
-            this.logger.error(`CONFIG: Getting host info: ${err}`);
-            if (sea.isSea()) {
-                this.logger.error(`CONFIG: Getting host info: ${err.message}`);
-            } else {
-                this.logger.error(`CONFIG: Getting host info, stack trace: ${err.stack}`);
-            }
+            this.logger.error(`CONFIG: Getting host info: ${this.getErrorMessage(err)}`);
             return null;
         }
     }
@@ -785,34 +797,20 @@ Configuration File:
                                         this.logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
                                     })
                                     .catch((err) => {
-                                        if (sea.isSea()) {
-                                            this.logger.error(
-                                                `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.message}`,
-                                            );
-                                        } else {
-                                            this.logger.error(
-                                                `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${err.stack}`,
-                                            );
-                                        }
+                                        this.logger.error(
+                                            `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${this.getErrorMessage(err)}`,
+                                        );
                                     });
                             })
                             .catch((err) => {
-                                if (sea.isSea()) {
-                                    this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.message}`);
-                                } else {
-                                    this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${err.stack}`);
-                                }
+                                this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${this.getErrorMessage(err)}`);
                             });
                     } else {
                         this.logger.info(`CONFIG: Found InfluxDB database: ${dbName}`);
                     }
                 })
                 .catch((err) => {
-                    if (sea.isSea()) {
-                        this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${err.message}`);
-                    } else {
-                        this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${err.stack}`);
-                    }
+                    this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${this.getErrorMessage(err)}`);
                 });
         } else {
             this.logger.info('CONFIG: InfluxDB disabled, not connecting to InfluxDB');

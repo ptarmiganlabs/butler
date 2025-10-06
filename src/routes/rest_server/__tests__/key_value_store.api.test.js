@@ -49,6 +49,7 @@ const mockGlobals = {
         get: jest.fn((key) => (key === 'Butler.restServerEndpointsEnable.keyValueStore' ? true : undefined)),
     },
     logger: { debug: jest.fn(), error: jest.fn(), info: jest.fn(), verbose: jest.fn(), warn: jest.fn() },
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 
 describe('REST: key value store routes', () => {

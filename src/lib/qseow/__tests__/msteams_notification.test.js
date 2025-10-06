@@ -43,6 +43,7 @@ const logger = { info: jest.fn(), verbose: jest.fn(), debug: jest.fn(), warn: je
 const cfg = new Map();
 const globalsMock = {
     logger,
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     config: {
         has: (k) => cfg.has(k),
         get: (k) => cfg.get(k),

@@ -40,7 +40,13 @@ describe('lib/post_to_influxdb', () => {
     const load = async (cfg = baseConfig) => {
         jest.resetModules();
         jest.clearAllMocks();
-        globals = { appVersion: '1.2.3', influx: { writePoints }, logger, config: cfg };
+        globals = {
+            appVersion: '1.2.3',
+            influx: { writePoints },
+            logger,
+            config: cfg,
+            getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+        };
         await jest.unstable_mockModule('../../globals.js', () => ({ default: globals }));
         mod = await import('../post_to_influxdb.js');
     };

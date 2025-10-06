@@ -49,6 +49,7 @@ describe('lib/key_value_store', () => {
         logger: {
             error: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const loadModule = async () => {

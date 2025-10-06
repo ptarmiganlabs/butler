@@ -36,7 +36,7 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
             scriptLogSize: scriptLogLineCount,
         };
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: ${err}`);
+        globals.logger.error(`[QSCLOUD] QLIK SENSE CLOUD GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -150,7 +150,7 @@ export async function getQlikSenseCloudAppReloadInfo(reloadId) {
 
         return reloadInfo;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: ${err}`);
+        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET RELOAD INFO: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

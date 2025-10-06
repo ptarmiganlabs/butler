@@ -1,4 +1,5 @@
 import axios from 'axios';
+import globals from '../globals.js';
 
 /**
  * Sends a message to a Slack channel using the provided configuration.
@@ -44,7 +45,7 @@ async function slackSend(slackConfig, logger) {
         const res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
         logger.debug(`SLACK SEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
     } catch (err) {
-        logger.error(`SLACK SEND: ${err}"`);
+        logger.error(`SLACK SEND: ${globals.getErrorMessage(err)}"`);
     }
 }
 

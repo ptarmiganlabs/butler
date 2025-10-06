@@ -6,6 +6,7 @@ describe('lib/qseow/get_qs_urls', () => {
         config: {
             get: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {

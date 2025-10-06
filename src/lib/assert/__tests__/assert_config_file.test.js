@@ -18,6 +18,7 @@ jest.unstable_mockModule('../../../qrs_util/task_cp_util.js', () => ({
 
 jest.unstable_mockModule('../../../globals.js', () => ({
     default: {
+                getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         butler: {
             configFileExpanded: '/path/to/config.yaml',
         },

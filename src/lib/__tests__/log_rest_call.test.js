@@ -7,6 +7,7 @@ describe('lib/log_rest_call', () => {
             info: jest.fn(),
             debug: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {

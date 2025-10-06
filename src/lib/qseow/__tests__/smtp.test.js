@@ -54,6 +54,7 @@ jest.unstable_mockModule('../../../globals.js', () => ({
             verbose: jest.fn(),
             debug: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     },
 }));
 

@@ -15,6 +15,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             debug: jest.fn(),
             verbose: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const mockGetQlikSenseCloudUserInfo = jest.fn();
@@ -121,7 +122,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
             expect(result).toBe(1);
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: Config error'),
+                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Config error'),
             );
         });
 
@@ -195,7 +196,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
             expect(result).toBe(true);
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Error: API Error'),
+                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: API Error'),
             );
         });
     });

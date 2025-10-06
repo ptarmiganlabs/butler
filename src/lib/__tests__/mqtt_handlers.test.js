@@ -25,6 +25,7 @@ describe('lib/mqtt_handlers', () => {
             debug: jest.fn(),
             error: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeEach(() => {

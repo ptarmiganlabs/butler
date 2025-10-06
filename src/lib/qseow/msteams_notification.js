@@ -109,7 +109,7 @@ function getTeamsReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -178,7 +178,7 @@ function getTeamsReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -294,7 +294,7 @@ function getTeamsServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${err}`);
+        globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -380,7 +380,7 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
                     globals.logger.error(`[QSEOW] TEAMS SEND: Could not open Teams template file ${teamsConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS SEND: Error processing Teams template file: ${err}`);
+                globals.logger.error(`[QSEOW] TEAMS SEND: Error processing Teams template file: ${globals.getErrorMessage(err)}`);
             }
         }
 
@@ -395,7 +395,23 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS SEND: ${err}`);
+        // Enhanced error logging for Teams webhook failures
+        let errorMsg = globals.getErrorMessage(err);
+
+        // If error has response data (axios error), include it
+        if (err.response) {
+            errorMsg += ` | Response status: ${err.response.status}`;
+            if (err.response.data) {
+                errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+            }
+        }
+
+        // If we still have an object without good string representation, stringify it
+        if (errorMsg === '[object Object]') {
+            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+        }
+
+        globals.logger.error(`[QSEOW] TEAMS SEND: ${errorMsg}`);
     }
 }
 
@@ -427,23 +443,29 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Teams
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] TEAMS RELOAD TASK FAILED: Script log data is not available. Teams notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Teams
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
@@ -581,7 +603,23 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${err}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${errorMsg}`);
             }
             return true;
         })
@@ -621,22 +659,28 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Teams
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data is not available. Teams notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Teams
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
@@ -776,7 +820,23 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${err}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${errorMsg}`);
             }
             return true;
         })
@@ -836,7 +896,23 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     await sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${err}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${errorMsg}`);
             }
             return true;
         })

@@ -101,7 +101,7 @@ function getOutgoingWebhookReloadFailedNotificationConfigOk() {
             webhooks: globals.config.get('Butler.webhookNotification.reloadTaskFailure.webhooks'),
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -132,7 +132,7 @@ function getOutgoingWebhookReloadAbortedNotificationConfigOk() {
             webhooks: globals.config.get('Butler.webhookNotification.reloadTaskAborted.webhooks'),
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK ABORTED: ${err}`);
+        globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -182,7 +182,7 @@ function getOutgoingWebhookServiceMonitorConfig() {
             webhooks: globals.config.get('Butler.webhookNotification.serviceMonitor.webhooks'),
         };
     } catch (err) {
-        globals.logger.error(`SERVICE MONITOR WEBHOOK: ${err}`);
+        globals.logger.error(`SERVICE MONITOR WEBHOOK: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -201,7 +201,7 @@ function getOutgoingWebhookQlikSenseServerLicenseMonitorConfig() {
             webhooks: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseMonitor.webhooks'),
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${err}`);
+        globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -220,7 +220,7 @@ function getOutgoingWebhookQlikSenseServerLicenseExpiryAlertConfig() {
             webhooks: globals.config.get('Butler.webhookNotification.qlikSenseServerLicenseExpiryAlert.webhooks'),
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${err}`);
+        globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -279,7 +279,7 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     }
                 } catch (err) {
                     globals.logger.error(
-                        `[QSEOW] WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`,
+                        `[QSEOW] WEBHOOKOUT: ${globals.getErrorMessage(err)}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`,
                     );
                     throw err;
                 }
@@ -411,7 +411,7 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     globals.logger.debug(`[QSEOW] WEBHOOKOUT: Webhook response: ${response}`);
                 } catch (err) {
                     if (err.message) {
-                        globals.logger.error(`[QSEOW] WEBHOOKOUT: Webhook call failed: ${err.message}`);
+                        globals.logger.error(`[QSEOW] WEBHOOKOUT: Webhook call failed: ${globals.getErrorMessage(err)}`);
 
                         // err.response.status 404 could mean that the webhook URL is incorrect
                         if (err.response && err.response.status === 404) {
@@ -423,7 +423,7 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                     }
                     // If neither message nor stack is available, just log the error object
                     if (!err.message && !err.stack) {
-                        globals.logger.error(`[QSEOW] WEBHOOKOUT: Webhook call failed: ${JSON.stringify(err, null, 2)}`);
+                        globals.logger.error(`[QSEOW] WEBHOOKOUT: Webhook call failed: ${globals.getErrorMessage(err)}`);
                     }
                 }
             }
@@ -432,14 +432,14 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
         }
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT 1 message: ${err.message}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT 1 message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT 1 stack: ${err.stack}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT 1 stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT 1: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -495,7 +495,7 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                     }
                 } catch (err) {
                     globals.logger.error(
-                        `SERVICE MONITOR WEBHOOKOUT: ${err}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`,
+                        `SERVICE MONITOR WEBHOOKOUT: ${globals.getErrorMessage(err)}. Invalid outgoing webhook config: ${JSON.stringify(webhook, null, 2)}`,
                     );
                     throw err;
                 }
@@ -611,14 +611,14 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
         }
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 message: ${err.message}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 stack: ${err.stack}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1 stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`SERVICE MONITOR WEBHOOKOUT 1: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -680,7 +680,7 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
                     }
                 } catch (err) {
                     globals.logger.error(
-                        `[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${err}. Invalid outgoing webhook config: ${JSON.stringify(
+                        `[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${globals.getErrorMessage(err)}. Invalid outgoing webhook config: ${JSON.stringify(
                             webhook,
                             null,
                             2,
@@ -787,14 +787,14 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
         }
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message: ${err.message}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 message: ${globals.getErrorMessage(err)}`);
         } else {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack: ${err.stack}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1 stack: ${globals.getErrorMessage(err)}`);
         }
 
         // If neither message nor stack is available, just log the error object
         if (!err.message && !err.stack) {
-            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1: ${JSON.stringify(err, null, 2)}`);
+            globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR 1: ${globals.getErrorMessage(err)}`);
         }
     }
 }
@@ -823,7 +823,7 @@ export function sendReloadTaskFailureNotificationWebhook(reloadParams) {
 
                 await sendOutgoingWebhook(webhookConfig, reloadParams);
             } catch (err) {
-                globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK FAILED: ${err}`);
+                globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -861,7 +861,7 @@ export function sendReloadTaskAbortedNotificationWebhook(reloadParams) {
 
                 await sendOutgoingWebhook(webhookConfig, reloadParams);
             } catch (err) {
-                globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK ABORTED: ${err}`);
+                globals.logger.error(`[QSEOW] WEBHOOKOUT RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -907,7 +907,7 @@ export function sendServiceMonitorWebhook(svc) {
                     stateChanged: svc.stateChanged,
                 });
             } catch (err) {
-                globals.logger.error(`SERVICE MONITOR WEBHOOK: ${err}`);
+                globals.logger.error(`SERVICE MONITOR WEBHOOK: ${globals.getErrorMessage(err)}`);
             }
             return 0;
         })
@@ -959,7 +959,7 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
 
                     await sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfoCopy);
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${err}`);
+                    globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE MONITOR: ${globals.getErrorMessage(err)}`);
                 }
                 return 0;
             })
@@ -995,7 +995,7 @@ export async function callQlikSenseServerLicenseWebhook(serverLicenseInfo) {
 
                     await sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLicenseInfoCopy);
                 } catch (err) {
-                    globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${err}`);
+                    globals.logger.error(`[QSEOW] WEBHOOKOUT QLIK SENSE SERVER LICENSE EXPIRY ALERT: ${globals.getErrorMessage(err)}`);
                 }
                 return 0;
             })

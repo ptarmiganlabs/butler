@@ -6,6 +6,7 @@ describe('lib/qscloud/util', () => {
         config: {
             get: jest.fn(),
         },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {

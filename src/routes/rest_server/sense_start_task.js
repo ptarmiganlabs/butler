@@ -351,7 +351,7 @@ async function handlerPutStartTask(request, reply) {
 
         reply.code(200).send(JSON.stringify(res, null, 2));
     } catch (err) {
-        globals.logger.error(`STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`STARTTASK: Failed starting task: ${request.params.taskId}, error is: ${globals.getErrorMessage(err)}`);
         reply.send(httpErrors(500, 'Failed starting task'));
     }
 }

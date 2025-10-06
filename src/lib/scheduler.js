@@ -84,7 +84,7 @@ export function loadSchedulesFromDisk() {
             }
         }
     } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed loading schedules from file: ${err}`);
+        globals.logger.error(`SCHEDULER: Failed loading schedules from file: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -107,7 +107,7 @@ export function startAllSchedules() {
             saveSchedulesToDisk();
             resolve();
         } catch (err) {
-            globals.logger.error(`SCHEDULER: Failed starting all schedules: ${err}`);
+            globals.logger.error(`SCHEDULER: Failed starting all schedules: ${globals.getErrorMessage(err)}`);
             reject();
         }
     });
@@ -132,7 +132,7 @@ export function stopAllSchedules() {
             saveSchedulesToDisk();
             resolve();
         } catch (err) {
-            globals.logger.error(`SCHEDULER: Failed stopping all schedules: ${err}`);
+            globals.logger.error(`SCHEDULER: Failed stopping all schedules: ${globals.getErrorMessage(err)}`);
             reject();
         }
     });
@@ -222,7 +222,7 @@ export function deleteSchedule(deleteScheduleId) {
         }
         return false;
     } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`SCHEDULER: Failed deleting schedule ${deleteScheduleId}: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -245,7 +245,7 @@ export function startSchedule(scheduleId) {
 
         return true;
     } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed starting schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`SCHEDULER: Failed starting schedule ID ${scheduleId}: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -268,7 +268,7 @@ export function stopSchedule(scheduleId) {
 
         return true;
     } catch (err) {
-        globals.logger.error(`SCHEDULER: Failed stopping schedule ID ${scheduleId}: ${JSON.stringify(err, null, 2)}`);
+        globals.logger.error(`SCHEDULER: Failed stopping schedule ID ${scheduleId}: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

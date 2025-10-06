@@ -2,7 +2,10 @@ import { jest } from '@jest/globals';
 
 describe('lib/testemail', () => {
     let sendTestEmail;
-    const mockGlobals = { logger: { error: jest.fn() } };
+    const mockGlobals = {
+        logger: { error: jest.fn() },
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+    };
     const mockSmtp = { sendEmailBasic: jest.fn() };
 
     beforeAll(async () => {

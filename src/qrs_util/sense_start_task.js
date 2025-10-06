@@ -34,10 +34,10 @@ async function senseStartTask(taskId) {
         return false;
     } catch (err) {
         if (globals.isSea) {
-            globals.logger.error(`STARTTASK: Error while starting Sense task: ${err.message}`);
+            globals.logger.error(`STARTTASK: Error while starting Sense task: ${globals.getErrorMessage(err)}`);
             globals.logger.error('400 or 404 error most likely means that the task ID is incorrect');
         } else {
-            globals.logger.error(`STARTTASK: Error while starting Sense task: ${err.stack}`);
+            globals.logger.error(`STARTTASK: Error while starting Sense task: ${globals.getErrorMessage(err)}`);
         }
         return false;
     }

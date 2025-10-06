@@ -118,7 +118,7 @@ function getSlackReloadFailedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -193,7 +193,7 @@ function getSlackReloadAbortedNotificationConfigOk() {
                 : '',
         };
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -321,7 +321,7 @@ function getSlackServiceMonitorNotificationConfig(serviceStatus) {
 
         return result;
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -406,7 +406,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
                     globals.logger.error(`[QSEOW] SLACK SEND: Could not open Slack template file ${slackConfig.templateFile}.`);
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK SEND: Error processing Slack template file: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK SEND: Error processing Slack template file: ${globals.getErrorMessage(err)}`);
             }
         }
 
@@ -418,7 +418,7 @@ async function sendSlack(slackConfig, templateContext, msgType) {
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] SLACK SEND: ${err}`);
+        globals.logger.error(`[QSEOW] SLACK SEND: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -451,23 +451,29 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Slack
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] SLACK RELOAD TASK FAILED: Script log data is not available. Slack notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Slack
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] SLACK RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] SLACK RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
@@ -620,7 +626,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
 
                 await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -661,23 +667,29 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 // Get script logs, if enabled in the config file
                 const scriptLogData = reloadParams.scriptLog;
 
-                // Reduce script log lines to only the ones we want to send to Slack
-                scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines');
-                scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines');
-
-                if (scriptLogData?.scriptLogFull?.length > 0) {
-                    scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
-
-                    scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
-                        .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
-                        .join('\r\n');
+                // Handle case where scriptLog retrieval failed
+                if (scriptLogData === null || scriptLogData === undefined) {
+                    globals.logger.warn(
+                        `[QSEOW] SLACK RELOAD TASK ABORTED: Script log data is not available. Slack notification will be sent without script log details.`,
+                    );
                 } else {
-                    scriptLogData.scriptLogHead = '';
-                    scriptLogData.scriptLogTail = '';
+                    // Reduce script log lines to only the ones we want to send to Slack
+                    scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines');
+                    scriptLogData.scriptLogTailCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.tailScriptLogLines');
+
+                    if (scriptLogData?.scriptLogFull?.length > 0) {
+                        scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                        scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                            .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                            .join('\r\n');
+                    } else {
+                        scriptLogData.scriptLogHead = '';
+                        scriptLogData.scriptLogTail = '';
+                    }
+
+                    globals.logger.debug(`[QSEOW] SLACK RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
                 }
-
-                globals.logger.debug(`[QSEOW] SLACK RELOAD TASK ABORTED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseUrls();
 
@@ -815,7 +827,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
 
                 await sendSlack(slackConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })
@@ -874,7 +886,7 @@ export function sendServiceMonitorNotificationSlack(serviceParams) {
                     await sendSlack(slackConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${err}`);
+                globals.logger.error(`[QSEOW] SLACK SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
             }
             return true;
         })

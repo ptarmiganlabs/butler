@@ -7,6 +7,7 @@ describe('qrs_util/task_tag_util.getTaskTags', () => {
         getQRSHttpHeaders: jest.fn(() => ({ 'X-QRS': '1' })),
         configQRS: { host: 'host', port: 4242, certPaths: { certPath: '/c', keyPath: '/k' } },
         logger: { debug: jest.fn(), error: jest.fn(), verbose: jest.fn(), warn: jest.fn() },
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {
