@@ -1,5 +1,38 @@
 # Changelog
 
+## [14.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.1...butler-v14.1.0) (2025-10-06)
+
+
+### Features
+
+* debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release-please ([70ada56](https://github.com/ptarmiganlabs/butler/commit/70ada56bb9afb2d0d68d2b798a841fe49329463a))
+* Debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* Debugging release-please ([ea08255](https://github.com/ptarmiganlabs/butler/commit/ea08255e84bf8d6613d23c4ebcaa1f8cddf5e654))
+
+
+### Bug Fixes
+
+* improve formatting and regex for release tag matching in update-autorelease-label workflow ([d150b1e](https://github.com/ptarmiganlabs/butler/commit/d150b1efdf3a9e43f73fd4de4688d90f6c0b3eef))
+* **logging:** Enhance error logging for Teams webhook failures ([c7d4a36](https://github.com/ptarmiganlabs/butler/commit/c7d4a3697f23ae6a9b26a1bfd886371ac589019b))
+* **qseow:** Enhance script log handling in notifications and logging. Fixes [#1499](https://github.com/ptarmiganlabs/butler/issues/1499) ([2bf1f97](https://github.com/ptarmiganlabs/butler/commit/2bf1f9785fc8207c2b0e606f77b5ff085337566a))
+* test suite fails on Windows due to how file timestamp works when copying files ([04fdb41](https://github.com/ptarmiganlabs/butler/commit/04fdb413a542d30ffd041ef1004ae34296ee63b9))
+
+
+### Miscellaneous
+
+* debugging release please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release please ([b27d58e](https://github.com/ptarmiganlabs/butler/commit/b27d58e001b08d15b02e2f549dbb9f595e841eb2))
+* debugging release-please ([cd65768](https://github.com/ptarmiganlabs/butler/commit/cd657682d5bcb8da543009676d40386f34fa4134))
+* debugging release-please ([9ca4b84](https://github.com/ptarmiganlabs/butler/commit/9ca4b848e0699cab5bf82271461d8a77fcbd4e7a))
+* **deps:** update nodemailer, systeminformation, and other dependen… ([dc87461](https://github.com/ptarmiganlabs/butler/commit/dc874618e0540544fc3c9e267cc78f662d69d8b3))
+* **deps:** update nodemailer, systeminformation, and other dependencies ([f4b9e10](https://github.com/ptarmiganlabs/butler/commit/f4b9e107e07dfab4e42dcf848c1cf90b6f975f2c))
+
+
+### Refactoring
+
+* Refactor error logging to be more consistent and relevant ([d6064bd](https://github.com/ptarmiganlabs/butler/commit/d6064bdad47036cd507c1d8de0daca7d2ed28c8a))
+
 ## [14.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.0...butler-v14.0.1) (2025-10-02)
 
 
