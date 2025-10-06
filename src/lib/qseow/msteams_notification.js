@@ -395,7 +395,23 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSEOW] TEAMS SEND: ${globals.getErrorMessage(err)}`);
+        // Enhanced error logging for Teams webhook failures
+        let errorMsg = globals.getErrorMessage(err);
+
+        // If error has response data (axios error), include it
+        if (err.response) {
+            errorMsg += ` | Response status: ${err.response.status}`;
+            if (err.response.data) {
+                errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+            }
+        }
+
+        // If we still have an object without good string representation, stringify it
+        if (errorMsg === '[object Object]') {
+            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+        }
+
+        globals.logger.error(`[QSEOW] TEAMS SEND: ${errorMsg}`);
     }
 }
 
@@ -587,7 +603,23 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskFailure.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${errorMsg}`);
             }
             return true;
         })
@@ -788,7 +820,23 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 const webhookUrl = globals.config.get('Butler.teamsNotification.reloadTaskAborted.webhookURL');
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'reload');
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${globals.getErrorMessage(err)}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${errorMsg}`);
             }
             return true;
         })
@@ -848,7 +896,23 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     await sendTeams(webhookUrl, teamsConfig, templateContext, 'serviceStarted');
                 }
             } catch (err) {
-                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${errorMsg}`);
             }
             return true;
         })

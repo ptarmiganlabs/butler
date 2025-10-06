@@ -194,7 +194,23 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] TEAMS SEND: ${globals.getErrorMessage(err)}`);
+        // Enhanced error logging for Teams webhook failures
+        let errorMsg = globals.getErrorMessage(err);
+
+        // If error has response data (axios error), include it
+        if (err.response) {
+            errorMsg += ` | Response status: ${err.response.status}`;
+            if (err.response.data) {
+                errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+            }
+        }
+
+        // If we still have an object without good string representation, stringify it
+        if (errorMsg === '[object Object]') {
+            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+        }
+
+        globals.logger.error(`[QSCLOUD] TEAMS SEND: ${errorMsg}`);
     }
 }
 
@@ -406,7 +422,23 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 const { webhookUrl } = teamsConfig;
                 await sendTeams(webhookUrl, teamsConfig, templateContext, 'qscloud-app-reload');
             } catch (err) {
-                globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${globals.getErrorMessage(err)}`);
+                // Enhanced error logging for Teams webhook failures
+                let errorMsg = globals.getErrorMessage(err);
+
+                // If error has response data (axios error), include it
+                if (err.response) {
+                    errorMsg += ` | Response status: ${err.response.status}`;
+                    if (err.response.data) {
+                        errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
+                    }
+                }
+
+                // If we still have an object without good string representation, stringify it
+                if (errorMsg === '[object Object]') {
+                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+                }
+
+                globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${errorMsg}`);
             }
             return true;
         })
