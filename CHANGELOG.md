@@ -1,5 +1,24 @@
 # Changelog
 
+## [14.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.1.0...butler-v14.2.0) (2025-10-07)
+
+
+### Features
+
+* implement fallback API for Qlik Sense script log retrieval ([0bd1bb5](https://github.com/ptarmiganlabs/butler/commit/0bd1bb53ff93202073a0df0eda2deb00c476db0d))
+* **scriptlog:** implement fallback API for script log retrieval ([b06163f](https://github.com/ptarmiganlabs/butler/commit/b06163ff2bd6ed0f532fc1122dfe79fe129ddf61))
+* **scriptlog:** More robust retrieval of script logs, offering better support for both older and newer client-managed Sense versions ([8af5ffa](https://github.com/ptarmiganlabs/butler/commit/8af5ffae9ffe570787402fda602ed9cf3744a6d0))
+
+
+### Miscellaneous
+
+* **deps:** update nodemailer to version 7.0.9 and posthog-node to version 5.9.3 ([cfb2ec0](https://github.com/ptarmiganlabs/butler/commit/cfb2ec0f14557e1737741b2420338b56f0e2ba67))
+
+
+### Documentation
+
+* add comprehensive documentation for script log API fallback ([218305f](https://github.com/ptarmiganlabs/butler/commit/218305f97c5313900f2ae245d17049f359eca0f1))
+
 ## [14.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.0.1...butler-v14.1.0) (2025-10-06)
 
 
