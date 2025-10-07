@@ -241,8 +241,8 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         const result2 = await qrsInstance.Get(endpoint);
 
         // TODO remove
-        console.log('B: result2');
-        console.log(result2);
+        globals.logger.info('B: result2');
+        globals.logger.info(JSON.stringify(result2, null, 2));
 
         // Step 2: Download the script log file
         const httpHeaders = globals.getQRSHttpHeaders();
@@ -265,8 +265,8 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         const result3 = await axios.request(axiosConfig);
 
         // TODO remove
-        console.log('B: result3');
-        console.log(result3);
+        globals.logger.info('B: result3');
+        globals.logger.info(JSON.stringify(result3, null, 2));
 
         return result3.data;
     } catch (err) {
@@ -297,8 +297,8 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         const result2 = await qrsInstance.Get(endpoint);
 
         // TODO remove
-        console.log('A: result2');
-        console.log(result2);
+        globals.logger.info('A: result2');
+        globals.logger.info(JSON.stringify(result2, null, 2));
 
         // Step 2: Download the script log file
         const httpHeaders = globals.getQRSHttpHeaders();
@@ -323,9 +323,11 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         };
 
         const result3 = await axios.request(axiosConfig);
+
         // TODO remove
-        console.log('A: result3');
-        console.log(result3);
+        globals.logger.info('A: result3');
+        globals.logger.info(JSON.stringify(result3, null, 2));
+
         return result3.data;
     } catch (err) {
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
