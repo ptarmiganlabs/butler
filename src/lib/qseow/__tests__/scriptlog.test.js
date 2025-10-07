@@ -101,7 +101,7 @@ test('getReloadTaskExecutionResults returns structured info', async () => {
 test('getScriptLog returns head/tail and sizes when fileReference is valid', async () => {
     qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
     axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3\r\nrow4' });
-    const res = await scriptlog.getScriptLog('task-1', 2, 2);
+    const res = await scriptlog.getScriptLog('task-1', 2, 2, 3, 2000, 0); // downloadDelayMs=0 for tests
     expect(res.scriptLogHead).toBe('row1\r\nrow2');
     expect(res.scriptLogTail).toBe('row3\r\nrow4');
     expect(res.scriptLogSizeRows).toBe(4);
@@ -112,7 +112,7 @@ test('getScriptLog returns no-log structure when fileReference is all zeros', as
     const res1 = makeResult1();
     res1.body.operational.lastExecutionResult.fileReferenceID = '00000000-0000-0000-0000-000000000000';
     qrsGetMock.mockResolvedValueOnce(res1);
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1); // maxRetries=1 to avoid retry
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 2000, 0); // maxRetries=1 to avoid retry, downloadDelayMs=0 for tests
     expect(res.scriptLogFull).toBe('');
     expect(res.scriptLogSize).toBe(0);
 });
@@ -145,7 +145,7 @@ test('getReloadTaskExecutionResults handles error cases', async () => {
 
 test('getScriptLog handles error cases', async () => {
     qrsGetMock.mockRejectedValueOnce(new Error('QRS error'));
-    const res = await scriptlog.getScriptLog('task-1', 1, 1);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 2000, 0); // downloadDelayMs=0 for tests
     expect(res).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QRS error'));
 });
@@ -179,7 +179,7 @@ test('getScriptLog handles axios errors', async () => {
         .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // Attempt 3 - scriptlog reference (new API)
     axiosReqMock.mockRejectedValue(new Error('Network error'));
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 10); // 3 retries, 10ms delay
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 10, 0); // 3 retries, 10ms delay, downloadDelayMs=0 for tests
     expect(res).toBe(false);
     expect(logger.error).toHaveBeenCalled(); // Error is logged when all retries fail
 });
@@ -188,7 +188,7 @@ test('getScriptLog handles empty head/tail line counts', async () => {
     qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
     axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3\r\nrow4' });
 
-    const res = await scriptlog.getScriptLog('task-1', 0, 0);
+    const res = await scriptlog.getScriptLog('task-1', 0, 0, 3, 2000, 0); // downloadDelayMs=0 for tests
     expect(res.scriptLogHead).toBe('');
     expect(res.scriptLogTail).toBe('');
     expect(res.scriptLogHeadCount).toBe(0);
@@ -295,7 +295,7 @@ test('getScriptLog retries on 404 error and eventually succeeds', async () => {
         .mockRejectedValueOnce(error404_4) // Second attempt new API also fails with 404
         .mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3' }); // Third attempt deprecated API succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 100); // maxRetries=3, retryDelayMs=100
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 100, 0); // maxRetries=3, retryDelayMs=100, downloadDelayMs=0 for tests
 
     // Verify success
     expect(res).not.toBe(false);
@@ -332,7 +332,7 @@ test('getScriptLog retries on 404 error and eventually fails after max retries',
 
     axiosReqMock.mockRejectedValue(error404); // All attempts fail with 404
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // maxRetries=3, retryDelayMs=50, downloadDelayMs=0 for tests
 
     // Verify failure
     expect(res).toBe(false);
@@ -355,7 +355,7 @@ test('getScriptLog retries when fileReferenceId is all zeros and eventually gets
 
     axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' });
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // maxRetries=3, retryDelayMs=50, downloadDelayMs=0 for tests
 
     // Verify success
     expect(res).not.toBe(false);
@@ -374,7 +374,7 @@ test('getScriptLog returns empty result when fileReferenceId remains all zeros a
 
     qrsGetMock.mockResolvedValue(resultWithZeroRef);
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50); // maxRetries=3, retryDelayMs=50
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // maxRetries=3, retryDelayMs=50, downloadDelayMs=0 for tests
 
     // Verify empty result (not false, since this is a valid state on the last attempt)
     expect(res).not.toBe(false);
@@ -404,7 +404,7 @@ test('getScriptLog handles 500 error with retry', async () => {
         .mockRejectedValueOnce(error500) // new API also fails
         .mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' }); // second attempt succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     expect(res.scriptLogFull).toEqual(['row1', 'row2']);
@@ -430,7 +430,7 @@ test('getScriptLog handles network error (no response) with retry', async () => 
         .mockRejectedValueOnce(networkError) // new API also fails
         .mockResolvedValueOnce({ status: 200, data: 'row1' }); // second attempt succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     // With fallback logic, warnings are logged for both API attempts
@@ -454,7 +454,7 @@ test('getScriptLog handles request setup error with retry', async () => {
         .mockRejectedValueOnce(setupError) // new API also fails
         .mockResolvedValueOnce({ status: 200, data: 'row1' }); // second attempt succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50);
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     // With fallback logic, warnings are logged for both API attempts
@@ -469,7 +469,7 @@ test('getScriptLog uses deprecated API successfully without trying fallback', as
 
     axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2\r\nline3' });
 
-    const res = await scriptlog.getScriptLog('task-1', 2, 1, 1, 50); // maxRetries=1 to avoid retries
+    const res = await scriptlog.getScriptLog('task-1', 2, 1, 1, 50, 0); // maxRetries=1 to avoid retries, downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     expect(res.scriptLogFull).toEqual(['line1', 'line2', 'line3']);
@@ -496,7 +496,7 @@ test('getScriptLog falls back to new API when deprecated API fails', async () =>
         .mockRejectedValueOnce(deprecatedApiError) // deprecated API fails
         .mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2' }); // new API succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1 to test single attempt
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1 to test single attempt, downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     expect(res.scriptLogFull).toEqual(['line1', 'line2']);
@@ -520,7 +520,7 @@ test('getScriptLog fails when both deprecated and new API fail', async () => {
 
     axiosReqMock.mockRejectedValue(apiError); // both APIs fail
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1, downloadDelayMs=0 for tests
 
     expect(res).toBe(false);
 
@@ -552,7 +552,7 @@ test('getScriptLog falls back to new API when deprecated API fails with retry', 
         .mockRejectedValueOnce(deprecatedApiError) // Attempt 2 - deprecated API fails
         .mockResolvedValueOnce({ status: 200, data: 'success\r\ndata' }); // Attempt 2 - new API succeeds
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 2, 50); // maxRetries=2
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 2, 50, 0); // maxRetries=2, downloadDelayMs=0 for tests
 
     expect(res).not.toBe(false);
     expect(res.scriptLogFull).toEqual(['success', 'data']);
@@ -574,7 +574,7 @@ test('getScriptLog handles missing executionResultId gracefully', async () => {
 
     axiosReqMock.mockRejectedValueOnce(deprecatedApiError);
 
-    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1, downloadDelayMs=0 for tests
 
     expect(res).toBe(false);
 
