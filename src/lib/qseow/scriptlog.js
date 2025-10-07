@@ -266,6 +266,9 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         console.log('B: axiosConfig');
         console.log(axiosConfig);
 
+        // Wait 5 seconds before downloading the script log to avoid 404 errors
+        await delay(5000);
+
         const result3 = await axios.request(axiosConfig);
 
         // TODO remove
@@ -333,6 +336,9 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         // TODO remove
         console.log('A: axiosConfig');
         console.log(axiosConfig);
+
+        // Wait 5 seconds before downloading the script log to avoid 404 errors
+        await delay(5000);
 
         const result3 = await axios.request(axiosConfig);
 
