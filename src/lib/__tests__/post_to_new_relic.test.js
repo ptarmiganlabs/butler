@@ -22,7 +22,7 @@ describe('lib/post_to_new_relic - postButlerUptimeToNewRelic', () => {
             },
         },
         logger: { debug: jest.fn(), verbose: jest.fn(), error: jest.fn() },
-    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const fields = {

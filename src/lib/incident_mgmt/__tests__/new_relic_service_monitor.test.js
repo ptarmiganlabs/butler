@@ -26,7 +26,7 @@ describe('lib/incident_mgmt/new_relic_service_monitor', () => {
                 info: jest.fn(),
                 verbose: jest.fn(),
             },
-        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+            getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         };
 
         // Mock rate-limiter-flexible
@@ -275,9 +275,7 @@ describe('lib/incident_mgmt/new_relic_service_monitor', () => {
 
             await newRelicServiceMonitor.default.sendServiceMonitorEvent(serviceStatusParams);
 
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('SERVICE MONITOR NEWRELIC EVENT: Config error'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('SERVICE MONITOR NEWRELIC EVENT: Config error'));
         });
     });
 

@@ -12,7 +12,7 @@ const mockGlobals = {
     logger: {
         error: jest.fn(),
     },
-        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
 };
 
 jest.unstable_mockModule('axios', () => ({
