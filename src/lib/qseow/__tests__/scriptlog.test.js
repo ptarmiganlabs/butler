@@ -99,8 +99,10 @@ test('getReloadTaskExecutionResults returns structured info', async () => {
 });
 
 test('getScriptLog returns head/tail and sizes when fileReference is valid', async () => {
-    qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3\r\nrow4' });
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1\r\nrow2\r\nrow3\r\nrow4' }); // download response
     const res = await scriptlog.getScriptLog('task-1', 2, 2, 3, 2000, 0); // downloadDelayMs=0 for tests
     expect(res.scriptLogHead).toBe('row1\r\nrow2');
     expect(res.scriptLogTail).toBe('row3\r\nrow4');
@@ -165,19 +167,24 @@ test('getReloadTaskExecutionResults handles 1753 dates (null dates)', async () =
     expect(res.executionDetailsSorted[0].timestampUTC).toBe('-');
 });
 
-test('getScriptLog handles axios errors', async () => {
+test('getScriptLog handles download errors', async () => {
     // Provide mocks for all 3 retry attempts - each attempt needs QRS calls for deprecated API + new API fallback
     qrsGetMock
         .mockResolvedValueOnce(makeResult1()) // Attempt 1 - getReloadTaskExecutionResults
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - scriptlog reference (deprecated)
+        .mockRejectedValueOnce(new Error('Network error')) // Attempt 1 - download fails (deprecated)
         .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - scriptlog reference (new API)
+        .mockRejectedValueOnce(new Error('Network error')) // Attempt 1 - download fails (new API)
         .mockResolvedValueOnce(makeResult1()) // Attempt 2 - getReloadTaskExecutionResults
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - scriptlog reference (deprecated)
+        .mockRejectedValueOnce(new Error('Network error')) // Attempt 2 - download fails (deprecated)
         .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 2 - scriptlog reference (new API)
+        .mockRejectedValueOnce(new Error('Network error')) // Attempt 2 - download fails (new API)
         .mockResolvedValueOnce(makeResult1()) // Attempt 3 - getReloadTaskExecutionResults
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 3 - scriptlog reference (deprecated)
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // Attempt 3 - scriptlog reference (new API)
-    axiosReqMock.mockRejectedValue(new Error('Network error'));
+        .mockRejectedValueOnce(new Error('Network error')) // Attempt 3 - download fails (deprecated)
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 3 - scriptlog reference (new API)
+        .mockRejectedValueOnce(new Error('Network error')); // Attempt 3 - download fails (new API)
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 10, 0); // 3 retries, 10ms delay, downloadDelayMs=0 for tests
     expect(res).toBe(false);
@@ -185,8 +192,10 @@ test('getScriptLog handles axios errors', async () => {
 });
 
 test('getScriptLog handles empty head/tail line counts', async () => {
-    qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3\r\nrow4' });
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1\r\nrow2\r\nrow3\r\nrow4' }); // download response
 
     const res = await scriptlog.getScriptLog('task-1', 0, 0, 3, 2000, 0); // downloadDelayMs=0 for tests
     expect(res.scriptLogHead).toBe('');
@@ -261,39 +270,24 @@ test('failedTaskStoreLogOnDisk handles fs errors', async () => {
 
 test('getScriptLog retries on 404 error and eventually succeeds', async () => {
     // Setup: First two calls return 404, third succeeds
+    const error404 = new Error('Not Found');
+    error404.response = { status: 404, statusText: 'Not Found' };
+    error404.request = {};
+
     qrsGetMock
         .mockResolvedValueOnce(makeResult1()) // First attempt - getReloadTaskExecutionResults
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // First attempt - Get scriptlog reference (deprecated API)
+        .mockResolvedValueOnce({ statusCode: 404, body: false }) // First attempt - download fails (deprecated API)
         .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // First attempt - Get scriptlog reference (new API fallback)
+        .mockResolvedValueOnce({ statusCode: 404, body: false }) // First attempt - download fails (new API)
         .mockResolvedValueOnce(makeResult1()) // Second attempt - getReloadTaskExecutionResults
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Second attempt - Get scriptlog reference (deprecated API)
+        .mockResolvedValueOnce({ statusCode: 404, body: false }) // Second attempt - download fails (deprecated API)
         .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Second attempt - Get scriptlog reference (new API fallback)
+        .mockResolvedValueOnce({ statusCode: 404, body: false }) // Second attempt - download fails (new API)
         .mockResolvedValueOnce(makeResult1()) // Third attempt - getReloadTaskExecutionResults
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Third attempt - Get scriptlog reference (deprecated API)
-
-    // Create a proper 404 axios error
-    const error404_1 = new Error('Request failed with status code 404');
-    error404_1.response = { status: 404, statusText: 'Not Found' };
-    error404_1.request = {};
-
-    const error404_2 = new Error('Request failed with status code 404');
-    error404_2.response = { status: 404, statusText: 'Not Found' };
-    error404_2.request = {};
-
-    const error404_3 = new Error('Request failed with status code 404');
-    error404_3.response = { status: 404, statusText: 'Not Found' };
-    error404_3.request = {};
-
-    const error404_4 = new Error('Request failed with status code 404');
-    error404_4.response = { status: 404, statusText: 'Not Found' };
-    error404_4.request = {};
-
-    axiosReqMock
-        .mockRejectedValueOnce(error404_1) // First attempt deprecated API fails with 404
-        .mockRejectedValueOnce(error404_2) // First attempt new API also fails with 404
-        .mockRejectedValueOnce(error404_3) // Second attempt deprecated API fails with 404
-        .mockRejectedValueOnce(error404_4) // Second attempt new API also fails with 404
-        .mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2\r\nrow3' }); // Third attempt deprecated API succeeds
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Third attempt - Get scriptlog reference (deprecated API)
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1\r\nrow2\r\nrow3' }); // Third attempt - download succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 100, 0); // maxRetries=3, retryDelayMs=100, downloadDelayMs=0 for tests
 
@@ -351,9 +345,8 @@ test('getScriptLog retries when fileReferenceId is all zeros and eventually gets
         .mockResolvedValueOnce(resultWithZeroRef) // First attempt - no fileReference yet
         .mockResolvedValueOnce(resultWithZeroRef) // Second attempt - still no fileReference
         .mockResolvedValueOnce(makeResult1()) // Third attempt - valid fileReference
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }); // Get scriptlog reference
-
-    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' });
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Get scriptlog reference
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1\r\nrow2' }); // Download succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // maxRetries=3, retryDelayMs=50, downloadDelayMs=0 for tests
 
@@ -388,21 +381,19 @@ test('getScriptLog returns empty result when fileReferenceId remains all zeros a
 
 test('getScriptLog handles 500 error with retry', async () => {
     // Setup: First attempt returns 500, second succeeds
-    qrsGetMock
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // new API fallback call
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-
-    const error500 = new Error('Request failed with status code 500');
+    const error500 = new Error('Internal Server Error');
     error500.response = { status: 500, statusText: 'Internal Server Error' };
     error500.request = {};
 
-    axiosReqMock
-        .mockRejectedValueOnce(error500) // deprecated API fails
-        .mockRejectedValueOnce(error500) // new API also fails
-        .mockResolvedValueOnce({ status: 200, data: 'row1\r\nrow2' }); // second attempt succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated ref
+        .mockRejectedValueOnce(error500) // Attempt 1 - deprecated download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API ref
+        .mockRejectedValueOnce(error500) // Attempt 1 - new API download fails
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated ref
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1\r\nrow2' }); // Attempt 2 - deprecated succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
@@ -414,21 +405,19 @@ test('getScriptLog handles 500 error with retry', async () => {
 
 test('getScriptLog handles network error (no response) with retry', async () => {
     // Setup: First attempt has network error, second succeeds
-    qrsGetMock
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // new API fallback call
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-
     const networkError = new Error('Network timeout');
     networkError.request = {}; // request was made but no response received
     // No response property indicates network-level error
 
-    axiosReqMock
-        .mockRejectedValueOnce(networkError) // deprecated API fails
-        .mockRejectedValueOnce(networkError) // new API also fails
-        .mockResolvedValueOnce({ status: 200, data: 'row1' }); // second attempt succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated ref
+        .mockRejectedValueOnce(networkError) // Attempt 1 - deprecated download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API ref
+        .mockRejectedValueOnce(networkError) // Attempt 1 - new API download fails
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated ref
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1' }); // Attempt 2 - deprecated succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
@@ -439,20 +428,18 @@ test('getScriptLog handles network error (no response) with retry', async () => 
 
 test('getScriptLog handles request setup error with retry', async () => {
     // Setup: First attempt has request setup error, second succeeds
-    qrsGetMock
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // new API fallback call
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-
     const setupError = new Error('Invalid configuration');
     // No request or response properties indicates setup error
 
-    axiosReqMock
-        .mockRejectedValueOnce(setupError) // deprecated API fails
-        .mockRejectedValueOnce(setupError) // new API also fails
-        .mockResolvedValueOnce({ status: 200, data: 'row1' }); // second attempt succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated ref
+        .mockRejectedValueOnce(setupError) // Attempt 1 - deprecated download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API ref
+        .mockRejectedValueOnce(setupError) // Attempt 1 - new API download fails
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated ref
+        .mockResolvedValueOnce({ statusCode: 200, body: 'row1' }); // Attempt 2 - deprecated succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 3, 50, 0); // downloadDelayMs=0 for tests
 
@@ -465,9 +452,10 @@ test('getScriptLog handles request setup error with retry', async () => {
 
 test('getScriptLog uses deprecated API successfully without trying fallback', async () => {
     // Setup: Deprecated API succeeds on first attempt
-    qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-
-    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2\r\nline3' });
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce({ statusCode: 200, body: 'line1\r\nline2\r\nline3' }); // download succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 2, 1, 1, 50, 0); // maxRetries=1 to avoid retries, downloadDelayMs=0 for tests
 
@@ -487,14 +475,9 @@ test('getScriptLog falls back to new API when deprecated API fails', async () =>
     qrsGetMock
         .mockResolvedValueOnce(makeResult1())
         .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // deprecated API scriptlog reference
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // new API scriptlog reference
-
-    const deprecatedApiError = new Error('Deprecated API not found');
-    deprecatedApiError.response = { status: 404 };
-
-    axiosReqMock
-        .mockRejectedValueOnce(deprecatedApiError) // deprecated API fails
-        .mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2' }); // new API succeeds
+        .mockResolvedValueOnce({ statusCode: 404, body: false }) // deprecated API download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // new API scriptlog reference
+        .mockResolvedValueOnce({ statusCode: 200, body: 'line1\r\nline2' }); // new API download succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1 to test single attempt, downloadDelayMs=0 for tests
 
@@ -510,15 +493,15 @@ test('getScriptLog falls back to new API when deprecated API fails', async () =>
 
 test('getScriptLog fails when both deprecated and new API fail', async () => {
     // Setup: Both APIs fail
-    qrsGetMock
-        .mockResolvedValueOnce(makeResult1())
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // deprecated API scriptlog reference
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // new API scriptlog reference
-
     const apiError = new Error('API error');
     apiError.response = { status: 500 };
 
-    axiosReqMock.mockRejectedValue(apiError); // both APIs fail
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // deprecated API scriptlog reference
+        .mockRejectedValueOnce(apiError) // deprecated API download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // new API scriptlog reference
+        .mockRejectedValueOnce(apiError); // new API download fails
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1, downloadDelayMs=0 for tests
 
@@ -532,25 +515,23 @@ test('getScriptLog fails when both deprecated and new API fail', async () => {
 
 test('getScriptLog falls back to new API when deprecated API fails with retry', async () => {
     // Setup: First attempt both APIs fail, second attempt new API succeeds
-    qrsGetMock
-        .mockResolvedValueOnce(makeResult1()) // Attempt 1
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated API
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API fallback
-        .mockResolvedValueOnce(makeResult1()) // Attempt 2
-        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated API
-        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // Attempt 2 - new API fallback
-
     const deprecatedApiError = new Error('Deprecated API error');
     deprecatedApiError.response = { status: 500 };
 
     const newApiError = new Error('New API error');
     newApiError.response = { status: 500 };
 
-    axiosReqMock
-        .mockRejectedValueOnce(deprecatedApiError) // Attempt 1 - deprecated API fails
-        .mockRejectedValueOnce(newApiError) // Attempt 1 - new API fails
-        .mockRejectedValueOnce(deprecatedApiError) // Attempt 2 - deprecated API fails
-        .mockResolvedValueOnce({ status: 200, data: 'success\r\ndata' }); // Attempt 2 - new API succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated API ref
+        .mockRejectedValueOnce(deprecatedApiError) // Attempt 1 - deprecated API download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API ref
+        .mockRejectedValueOnce(newApiError) // Attempt 1 - new API download fails
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated API ref
+        .mockRejectedValueOnce(deprecatedApiError) // Attempt 2 - deprecated API download fails
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 2 - new API ref
+        .mockResolvedValueOnce({ statusCode: 200, body: 'success\r\ndata' }); // Attempt 2 - new API succeeds
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 2, 50, 0); // maxRetries=2, downloadDelayMs=0 for tests
 
@@ -567,12 +548,10 @@ test('getScriptLog handles missing executionResultId gracefully', async () => {
     const taskWithoutExecResultId = makeResult1();
     delete taskWithoutExecResultId.body.operational.lastExecutionResult.id;
 
-    qrsGetMock.mockResolvedValueOnce(taskWithoutExecResultId).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
-
-    const deprecatedApiError = new Error('Deprecated API not available');
-    deprecatedApiError.response = { status: 404 };
-
-    axiosReqMock.mockRejectedValueOnce(deprecatedApiError);
+    qrsGetMock
+        .mockResolvedValueOnce(taskWithoutExecResultId)
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } })
+        .mockResolvedValueOnce({ statusCode: 404, body: false }); // deprecated API download fails
 
     const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0); // maxRetries=1, downloadDelayMs=0 for tests
 
