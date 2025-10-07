@@ -213,10 +213,10 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
         const protocol = globals.configQRS.useSSL ? 'https' : 'http';
-        
+
         // Encode task name for use in URL
         const taskNameEncoded = encodeURIComponent(taskName);
-        
+
         const axiosConfig = {
             url: `/qrs/download/reloadtask/${result2.body.value}/${taskNameEncoded}.log?xrfkey=abcdefghijklmnop`,
             method: 'get',
@@ -301,7 +301,7 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
 
             // Only get script log if there is a valid fileReferenceId or executionResultId
             globals.logger.debug(`[QSEOW] GET SCRIPT LOG 2: taskInfo.fileReferenceId: ${taskInfo.fileReferenceId}`);
-            
+
             let scriptLogData = null;
             let apiMethod = null;
 
@@ -312,7 +312,9 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
                         `[QSEOW] GET SCRIPT LOG 3 (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
                     );
 
-                    const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`);
+                    const result2 = await qrsInstance.Get(
+                        `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
+                    );
 
                     // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
                     const httpHeaders = globals.getEngineHttpHeaders();
@@ -342,7 +344,7 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
                     if (taskInfo.executionResultId) {
                         // Get task name for the download URL
                         const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
-                        
+
                         scriptLogData = await getScriptLogWithExecutionResultId(
                             reloadTaskId,
                             taskInfo.executionResultId,

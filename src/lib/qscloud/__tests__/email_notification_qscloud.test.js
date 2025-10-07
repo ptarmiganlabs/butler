@@ -121,9 +121,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 
             expect(result).toBe(1);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Config error'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: Config error'));
         });
 
         test('should return false when no email addresses found', async () => {
@@ -195,9 +193,7 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 
             expect(result).toBe(true);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: API Error'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('EMAIL ALERT - APP RELOAD FAILED: API Error'));
         });
     });
 });

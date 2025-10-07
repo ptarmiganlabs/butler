@@ -279,11 +279,11 @@ test('getScriptLog retries on 404 error and eventually succeeds', async () => {
     const error404_2 = new Error('Request failed with status code 404');
     error404_2.response = { status: 404, statusText: 'Not Found' };
     error404_2.request = {};
-    
+
     const error404_3 = new Error('Request failed with status code 404');
     error404_3.response = { status: 404, statusText: 'Not Found' };
     error404_3.request = {};
-    
+
     const error404_4 = new Error('Request failed with status code 404');
     error404_4.response = { status: 404, statusText: 'Not Found' };
     error404_4.request = {};
@@ -459,4 +459,126 @@ test('getScriptLog handles request setup error with retry', async () => {
     expect(res).not.toBe(false);
     // With fallback logic, warnings are logged for both API attempts
     expect(logger.warn).toHaveBeenCalled();
+});
+
+// New tests for fallback functionality
+
+test('getScriptLog uses deprecated API successfully without trying fallback', async () => {
+    // Setup: Deprecated API succeeds on first attempt
+    qrsGetMock.mockResolvedValueOnce(makeResult1()).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
+
+    axiosReqMock.mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2\r\nline3' });
+
+    const res = await scriptlog.getScriptLog('task-1', 2, 1, 1, 50); // maxRetries=1 to avoid retries
+
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['line1', 'line2', 'line3']);
+    expect(res.scriptLogHead).toBe('line1\r\nline2');
+    expect(res.scriptLogTail).toBe('line3');
+
+    // Verify deprecated API was used successfully
+    expect(logger.debug).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using deprecated API');
+    // Verify fallback was NOT attempted (no "Trying new API as fallback" warning)
+    expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
+});
+
+test('getScriptLog falls back to new API when deprecated API fails', async () => {
+    // Setup: Deprecated API fails, new API succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // deprecated API scriptlog reference
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // new API scriptlog reference
+
+    const deprecatedApiError = new Error('Deprecated API not found');
+    deprecatedApiError.response = { status: 404 };
+
+    axiosReqMock
+        .mockRejectedValueOnce(deprecatedApiError) // deprecated API fails
+        .mockResolvedValueOnce({ status: 200, data: 'line1\r\nline2' }); // new API succeeds
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1 to test single attempt
+
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['line1', 'line2']);
+    expect(res.scriptLogHead).toBe('line1');
+
+    // Verify fallback was attempted and succeeded
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Deprecated API failed'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
+    expect(logger.debug).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
+});
+
+test('getScriptLog fails when both deprecated and new API fail', async () => {
+    // Setup: Both APIs fail
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // deprecated API scriptlog reference
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // new API scriptlog reference
+
+    const apiError = new Error('API error');
+    apiError.response = { status: 500 };
+
+    axiosReqMock.mockRejectedValue(apiError); // both APIs fail
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1
+
+    expect(res).toBe(false);
+
+    // Verify both APIs were attempted
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Deprecated API failed'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('New API also failed'));
+});
+
+test('getScriptLog falls back to new API when deprecated API fails with retry', async () => {
+    // Setup: First attempt both APIs fail, second attempt new API succeeds
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1()) // Attempt 1
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 1 - deprecated API
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }) // Attempt 1 - new API fallback
+        .mockResolvedValueOnce(makeResult1()) // Attempt 2
+        .mockResolvedValueOnce({ body: { value: 'file-uuid' } }) // Attempt 2 - deprecated API
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } }); // Attempt 2 - new API fallback
+
+    const deprecatedApiError = new Error('Deprecated API error');
+    deprecatedApiError.response = { status: 500 };
+
+    const newApiError = new Error('New API error');
+    newApiError.response = { status: 500 };
+
+    axiosReqMock
+        .mockRejectedValueOnce(deprecatedApiError) // Attempt 1 - deprecated API fails
+        .mockRejectedValueOnce(newApiError) // Attempt 1 - new API fails
+        .mockRejectedValueOnce(deprecatedApiError) // Attempt 2 - deprecated API fails
+        .mockResolvedValueOnce({ status: 200, data: 'success\r\ndata' }); // Attempt 2 - new API succeeds
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 2, 50); // maxRetries=2
+
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['success', 'data']);
+
+    // Verify retry happened and new API eventually succeeded
+    expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Retry attempt 2 of 2'));
+    expect(logger.debug).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
+});
+
+test('getScriptLog handles missing executionResultId gracefully', async () => {
+    // Setup: Task without executionResultId, deprecated API fails
+    const taskWithoutExecResultId = makeResult1();
+    delete taskWithoutExecResultId.body.operational.lastExecutionResult.id;
+
+    qrsGetMock.mockResolvedValueOnce(taskWithoutExecResultId).mockResolvedValueOnce({ body: { value: 'file-uuid' } });
+
+    const deprecatedApiError = new Error('Deprecated API not available');
+    deprecatedApiError.response = { status: 404 };
+
+    axiosReqMock.mockRejectedValueOnce(deprecatedApiError);
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50); // maxRetries=1
+
+    expect(res).toBe(false);
+
+    // Verify fallback was attempted but skipped due to missing executionResultId
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Deprecated API failed'));
+    expect(logger.warn).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: No executionResultId available for fallback API');
 });

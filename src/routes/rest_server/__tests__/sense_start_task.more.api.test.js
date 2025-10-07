@@ -72,7 +72,7 @@ describe('REST: sense_start_task routes - extended coverage', () => {
                 }),
             },
             logger: { debug: jest.fn(), error: jest.fn(), info: jest.fn(), verbose: jest.fn(), warn: jest.fn(), silly: jest.fn() },
-    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+            getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
         };
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
 

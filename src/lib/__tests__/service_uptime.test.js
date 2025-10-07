@@ -28,7 +28,7 @@ describe('lib/service_uptime', () => {
     const mockGlobals = {
         config: { get: jest.fn() },
         logger: { log: jest.fn(), debug: jest.fn() },
-    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const mockInflux = { postButlerMemoryUsageToInfluxdb: jest.fn() };

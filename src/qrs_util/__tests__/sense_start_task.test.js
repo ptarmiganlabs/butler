@@ -7,7 +7,7 @@ describe('qrs_util/sense_start_task', () => {
         getQRSHttpHeaders: jest.fn(() => ({ 'X-QRS': '1' })),
         configQRS: { host: 'host', port: 4242, certPaths: { certPath: '/c', keyPath: '/k' } },
         logger: { debug: jest.fn(), error: jest.fn(), verbose: jest.fn(), warn: jest.fn() },
-    getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
+        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     beforeAll(async () => {
