@@ -274,7 +274,11 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
 
         return result3.data;
     } catch (err) {
-        globals.logger.debug(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
+        // TODO remove
+        console.log('B: err');
+        console.log(err);
+
+        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
@@ -338,7 +342,11 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
 
         return result3.data;
     } catch (err) {
-        globals.logger.debug(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
+        // TODO remove
+        console.log('A: err');
+        console.log(err);
+
+        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
         return false;
     }
 }
