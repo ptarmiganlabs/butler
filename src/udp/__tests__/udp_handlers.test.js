@@ -265,9 +265,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         await events.message(Buffer.from(msg), {});
         await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('is not a reload task'),
-        );
+        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
     });
 
     test('scheduler failed: handles empty appId gracefully', async () => {
@@ -289,9 +287,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         await events.message(Buffer.from(msg), {});
         await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('is not a reload task'),
-        );
+        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
     });
 
     test('scheduler aborted: handles empty appId gracefully', async () => {
@@ -313,9 +309,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         await events.message(Buffer.from(msg), {});
         await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(
-            expect.stringContaining('is not a reload task'),
-        );
+        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
     });
 
     test('scheduler failed: MQTT disconnected warns and does not basic-publish', async () => {
