@@ -262,6 +262,10 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
             httpsAgent,
         };
 
+        // TODO remove
+        console.log('B: axiosConfig');
+        console.log(axiosConfig);
+
         const result3 = await axios.request(axiosConfig);
 
         // TODO remove
@@ -322,10 +326,16 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
             httpsAgent,
         };
 
+        // TODO remove
+        console.log('A: axiosConfig');
+        console.log(axiosConfig);
+
         const result3 = await axios.request(axiosConfig);
+
         // TODO remove
         console.log('A: result3');
         console.log(result3);
+
         return result3.data;
     } catch (err) {
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
