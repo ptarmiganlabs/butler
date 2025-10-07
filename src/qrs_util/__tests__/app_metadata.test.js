@@ -39,4 +39,32 @@ describe('qrs_util/app_metadata.getAppMetadata', () => {
         const res = await getAppMetadata('err');
         expect(res).toBe(false);
     });
+
+    test('returns {} when appId is empty string', async () => {
+        const res = await getAppMetadata('');
+        expect(res).toEqual({});
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid or empty appId parameter'));
+        expect(mockQrs.Get).not.toHaveBeenCalled();
+    });
+
+    test('returns {} when appId is null', async () => {
+        const res = await getAppMetadata(null);
+        expect(res).toEqual({});
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid or empty appId parameter'));
+        expect(mockQrs.Get).not.toHaveBeenCalled();
+    });
+
+    test('returns {} when appId is undefined', async () => {
+        const res = await getAppMetadata(undefined);
+        expect(res).toEqual({});
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid or empty appId parameter'));
+        expect(mockQrs.Get).not.toHaveBeenCalled();
+    });
+
+    test('returns {} when appId is whitespace only', async () => {
+        const res = await getAppMetadata('   ');
+        expect(res).toEqual({});
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid or empty appId parameter'));
+        expect(mockQrs.Get).not.toHaveBeenCalled();
+    });
 });

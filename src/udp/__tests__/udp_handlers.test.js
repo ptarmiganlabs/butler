@@ -234,6 +234,90 @@ describe('udp_handlers', () => {
         expect(callsAfter).toBe(callsBefore);
     });
 
+    test('scheduler success: handles new /scheduler-task-success/ message type', async () => {
+        const influxMod = await import('../../lib/post_to_influxdb.js');
+        const callsBefore = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
+
+        const msg = '/scheduler-task-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        const callsAfter = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
+        // Should be called because the new message type is handled
+        expect(callsAfter).toBeGreaterThan(callsBefore);
+    });
+
+    test('scheduler success: handles empty appId gracefully', async () => {
+        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
+        appMetadataMod.default.mockResolvedValueOnce({});
+
+        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.warn).toHaveBeenCalled();
+    });
+
+    test('scheduler success: handles non-reload task type', async () => {
+        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
+        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
+
+        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('is not a reload task'),
+        );
+    });
+
+    test('scheduler failed: handles empty appId gracefully', async () => {
+        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
+        appMetadataMod.default.mockResolvedValueOnce({});
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.warn).toHaveBeenCalled();
+    });
+
+    test('scheduler failed: handles non-reload task type', async () => {
+        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
+        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('is not a reload task'),
+        );
+    });
+
+    test('scheduler aborted: handles empty appId gracefully', async () => {
+        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
+        appMetadataMod.default.mockResolvedValueOnce({});
+
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.warn).toHaveBeenCalled();
+    });
+
+    test('scheduler aborted: handles non-reload task type', async () => {
+        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
+        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
+
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const { default: globals } = await import('../../globals.js');
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 10));
+        expect(globals.logger.info).toHaveBeenCalledWith(
+            expect.stringContaining('is not a reload task'),
+        );
+    });
+
     test('scheduler failed: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
         globals.mqttClient.connected = false;
