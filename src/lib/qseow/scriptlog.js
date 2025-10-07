@@ -1,3 +1,22 @@
+/**
+ * Script log retrieval module for Qlik Sense Enterprise on Windows (QSEOW).
+ * 
+ * This module provides functions to retrieve script logs from Qlik Sense reload tasks.
+ * It implements a fallback mechanism to handle API changes:
+ * 
+ * 1. Primary method (deprecated in May 2025): Uses fileReferenceId
+ *    - GET /qrs/reloadtask/{taskid}/scriptlog?fileReferenceId={fileReferenceId}
+ *    - GET /qrs/download/reloadtask/{resultFromPreviousCall}/scriptlog.txt
+ * 
+ * 2. Fallback method (new in May 2025): Uses executionResultId
+ *    - GET /qrs/ReloadTask/{taskid}/scriptlogfile?executionResultId={executionResultId}
+ *    - GET /qrs/download/reloadtask/{resultFromPreviousCall}/{taskName}.log
+ * 
+ * The implementation tries the primary method first, and if it fails, automatically
+ * falls back to the new method. This ensures compatibility with both old and new
+ * versions of Qlik Sense.
+ */
+
 import QrsClient from '../qrs_client.js';
 import axios from 'axios';
 import https from 'https';
@@ -56,7 +75,7 @@ function delay(milliseconds) {
  * Gets reload task execution results from the Qlik Sense QRS API.
  * Retrieves detailed information about the last execution of a reload task, including status, duration, and execution details.
  * @param {string} reloadTaskId - The GUID of the reload task.
- * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (fileReferenceId, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, scriptLogSize, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
+ * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (fileReferenceId, executionResultId, taskName, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, scriptLogSize, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
  */
 export async function getReloadTaskExecutionResults(reloadTaskId) {
     try {
