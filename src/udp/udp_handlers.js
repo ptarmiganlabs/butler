@@ -66,7 +66,7 @@ const schedulerAborted = async (msg) => {
         }
 
         // Determine task type based on taskMetadata
-        // Task types: 0 = reload, 1 = external program, 2 = user sync
+        // Task types: 0=Reload, 1=ExternalProgram, 2=UserSync, 3=Distribute, 4=Preload
         const taskType = taskMetadata?.taskType || 0;
         const isReloadTask = taskType === 0;
 
@@ -77,7 +77,7 @@ const schedulerAborted = async (msg) => {
             globals.logger.info(
                 `[QSEOW] TASKABORTED: Task ${msg[2]} (${msg[5]}) is not a reload task (type=${taskType}). Limited processing will be performed.`,
             );
-            // TODO: Add placeholder handling for other task types (external program, user sync)
+            // TODO: Add placeholder handling for other task types (ExternalProgram, UserSync, Distribute, Preload)
             globals.logger.verbose(
                 `[QSEOW] TASKABORTED: Task ${msg[2]} was aborted. No further processing configured for task type ${taskType}.`,
             );
@@ -405,7 +405,7 @@ const schedulerFailed = async (msg) => {
         }
 
         // Determine task type based on taskMetadata
-        // Task types: 0 = reload, 1 = external program, 2 = user sync
+        // Task types: 0=Reload, 1=ExternalProgram, 2=UserSync, 3=Distribute, 4=Preload
         const taskType = taskMetadata?.taskType || 0;
         const isReloadTask = taskType === 0;
 
@@ -416,7 +416,7 @@ const schedulerFailed = async (msg) => {
             globals.logger.info(
                 `[QSEOW] TASKFAILURE: Task ${msg[2]} (${msg[5]}) is not a reload task (type=${taskType}). Limited processing will be performed.`,
             );
-            // TODO: Add placeholder handling for other task types (external program, user sync)
+            // TODO: Add placeholder handling for other task types (ExternalProgram, UserSync, Distribute, Preload)
             globals.logger.verbose(
                 `[QSEOW] TASKFAILURE: Task ${msg[2]} failed. No further processing configured for task type ${taskType}.`,
             );
@@ -777,7 +777,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
         }
 
         // Determine task type based on taskMetadata
-        // Task types: 0 = reload, 1 = external program, 2 = user sync
+        // Task types: 0=Reload, 1=ExternalProgram, 2=UserSync, 3=Distribute, 4=Preload
         const taskType = taskMetadata?.taskType || 0;
         const isReloadTask = taskType === 0;
 
@@ -788,7 +788,7 @@ const schedulerReloadTaskSuccess = async (msg) => {
             globals.logger.info(
                 `[QSEOW] RELOAD TASK SUCCESS: Task ${msg[2]} (${reloadTaskId}) is not a reload task (type=${taskType}). Limited processing will be performed.`,
             );
-            // TODO: Add placeholder handling for other task types (external program, user sync)
+            // TODO: Add placeholder handling for other task types (ExternalProgram, UserSync, Distribute, Preload)
             globals.logger.verbose(
                 `[QSEOW] RELOAD TASK SUCCESS: Task ${msg[2]} completed successfully. No further processing configured for task type ${taskType}.`,
             );
