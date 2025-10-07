@@ -1,17 +1,17 @@
 /**
  * Script log retrieval module for Qlik Sense Enterprise on Windows (QSEOW).
- * 
+ *
  * This module provides functions to retrieve script logs from Qlik Sense reload tasks.
  * It implements a fallback mechanism to handle API changes:
- * 
+ *
  * 1. Primary method (deprecated in May 2025): Uses fileReferenceId
  *    - GET /qrs/reloadtask/{taskid}/scriptlog?fileReferenceId={fileReferenceId}
  *    - GET /qrs/download/reloadtask/{resultFromPreviousCall}/scriptlog.txt
- * 
+ *
  * 2. Fallback method (new in May 2025): Uses executionResultId
  *    - GET /qrs/ReloadTask/{taskid}/scriptlogfile?executionResultId={executionResultId}
  *    - GET /qrs/download/reloadtask/{resultFromPreviousCall}/{taskName}.log
- * 
+ *
  * The implementation tries the primary method first, and if it fails, automatically
  * falls back to the new method. This ensures compatibility with both old and new
  * versions of Qlik Sense.
@@ -209,6 +209,47 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
 }
 
 /**
+ * Downloads script log using the deprecated API approach (pre-May 2025 method).
+ * Uses fileReferenceId for retrieval.
+ * @param {string} reloadTaskId - The GUID of the reload task.
+ * @param {string} fileReferenceId - The file reference ID.
+ * @param {Object} qrsInstance - QRS client instance.
+ * @param {Object} httpsAgent - HTTPS agent for axios.
+ * @returns {Promise<string|boolean>} - Returns script log text or false on error.
+ */
+async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, httpsAgent) {
+    try {
+        globals.logger.debug(
+            `[QSEOW] GET SCRIPT LOG (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`,
+        );
+
+        // Step 1: Get script log file reference using deprecated API
+        const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`);
+
+        // Step 2: Download the script log file
+        const httpHeaders = globals.getEngineHttpHeaders();
+        httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
+
+        const protocol = globals.configQRS.useSSL ? 'https' : 'http';
+        const axiosConfig = {
+            url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
+            method: 'get',
+            baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
+            headers: httpHeaders,
+            timeout: 10000,
+            responseType: 'text',
+            httpsAgent,
+        };
+
+        const result3 = await axios.request(axiosConfig);
+        return result3.data;
+    } catch (err) {
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
+        return false;
+    }
+}
+
+/**
  * Downloads script log using the new API approach (2025-May QMC method).
  * Uses executionResultId instead of fileReferenceId.
  * @param {string} reloadTaskId - The GUID of the reload task.
@@ -268,6 +309,7 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
  */
 export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, maxRetries = 3, retryDelayMs = 2000) {
     let lastError;
+    let preferredApiMethod = null; // Track which API method to prefer
 
     // Retry loop
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -281,11 +323,6 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
 
             // Step 1
             const taskInfo = await getReloadTaskExecutionResults(reloadTaskId);
-
-            // Check if taskInfo retrieval failed
-            if (!taskInfo) {
-                throw new Error('Failed to get task execution results from QRS');
-            }
 
             // Check if taskInfo retrieval failed
             if (!taskInfo) {
@@ -325,65 +362,57 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
             let apiMethod = null;
 
             if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
-                // Try the deprecated API first (fileReferenceId method)
-                try {
-                    globals.logger.debug(
-                        `[QSEOW] GET SCRIPT LOG 3 (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
-                    );
-
-                    const result2 = await qrsInstance.Get(
-                        `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${taskInfo.fileReferenceId}`,
-                    );
-
-                    // Use Axios for final call to QRS, as QRS-Interact has a bug that prevents downloading of script logs
-                    const httpHeaders = globals.getEngineHttpHeaders();
-                    httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
-
-                    const protocol = globals.configQRS.useSSL ? 'https' : 'http';
-                    const axiosConfig = {
-                        url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
-                        method: 'get',
-                        baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
-                        headers: httpHeaders,
-                        timeout: 10000,
-                        responseType: 'text',
+                // If we previously succeeded with the new API, use it directly
+                if (preferredApiMethod === 'new' && taskInfo.executionResultId) {
+                    globals.logger.debug('[QSEOW] GET SCRIPT LOG: Using previously successful new API method');
+                    const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
+                    scriptLogData = await getScriptLogWithExecutionResultId(
+                        reloadTaskId,
+                        taskInfo.executionResultId,
+                        taskName,
+                        qrsInstance,
                         httpsAgent,
-                    };
-
-                    const result3 = await axios.request(axiosConfig);
-                    scriptLogData = result3.data;
-                    apiMethod = 'deprecated';
-                    globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using deprecated API');
-                } catch (err) {
-                    globals.logger.warn(
-                        `[QSEOW] GET SCRIPT LOG: Deprecated API failed - ${globals.getErrorMessage(err)}. Trying new API as fallback...`,
                     );
-
-                    // Try the new API as fallback (executionResultId method)
-                    if (taskInfo.executionResultId) {
-                        // Get task name for the download URL
-                        const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
-
-                        scriptLogData = await getScriptLogWithExecutionResultId(
-                            reloadTaskId,
-                            taskInfo.executionResultId,
-                            taskName,
-                            qrsInstance,
-                            httpsAgent,
-                        );
-
-                        if (scriptLogData !== false) {
-                            apiMethod = 'new';
-                            globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
-                        } else {
-                            globals.logger.warn('[QSEOW] GET SCRIPT LOG: New API also failed');
-                            // Both APIs failed, throw error to trigger retry or fail
-                            throw new Error('Both deprecated and new API methods failed to retrieve script log');
-                        }
+                    if (scriptLogData !== false) {
+                        apiMethod = 'new';
                     } else {
-                        globals.logger.warn('[QSEOW] GET SCRIPT LOG: No executionResultId available for fallback API');
-                        // Rethrow the original error since we can't try fallback
-                        throw err;
+                        throw new Error('New API method failed on retry');
+                    }
+                } else {
+                    // Try the deprecated API first (or if it's our preferred method)
+                    scriptLogData = await getScriptLogWithFileReferenceId(reloadTaskId, taskInfo.fileReferenceId, qrsInstance, httpsAgent);
+
+                    if (scriptLogData !== false) {
+                        apiMethod = 'deprecated';
+                        preferredApiMethod = 'deprecated'; // Remember this worked
+                        globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using deprecated API');
+                    } else {
+                        globals.logger.warn('[QSEOW] GET SCRIPT LOG: Deprecated API failed. Trying new API as fallback...');
+
+                        // Try the new API as fallback (executionResultId method)
+                        if (taskInfo.executionResultId) {
+                            const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
+
+                            scriptLogData = await getScriptLogWithExecutionResultId(
+                                reloadTaskId,
+                                taskInfo.executionResultId,
+                                taskName,
+                                qrsInstance,
+                                httpsAgent,
+                            );
+
+                            if (scriptLogData !== false) {
+                                apiMethod = 'new';
+                                preferredApiMethod = 'new'; // Remember this worked
+                                globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
+                            } else {
+                                globals.logger.warn('[QSEOW] GET SCRIPT LOG: New API also failed');
+                                throw new Error('Both deprecated and new API methods failed to retrieve script log');
+                            }
+                        } else {
+                            globals.logger.warn('[QSEOW] GET SCRIPT LOG: No executionResultId available for fallback API');
+                            throw new Error('Deprecated API failed and no executionResultId available for fallback');
+                        }
                     }
                 }
             }
