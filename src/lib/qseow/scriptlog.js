@@ -240,8 +240,12 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result2 = await qrsInstance.Get(endpoint);
 
+        // TODO remove
+        console.log('B: result2');
+        console.log(result2);
+
         // Step 2: Download the script log file
-        const httpHeaders = globals.getEngineHttpHeaders();
+        const httpHeaders = globals.getQRSHttpHeaders();
         httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
         const protocol = globals.configQRS.useSSL ? 'https' : 'http';
@@ -259,6 +263,11 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         };
 
         const result3 = await axios.request(axiosConfig);
+
+        // TODO remove
+        console.log('B: result3');
+        console.log(result3);
+
         return result3.data;
     } catch (err) {
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
@@ -283,12 +292,16 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         );
 
         // Step 1: Get script log file reference using new API
-        const endpoint = `ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`;
+        const endpoint = `reloadtask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`;
         globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result2 = await qrsInstance.Get(endpoint);
 
+        // TODO remove
+        console.log('A: result2');
+        console.log(result2);
+
         // Step 2: Download the script log file
-        const httpHeaders = globals.getEngineHttpHeaders();
+        const httpHeaders = globals.getQRSHttpHeaders();
         httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
         const protocol = globals.configQRS.useSSL ? 'https' : 'http';
@@ -310,6 +323,9 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         };
 
         const result3 = await axios.request(axiosConfig);
+        // TODO remove
+        console.log('A: result3');
+        console.log(result3);
         return result3.data;
     } catch (err) {
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
