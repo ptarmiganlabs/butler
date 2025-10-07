@@ -25,6 +25,16 @@ import path from 'path';
 import fs from 'fs';
 import globals from '../../globals.js';
 
+/**
+ * Force API method for testing purposes.
+ * Set to 'deprecated' to force use of the old fileReferenceId API.
+ * Set to 'new' to force use of the new executionResultId API.
+ * Set to null (default) to use automatic fallback logic.
+ * @type {'deprecated'|'new'|null}
+ */
+// const FORCE_API_METHOD = 'new';
+const FORCE_API_METHOD = null;
+
 const taskStatusLookup = {
     0: 'NeverStarted',
     1: 'Triggered',
@@ -100,7 +110,9 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         // Step 1
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
 
-        const result1 = await qrsInstance.Get(`reloadtask/${reloadTaskId}`);
+        const endpoint = `reloadtask/${reloadTaskId}`;
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG 1: Calling QRS endpoint: GET /qrs/${endpoint}`);
+        const result1 = await qrsInstance.Get(endpoint);
 
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: body: ${JSON.stringify(result1.body)}`);
 
@@ -224,15 +236,20 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         );
 
         // Step 1: Get script log file reference using deprecated API
-        const result2 = await qrsInstance.Get(`reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`);
+        const endpoint = `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`;
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Calling QRS endpoint: GET /qrs/${endpoint}`);
+        const result2 = await qrsInstance.Get(endpoint);
 
         // Step 2: Download the script log file
         const httpHeaders = globals.getEngineHttpHeaders();
         httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
 
         const protocol = globals.configQRS.useSSL ? 'https' : 'http';
+        const downloadUrl = `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`;
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Downloading script log: GET ${downloadUrl}`);
+
         const axiosConfig = {
-            url: `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`,
+            url: downloadUrl,
             method: 'get',
             baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
             headers: httpHeaders,
@@ -266,7 +283,9 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         );
 
         // Step 1: Get script log file reference using new API
-        const result2 = await qrsInstance.Get(`ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`);
+        const endpoint = `ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`;
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Calling QRS endpoint: GET /qrs/${endpoint}`);
+        const result2 = await qrsInstance.Get(endpoint);
 
         // Step 2: Download the script log file
         const httpHeaders = globals.getEngineHttpHeaders();
@@ -277,8 +296,11 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         // Encode task name for use in URL
         const taskNameEncoded = encodeURIComponent(taskName);
 
+        const downloadUrl = `/qrs/download/reloadtask/${result2.body.value}/${taskNameEncoded}.log?xrfkey=abcdefghijklmnop`;
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Downloading script log: GET ${downloadUrl}`);
+
         const axiosConfig = {
-            url: `/qrs/download/reloadtask/${result2.body.value}/${taskNameEncoded}.log?xrfkey=abcdefghijklmnop`,
+            url: downloadUrl,
             method: 'get',
             baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
             headers: httpHeaders,
@@ -309,7 +331,7 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
  */
 export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, maxRetries = 3, retryDelayMs = 2000) {
     let lastError;
-    let preferredApiMethod = null; // Track which API method to prefer
+    let preferredApiMethod = FORCE_API_METHOD; // Initialize with forced method if set
 
     // Retry loop
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -319,6 +341,11 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
                 await delay(retryDelayMs);
             } else {
                 globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Initial attempt (${attempt} of ${maxRetries}) for task ${reloadTaskId}`);
+                if (FORCE_API_METHOD) {
+                    globals.logger.debug(
+                        `[QSEOW] GET SCRIPT LOG: FORCE_API_METHOD is set to '${FORCE_API_METHOD}' - overriding fallback logic`,
+                    );
+                }
             }
 
             // Step 1
@@ -362,8 +389,34 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
             let apiMethod = null;
 
             if (taskInfo.fileReferenceId !== '00000000-0000-0000-0000-000000000000') {
-                // If we previously succeeded with the new API, use it directly
-                if (preferredApiMethod === 'new' && taskInfo.executionResultId) {
+                // If FORCE_API_METHOD is set, use it exclusively
+                if (FORCE_API_METHOD === 'new') {
+                    globals.logger.debug('[QSEOW] GET SCRIPT LOG: Forced to use new API method');
+                    if (!taskInfo.executionResultId) {
+                        throw new Error('Forced to use new API but executionResultId is not available');
+                    }
+                    const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
+                    scriptLogData = await getScriptLogWithExecutionResultId(
+                        reloadTaskId,
+                        taskInfo.executionResultId,
+                        taskName,
+                        qrsInstance,
+                        httpsAgent,
+                    );
+                    if (scriptLogData !== false) {
+                        apiMethod = 'new';
+                    } else {
+                        throw new Error('Forced new API method failed');
+                    }
+                } else if (FORCE_API_METHOD === 'deprecated') {
+                    globals.logger.debug('[QSEOW] GET SCRIPT LOG: Forced to use deprecated API method');
+                    scriptLogData = await getScriptLogWithFileReferenceId(reloadTaskId, taskInfo.fileReferenceId, qrsInstance, httpsAgent);
+                    if (scriptLogData !== false) {
+                        apiMethod = 'deprecated';
+                    } else {
+                        throw new Error('Forced deprecated API method failed');
+                    }
+                } else if (preferredApiMethod === 'new' && taskInfo.executionResultId) {
                     globals.logger.debug('[QSEOW] GET SCRIPT LOG: Using previously successful new API method');
                     const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
                     scriptLogData = await getScriptLogWithExecutionResultId(
@@ -384,7 +437,9 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
 
                     if (scriptLogData !== false) {
                         apiMethod = 'deprecated';
-                        preferredApiMethod = 'deprecated'; // Remember this worked
+                        if (!FORCE_API_METHOD) {
+                            preferredApiMethod = 'deprecated'; // Remember this worked (only if not forcing)
+                        }
                         globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using deprecated API');
                     } else {
                         globals.logger.warn('[QSEOW] GET SCRIPT LOG: Deprecated API failed. Trying new API as fallback...');
@@ -403,7 +458,9 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
 
                             if (scriptLogData !== false) {
                                 apiMethod = 'new';
-                                preferredApiMethod = 'new'; // Remember this worked
+                                if (!FORCE_API_METHOD) {
+                                    preferredApiMethod = 'new'; // Remember this worked (only if not forcing)
+                                }
                                 globals.logger.debug('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
                             } else {
                                 globals.logger.warn('[QSEOW] GET SCRIPT LOG: New API also failed');
@@ -432,14 +489,13 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
 
                 if (headLineCount > 0) {
                     scriptLogHead = scriptLogFull.slice(0, headLineCount).join('\r\n');
+                    globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
                 }
 
                 if (tailLineCount > 0) {
                     scriptLogTail = scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n');
+                    globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log tail:\n${scriptLogTail}`);
                 }
-
-                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log head:\n${scriptLogHead}`);
-                globals.logger.debug(`[QSEOW] GET SCRIPT LOG: Script log tails:\n${scriptLogTail}`);
 
                 globals.logger.verbose(`[QSEOW] GET SCRIPT LOG: Done getting script log (method: ${apiMethod})`);
 
