@@ -102,7 +102,7 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         // Merge YAML-configured headers with hardcoded headers
         configQRS.headers = {
             ...globals.getQRSHttpHeaders(),
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            // 'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_api',
         };
 
         const qrsInstance = new QrsClient(configQRS);
@@ -226,11 +226,10 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
  * @param {string} reloadTaskId - The GUID of the reload task.
  * @param {string} fileReferenceId - The file reference ID.
  * @param {Object} qrsInstance - QRS client instance.
- * @param {Object} httpsAgent - HTTPS agent for axios.
- * @param {number} [downloadDelayMs=5000] - Delay in milliseconds before downloading the script log.
+ * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log.
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
-async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, httpsAgent, downloadDelayMs = 5000) {
+async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, downloadDelayMs = 500) {
     try {
         globals.logger.debug(
             `[QSEOW] GET SCRIPT LOG (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`,
@@ -241,49 +240,24 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result2 = await qrsInstance.Get(endpoint);
 
-        // TODO remove
-        console.log('B: result2');
-        console.log(result2);
-
-        // Step 2: Download the script log file
-        const httpHeaders = globals.getQRSHttpHeaders();
-        httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
-
-        const protocol = globals.configQRS.useSSL ? 'https' : 'http';
-        const downloadUrl = `/qrs/download/reloadtask/${result2.body.value}/scriptlog.txt?xrfkey=abcdefghijklmnop`;
-        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Downloading script log: GET ${downloadUrl}`);
-
-        const axiosConfig = {
-            url: downloadUrl,
-            method: 'get',
-            baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
-            headers: httpHeaders,
-            timeout: 10000,
-            responseType: 'text',
-            httpsAgent,
-        };
-
-        // TODO remove
-        console.log('B: axiosConfig');
-        console.log(axiosConfig);
-
         // Wait before downloading the script log to avoid 404 errors
         if (downloadDelayMs > 0) {
             await delay(downloadDelayMs);
         }
 
-        const result3 = await axios.request(axiosConfig);
+        // Step 2: Download the script log file
+        const endpoint3 = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
+        const result3 = await qrsInstance.Get(endpoint3);
 
-        // TODO remove
-        console.log('B: result3');
-        console.log(result3);
+        // If result3.statusCode is 200, the script log is available in result3.body with \r\n line endings
+        // If result3.statusCode is 404, the script log is not available
 
-        return result3.data;
+        if (result3.statusCode !== 200) {
+            result3.body = false;
+        }
+
+        return result3.body;
     } catch (err) {
-        // TODO remove
-        console.log('B: err');
-        console.log(err);
-
         globals.logger.warn(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
         return false;
     }
@@ -294,20 +268,11 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
  * Uses executionResultId instead of fileReferenceId.
  * @param {string} reloadTaskId - The GUID of the reload task.
  * @param {string} executionResultId - The execution result ID.
- * @param {string} taskName - The name of the task (used in download filename).
  * @param {Object} qrsInstance - QRS client instance.
- * @param {Object} httpsAgent - HTTPS agent for axios.
- * @param {number} [downloadDelayMs=5000] - Delay in milliseconds before downloading the script log.
+ * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log.
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
-async function getScriptLogWithExecutionResultId(
-    reloadTaskId,
-    executionResultId,
-    taskName,
-    qrsInstance,
-    httpsAgent,
-    downloadDelayMs = 5000,
-) {
+async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId, qrsInstance, downloadDelayMs = 500) {
     try {
         globals.logger.debug(
             `[QSEOW] GET SCRIPT LOG (NEW API): ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`,
@@ -318,53 +283,24 @@ async function getScriptLogWithExecutionResultId(
         globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result2 = await qrsInstance.Get(endpoint);
 
-        // TODO remove
-        console.log('A: result2');
-        console.log(result2);
-
-        // Step 2: Download the script log file
-        const httpHeaders = globals.getQRSHttpHeaders();
-        httpHeaders['x-qlik-xrfkey'] = 'abcdefghijklmnop';
-
-        const protocol = globals.configQRS.useSSL ? 'https' : 'http';
-
-        // Encode task name for use in URL
-        const taskNameEncoded = encodeURIComponent(taskName);
-
-        const downloadUrl = `/qrs/download/reloadtask/${result2.body.value}/${taskNameEncoded}.log?xrfkey=abcdefghijklmnop`;
-        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Downloading script log: GET ${downloadUrl}`);
-
-        const axiosConfig = {
-            url: downloadUrl,
-            method: 'get',
-            baseURL: `${protocol}://${globals.configQRS.host}:${globals.configQRS.port}`,
-            headers: httpHeaders,
-            timeout: 10000,
-            responseType: 'text',
-            httpsAgent,
-        };
-
-        // TODO remove
-        console.log('A: axiosConfig');
-        console.log(axiosConfig);
-
         // Wait before downloading the script log to avoid 404 errors
         if (downloadDelayMs > 0) {
             await delay(downloadDelayMs);
         }
 
-        const result3 = await axios.request(axiosConfig);
+        // Step 2: Download the script log file
+        const endpoint3 = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
+        const result3 = await qrsInstance.Get(endpoint3);
 
-        // TODO remove
-        console.log('A: result3');
-        console.log(result3);
+        // If result3.statusCode is 200, the script log is available in result3.body with \r\n line endings
+        // If result3.statusCode is 404, the script log is not available
 
-        return result3.data;
+        if (result3.statusCode !== 200) {
+            result3.body = false;
+        }
+
+        return result3.body;
     } catch (err) {
-        // TODO remove
-        console.log('A: err');
-        console.log(err);
-
         globals.logger.warn(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
         return false;
     }
@@ -380,17 +316,10 @@ async function getScriptLogWithExecutionResultId(
  * @param {number} tailLineCount - The number of lines to include from the end of the script log. Set to 0 to exclude tail.
  * @param {number} [maxRetries=3] - Maximum number of retry attempts if script log retrieval fails.
  * @param {number} [retryDelayMs=2000] - Delay in milliseconds between retry attempts.
- * @param {number} [downloadDelayMs=5000] - Delay in milliseconds before downloading the script log (set to 0 to disable).
+ * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log (set to 0 to disable).
  * @returns {Promise<Object|boolean>} - Returns an object containing executingNodeName, executionDetails, executionDetailsConcatenated, executionDuration, executionStartTime, executionStopTime, executionStatusNum, executionStatusText, scriptLogFull (array), scriptLogSize, scriptLogSizeRows, scriptLogSizeCharacters, scriptLogHead, scriptLogHeadCount, scriptLogTail, scriptLogTailCount. Returns false if an error occurs.
  */
-export async function getScriptLog(
-    reloadTaskId,
-    headLineCount,
-    tailLineCount,
-    maxRetries = 3,
-    retryDelayMs = 2000,
-    downloadDelayMs = 5000,
-) {
+export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, maxRetries = 3, retryDelayMs = 2000, downloadDelayMs = 500) {
     let lastError;
     let preferredApiMethod = FORCE_API_METHOD; // Initialize with forced method if set
 
@@ -431,7 +360,7 @@ export async function getScriptLog(
             // Merge YAML-configured headers with hardcoded headers
             configQRS.headers = {
                 ...globals.getQRSHttpHeaders(),
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+                // 'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_api',
             };
 
             const qrsInstance = new QrsClient(configQRS);
@@ -456,13 +385,10 @@ export async function getScriptLog(
                     if (!taskInfo.executionResultId) {
                         throw new Error('Forced to use new API but executionResultId is not available');
                     }
-                    const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
                     scriptLogData = await getScriptLogWithExecutionResultId(
                         reloadTaskId,
                         taskInfo.executionResultId,
-                        taskName,
                         qrsInstance,
-                        httpsAgent,
                         downloadDelayMs,
                     );
                     if (scriptLogData !== false) {
@@ -476,7 +402,6 @@ export async function getScriptLog(
                         reloadTaskId,
                         taskInfo.fileReferenceId,
                         qrsInstance,
-                        httpsAgent,
                         downloadDelayMs,
                     );
                     if (scriptLogData !== false) {
@@ -486,13 +411,10 @@ export async function getScriptLog(
                     }
                 } else if (preferredApiMethod === 'new' && taskInfo.executionResultId) {
                     globals.logger.debug('[QSEOW] GET SCRIPT LOG: Using previously successful new API method');
-                    const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
                     scriptLogData = await getScriptLogWithExecutionResultId(
                         reloadTaskId,
                         taskInfo.executionResultId,
-                        taskName,
                         qrsInstance,
-                        httpsAgent,
                         downloadDelayMs,
                     );
                     if (scriptLogData !== false) {
@@ -506,7 +428,6 @@ export async function getScriptLog(
                         reloadTaskId,
                         taskInfo.fileReferenceId,
                         qrsInstance,
-                        httpsAgent,
                         downloadDelayMs,
                     );
 
@@ -521,14 +442,10 @@ export async function getScriptLog(
 
                         // Try the new API as fallback (executionResultId method)
                         if (taskInfo.executionResultId) {
-                            const taskName = taskInfo.taskName || `task_${reloadTaskId}`;
-
                             scriptLogData = await getScriptLogWithExecutionResultId(
                                 reloadTaskId,
                                 taskInfo.executionResultId,
-                                taskName,
                                 qrsInstance,
-                                httpsAgent,
                                 downloadDelayMs,
                             );
 
