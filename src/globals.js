@@ -456,7 +456,7 @@ Configuration File:
         // ------------------------------------
         // UDP server connection parameters
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
-        this.udpServerReloadTaskSocket = null;
+        this.udpServerTaskResultSocket = null;
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
 
         // Indicate that we have finished initialising

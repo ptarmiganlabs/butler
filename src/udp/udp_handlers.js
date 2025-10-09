@@ -2,7 +2,7 @@
 import globals from '../globals.js';
 import schedulerAborted from './handlers/scheduler_aborted.js';
 import schedulerFailed from './handlers/scheduler_failed.js';
-import schedulerReloadTaskSuccess from './handlers/scheduler_success.js';
+import schedulerTaskSuccess from './handlers/scheduler_success.js';
 
 /**
  * Set up UDP server handlers for acting on Sense failed task events.
@@ -10,8 +10,8 @@ import schedulerReloadTaskSuccess from './handlers/scheduler_success.js';
 const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
 
-    globals.udpServerReloadTaskSocket.on('listening', (message, remote) => {
-        const address = globals.udpServerReloadTaskSocket.address();
+    globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
+        const address = globals.udpServerTaskResultSocket.address();
 
         globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
@@ -31,9 +31,9 @@ const udpInitTaskErrorServer = () => {
 
     // Handler for UDP error event
 
-    globals.udpServerReloadTaskSocket.on('error', (message, remote) => {
+    globals.udpServerTaskResultSocket.on('error', (message, remote) => {
         try {
-            const address = globals.udpServerReloadTaskSocket.address();
+            const address = globals.udpServerTaskResultSocket.address();
             globals.logger.error(`[QSEOW] TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
 
             // Publish MQTT message that UDP server has reported an error
@@ -55,7 +55,7 @@ const udpInitTaskErrorServer = () => {
 
     // Main handler for UDP messages relating to failed tasks
 
-    globals.udpServerReloadTaskSocket.on('message', async (message, remote) => {
+    globals.udpServerTaskResultSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===
         //
@@ -124,6 +124,7 @@ const udpInitTaskErrorServer = () => {
 
         try {
             globals.logger.debug(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
+            globals.logger.info(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
 
             const msg = message.toString().split(';');
 
@@ -144,7 +145,7 @@ const udpInitTaskErrorServer = () => {
                 globals.logger.verbose(
                     `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
                 );
-            } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/') {
+            } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/' || msg[0].toLowerCase() === '/scheduler-task-failed/') {
                 // Scheduler log appender detecting failed scheduler-started reload
 
                 // Do some sanity checks on the message
@@ -159,7 +160,7 @@ const udpInitTaskErrorServer = () => {
                 }
 
                 schedulerFailed(msg);
-            } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/') {
+            } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/' || msg[0].toLowerCase() === '/scheduler-task-aborted/') {
                 // Scheduler log appender detecting aborted scheduler-started reload
 
                 // Do some sanity checks on the message
@@ -188,9 +189,9 @@ const udpInitTaskErrorServer = () => {
                     globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Aborting processing of this message.`);
                     return;
                 }
-                schedulerReloadTaskSuccess(msg);
+                schedulerTaskSuccess(msg);
             } else {
-                globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message format: "${msg[0]}"`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${msg[0]}"`);
             }
         } catch (err) {
             globals.logger.error(

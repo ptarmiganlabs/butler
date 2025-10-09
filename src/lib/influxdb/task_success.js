@@ -1,0 +1,354 @@
+import _ from 'lodash';
+
+import globals from '../../globals.js';
+
+// Store information about successful reload tasks to InfluxDB
+export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
+    try {
+        globals.logger.verbose('[QSEOW] RELOAD TASK SUCCESS: Sending reload task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = reloadParams.host;
+        tags.user = reloadParams.user;
+        tags.task_id = reloadParams.taskId;
+        tags.task_name = reloadParams.taskName;
+        tags.app_id = reloadParams.appId;
+        tags.app_name = reloadParams.appName;
+        tags.log_level = reloadParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'reload_task_success',
+                tags: tags,
+                fields: {
+                    log_timestamp: reloadParams.logTimeStamp,
+                    execution_id: reloadParams.executionId,
+                    log_message: reloadParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = reloadParams;
+
+        globals.logger.debug(`[QSEOW] RELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should app tags be included?
+        if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags') === true) {
+            // Add app tags to InfluxDB datapoint
+            if (reloadParams.appTags) {
+                for (const item of reloadParams.appTags) {
+                    datapoint[0].tags[`appTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            if (reloadParams.taskTags) {
+                for (const item of reloadParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] RELOAD TASK SUCCESS: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] RELOAD TASK SUCCESS: Sent reload task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] RELOAD TASK SUCCESS: Error saving reload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: ${globals.getErrorMessage(err)}`);
+    }
+}
+
+// Store information about successful user sync tasks to InfluxDB
+export function postUserSyncTaskSuccessNotificationInfluxDb(userSyncParams) {
+    try {
+        globals.logger.verbose('[QSEOW] USER SYNC TASK SUCCESS: Sending user sync task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = userSyncParams.host;
+        tags.user = userSyncParams.user;
+        tags.task_id = userSyncParams.taskId;
+        tags.task_name = userSyncParams.taskName;
+        tags.log_level = userSyncParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'user_sync_task_success',
+                tags: tags,
+                fields: {
+                    log_timestamp: userSyncParams.logTimeStamp,
+                    execution_id: userSyncParams.executionId,
+                    log_message: userSyncParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = userSyncParams;
+
+        globals.logger.debug(`[QSEOW] USER SYNC TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.userSyncTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            if (userSyncParams.taskTags) {
+                for (const item of userSyncParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.userSyncTaskSuccess.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] USER SYNC TASK SUCCESS: Influxdb datapoint for user sync task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] USER SYNC TASK SUCCESS: Sent user sync task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] USER SYNC TASK SUCCESS: Error saving user sync task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] USER SYNC TASK SUCCESS: Error saving user sync task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        globals.logger.error(`[QSEOW] USER SYNC TASK SUCCESS: ${globals.getErrorMessage(err)}`);
+    }
+}
+
+// Store information about successful external program tasks to InfluxDB
+export function postExternalProgramTaskSuccessNotificationInfluxDb(externalProgramParams) {
+    try {
+        globals.logger.verbose('[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Sending external program task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = externalProgramParams.host;
+        tags.user = externalProgramParams.user;
+        tags.task_id = externalProgramParams.taskId;
+        tags.task_name = externalProgramParams.taskName;
+        tags.log_level = externalProgramParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'external_program_task_success',
+                tags: tags,
+                fields: {
+                    log_timestamp: externalProgramParams.logTimeStamp,
+                    execution_id: externalProgramParams.executionId,
+                    log_message: externalProgramParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = externalProgramParams;
+
+        globals.logger.debug(`[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.externalProgramTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            if (externalProgramParams.taskTags) {
+                for (const item of externalProgramParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.externalProgramTaskSuccess.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Influxdb datapoint for external program task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Sent external program task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Error saving external program task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Error saving external program task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: ${globals.getErrorMessage(err)}`);
+    }
+}

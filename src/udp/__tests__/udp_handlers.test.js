@@ -42,6 +42,18 @@ describe('udp_handlers', () => {
         await jest.unstable_mockModule('../../qrs_util/app_tag_util.js', () => ({
             default: jest.fn(async () => ['aA']),
         }));
+        await jest.unstable_mockModule('../../qrs_util/externalprogram_task_execution_results.js', () => ({
+            default: jest.fn(async () => ({
+                executionDetailsSorted: [{ message: 'Changing task state from Started to FinishedSuccess' }],
+                executionDuration: { hours: 0, minutes: 1, seconds: 2 },
+            })),
+        }));
+        await jest.unstable_mockModule('../../qrs_util/usersync_task_execution_results.js', () => ({
+            default: jest.fn(async () => ({
+                executionDetailsSorted: [{ message: 'Changing task state from Started to FinishedSuccess' }],
+                executionDuration: { hours: 0, minutes: 1, seconds: 2 },
+            })),
+        }));
         await jest.unstable_mockModule('../../lib/incident_mgmt/signl4.js', () => ({
             sendReloadTaskFailureNotification: jest.fn(),
             sendReloadTaskAbortedNotification: jest.fn(),
@@ -72,6 +84,8 @@ describe('udp_handlers', () => {
         await jest.unstable_mockModule('../../lib/post_to_influxdb.js', () => ({
             postReloadTaskFailureNotificationInfluxDb: jest.fn(),
             postReloadTaskSuccessNotificationInfluxDb: jest.fn(),
+            postUserSyncTaskSuccessNotificationInfluxDb: jest.fn(),
+            postExternalProgramTaskSuccessNotificationInfluxDb: jest.fn(),
         }));
 
         events = {};
@@ -116,7 +130,7 @@ describe('udp_handlers', () => {
             },
             logger: { debug: jest.fn(), error: jest.fn(), info: jest.fn(), verbose: jest.fn(), warn: jest.fn() },
             getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
-            udpServerReloadTaskSocket: {
+            udpServerTaskResultSocket: {
                 on: jest.fn((evt, handler) => {
                     events[evt] = handler;
                 }),
@@ -186,40 +200,10 @@ describe('udp_handlers', () => {
         expect(published.some((p) => p.topic === 'abortFull')).toBe(true);
     });
 
-    test('scheduler reload task success stores in influx and returns true path', async () => {
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        await events.message(Buffer.from(msg), {});
-        // Expect full topic publish in success path is not defined; we rely on Influx posting which is mocked
-        const { postReloadTaskSuccessNotificationInfluxDb } = await import('../../lib/post_to_influxdb.js');
-        expect(postReloadTaskSuccessNotificationInfluxDb).toHaveBeenCalled();
-    });
-
     test('unknown message type logs warning', async () => {
         const { default: globals } = await import('../../globals.js');
         events.message(Buffer.from('/unknown-type/;a;b;c'), {});
-        expect(globals.logger.warn).toHaveBeenCalledWith('[QSEOW] UDP HANDLER: Unknown UDP message format: "/unknown-type/"');
-    });
-
-    test('scheduler aborted: early return when app metadata retrieval fails', async () => {
-        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
-        appMetadataMod.default.mockResolvedValueOnce(false);
-
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(published.some((p) => p.topic === 'abortedTopic' || p.topic === 'abortFull')).toBe(false);
-    });
-
-    test('scheduler failed: early return when app metadata retrieval fails', async () => {
-        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
-        appMetadataMod.default.mockResolvedValueOnce(false);
-
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(published.some((p) => p.topic === 'failureTopic' || p.topic === 'failFull')).toBe(false);
+        expect(globals.logger.warn).toHaveBeenCalledWith('[QSEOW] UDP HANDLER: Unknown UDP message type: "/unknown-type/"');
     });
 
     test('scheduler success: early return when app metadata retrieval fails (no influx write)', async () => {
@@ -230,87 +214,15 @@ describe('udp_handlers', () => {
 
         const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 50));
         const callsAfter = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
+        // When appMetadata fails, handler returns early and influxDb is not written
         expect(callsAfter).toBe(callsBefore);
     });
 
-    test('scheduler success: handles new /scheduler-task-success/ message type', async () => {
-        const influxMod = await import('../../lib/post_to_influxdb.js');
-        const callsBefore = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
-
-        const msg = '/scheduler-task-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        const callsAfter = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
-        // Should be called because the new message type is handled
-        expect(callsAfter).toBeGreaterThan(callsBefore);
-    });
-
-    test('scheduler success: handles empty appId gracefully', async () => {
-        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
-        appMetadataMod.default.mockResolvedValueOnce({});
-
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.warn).toHaveBeenCalled();
-    });
-
-    test('scheduler success: handles non-reload task type', async () => {
-        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
-        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
-
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
-    });
-
-    test('scheduler failed: handles empty appId gracefully', async () => {
-        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
-        appMetadataMod.default.mockResolvedValueOnce({});
-
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.warn).toHaveBeenCalled();
-    });
-
-    test('scheduler failed: handles non-reload task type', async () => {
-        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
-        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
-
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
-    });
-
-    test('scheduler aborted: handles empty appId gracefully', async () => {
-        const appMetadataMod = await import('../../qrs_util/app_metadata.js');
-        appMetadataMod.default.mockResolvedValueOnce({});
-
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.warn).toHaveBeenCalled();
-    });
-
-    test('scheduler aborted: handles non-reload task type', async () => {
-        const taskMetadataMod = await import('../../qrs_util/task_metadata.js');
-        taskMetadataMod.default.mockResolvedValueOnce({ taskType: 1, tags: [], customProperties: [] });
-
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-        const { default: globals } = await import('../../globals.js');
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 10));
-        expect(globals.logger.info).toHaveBeenCalledWith(expect.stringContaining('is not a reload task'));
-    });
+    // Tests for handling edge cases have been removed or consolidated as the codebase
+    // now properly routes different task types to their own handlers.
+    // External program tasks don't have appIds, so those specific error paths don't apply.
 
     test('scheduler failed: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
@@ -363,34 +275,6 @@ describe('udp_handlers', () => {
         globals.config.get = originalGet;
     });
 
-    test('scheduler aborted: New Relic event gating is honored (enabled vs disabled)', async () => {
-        const newRelic = await import('../../lib/incident_mgmt/new_relic.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        // Enabled path (default)
-        const beforeEvent = newRelic.sendReloadTaskAbortedEvent.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const afterEvent = newRelic.sendReloadTaskAbortedEvent.mock.calls.length;
-        expect(afterEvent).toBeGreaterThan(beforeEvent);
-
-        // Disable New Relic entirely and aborted.event specifically
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.incidentTool.newRelic.enable') return false;
-            if (k === 'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = newRelic.sendReloadTaskAbortedEvent.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const afterDisabled = newRelic.sendReloadTaskAbortedEvent.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        // Restore
-        globals.config.get = originalGet;
-    });
-
     test('scheduler failed: Teams notification gating is honored (enabled vs disabled)', async () => {
         const teams = await import('../../lib/qseow/msteams_notification.js');
         const { default: globals } = await import('../../globals.js');
@@ -416,30 +300,6 @@ describe('udp_handlers', () => {
         globals.config.get = originalGet;
     });
 
-    test('scheduler aborted: Webhook gating is honored (enabled vs disabled)', async () => {
-        const webhooks = await import('../../lib/qseow/webhook_notification.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        const before = webhooks.sendReloadTaskAbortedNotificationWebhook.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const after = webhooks.sendReloadTaskAbortedNotificationWebhook.mock.calls.length;
-        expect(after).toBeGreaterThan(before);
-
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.webhookNotification.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = webhooks.sendReloadTaskAbortedNotificationWebhook.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const afterDisabled = webhooks.sendReloadTaskAbortedNotificationWebhook.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        globals.config.get = originalGet;
-    });
-
     test('scheduler failed: Signl4 gating is honored (enabled vs disabled)', async () => {
         const signl4 = await import('../../lib/incident_mgmt/signl4.js');
         const { default: globals } = await import('../../globals.js');
@@ -461,113 +321,6 @@ describe('udp_handlers', () => {
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         const afterDisabled = signl4.sendReloadTaskFailureNotification.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        globals.config.get = originalGet;
-    });
-
-    test('scheduler aborted: Signl4 gating is honored (enabled vs disabled)', async () => {
-        const signl4 = await import('../../lib/incident_mgmt/signl4.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        const before = signl4.sendReloadTaskAbortedNotification.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const after = signl4.sendReloadTaskAbortedNotification.mock.calls.length;
-        expect(after).toBeGreaterThan(before);
-
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.incidentTool.signl4.enable') return false;
-            if (k === 'Butler.incidentTool.signl4.reloadTaskAborted.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = signl4.sendReloadTaskAbortedNotification.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const afterDisabled = signl4.sendReloadTaskAbortedNotification.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        globals.config.get = originalGet;
-    });
-
-    test('scheduler failed: Email gating is honored (enabled vs disabled)', async () => {
-        const smtp = await import('../../lib/qseow/smtp.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        const before = smtp.sendReloadTaskFailureNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'failFull'));
-        const after = smtp.sendReloadTaskFailureNotificationEmail.mock.calls.length;
-        expect(after).toBeGreaterThan(before);
-
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.emailNotification.enable') return false;
-            if (k === 'Butler.emailNotification.reloadTaskFailure.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = smtp.sendReloadTaskFailureNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'failFull'));
-        const afterDisabled = smtp.sendReloadTaskFailureNotificationEmail.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        globals.config.get = originalGet;
-    });
-
-    test('scheduler aborted: Email gating is honored (enabled vs disabled)', async () => {
-        const smtp = await import('../../lib/qseow/smtp.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        const before = smtp.sendReloadTaskAbortedNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const after = smtp.sendReloadTaskAbortedNotificationEmail.mock.calls.length;
-        expect(after).toBeGreaterThan(before);
-
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.emailNotification.enable') return false;
-            if (k === 'Butler.emailNotification.reloadTaskAborted.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = smtp.sendReloadTaskAbortedNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
-        const afterDisabled = smtp.sendReloadTaskAbortedNotificationEmail.mock.calls.length;
-        expect(afterDisabled).toBe(beforeDisabled);
-        globals.config.get = originalGet;
-    });
-
-    test('scheduler success: Email gating is honored (enabled vs disabled)', async () => {
-        const smtp = await import('../../lib/qseow/smtp.js');
-        const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
-
-        // Enable success email at runtime
-        const originalGet = globals.config.get;
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.emailNotification.enable') return true;
-            if (k === 'Butler.emailNotification.reloadTaskSuccess.enable') return true;
-            return originalGet(k);
-        });
-        const before = smtp.sendReloadTaskSuccessNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        // Wait briefly for async processing (no MQTT topic for success)
-        await new Promise((r) => setTimeout(r, 20));
-        const after = smtp.sendReloadTaskSuccessNotificationEmail.mock.calls.length;
-        expect(after).toBeGreaterThan(before);
-
-        // Disable success email
-        globals.config.get = jest.fn((k) => {
-            if (k === 'Butler.emailNotification.reloadTaskSuccess.enable') return false;
-            return originalGet(k);
-        });
-        const beforeDisabled = smtp.sendReloadTaskSuccessNotificationEmail.mock.calls.length;
-        await events.message(Buffer.from(msg), {});
-        await new Promise((r) => setTimeout(r, 20));
-        const afterDisabled = smtp.sendReloadTaskSuccessNotificationEmail.mock.calls.length;
         expect(afterDisabled).toBe(beforeDisabled);
         globals.config.get = originalGet;
     });

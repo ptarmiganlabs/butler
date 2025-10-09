@@ -334,6 +334,72 @@ export const confifgFileSchema = {
                             required: ['enable', 'allReloadTasks', 'byCustomProperty', 'tag'],
                             additionalProperties: false,
                         },
+                        userSyncTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
+                        externalProgramTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                     },
                     required: [
                         'enable',
@@ -345,6 +411,8 @@ export const confifgFileSchema = {
                         'tag',
                         'reloadTaskFailure',
                         'reloadTaskSuccess',
+                        'userSyncTaskSuccess',
+                        'externalProgramTaskSuccess',
                     ],
                     additionalProperties: false,
                 },
