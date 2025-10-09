@@ -152,6 +152,22 @@ Butler:
                 dynamic:
                     useAppTags: true # Should app tags be sent to InfluxDb as tags?
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        userSyncTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        externalProgramTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
 
     # Store script logs of failed reloads on disk.
     # The script logs will be stored in daily directories under the specified main directory below
