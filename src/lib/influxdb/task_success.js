@@ -350,5 +350,142 @@ export function postExternalProgramTaskSuccessNotificationInfluxDb(externalProgr
             });
     } catch (err) {
         globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: ${err.stack}`);
+    }
+}
+
+/**
+ * Store distribute task success info in InfluxDB
+ * @param {Object} distributeParams - Distribute task success parameters
+ * @param {string} distributeParams.host - Host name
+ * @param {string} distributeParams.user - User name
+ * @param {string} distributeParams.taskId - Task ID
+ * @param {string} distributeParams.taskName - Task name
+ * @param {string} distributeParams.logTimeStamp - Log timestamp
+ * @param {string} distributeParams.logLevel - Log level
+ * @param {string} distributeParams.executionId - Execution ID
+ * @param {string} distributeParams.logMessage - Log message
+ * @param {Array<string>} distributeParams.taskTags - Task tags array
+ * @param {Object} distributeParams.taskInfo - Task execution info from QRS
+ */
+export function postDistributeTaskSuccessNotificationInfluxDb(distributeParams) {
+    try {
+        globals.logger.verbose('[QSEOW] DISTRIBUTE TASK SUCCESS: Sending distribute task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = distributeParams.host;
+        tags.user = distributeParams.user;
+        tags.task_id = distributeParams.taskId;
+        tags.task_name = distributeParams.taskName;
+        tags.log_level = distributeParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'distribute_task_success',
+                tags: tags,
+                fields: {
+                    log_timestamp: distributeParams.logTimeStamp,
+                    execution_id: distributeParams.executionId,
+                    log_message: distributeParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = distributeParams;
+
+        globals.logger.debug(`[QSEOW] DISTRIBUTE TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.distributeTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            if (distributeParams.taskTags) {
+                for (const item of distributeParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.distributeTaskSuccess.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] DISTRIBUTE TASK SUCCESS: Influxdb datapoint for distribute task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] DISTRIBUTE TASK SUCCESS: Sent distribute task notification to InfluxDB');
+            })
+
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] DISTRIBUTE TASK SUCCESS: Error saving distribute task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] DISTRIBUTE TASK SUCCESS: Error saving distribute task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        if (globals.isSea) {
+            globals.logger.error(
+                `[QSEOW] DISTRIBUTE TASK SUCCESS: Error processing distribute task success notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+            );
+        } else {
+            globals.logger.error(
+                `[QSEOW] DISTRIBUTE TASK SUCCESS: Error processing distribute task success notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+            );
+        }
+        globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: ${err.stack}`);
     }
 }

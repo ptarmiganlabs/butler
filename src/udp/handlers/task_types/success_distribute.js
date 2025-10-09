@@ -1,18 +1,20 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import getDistributeTaskExecutionResults from '../../../qrs_util/distribute_task_execution_results.js';
+import getTaskTags from '../../../qrs_util/task_tag_util.js';
+import { postDistributeTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
 
 /**
  * Handler for successful distribute tasks.
  *
- * Placeholder handler for App Distribution task completions.
- * Distribute tasks copy Qlik Sense apps to target streams or spaces.
+ * Processes successful distribute task completions by:
+ * - Determining if task should be stored in InfluxDB (based on config)
+ * - Getting task execution results and duration (if storing to InfluxDB)
+ * - Posting metrics to InfluxDB (if enabled)
  *
- * TODO: Implement comprehensive handling for successful distribute tasks including:
- * - Success logging and tracking
- * - Distribution metrics (apps copied, target streams)
- * - Optional notification sending
- * - Metrics collection for InfluxDB
- * - Execution duration tracking
+ * Note: Distribute tasks do not have associated apps, so app-related metadata is not collected.
+ * Script logs are NOT retrieved for successful distribute tasks as they are only
+ * needed for failure analysis and troubleshooting.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with distribution success details:
@@ -27,7 +29,7 @@ import globals from '../../../globals.js';
  *   - msg[8]: Log level
  *   - msg[9]: Execution ID
  *   - msg[10]: Log message
- * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS (currently not used in this handler):
+ * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS containing:
  *   - taskType: Type of task (3=Distribute)
  *   - tags: Array of tag objects with id and name
  *   - customProperties: Array of custom property objects
@@ -35,20 +37,141 @@ import globals from '../../../globals.js';
  */
 export const handleSuccessDistributeTask = async (msg, taskMetadata) => {
     try {
+        const distributeTaskId = msg[5];
+
         globals.logger.verbose(
-            `[QSEOW] RELOAD TASK SUCCESS: Distribute task succeeded: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
+            `[QSEOW] DISTRIBUTE TASK SUCCESS: Distribute task succeeded: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${distributeTaskId}`,
         );
 
-        // TODO: Implement handling for successful distribute tasks
-        // This is a placeholder for future implementation
-        globals.logger.info(
-            `[QSEOW] RELOAD TASK SUCCESS: Distribute task ${msg[2]} (${msg[5]}) completed successfully. No processing configured yet for this task type.`,
-        );
+        globals.logger.info(`[QSEOW] DISTRIBUTE TASK SUCCESS: Distribute task ${msg[2]} (${distributeTaskId}) completed successfully.`);
+
+        // Determine if this task should be stored in InfluxDB
+        let storeInInfluxDb = false;
+        if (
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.get('Butler.influxDb.distributeTaskSuccess.enable') === true
+        ) {
+            storeInInfluxDb = true;
+        }
+
+        // Note: Script log is NOT retrieved for successful distribute tasks as per design
+        // Script logs should only be retrieved when needed (failures, aborts)
+
+        // Get tags for the task that completed successfully
+        const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
+        globals.logger.verbose(`[QSEOW] Tags for task ${distributeTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
+
+        // Get distribute task custom properties
+        const taskCustomProperties =
+            taskMetadata?.customProperties?.map((cp) => ({
+                name: cp.definition.name,
+                value: cp.value,
+            })) || [];
+
+        if (storeInInfluxDb) {
+            // Get results from last distribute task execution
+            // It may take a seconds or two from the finished-successfully log message is written until the execution results are available via the QRS.
+            // Specifically, it may take a while for the last "FinishedSuccess" message to appear in the executionDetails array.
+            //
+            // Try at most five times, with a 1 second delay between each attempt.
+            // Check if the message property of the last entry in the taskInfo.executionDetailsSorted array is "Changing task state from Started to FinishedSuccess"
+            // If it is, then we have the results we need and can continue.
+            // Then give up and don't store anything in InfluxDB, but show a log warning.
+            let taskInfo;
+            let retryCount = 0;
+            while (retryCount < 5) {
+                taskInfo = await getDistributeTaskExecutionResults(distributeTaskId);
+
+                if (
+                    taskInfo?.executionDetailsSorted[taskInfo.executionDetailsSorted.length - 1]?.message ===
+                    'Changing task state from Started to FinishedSuccess'
+                ) {
+                    // Is duration longer than 0 seconds?
+                    // I.e. is executionDuration.hours, executionDuration.minutes or executionDuration.seconds > 0?
+                    // Warn if not, as this is likely caused by the QRS not having updated the execution details yet
+                    if (
+                        taskInfo.executionDuration.hours === 0 &&
+                        taskInfo.executionDuration.minutes === 0 &&
+                        taskInfo.executionDuration.seconds === 0
+                    ) {
+                        globals.logger.warn(
+                            `[QSEOW] DISTRIBUTE TASK SUCCESS: Task info for distribute task ${distributeTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`,
+                        );
+                    }
+
+                    globals.logger.debug(
+                        `[QSEOW] DISTRIBUTE TASK SUCCESS: Task info for distribute task ${distributeTaskId} retrieved successfully after ${retryCount} attempts`,
+                    );
+                    break;
+                }
+
+                retryCount += 1;
+
+                globals.logger.verbose(
+                    `[QSEOW] DISTRIBUTE TASK SUCCESS: Unable to get task info for distribute task ${distributeTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
+                );
+
+                await globals.sleep(1000);
+            }
+
+            if (
+                !taskInfo ||
+                taskInfo?.executionDetailsSorted[taskInfo.executionDetailsSorted.length - 1]?.message !==
+                    'Changing task state from Started to FinishedSuccess'
+            ) {
+                globals.logger.warn(
+                    `[QSEOW] DISTRIBUTE TASK SUCCESS: Unable to get task info for distribute task ${distributeTaskId}. Not storing task info in InfluxDB`,
+                );
+                return false;
+            }
+            globals.logger.verbose(
+                `[QSEOW] DISTRIBUTE TASK SUCCESS: Task info for distribute task ${distributeTaskId}: ${JSON.stringify(taskInfo, null, 2)}`,
+            );
+
+            // Get task tags so they can be included in data sent to InfluxDB
+            let taskTagsForInflux = [];
+
+            // Get tags for the task that finished successfully
+            taskTagsForInflux = await getTaskTags(distributeTaskId);
+            globals.logger.verbose(`[QSEOW] Tags for task ${distributeTaskId}: ${JSON.stringify(taskTagsForInflux, null, 2)}`);
+
+            // Post to InfluxDB when a distribute task has finished successfully
+            if (
+                globals.config.has('Butler.influxDb.enable') &&
+                globals.config.get('Butler.influxDb.enable') === true &&
+                globals.config.has('Butler.influxDb.distributeTaskSuccess.enable') &&
+                globals.config.get('Butler.influxDb.distributeTaskSuccess.enable') === true
+            ) {
+                globals.logger.verbose(
+                    `[QSEOW] DISTRIBUTE TASK SUCCESS: Storing distribute task success info in InfluxDB for task ID ${distributeTaskId}`,
+                );
+
+                postDistributeTaskSuccessNotificationInfluxDb({
+                    host: msg[1],
+                    user: msg[4].replace(/\\/g, '/'),
+                    taskName: msg[2],
+                    taskId: distributeTaskId,
+                    logTimeStamp: msg[7],
+                    logLevel: msg[8],
+                    executionId: msg[9],
+                    logMessage: msg[10],
+                    taskTags: taskTagsForInflux,
+                    qs_taskTags: taskTags,
+                    qs_taskCustomProperties: taskCustomProperties,
+                    qs_taskMetadata: taskMetadata,
+                    taskInfo: taskInfo,
+                });
+            } else {
+                globals.logger.verbose(`[QSEOW] DISTRIBUTE TASK SUCCESS: Not storing task info in InfluxDB`);
+            }
+        } else {
+            globals.logger.verbose(`[QSEOW] DISTRIBUTE TASK SUCCESS: Not storing task info in InfluxDB`);
+        }
 
         return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error handling successful distribute task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Stack trace: ${err.stack}`);
+        globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: Error handling successful distribute task: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

@@ -1,18 +1,17 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import { postDistributeTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed distribute tasks.
  *
- * Placeholder handler for App Distribution task failures.
- * Distribute tasks copy Qlik Sense apps to target streams or spaces.
+ * Processes distribute task failures by:
+ * - Extracting task metadata from QRS
+ * - Posting metrics to InfluxDB (if enabled)
  *
- * TODO: Implement comprehensive handling for failed distribute tasks including:
- * - Distribution error logging and analysis
- * - Target stream/space status tracking
- * - Notification sending (email, Slack, Teams, etc.)
- * - Metrics collection for InfluxDB
- * - Incident management integration
+ * Note: Distribute tasks do not have associated apps or script logs,
+ * so app metadata and script log retrieval are not performed.
+ * Additional notification channels (email, Slack, Teams, etc.) will be added in the future.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with distribution failure details:
@@ -27,7 +26,7 @@ import globals from '../../../globals.js';
  *   - msg[8]: Log level
  *   - msg[9]: Execution ID
  *   - msg[10]: Log message
- * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS (currently not used in this handler):
+ * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS containing:
  *   - taskType: Type of task (3=Distribute)
  *   - tags: Array of tag objects with id and name
  *   - customProperties: Array of custom property objects
@@ -39,11 +38,40 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
             `[QSEOW] TASKFAILURE: Distribute task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
         );
 
-        // TODO: Implement handling for failed distribute tasks
-        // This is a placeholder for future implementation
-        globals.logger.info(
-            `[QSEOW] TASKFAILURE: Distribute task ${msg[2]} (${msg[5]}) failed. No processing configured yet for this task type.`,
-        );
+        // Get tags for the task that failed
+        const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
+        globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+
+        // Get distribute task custom properties
+        const taskCustomProperties =
+            taskMetadata?.customProperties?.map((cp) => ({
+                name: cp.definition.name,
+                value: cp.value,
+            })) || [];
+
+        // Post to InfluxDB when a distribute task has failed
+        if (
+            globals.config.has('Butler.influxDb.enable') &&
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.has('Butler.influxDb.distributeTaskFailure.enable') &&
+            globals.config.get('Butler.influxDb.distributeTaskFailure.enable') === true
+        ) {
+            postDistributeTaskFailureNotificationInfluxDb({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: msg[5],
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_taskMetadata: taskMetadata,
+            });
+        }
+
+        globals.logger.info(`[QSEOW] TASKFAILURE: Distribute task ${msg[2]} (${msg[5]}) failed.`);
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed distribute task: ${globals.getErrorMessage(err)}`);
         globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);

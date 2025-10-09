@@ -251,3 +251,105 @@ export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
         globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK FAILED: ${globals.getErrorMessage(err)}`);
     }
 }
+
+/**
+ * Store distribute task failure info in InfluxDB
+ * @param {Object} taskParams - Distribute task failure parameters
+ * @param {string} taskParams.host - Host name
+ * @param {string} taskParams.user - User name
+ * @param {string} taskParams.taskId - Task ID
+ * @param {string} taskParams.taskName - Task name
+ * @param {string} taskParams.logTimeStamp - Log timestamp
+ * @param {string} taskParams.logLevel - Log level
+ * @param {string} taskParams.executionId - Execution ID
+ * @param {string} taskParams.logMessage - Log message
+ * @param {Array<string>} taskParams.qs_taskTags - Task tags array
+ * @param {Array<Object>} taskParams.qs_taskCustomProperties - Task custom properties array
+ * @param {Object} taskParams.qs_taskMetadata - Task metadata from QRS
+ */
+export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
+    try {
+        globals.logger.info('[QSEOW] DISTRIBUTE TASK FAILED: Sending distribute task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = taskParams.host;
+        tags.user = taskParams.user;
+        tags.task_id = taskParams.taskId;
+        tags.task_name = taskParams.taskName;
+        tags.log_level = taskParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'distribute_task_failed',
+                tags: tags,
+                fields: {
+                    log_timestamp: taskParams.logTimeStamp,
+                    execution_id: taskParams.executionId,
+                    log_message: taskParams.logMessage,
+                },
+            },
+        ];
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.distributeTaskFailure.tag.dynamic.useTaskTags') === true) {
+            if (taskParams.qs_taskTags) {
+                // Add task tags to InfluxDB datapoint
+                for (const item of taskParams.qs_taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.distributeTaskFailure.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] DISTRIBUTE TASK FAILED: Influxdb datapoint for distribute task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] DISTRIBUTE TASK FAILED: Sent distribute task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] DISTRIBUTE TASK FAILED: Error saving distribute task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] DISTRIBUTE TASK FAILED: Error saving distribute task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        globals.logger.error(
+            `[QSEOW] DISTRIBUTE TASK FAILED: Error processing distribute task notification! ${globals.getErrorMessage(err)}`,
+        );
+    }
+}

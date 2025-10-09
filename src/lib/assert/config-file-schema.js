@@ -433,6 +433,72 @@ export const confifgFileSchema = {
                             required: ['enable', 'tag'],
                             additionalProperties: false,
                         },
+                        distributeTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
+                        distributeTaskFailure: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                     },
                     required: [
                         'enable',
@@ -447,6 +513,8 @@ export const confifgFileSchema = {
                         'userSyncTaskSuccess',
                         'externalProgramTaskSuccess',
                         'externalProgramTaskFailure',
+                        'distributeTaskSuccess',
+                        'distributeTaskFailure',
                     ],
                     additionalProperties: false,
                 },

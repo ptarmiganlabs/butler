@@ -54,6 +54,12 @@ describe('udp_handlers', () => {
                 executionDuration: { hours: 0, minutes: 1, seconds: 2 },
             })),
         }));
+        await jest.unstable_mockModule('../../qrs_util/distribute_task_execution_results.js', () => ({
+            default: jest.fn(async () => ({
+                executionDetailsSorted: [{ message: 'Changing task state from Started to FinishedSuccess' }],
+                executionDuration: { hours: 0, minutes: 1, seconds: 2 },
+            })),
+        }));
         await jest.unstable_mockModule('../../lib/incident_mgmt/signl4.js', () => ({
             sendReloadTaskFailureNotification: jest.fn(),
             sendReloadTaskAbortedNotification: jest.fn(),
@@ -85,10 +91,12 @@ describe('udp_handlers', () => {
             postReloadTaskSuccessNotificationInfluxDb: jest.fn(),
             postUserSyncTaskSuccessNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskSuccessNotificationInfluxDb: jest.fn(),
+            postDistributeTaskSuccessNotificationInfluxDb: jest.fn(),
         }));
         await jest.unstable_mockModule('../../lib/influxdb/task_failure.js', () => ({
             postReloadTaskFailureNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskFailureNotificationInfluxDb: jest.fn(),
+            postDistributeTaskFailureNotificationInfluxDb: jest.fn(),
         }));
 
         events = {};
