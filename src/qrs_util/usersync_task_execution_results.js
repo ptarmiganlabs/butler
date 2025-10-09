@@ -8,6 +8,7 @@
 import QrsClient from '../lib/qrs_client.js';
 import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
+import { compareTaskDetails } from './task_execution_details_sort.js';
 
 const taskStatusLookup = {
     0: 'NeverStarted',
@@ -24,25 +25,6 @@ const taskStatusLookup = {
     11: 'Error',
     12: 'Reset',
 };
-
-/**
- * Compares two task detail objects based on their creation date.
- * Used for sorting task execution details in chronological order.
- * @param {Object} a - The first task detail object.
- * @param {string} a.detailCreatedDate - The creation date of the first task detail.
- * @param {Object} b - The second task detail object.
- * @param {string} b.detailCreatedDate - The creation date of the second task detail.
- * @returns {number} - Returns -1 if a is earlier than b, 1 if a is later than b, and 0 if they are equal.
- */
-function compareTaskDetails(a, b) {
-    if (a.detailCreatedDate < b.detailCreatedDate) {
-        return -1;
-    }
-    if (a.detailCreatedDate > b.detailCreatedDate) {
-        return 1;
-    }
-    return 0;
-}
 
 /**
  * Gets user sync task execution results from the Qlik Sense QRS API.
