@@ -6,7 +6,7 @@ import {
     postQlikSenseLicenseStatusToInfluxDB,
     postQlikSenseLicenseReleasedToInfluxDB,
     postQlikSenseServerLicenseStatusToInfluxDB,
-} from '../post_to_influxdb.js';
+} from '../influxdb/qlik_sense_license.js';
 import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
 
 // Function to check Qlik Sense server license status

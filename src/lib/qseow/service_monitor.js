@@ -8,7 +8,7 @@ import { sendServiceMonitorWebhook } from './webhook_notification.js';
 import { sendServiceMonitorNotificationSlack } from './slack_notification.js';
 import { sendServiceMonitorNotificationTeams } from './msteams_notification.js';
 import { sendServiceMonitorNotificationEmail } from './smtp.js';
-import { postWindowsServiceStatusToInfluxDB } from '../post_to_influxdb.js';
+import { postWindowsServiceStatusToInfluxDB } from '../influxdb/windows_service.js';
 
 // One state machines for each service
 const serviceStateMachine = [];

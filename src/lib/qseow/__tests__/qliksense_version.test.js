@@ -33,9 +33,9 @@ const globalsMock = {
 jest.unstable_mockModule('../../../globals.js', () => ({ default: globalsMock }));
 
 const postInflux = jest.fn().mockResolvedValue(true);
-// qliksense_version.js imports from '../post_to_influxdb.js' relative to src/lib/qseow,
-// which resolves to src/lib/post_to_influxdb.js. From this test file's location, that is ../../post_to_influxdb.js
-jest.unstable_mockModule('../../post_to_influxdb.js', () => ({ postQlikSenseVersionToInfluxDB: postInflux }));
+// qliksense_version.js imports from '../influxdb/qlik_sense_version.js' relative to src/lib/qseow,
+// which resolves to src/lib/influxdb/qlik_sense_version.js. From this test file's location, that is ../../influxdb/qlik_sense_version.js
+jest.unstable_mockModule('../../influxdb/qlik_sense_version.js', () => ({ postQlikSenseVersionToInfluxDB: postInflux }));
 
 let setupQlikSenseVersionMonitor;
 

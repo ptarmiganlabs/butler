@@ -198,7 +198,7 @@ describe('qseow/qliksense_license', () => {
         }));
 
         // Use path resolvable from this test file
-        jest.unstable_mockModule('../../post_to_influxdb.js', () => ({
+        jest.unstable_mockModule('../../influxdb/qlik_sense_license.js', () => ({
             postQlikSenseServerLicenseStatusToInfluxDB: postServerStatusMock,
             postQlikSenseLicenseStatusToInfluxDB: postLicenseStatusMock,
             postQlikSenseLicenseReleasedToInfluxDB: postReleasedMock,

@@ -10,7 +10,7 @@ describe('failed_externalprogram', () => {
 
         // Mock InfluxDB posting function
         mockPostExternalProgramTaskFailureNotificationInfluxDb = jest.fn();
-        await jest.unstable_mockModule('../../../../lib/post_to_influxdb.js', () => ({
+        await jest.unstable_mockModule('../../../../lib/influxdb/task_failure.js', () => ({
             postExternalProgramTaskFailureNotificationInfluxDb: mockPostExternalProgramTaskFailureNotificationInfluxDb,
         }));
 

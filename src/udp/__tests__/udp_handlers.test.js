@@ -81,11 +81,13 @@ describe('udp_handlers', () => {
             sendReloadTaskFailureNotificationWebhook: jest.fn(),
             sendReloadTaskAbortedNotificationWebhook: jest.fn(),
         }));
-        await jest.unstable_mockModule('../../lib/post_to_influxdb.js', () => ({
-            postReloadTaskFailureNotificationInfluxDb: jest.fn(),
+        await jest.unstable_mockModule('../../lib/influxdb/task_success.js', () => ({
             postReloadTaskSuccessNotificationInfluxDb: jest.fn(),
             postUserSyncTaskSuccessNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskSuccessNotificationInfluxDb: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/influxdb/task_failure.js', () => ({
+            postReloadTaskFailureNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskFailureNotificationInfluxDb: jest.fn(),
         }));
 
@@ -211,7 +213,7 @@ describe('udp_handlers', () => {
     test('scheduler success: early return when app metadata retrieval fails (no influx write)', async () => {
         const appMetadataMod = await import('../../qrs_util/app_metadata.js');
         appMetadataMod.default.mockResolvedValueOnce(false);
-        const influxMod = await import('../../lib/post_to_influxdb.js');
+        const influxMod = await import('../../lib/influxdb/task_success.js');
         const callsBefore = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
 
         const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';

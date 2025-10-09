@@ -53,7 +53,7 @@ jest.unstable_mockModule('../../../../qrs_util/task_cp_util.js', () => ({
 }));
 
 const mockPostReloadTaskSuccessNotificationInfluxDb = jest.fn();
-jest.unstable_mockModule('../../../../lib/post_to_influxdb.js', () => ({
+jest.unstable_mockModule('../../../../lib/influxdb/task_success.js', () => ({
     postReloadTaskSuccessNotificationInfluxDb: mockPostReloadTaskSuccessNotificationInfluxDb,
 }));
 

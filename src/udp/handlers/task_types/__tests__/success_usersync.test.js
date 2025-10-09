@@ -21,7 +21,7 @@ describe('success_usersync', () => {
 
     // Mock postUserSyncTaskSuccessNotificationInfluxDb
     mockPostUserSyncTaskSuccessNotificationInfluxDb = jest.fn();
-    jest.unstable_mockModule('../../../../lib/post_to_influxdb.js', () => ({
+    jest.unstable_mockModule('../../../../lib/influxdb/task_success.js', () => ({
         postUserSyncTaskSuccessNotificationInfluxDb: mockPostUserSyncTaskSuccessNotificationInfluxDb,
     }));
 

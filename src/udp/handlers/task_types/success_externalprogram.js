@@ -2,7 +2,7 @@
 import globals from '../../../globals.js';
 import getExternalProgramTaskExecutionResults from '../../../qrs_util/externalprogram_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
-import { postExternalProgramTaskSuccessNotificationInfluxDb } from '../../../lib/post_to_influxdb.js';
+import { postExternalProgramTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
 
 /**
  * Handler for successful external program tasks.

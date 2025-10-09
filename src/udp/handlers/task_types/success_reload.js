@@ -6,7 +6,7 @@ import getTaskTags from '../../../qrs_util/task_tag_util.js';
 import getAppTags from '../../../qrs_util/app_tag_util.js';
 import getAppMetadata from '../../../qrs_util/app_metadata.js';
 import { isCustomPropertyValueSet } from '../../../qrs_util/task_cp_util.js';
-import { postReloadTaskSuccessNotificationInfluxDb } from '../../../lib/post_to_influxdb.js';
+import { postReloadTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
 
 /**
  * Handler for successful reload tasks.

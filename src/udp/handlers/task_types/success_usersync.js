@@ -2,7 +2,7 @@
 import globals from '../../../globals.js';
 import getUserSyncTaskExecutionResults from '../../../qrs_util/usersync_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
-import { postUserSyncTaskSuccessNotificationInfluxDb } from '../../../lib/post_to_influxdb.js';
+import { postUserSyncTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
 
 /**
  * Handler for successful user sync tasks.

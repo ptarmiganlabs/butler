@@ -23,7 +23,7 @@ describe('success_externalprogram', () => {
             default: mockGetTaskTags,
         }));
 
-        await jest.unstable_mockModule('../../../../lib/post_to_influxdb.js', () => ({
+        await jest.unstable_mockModule('../../../../lib/influxdb/task_success.js', () => ({
             postExternalProgramTaskSuccessNotificationInfluxDb: mockPostExternalProgramTaskSuccessNotificationInfluxDb,
         }));
 

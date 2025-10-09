@@ -1,6 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
-import { postExternalProgramTaskFailureNotificationInfluxDb } from '../../../lib/post_to_influxdb.js';
+import { postExternalProgramTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed external program tasks.

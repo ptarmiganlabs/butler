@@ -2,7 +2,7 @@ import later from '@breejs/later';
 import moment from 'moment';
 import 'moment-precise-range-plugin';
 import globals from '../globals.js';
-import { postButlerMemoryUsageToInfluxdb } from './post_to_influxdb.js';
+import { postButlerMemoryUsageToInfluxdb } from './influxdb/butler_metrics.js';
 import { postButlerUptimeToNewRelic } from './post_to_new_relic.js';
 
 /**

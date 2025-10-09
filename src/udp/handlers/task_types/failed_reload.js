@@ -8,7 +8,7 @@ import { sendReloadTaskFailureNotification } from '../../../lib/incident_mgmt/si
 import { sendReloadTaskFailureLog, sendReloadTaskFailureEvent } from '../../../lib/incident_mgmt/new_relic.js';
 import { failedTaskStoreLogOnDisk, getScriptLog } from '../../../lib/qseow/scriptlog.js';
 import getAppMetadata from '../../../qrs_util/app_metadata.js';
-import { postReloadTaskFailureNotificationInfluxDb } from '../../../lib/post_to_influxdb.js';
+import { postReloadTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed reload tasks.
