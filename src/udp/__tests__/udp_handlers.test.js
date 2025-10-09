@@ -86,6 +86,7 @@ describe('udp_handlers', () => {
             postReloadTaskSuccessNotificationInfluxDb: jest.fn(),
             postUserSyncTaskSuccessNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskSuccessNotificationInfluxDb: jest.fn(),
+            postExternalProgramTaskFailureNotificationInfluxDb: jest.fn(),
         }));
 
         events = {};
@@ -116,6 +117,7 @@ describe('udp_handlers', () => {
                         'Butler.influxDb.reloadTaskFailure.enable': true,
                         'Butler.influxDb.reloadTaskSuccess.enable': true,
                         'Butler.influxDb.reloadTaskSuccess.allReloadTasks.enable': true,
+                        'Butler.influxDb.externalProgramTaskFailure.enable': true,
                         'Butler.mqttConfig.enable': true,
                         'Butler.mqttConfig.taskFailureTopic': 'failureTopic',
                         'Butler.mqttConfig.taskAbortedTopic': 'abortedTopic',
