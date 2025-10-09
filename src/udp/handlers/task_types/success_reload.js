@@ -168,7 +168,8 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
                 await globals.sleep(1000);
             }
 
-            if (!taskInfo) {
+            // Check if we failed to get valid task info after all retries
+            if (!taskInfo || retryCount >= 5) {
                 globals.logger.warn(
                     `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Not storing task info in InfluxDB`,
                 );
