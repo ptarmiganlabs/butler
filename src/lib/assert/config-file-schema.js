@@ -400,6 +400,39 @@ export const confifgFileSchema = {
                             required: ['enable', 'tag'],
                             additionalProperties: false,
                         },
+                        externalProgramTaskFailure: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                     },
                     required: [
                         'enable',
@@ -413,6 +446,7 @@ export const confifgFileSchema = {
                         'reloadTaskSuccess',
                         'userSyncTaskSuccess',
                         'externalProgramTaskSuccess',
+                        'externalProgramTaskFailure',
                     ],
                     additionalProperties: false,
                 },

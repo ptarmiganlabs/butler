@@ -165,3 +165,89 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         globals.logger.error(`[QSEOW] RELOAD TASK FAILED: ${globals.getErrorMessage(err)}`);
     }
 }
+
+// Store information about failed external program tasks to InfluxDB
+export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
+    try {
+        globals.logger.info('[QSEOW] EXTERNAL PROGRAM TASK FAILED: Sending external program task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = taskParams.host;
+        tags.user = taskParams.user;
+        tags.task_id = taskParams.taskId;
+        tags.task_name = taskParams.taskName;
+        tags.log_level = taskParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'external_program_task_failed',
+                tags: tags,
+                fields: {
+                    log_timestamp: taskParams.logTimeStamp,
+                    execution_id: taskParams.executionId,
+                    log_message: taskParams.logMessage,
+                },
+            },
+        ];
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.externalProgramTaskFailure.tag.dynamic.useTaskTags') === true) {
+            if (taskParams.qs_taskTags) {
+                // Add task tags to InfluxDB datapoint
+                for (const item of taskParams.qs_taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.externalProgramTaskFailure.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] EXTERNAL PROGRAM TASK FAILED: Influxdb datapoint for external program task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] EXTERNAL PROGRAM TASK FAILED: Sent external program task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] EXTERNAL PROGRAM TASK FAILED: Error saving external program task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] EXTERNAL PROGRAM TASK FAILED: Error saving external program task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK FAILED: ${globals.getErrorMessage(err)}`);
+    }
+}

@@ -14,7 +14,7 @@ import {
     postUserSyncTaskSuccessNotificationInfluxDb,
     postExternalProgramTaskSuccessNotificationInfluxDb,
 } from './influxdb/task_success.js';
-import { postReloadTaskFailureNotificationInfluxDb } from './influxdb/task_failure.js';
+import { postReloadTaskFailureNotificationInfluxDb, postExternalProgramTaskFailureNotificationInfluxDb } from './influxdb/task_failure.js';
 
 // Re-export all functions
 export {
@@ -28,4 +28,5 @@ export {
     postUserSyncTaskSuccessNotificationInfluxDb,
     postExternalProgramTaskSuccessNotificationInfluxDb,
     postReloadTaskFailureNotificationInfluxDb,
+    postExternalProgramTaskFailureNotificationInfluxDb,
 };
