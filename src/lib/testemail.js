@@ -1,5 +1,5 @@
 import globals from '../globals.js';
-import { sendEmailBasic } from './qseow/smtp.js';
+import { sendEmailBasic } from './qseow/smtp/index.js';
 
 /**
  * Sends a test email to verify email configuration.
