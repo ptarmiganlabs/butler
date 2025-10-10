@@ -74,6 +74,7 @@ describe('udp_handlers', () => {
             sendReloadTaskFailureNotificationEmail: jest.fn(),
             sendReloadTaskAbortedNotificationEmail: jest.fn(),
             sendReloadTaskSuccessNotificationEmail: jest.fn(),
+            sendDistributeTaskSuccessNotificationEmail: jest.fn(),
             sendDistributeTaskFailureNotificationEmail: jest.fn(),
         }));
         await jest.unstable_mockModule('../../lib/qseow/slack_notification.js', () => ({

@@ -6,6 +6,7 @@ describe('success_distribute', () => {
     let mockGetDistributeTaskExecutionResults;
     let mockGetTaskTags;
     let mockPostDistributeTaskSuccessNotificationInfluxDb;
+    let mockSendDistributeTaskSuccessNotificationEmail;
 
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -14,6 +15,7 @@ describe('success_distribute', () => {
         mockGetDistributeTaskExecutionResults = jest.fn();
         mockGetTaskTags = jest.fn();
         mockPostDistributeTaskSuccessNotificationInfluxDb = jest.fn();
+        mockSendDistributeTaskSuccessNotificationEmail = jest.fn();
 
         await jest.unstable_mockModule('../../../../qrs_util/distribute_task_execution_results.js', () => ({
             default: mockGetDistributeTaskExecutionResults,
@@ -25,6 +27,10 @@ describe('success_distribute', () => {
 
         await jest.unstable_mockModule('../../../../lib/influxdb/task_success.js', () => ({
             postDistributeTaskSuccessNotificationInfluxDb: mockPostDistributeTaskSuccessNotificationInfluxDb,
+        }));
+
+        await jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
+            sendDistributeTaskSuccessNotificationEmail: mockSendDistributeTaskSuccessNotificationEmail,
         }));
 
         // Mock globals
@@ -183,74 +189,16 @@ describe('success_distribute', () => {
             );
         });
 
-        test('should retry up to 5 times to get task execution results', async () => {
+        test('should warn and return false when task execution results are not available', async () => {
             const msg = createUdpMessage();
             const taskMetadata = createTaskMetadata();
 
-            // Return incomplete results 4 times, then complete results
-            const incompleteTaskInfo = createTaskExecutionResults({
-                executionDetailsSorted: [
-                    {
-                        detailCreatedDate: '2025-10-09T10:00:00.000Z',
-                        message: 'Changing task state from NeverStarted to Triggered',
-                    },
-                ],
-            });
-
-            const completeTaskInfo = createTaskExecutionResults();
-
-            mockGetDistributeTaskExecutionResults
-                .mockResolvedValueOnce(incompleteTaskInfo)
-                .mockResolvedValueOnce(incompleteTaskInfo)
-                .mockResolvedValueOnce(incompleteTaskInfo)
-                .mockResolvedValueOnce(incompleteTaskInfo)
-                .mockResolvedValueOnce(completeTaskInfo);
-
-            mockGetTaskTags.mockResolvedValue([]);
-
-            const result = await handleSuccessDistributeTask(msg, taskMetadata);
-
-            expect(result).toBe(true);
-            expect(mockGetDistributeTaskExecutionResults).toHaveBeenCalledTimes(5);
-            expect(mockGlobals.sleep).toHaveBeenCalledTimes(4);
-            expect(mockPostDistributeTaskSuccessNotificationInfluxDb).toHaveBeenCalled();
-        });
-
-        test('should warn when duration is 0 seconds', async () => {
-            const msg = createUdpMessage();
-            const taskMetadata = createTaskMetadata();
-            const taskInfo = createTaskExecutionResults({
-                executionDuration: { hours: 0, minutes: 0, seconds: 0 },
-            });
-
-            mockGetDistributeTaskExecutionResults.mockResolvedValue(taskInfo);
-            mockGetTaskTags.mockResolvedValue(['tag1']);
-
-            const result = await handleSuccessDistributeTask(msg, taskMetadata);
-
-            expect(result).toBe(true);
-            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('duration is 0 seconds'));
-        });
-
-        test('should warn and return false when task execution results are not available after 5 attempts', async () => {
-            const msg = createUdpMessage();
-            const taskMetadata = createTaskMetadata();
-
-            const incompleteTaskInfo = createTaskExecutionResults({
-                executionDetailsSorted: [
-                    {
-                        detailCreatedDate: '2025-10-09T10:00:00.000Z',
-                        message: 'Changing task state from NeverStarted to Triggered',
-                    },
-                ],
-            });
-
-            mockGetDistributeTaskExecutionResults.mockResolvedValue(incompleteTaskInfo);
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(false);
 
             const result = await handleSuccessDistributeTask(msg, taskMetadata);
 
             expect(result).toBe(false);
-            expect(mockGetDistributeTaskExecutionResults).toHaveBeenCalledTimes(5);
+            expect(mockGetDistributeTaskExecutionResults).toHaveBeenCalledTimes(1);
             expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Unable to get task info for distribute task'));
         });
 
@@ -636,6 +584,166 @@ describe('success_distribute', () => {
             await handleSuccessDistributeTask(msg, taskMetadata);
 
             expect(mockGlobals.logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Not storing task info in InfluxDB'));
+        });
+    });
+
+    describe('email notifications', () => {
+        const createTaskExecutionResultsWithEmail = () => ({
+            status: 0,
+            statusText: 'FinishedSuccess',
+            details: [{ message: 'Distribution completed', detailCreatedDate: '2025-10-09T10:30:45.000Z' }],
+            duration: { hours: 0, minutes: 2, seconds: 15 },
+            startTime: {
+                startTimeUTC: '2025-10-09T10:28:30.000Z',
+                startTimeLocal1: '2025-10-09 12:28:30',
+            },
+            stopTime: {
+                stopTimeUTC: '2025-10-09T10:30:45.000Z',
+                stopTimeLocal1: '2025-10-09 12:30:45',
+            },
+            executingNodeName: 'central-node',
+        });
+
+        test('should send email when email notifications are enabled', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return true;
+                if (key === 'Butler.emailNotification.distributeTaskSuccess.enable') return true;
+                if (key === 'Butler.influxDb.enable') return false;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+            const taskInfo = createTaskExecutionResultsWithEmail();
+
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(taskInfo);
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskSuccessNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    hostName: 'server.domain.com',
+                    user: 'INTERNAL\\sa_scheduler',
+                    taskName: 'Distribute Task',
+                    taskId: 'dist-success-123',
+                    logTimeStamp: '2025-10-09 10:30:45.123',
+                    logLevel: 'INFO',
+                    executionId: 'exec-789',
+                    logMessage: 'Distribution completed successfully',
+                    executionStatusNum: 0,
+                    executionStatusText: 'FinishedSuccess',
+                    executingNodeName: 'central-node',
+                }),
+            );
+        });
+
+        test('should not send email when email notifications are disabled', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return false;
+                if (key === 'Butler.influxDb.enable') return false;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskSuccessNotificationEmail).not.toHaveBeenCalled();
+        });
+
+        test('should not send email when distributeTaskSuccess email is disabled', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return true;
+                if (key === 'Butler.emailNotification.distributeTaskSuccess.enable') return false;
+                if (key === 'Butler.influxDb.enable') return false;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskSuccessNotificationEmail).not.toHaveBeenCalled();
+        });
+
+        test('should send email with execution details', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return true;
+                if (key === 'Butler.emailNotification.distributeTaskSuccess.enable') return true;
+                if (key === 'Butler.influxDb.enable') return false;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+            const taskInfo = createTaskExecutionResultsWithEmail();
+
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(taskInfo);
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskSuccessNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    executionDetails: taskInfo.details,
+                    executionDetailsConcatenated: 'Distribution completed',
+                    executionDuration: taskInfo.duration,
+                    executionStartTime: taskInfo.startTime,
+                    executionStopTime: taskInfo.stopTime,
+                }),
+            );
+        });
+
+        test('should send email with task metadata', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return true;
+                if (key === 'Butler.emailNotification.distributeTaskSuccess.enable') return true;
+                if (key === 'Butler.influxDb.enable') return false;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+            const taskInfo = createTaskExecutionResultsWithEmail();
+
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(taskInfo);
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskSuccessNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    qs_taskTags: ['Production', 'Success'],
+                    qs_taskCustomProperties: [
+                        { name: 'environment', value: 'production' },
+                        { name: 'owner', value: 'ops-team' },
+                    ],
+                    qs_taskMetadata: taskMetadata,
+                }),
+            );
+        });
+
+        test('should work with both email and InfluxDB enabled', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                if (key === 'Butler.emailNotification.enable') return true;
+                if (key === 'Butler.emailNotification.distributeTaskSuccess.enable') return true;
+                if (key === 'Butler.influxDb.enable') return true;
+                if (key === 'Butler.influxDb.distributeTaskSuccess.enable') return true;
+                if (key === 'Butler.influxDb.distributeTaskSuccess.tag.dynamic.useTaskTags') return true;
+                return false;
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+            const taskInfo = createTaskExecutionResultsWithEmail();
+
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(taskInfo);
+            mockGetTaskTags.mockResolvedValue(['tag1']);
+
+            await handleSuccessDistributeTask(msg, taskMetadata);
+
+            expect(mockPostDistributeTaskSuccessNotificationInfluxDb).toHaveBeenCalled();
+            expect(mockSendDistributeTaskSuccessNotificationEmail).toHaveBeenCalled();
         });
     });
 });

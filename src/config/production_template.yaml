@@ -518,6 +518,28 @@ Butler:
             recipients: # Array of email addresses to which the notification email will be sent
                 - <Email address 1>
                 - <Email address 2>
+        distributeTaskSuccess:
+            enable: false
+            # Custom property used to control which task successes will cause alert emails to be sent
+            # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+            # If this setting is false, alerts will be sent for all successful distribute tasks.
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_DistributeSuccessAlertEnableEmail'
+                enabledValue: 'Yes'
+            # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+            # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_DistributeSuccessAlertSendToEmail'
+            rateLimit: 600 # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+            priority: high # high/normal/low
+            subject: '✅ Qlik Sense distribute task success: "{{taskName}}"' # Email subject. Can use template fields
+            bodyFileDirectory: path/to/email_templates # Directory where email body template files are stored
+            htmlTemplateFile: success-distribute # Name of email body template file to use
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+            recipients: # Array of email addresses to which the notification email will be sent
+                - <Email address 1>
+                - <Email address 2>
         distributeTaskFailure:
             enable: false
             # Custom property used to control which task failures will cause alert emails to be sent
