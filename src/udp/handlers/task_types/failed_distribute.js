@@ -1,6 +1,8 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
 import { postDistributeTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
+import { sendDistributeTaskFailureNotificationEmail } from '../../../lib/qseow/smtp.js';
+import getDistributeTaskExecutionResults from '../../../qrs_util/distribute_task_execution_results.js';
 
 /**
  * Handler for failed distribute tasks.
@@ -38,9 +40,11 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
             `[QSEOW] TASKFAILURE: Distribute task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
         );
 
+        const distributeTaskId = msg[5];
+
         // Get tags for the task that failed
         const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
-        globals.logger.verbose(`[QSEOW] Tags for task ${msg[5]}: ${JSON.stringify(taskTags, null, 2)}`);
+        globals.logger.verbose(`[QSEOW] Tags for task ${distributeTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
 
         // Get distribute task custom properties
         const taskCustomProperties =
@@ -48,6 +52,24 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
                 name: cp.definition.name,
                 value: cp.value,
             })) || [];
+
+        // Determine if email notifications should be sent
+        let sendEmail = false;
+        if (
+            globals.config.get('Butler.emailNotification.enable') === true &&
+            globals.config.get('Butler.emailNotification.distributeTaskFailure.enable') === true
+        ) {
+            sendEmail = true;
+        }
+
+        // Get task execution results if needed for email notifications
+        let taskExecutionResults;
+        if (sendEmail) {
+            taskExecutionResults = await getDistributeTaskExecutionResults(distributeTaskId, taskMetadata);
+            globals.logger.debug(
+                `[QSEOW] TASKFAILURE: Task execution results for distribute task ${distributeTaskId}:\n${JSON.stringify(taskExecutionResults, null, 2)}`,
+            );
+        }
 
         // Post to InfluxDB when a distribute task has failed
         if (
@@ -60,7 +82,7 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
                 host: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
                 taskName: msg[2],
-                taskId: msg[5],
+                taskId: distributeTaskId,
                 logTimeStamp: msg[7],
                 logLevel: msg[8],
                 executionId: msg[9],
@@ -71,7 +93,34 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
             });
         }
 
-        globals.logger.info(`[QSEOW] TASKFAILURE: Distribute task ${msg[2]} (${msg[5]}) failed.`);
+        // Send email notification if enabled
+        if (sendEmail && taskExecutionResults) {
+            globals.logger.verbose(`[QSEOW] TASKFAILURE: Sending email notification for failed distribute task ${msg[2]}`);
+
+            sendDistributeTaskFailureNotificationEmail({
+                hostName: msg[1],
+                user: msg[4],
+                taskName: msg[2],
+                taskId: distributeTaskId,
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_taskMetadata: taskMetadata,
+                executionStatusNum: taskExecutionResults.executionStatusNum,
+                executionStatusText: taskExecutionResults.executionStatusText,
+                executionDetails: taskExecutionResults.executionDetailsSorted,
+                executionDetailsConcatenated: taskExecutionResults.executionDetailsConcatenated,
+                executionDuration: taskExecutionResults.executionDuration,
+                executionStartTime: taskExecutionResults.executionStartTime,
+                executionStopTime: taskExecutionResults.executionStopTime,
+                executingNodeName: taskExecutionResults.executingNodeName,
+            });
+        }
+
+        globals.logger.info(`[QSEOW] TASKFAILURE: Distribute task ${msg[2]} (${distributeTaskId}) failed.`);
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed distribute task: ${globals.getErrorMessage(err)}`);
         globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);

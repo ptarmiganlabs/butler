@@ -452,6 +452,22 @@ Butler:
             fromAddress: ...
             recipients:
                 # - ...
+        distributeTaskFailure:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_DistributeFailedAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_DistributeFailedAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '❌ Qlik Sense distribute task failed: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: failed-distribute
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
         serviceStopped:
             rateLimit: 30 # Min seconds between emails for a given service. Defaults to 5 minutes.
             priority: high # high/normal/low

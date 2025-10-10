@@ -4,6 +4,8 @@ describe('failed_distribute', () => {
     let handleFailedDistributeTask;
     let mockGlobals;
     let mockPostDistributeTaskFailureNotificationInfluxDb;
+    let mockSendDistributeTaskFailureNotificationEmail;
+    let mockGetDistributeTaskExecutionResults;
 
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -14,6 +16,30 @@ describe('failed_distribute', () => {
             postDistributeTaskFailureNotificationInfluxDb: mockPostDistributeTaskFailureNotificationInfluxDb,
         }));
 
+        // Mock email notification function
+        mockSendDistributeTaskFailureNotificationEmail = jest.fn();
+        await jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
+            sendDistributeTaskFailureNotificationEmail: mockSendDistributeTaskFailureNotificationEmail,
+        }));
+
+        // Mock distribute task execution results
+        mockGetDistributeTaskExecutionResults = jest.fn().mockResolvedValue({
+            executionStatusNum: 8,
+            executionStatusText: 'FinishedFail',
+            executionDetailsSorted: [
+                { timestampLocal1: '2025-10-09 10:00:00', message: 'Task started' },
+                { timestampLocal1: '2025-10-09 10:01:00', message: 'Distribution failed' },
+            ],
+            executionDetailsConcatenated: 'Task started\nDistribution failed',
+            executionDuration: { hours: 0, minutes: 1, seconds: 0 },
+            executionStartTime: { startTimeLocal1: '2025-10-09 10:00:00' },
+            executionStopTime: { stopTimeLocal1: '2025-10-09 10:01:00' },
+            executingNodeName: 'Node1',
+        });
+        await jest.unstable_mockModule('../../../../qrs_util/distribute_task_execution_results.js', () => ({
+            default: mockGetDistributeTaskExecutionResults,
+        }));
+
         // Mock globals
         mockGlobals = {
             config: {
@@ -22,6 +48,8 @@ describe('failed_distribute', () => {
                     const configMap = {
                         'Butler.influxDb.enable': true,
                         'Butler.influxDb.distributeTaskFailure.enable': true,
+                        'Butler.emailNotification.enable': false,
+                        'Butler.emailNotification.distributeTaskFailure.enable': false,
                     };
                     return configMap[key];
                 }),
@@ -459,6 +487,126 @@ describe('failed_distribute', () => {
 
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Error handling failed distribute task'));
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace'));
+        });
+    });
+
+    describe('email notifications', () => {
+        test('should send email when email notifications are enabled', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.influxDb.enable': true,
+                    'Butler.influxDb.distributeTaskFailure.enable': true,
+                    'Butler.emailNotification.enable': true,
+                    'Butler.emailNotification.distributeTaskFailure.enable': true,
+                };
+                return configMap[key];
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleFailedDistributeTask(msg, taskMetadata);
+
+            expect(mockGetDistributeTaskExecutionResults).toHaveBeenCalledWith('dist-task-123', taskMetadata);
+            expect(mockSendDistributeTaskFailureNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    hostName: 'server.domain.com',
+                    user: 'INTERNAL\\sa_scheduler',
+                    taskName: 'Distribute Task',
+                    taskId: 'dist-task-123',
+                    executionStatusNum: 8,
+                    executionStatusText: 'FinishedFail',
+                }),
+            );
+        });
+
+        test('should not send email when Butler.emailNotification.enable is false', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.influxDb.enable': true,
+                    'Butler.influxDb.distributeTaskFailure.enable': true,
+                    'Butler.emailNotification.enable': false,
+                    'Butler.emailNotification.distributeTaskFailure.enable': true,
+                };
+                return configMap[key];
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleFailedDistributeTask(msg, taskMetadata);
+
+            expect(mockGetDistributeTaskExecutionResults).not.toHaveBeenCalled();
+            expect(mockSendDistributeTaskFailureNotificationEmail).not.toHaveBeenCalled();
+        });
+
+        test('should not send email when distributeTaskFailure.enable is false', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.influxDb.enable': true,
+                    'Butler.influxDb.distributeTaskFailure.enable': true,
+                    'Butler.emailNotification.enable': true,
+                    'Butler.emailNotification.distributeTaskFailure.enable': false,
+                };
+                return configMap[key];
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleFailedDistributeTask(msg, taskMetadata);
+
+            expect(mockGetDistributeTaskExecutionResults).not.toHaveBeenCalled();
+            expect(mockSendDistributeTaskFailureNotificationEmail).not.toHaveBeenCalled();
+        });
+
+        test('should include execution details in email params', async () => {
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.influxDb.enable': true,
+                    'Butler.influxDb.distributeTaskFailure.enable': true,
+                    'Butler.emailNotification.enable': true,
+                    'Butler.emailNotification.distributeTaskFailure.enable': true,
+                };
+                return configMap[key];
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleFailedDistributeTask(msg, taskMetadata);
+
+            expect(mockSendDistributeTaskFailureNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    executionDetails: expect.arrayContaining([
+                        expect.objectContaining({ message: 'Task started' }),
+                        expect.objectContaining({ message: 'Distribution failed' }),
+                    ]),
+                    executionDuration: { hours: 0, minutes: 1, seconds: 0 },
+                    executingNodeName: 'Node1',
+                }),
+            );
+        });
+
+        test('should not send email if task execution results are undefined', async () => {
+            mockGetDistributeTaskExecutionResults.mockResolvedValue(undefined);
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.influxDb.enable': true,
+                    'Butler.influxDb.distributeTaskFailure.enable': true,
+                    'Butler.emailNotification.enable': true,
+                    'Butler.emailNotification.distributeTaskFailure.enable': true,
+                };
+                return configMap[key];
+            });
+
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            await handleFailedDistributeTask(msg, taskMetadata);
+
+            expect(mockGetDistributeTaskExecutionResults).toHaveBeenCalled();
+            expect(mockSendDistributeTaskFailureNotificationEmail).not.toHaveBeenCalled();
         });
     });
 });
