@@ -7,19 +7,18 @@ import getAppTags from '../../../qrs_util/app_tag_util.js';
 import getAppMetadata from '../../../qrs_util/app_metadata.js';
 import { isCustomPropertyValueSet } from '../../../qrs_util/task_cp_util.js';
 import { postReloadTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
+import { getScriptLog } from '../../../lib/qseow/scriptlog.js';
 
 /**
  * Handler for successful reload tasks.
  *
  * Processes successful reload task completions by:
+ * - Retrieving script logs (if enabled for notifications)
  * - Determining if task should be stored in InfluxDB (based on config or custom properties)
  * - Retrieving app metadata from QRS
  * - Getting task execution results and duration (if storing to InfluxDB)
  * - Posting metrics to InfluxDB (if enabled)
- * - Sending email notifications (if enabled)
- *
- * Note: Script logs are NOT retrieved for successful reloads as they are only
- * needed for failure analysis and troubleshooting.
+ * - Sending email notifications with script logs (if enabled)
  *
  * @async
  * @param {Array<string>} msg - UDP message array with reload success details:
@@ -47,6 +46,27 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
         globals.logger.verbose(
             `[QSEOW] RELOAD TASK SUCCESS: Reload task succeeded: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Task ID=${reloadTaskId}`,
         );
+
+        // Get script log for successful app reloads tasks
+        // Only done if it's actually needed based on enabled notification types
+        let scriptLog;
+        if (
+            globals.config.get('Butler.emailNotification.enable') === true ||
+            globals.config.get('Butler.influxDb.reloadTaskSuccess.enable') === true
+        ) {
+            scriptLog = await getScriptLog(reloadTaskId, 0, 0);
+
+            // Check if script log retrieval failed
+            if (scriptLog === false) {
+                globals.logger.warn(
+                    `[QSEOW] RELOAD TASK SUCCESS: Failed to retrieve script log for task ${reloadTaskId}. Continuing with other notifications without script log data.`,
+                );
+                // Set scriptLog to null so downstream functions can check for its availability
+                scriptLog = null;
+            } else {
+                globals.logger.verbose(`[QSEOW] Script log for successful reload retrieved`);
+            }
+        }
 
         // Determine if this task should be stored in InfluxDB
         let storeInInfluxDb = false;
@@ -80,8 +100,7 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
             }
         }
 
-        // Note: Script log is NOT retrieved for successful reloads as per design
-        // Script logs should only be retrieved when needed (failures, aborts)
+        // Note: Script log is retrieved above if needed for notifications
 
         // Get app metadata from QRS
         const appMetadata = await getAppMetadata(msg[6]);
@@ -216,6 +235,7 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
                     taskInfo,
                     qs_appMetadata: appMetadata,
                     qs_taskMetadata: taskMetadata,
+                    scriptLog,
                 });
 
                 globals.logger.info(
@@ -227,7 +247,6 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
         }
 
         // Should we send email notification?
-        // Note: No script log is provided for successful reloads
         if (
             globals.config.get('Butler.emailNotification.enable') === true &&
             globals.config.get('Butler.emailNotification.reloadTaskSuccess.enable') === true
@@ -249,7 +268,7 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
                 qs_taskCustomProperties: taskCustomProperties,
                 qs_appMetadata: appMetadata,
                 qs_taskMetadata: taskMetadata,
-                scriptLog: null, // No script log for successful reloads
+                scriptLog,
             });
         }
 

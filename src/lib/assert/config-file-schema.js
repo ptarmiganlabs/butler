@@ -304,6 +304,8 @@ export const confifgFileSchema = {
                                     required: ['enable', 'customPropertyName', 'enabledValue'],
                                     additionalProperties: false,
                                 },
+                                headScriptLogLines: { type: 'number' },
+                                tailScriptLogLines: { type: 'number' },
                                 tag: {
                                     type: 'object',
                                     properties: {
@@ -331,7 +333,7 @@ export const confifgFileSchema = {
                                     additionalProperties: false,
                                 },
                             },
-                            required: ['enable', 'allReloadTasks', 'byCustomProperty', 'tag'],
+                            required: ['enable', 'allReloadTasks', 'byCustomProperty', 'headScriptLogLines', 'tailScriptLogLines', 'tag'],
                             additionalProperties: false,
                         },
                         userSyncTaskSuccess: {

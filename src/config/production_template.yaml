@@ -145,6 +145,8 @@ Butler:
                 enable: false
                 customPropertyName: 'Butler_SuccessReloadTask_InfluxDB'
                 enabledValue: 'Yes'
+            headScriptLogLines: 15
+            tailScriptLogLines: 25
             tag:
                 static: # Static attributes/dimensions to attach to events sent to InfluxDb
                     # - name: event-specific-tag 1

@@ -18,9 +18,7 @@
  */
 
 import QrsClient from '../qrs_client.js';
-import axios from 'axios';
 import https from 'https';
-import { Duration, DateTime } from 'luxon';
 import path from 'path';
 import fs from 'fs';
 import globals from '../../globals.js';
@@ -187,7 +185,6 @@ export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, m
             // Merge YAML-configured headers with hardcoded headers
             configQRS.headers = {
                 ...globals.getQRSHttpHeaders(),
-                // 'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_api',
             };
 
             const qrsInstance = new QrsClient(configQRS);

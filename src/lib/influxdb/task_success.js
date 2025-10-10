@@ -47,27 +47,97 @@ export function postReloadTaskSuccessNotificationInfluxDb(reloadParams) {
 
         globals.logger.debug(`[QSEOW] RELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
 
-        // Use task info to enrich log entry sent to InfluxDB
-        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
-        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
-        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+        // Get script logs
+        const scriptLogData = reloadParams.scriptLog;
 
-        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
-        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+        // Handle case where scriptLog retrieval failed
+        if (scriptLogData === null || scriptLogData === undefined) {
+            globals.logger.warn(
+                `[QSEOW] RELOAD TASK SUCCESS INFLUXDB: Script log data is not available. InfluxDB entry will be stored without script log details.`,
+            );
 
-        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+            // Use task info to enrich log entry sent to InfluxDB
+            datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+            datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+            datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
 
-        // Add execution duration in seconds
-        datapoint[0].fields.task_executionDuration_sec =
-            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+            datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+            datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
 
-        // Add execution duration in minutes
-        datapoint[0].fields.task_executionDuration_min =
-            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+            datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
 
-        // Add execution duration in hours
-        datapoint[0].fields.task_executionDuration_h =
-            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+            // Add execution duration in seconds
+            datapoint[0].fields.task_executionDuration_sec =
+                taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+            // Add execution duration in minutes
+            datapoint[0].fields.task_executionDuration_min =
+                taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+            // Add execution duration in hours
+            datapoint[0].fields.task_executionDuration_h =
+                taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+            // Set minimal fields without script log data
+            datapoint[0].fields.task_scriptLogSize = 0;
+            datapoint[0].fields.task_scriptLogHeadCount = 0;
+            datapoint[0].fields.task_scriptLogTailCount = 0;
+            datapoint[0].fields.scriptLog = 'Script log not available';
+        } else {
+            // Reduce script log lines to only the ones we want to send to InfluxDB
+            scriptLogData.scriptLogHeadCount = globals.config.get('Butler.influxDb.reloadTaskSuccess.headScriptLogLines');
+            scriptLogData.scriptLogTailCount = globals.config.get('Butler.influxDb.reloadTaskSuccess.tailScriptLogLines');
+
+            if (scriptLogData?.scriptLogFull?.length > 0) {
+                scriptLogData.scriptLogHead = scriptLogData.scriptLogFull.slice(0, scriptLogData.scriptLogHeadCount).join('\r\n');
+
+                scriptLogData.scriptLogTail = scriptLogData.scriptLogFull
+                    .slice(Math.max(scriptLogData.scriptLogFull.length - scriptLogData.scriptLogTailCount, 0))
+                    .join('\r\n');
+            } else {
+                scriptLogData.scriptLogHead = '';
+                scriptLogData.scriptLogTail = '';
+            }
+
+            globals.logger.debug(`[QSEOW] RELOAD TASK SUCCESS: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
+
+            // Use script log data to enrich log entry sent to InfluxDB
+            datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
+            datapoint[0].tags.task_executionStatusNum = scriptLogData.executionStatusNum;
+            datapoint[0].tags.task_exeuctionStatusText = scriptLogData.executionStatusText;
+
+            datapoint[0].fields.task_executionStartTime_json = JSON.stringify(scriptLogData.executionStartTime);
+            datapoint[0].fields.task_executionStopTime_json = JSON.stringify(scriptLogData.executionStopTime);
+
+            datapoint[0].fields.task_executionDuration_json = JSON.stringify(scriptLogData.executionDuration);
+
+            // Add execution duration in seconds
+            datapoint[0].fields.task_executionDuration_sec =
+                scriptLogData.executionDuration.hours * 3600 +
+                scriptLogData.executionDuration.minutes * 60 +
+                scriptLogData.executionDuration.seconds;
+
+            // Add execution duration in minutes
+            datapoint[0].fields.task_executionDuration_min =
+                scriptLogData.executionDuration.hours * 60 +
+                scriptLogData.executionDuration.minutes +
+                scriptLogData.executionDuration.seconds / 60;
+
+            // Add execution duration in hours
+            datapoint[0].fields.task_executionDuration_h =
+                scriptLogData.executionDuration.hours +
+                scriptLogData.executionDuration.minutes / 60 +
+                scriptLogData.executionDuration.seconds / 3600;
+
+            datapoint[0].fields.task_scriptLogSize = scriptLogData.scriptLogSize;
+            datapoint[0].fields.task_scriptLogHeadCount = scriptLogData.scriptLogHeadCount;
+            datapoint[0].fields.task_scriptLogTailCount = scriptLogData.scriptLogTailCount;
+
+            // Set main log message with both head and tail
+            const msg = `${scriptLogData.executionDetailsConcatenated}\r\n---------- SCRIPT LOG HEAD (${scriptLogData.scriptLogHeadCount} lines) ----------\r\n${scriptLogData.scriptLogHead}\r\n\r\n---------- SCRIPT LOG TAIL (${scriptLogData.scriptLogTailCount} lines) ----------\r\n${scriptLogData.scriptLogTail}`;
+            datapoint[0].fields.scriptLog = msg;
+            datapoint[0].fields.reload_log = msg;
+        }
 
         // Should app tags be included?
         if (globals.config.get('Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags') === true) {

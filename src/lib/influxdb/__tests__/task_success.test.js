@@ -18,6 +18,7 @@ const mockGlobals = {
         info: jest.fn(),
         debug: jest.fn(),
         silly: jest.fn(),
+        warn: jest.fn(),
         error: jest.fn(),
     },
     config: {
@@ -53,6 +54,8 @@ describe('InfluxDB Task Success Notifications', () => {
                 'Butler.influxDb.reloadTaskSuccess.tag.dynamic.useAppTags': true,
                 'Butler.influxDb.reloadTaskSuccess.tag.dynamic.useTaskTags': true,
                 'Butler.influxDb.reloadTaskSuccess.tag.static': [{ name: 'category', value: 'reload' }],
+                'Butler.influxDb.reloadTaskSuccess.headScriptLogLines': 15,
+                'Butler.influxDb.reloadTaskSuccess.tailScriptLogLines': 25,
                 'Butler.influxDb.userSyncTaskSuccess.tag.dynamic.useTaskTags': true,
                 'Butler.influxDb.userSyncTaskSuccess.tag.static': [],
                 'Butler.influxDb.externalProgramTaskSuccess.tag.dynamic.useTaskTags': true,
@@ -91,6 +94,20 @@ describe('InfluxDB Task Success Notifications', () => {
                     minutes: 5,
                     seconds: 30,
                 },
+            },
+            scriptLog: {
+                executingNodeName: 'Node1',
+                executionStatusNum: 7,
+                executionStatusText: 'FinishedSuccess',
+                executionStartTime: { startTimeUTC: '2024-01-15T10:00:00.000Z' },
+                executionStopTime: { stopTimeUTC: '2024-01-15T10:05:30.000Z' },
+                executionDuration: { hours: 0, minutes: 5, seconds: 30 },
+                executionDetails: 'Task completed successfully',
+                executionDetailsConcatenated: 'Task completed successfully',
+                scriptLogSize: 1024,
+                scriptLogSizeRows: 50,
+                scriptLogSizeCharacters: 1024,
+                scriptLogFull: ['Starting reload', 'Loading data', 'Processing...', 'Reload completed successfully'],
             },
             ...overrides,
         });
@@ -138,6 +155,32 @@ describe('InfluxDB Task Success Notifications', () => {
             );
         });
 
+        test('should handle null scriptLog gracefully', async () => {
+            const params = createReloadParams({ scriptLog: null });
+
+            postReloadTaskSuccessNotificationInfluxDb(params);
+            await new Promise(process.nextTick);
+
+            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log data is not available'));
+            expect(mockInflux.writePoints).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        tags: expect.objectContaining({
+                            task_executingNodeName: 'Node1',
+                            task_executionStatusNum: 7,
+                            task_exeuctionStatusText: 'FinishedSuccess',
+                        }),
+                        fields: expect.objectContaining({
+                            task_scriptLogSize: 0,
+                            task_scriptLogHeadCount: 0,
+                            task_scriptLogTailCount: 0,
+                            scriptLog: 'Script log not available',
+                        }),
+                    }),
+                ]),
+            );
+        });
+
         test('should calculate execution duration in different units correctly', async () => {
             const params = createReloadParams({
                 taskInfo: {
@@ -151,6 +194,23 @@ describe('InfluxDB Task Success Notifications', () => {
                         minutes: 30,
                         seconds: 45,
                     },
+                },
+                scriptLog: {
+                    executingNodeName: 'Node1',
+                    executionStatusNum: 7,
+                    executionStatusText: 'FinishedSuccess',
+                    executionStartTime: {},
+                    executionStopTime: {},
+                    executionDuration: {
+                        hours: 2,
+                        minutes: 30,
+                        seconds: 45,
+                    },
+                    executionDetailsConcatenated: 'Task completed successfully',
+                    scriptLogSize: 1024,
+                    scriptLogSizeRows: 50,
+                    scriptLogSizeCharacters: 1024,
+                    scriptLogFull: ['line1', 'line2'],
                 },
             });
 
@@ -435,6 +495,23 @@ describe('InfluxDB Task Success Notifications', () => {
                         seconds: 0,
                     },
                 },
+                scriptLog: {
+                    executingNodeName: 'Node1',
+                    executionStatusNum: 7,
+                    executionStatusText: 'FinishedSuccess',
+                    executionStartTime: {},
+                    executionStopTime: {},
+                    executionDuration: {
+                        hours: 0,
+                        minutes: 0,
+                        seconds: 0,
+                    },
+                    executionDetailsConcatenated: 'Done',
+                    scriptLogSize: 10,
+                    scriptLogSizeRows: 1,
+                    scriptLogSizeCharacters: 10,
+                    scriptLogFull: ['Done'],
+                },
             };
 
             postReloadTaskSuccessNotificationInfluxDb(params);
@@ -475,6 +552,19 @@ describe('InfluxDB Task Success Notifications', () => {
                     executionStopTime: {},
                     executionDuration: { hours: 0, minutes: 0, seconds: 1 },
                 },
+                scriptLog: {
+                    executingNodeName: 'Node1',
+                    executionStatusNum: 7,
+                    executionStatusText: 'FinishedSuccess',
+                    executionStartTime: {},
+                    executionStopTime: {},
+                    executionDuration: { hours: 0, minutes: 0, seconds: 1 },
+                    executionDetailsConcatenated: 'Special chars: ÅÄÖ',
+                    scriptLogSize: 20,
+                    scriptLogSizeRows: 1,
+                    scriptLogSizeCharacters: 20,
+                    scriptLogFull: ['Special chars: ÅÄÖ'],
+                },
             };
 
             postReloadTaskSuccessNotificationInfluxDb(params);
@@ -505,6 +595,19 @@ describe('InfluxDB Task Success Notifications', () => {
                     executionStartTime: {},
                     executionStopTime: {},
                     executionDuration: { hours: 0, minutes: 0, seconds: 1 },
+                },
+                scriptLog: {
+                    executingNodeName: 'Node1',
+                    executionStatusNum: 7,
+                    executionStatusText: 'FinishedSuccess',
+                    executionStartTime: {},
+                    executionStopTime: {},
+                    executionDuration: { hours: 0, minutes: 0, seconds: 1 },
+                    executionDetailsConcatenated: 'Done',
+                    scriptLogSize: 10,
+                    scriptLogSizeRows: 1,
+                    scriptLogSizeCharacters: 10,
+                    scriptLogFull: ['Done'],
                 },
             };
 

@@ -27,6 +27,11 @@ jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
     sendReloadTaskSuccessNotificationEmail: mockSendReloadTaskSuccessNotificationEmail,
 }));
 
+const mockGetScriptLog = jest.fn();
+jest.unstable_mockModule('../../../../lib/qseow/scriptlog.js', () => ({
+    getScriptLog: mockGetScriptLog,
+}));
+
 const mockGetReloadTaskExecutionResults = jest.fn();
 jest.unstable_mockModule('../../../../qrs_util/reload_task_execution_results.js', () => ({
     getReloadTaskExecutionResults: mockGetReloadTaskExecutionResults,
@@ -105,13 +110,33 @@ describe('handleSuccessReloadTask', () => {
                 'Butler.influxDb.reloadTaskSuccess.enable': false,
                 'Butler.influxDb.reloadTaskSuccess.allReloadTasks.enable': false,
                 'Butler.influxDb.reloadTaskSuccess.byCustomProperty.enable': false,
+                'Butler.influxDb.reloadTaskSuccess.headScriptLogLines': 15,
+                'Butler.influxDb.reloadTaskSuccess.tailScriptLogLines': 25,
                 'Butler.emailNotification.enable': false,
                 'Butler.emailNotification.reloadTaskSuccess.enable': false,
+                'Butler.emailNotification.reloadTaskSuccess.headScriptLogLines': 15,
+                'Butler.emailNotification.reloadTaskSuccess.tailScriptLogLines': 25,
             };
             return config[key];
         });
 
         mockGlobals.config.has.mockReturnValue(true);
+
+        // Default script log mock
+        mockGetScriptLog.mockResolvedValue({
+            executingNodeName: 'node1',
+            executionStatusNum: 4,
+            executionStatusText: 'FinishedSuccess',
+            executionStartTime: { start: '2024-01-15T10:25:00.000Z' },
+            executionStopTime: { stop: '2024-01-15T10:30:00.000Z' },
+            executionDuration: { hours: 0, minutes: 5, seconds: 0 },
+            executionDetails: 'Task completed successfully',
+            executionDetailsConcatenated: 'Task completed successfully',
+            scriptLogSize: 1024,
+            scriptLogSizeRows: 50,
+            scriptLogSizeCharacters: 1024,
+            scriptLogFull: ['Starting reload', 'Loading data', 'Processing...', 'Reload completed successfully'],
+        });
 
         // Default app metadata
         mockGetAppMetadata.mockResolvedValue({
@@ -367,7 +392,29 @@ describe('handleSuccessReloadTask', () => {
                     hostName: 'server1.example.com',
                     taskName: 'Test Reload Task',
                     appName: 'Test App',
-                    scriptLog: null, // No script log for success
+                    scriptLog: expect.objectContaining({
+                        executingNodeName: 'node1',
+                        executionStatusNum: 4,
+                        executionStatusText: 'FinishedSuccess',
+                    }),
+                }),
+            );
+        });
+
+        test('should send email notification with null scriptLog when retrieval fails', async () => {
+            const msg = createUdpMessage();
+            const taskMetadata = createTaskMetadata();
+
+            // Mock script log retrieval failure
+            mockGetScriptLog.mockResolvedValueOnce(false);
+
+            const result = await handleSuccessReloadTask(msg, taskMetadata);
+
+            expect(result).toBe(true);
+            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to retrieve script log'));
+            expect(mockSendReloadTaskSuccessNotificationEmail).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    scriptLog: null,
                 }),
             );
         });
