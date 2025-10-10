@@ -18,7 +18,7 @@ describe('failed_distribute', () => {
 
         // Mock email notification function
         mockSendDistributeTaskFailureNotificationEmail = jest.fn();
-        await jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
+        await jest.unstable_mockModule('../../../../lib/qseow/smtp/distribute-task-failed.js', () => ({
             sendDistributeTaskFailureNotificationEmail: mockSendDistributeTaskFailureNotificationEmail,
         }));
 

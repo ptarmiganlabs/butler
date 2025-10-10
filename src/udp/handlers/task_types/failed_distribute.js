@@ -1,7 +1,7 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
 import { postDistributeTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
-import { sendDistributeTaskFailureNotificationEmail } from '../../../lib/qseow/smtp.js';
+import { sendDistributeTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/distribute-task-failed.js';
 import getDistributeTaskExecutionResults from '../../../qrs_util/distribute_task_execution_results.js';
 
 /**

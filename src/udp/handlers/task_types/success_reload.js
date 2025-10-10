@@ -1,6 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
-import { sendReloadTaskSuccessNotificationEmail } from '../../../lib/qseow/smtp.js';
+import { sendReloadTaskSuccessNotificationEmail } from '../../../lib/qseow/smtp/reload-task-success.js';
 import { getReloadTaskExecutionResults } from '../../../qrs_util/reload_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
 import getAppTags from '../../../qrs_util/app_tag_util.js';

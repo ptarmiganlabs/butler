@@ -1,6 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
-import { sendReloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp.js';
+import { sendReloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/reload-task-failed.js';
 import { sendReloadTaskFailureNotificationSlack } from '../../../lib/qseow/slack_notification.js';
 import { sendReloadTaskFailureNotificationWebhook } from '../../../lib/qseow/webhook_notification.js';
 import { sendReloadTaskFailureNotificationTeams } from '../../../lib/qseow/msteams_notification.js';

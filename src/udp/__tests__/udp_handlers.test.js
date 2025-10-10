@@ -70,11 +70,19 @@ describe('udp_handlers', () => {
             sendReloadTaskAbortedLog: jest.fn(),
             sendReloadTaskAbortedEvent: jest.fn(),
         }));
-        await jest.unstable_mockModule('../../lib/qseow/smtp.js', () => ({
-            sendReloadTaskFailureNotificationEmail: jest.fn(),
-            sendReloadTaskAbortedNotificationEmail: jest.fn(),
+        await jest.unstable_mockModule('../../lib/qseow/smtp/reload-task-success.js', () => ({
             sendReloadTaskSuccessNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/reload-task-failed.js', () => ({
+            sendReloadTaskFailureNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/reload-task-aborted.js', () => ({
+            sendReloadTaskAbortedNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/distribute-task-success.js', () => ({
             sendDistributeTaskSuccessNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/distribute-task-failed.js', () => ({
             sendDistributeTaskFailureNotificationEmail: jest.fn(),
         }));
         await jest.unstable_mockModule('../../lib/qseow/slack_notification.js', () => ({

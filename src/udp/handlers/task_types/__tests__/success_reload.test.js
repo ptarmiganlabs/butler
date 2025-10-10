@@ -23,7 +23,7 @@ jest.unstable_mockModule('../../../../globals.js', () => ({
 
 // Mock dependencies
 const mockSendReloadTaskSuccessNotificationEmail = jest.fn();
-jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
+jest.unstable_mockModule('../../../../lib/qseow/smtp/reload-task-success.js', () => ({
     sendReloadTaskSuccessNotificationEmail: mockSendReloadTaskSuccessNotificationEmail,
 }));
 

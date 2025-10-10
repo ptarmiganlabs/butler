@@ -29,7 +29,7 @@ describe('success_distribute', () => {
             postDistributeTaskSuccessNotificationInfluxDb: mockPostDistributeTaskSuccessNotificationInfluxDb,
         }));
 
-        await jest.unstable_mockModule('../../../../lib/qseow/smtp.js', () => ({
+        await jest.unstable_mockModule('../../../../lib/qseow/smtp/distribute-task-success.js', () => ({
             sendDistributeTaskSuccessNotificationEmail: mockSendDistributeTaskSuccessNotificationEmail,
         }));
 

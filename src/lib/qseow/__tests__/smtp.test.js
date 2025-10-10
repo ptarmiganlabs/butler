@@ -84,10 +84,16 @@ const logger = {
 };
 
 describe('smtp', () => {
-    let smtpModule;
     let nodemailerMock;
     let globalsMock;
     let emailValidatorMock;
+    let sendServiceMonitorNotificationEmail;
+    let sendReloadTaskSuccessNotificationEmail;
+    let sendReloadTaskAbortedNotificationEmail;
+    let sendReloadTaskFailureNotificationEmail;
+    let isSmtpConfigOk;
+    let sendEmail;
+    let sendEmailBasic;
 
     beforeAll(async () => {
         const nodemailerLib = await import('nodemailer');
@@ -99,7 +105,30 @@ describe('smtp', () => {
         const emailValidatorLib = await import('email-validator');
         emailValidatorMock = emailValidatorLib.default;
 
-        smtpModule = await import('../smtp.js');
+        // Import sendServiceMonitorNotificationEmail directly from its module
+        const serviceMonitorModule = await import('../smtp/service-monitor.js');
+        sendServiceMonitorNotificationEmail = serviceMonitorModule.sendServiceMonitorNotificationEmail;
+
+        // Import sendReloadTaskSuccessNotificationEmail directly from its module
+        const reloadTaskSuccessModule = await import('../smtp/reload-task-success.js');
+        sendReloadTaskSuccessNotificationEmail = reloadTaskSuccessModule.sendReloadTaskSuccessNotificationEmail;
+
+        // Import sendReloadTaskAbortedNotificationEmail directly from its module
+        const reloadTaskAbortedModule = await import('../smtp/reload-task-aborted.js');
+        sendReloadTaskAbortedNotificationEmail = reloadTaskAbortedModule.sendReloadTaskAbortedNotificationEmail;
+
+        // Import sendReloadTaskFailureNotificationEmail directly from its module
+        const reloadTaskFailedModule = await import('../smtp/reload-task-failed.js');
+        sendReloadTaskFailureNotificationEmail = reloadTaskFailedModule.sendReloadTaskFailureNotificationEmail;
+
+        // Import isSmtpConfigOk directly from its module
+        const configModule = await import('../smtp/config.js');
+        isSmtpConfigOk = configModule.isSmtpConfigOk;
+
+        // Import sendEmail and sendEmailBasic directly from smtp_core
+        const smtpCoreModule = await import('../../smtp_core.js');
+        sendEmail = smtpCoreModule.sendEmail;
+        sendEmailBasic = smtpCoreModule.sendEmailBasic;
     });
 
     beforeEach(() => {
@@ -141,7 +170,7 @@ describe('smtp', () => {
                 return 'default-value';
             });
 
-            const result = smtpModule.isSmtpConfigOk();
+            const result = isSmtpConfigOk();
 
             expect(result).toBe(true);
         });
@@ -152,7 +181,7 @@ describe('smtp', () => {
                 return 'default-value';
             });
 
-            const result = smtpModule.isSmtpConfigOk();
+            const result = isSmtpConfigOk();
 
             expect(result).toBe(false);
         });
@@ -162,7 +191,7 @@ describe('smtp', () => {
                 throw new Error('Config access error');
             });
 
-            const result = smtpModule.isSmtpConfigOk();
+            const result = isSmtpConfigOk();
 
             expect(result).toBe(false);
         });
@@ -172,7 +201,7 @@ describe('smtp', () => {
         test('should handle invalid email addresses', async () => {
             emailValidatorMock.validate.mockReturnValue(false);
 
-            const result = await smtpModule.sendEmailBasic('sender@company.com', ['invalid-email'], 'normal', 'Test Subject', 'Test Body');
+            const result = await sendEmailBasic('sender@company.com', ['invalid-email'], 'normal', 'Test Subject', 'Test Body');
 
             expect(result).toBeUndefined();
         });
@@ -184,13 +213,7 @@ describe('smtp', () => {
                 return 'default-value';
             });
 
-            const result = await smtpModule.sendEmailBasic(
-                'sender@company.com',
-                ['valid@company.com'],
-                'normal',
-                'Test Subject',
-                'Test Body',
-            );
+            const result = await sendEmailBasic('sender@company.com', ['valid@company.com'], 'normal', 'Test Subject', 'Test Body');
 
             expect(result).toBe(1);
         });
@@ -202,13 +225,7 @@ describe('smtp', () => {
             };
             nodemailerMock.createTransporter = jest.fn().mockReturnValue(mockTransporter);
 
-            const result = await smtpModule.sendEmailBasic(
-                'sender@company.com',
-                ['recipient@company.com'],
-                'normal',
-                'Test Subject',
-                'Test Body',
-            );
+            const result = await sendEmailBasic('sender@company.com', ['recipient@company.com'], 'normal', 'Test Subject', 'Test Body');
 
             expect(result).toBeUndefined();
         });
@@ -223,7 +240,7 @@ describe('smtp', () => {
             };
             nodemailerMock.createTransporter = jest.fn().mockReturnValue(mockTransporter);
 
-            const result = await smtpModule.sendEmail(
+            const result = await sendEmail(
                 'sender@company.com',
                 ['recipient@company.com'],
                 'normal',
@@ -307,7 +324,7 @@ describe('smtp', () => {
                 qs_taskTags: [],
             };
 
-            const result = await smtpModule.sendReloadTaskFailureNotificationEmail(reloadParams);
+            const result = await sendReloadTaskFailureNotificationEmail(reloadParams);
 
             expect(result).toBeUndefined();
         });
@@ -367,7 +384,7 @@ describe('smtp', () => {
                 qs_taskTags: [],
             };
 
-            const result = await smtpModule.sendReloadTaskFailureNotificationEmail(reloadParams);
+            const result = await sendReloadTaskFailureNotificationEmail(reloadParams);
 
             expect(result).toBeUndefined();
         });
@@ -429,7 +446,7 @@ describe('smtp', () => {
                 qs_taskTags: [],
             };
 
-            const result = await smtpModule.sendReloadTaskAbortedNotificationEmail(reloadParams);
+            const result = await sendReloadTaskAbortedNotificationEmail(reloadParams);
 
             expect(result).toBeUndefined();
         });
@@ -491,7 +508,7 @@ describe('smtp', () => {
                 qs_taskTags: [],
             };
 
-            const result = await smtpModule.sendReloadTaskSuccessNotificationEmail(reloadParams);
+            const result = await sendReloadTaskSuccessNotificationEmail(reloadParams);
 
             expect(result).toBeUndefined();
         });
@@ -542,7 +559,7 @@ describe('smtp', () => {
                 stateChanged: true,
             };
 
-            const result = await smtpModule.sendServiceMonitorNotificationEmail(serviceParams);
+            const result = await sendServiceMonitorNotificationEmail(serviceParams);
 
             expect(result).toBeUndefined();
         });
@@ -552,7 +569,7 @@ describe('smtp', () => {
         test('should handle missing config values gracefully', () => {
             globalsMock.config.get.mockReturnValue(undefined);
 
-            const result = smtpModule.isSmtpConfigOk();
+            const result = isSmtpConfigOk();
 
             expect(result).toBe(false);
         });
@@ -615,7 +632,7 @@ describe('smtp', () => {
             };
 
             // Should handle rate limiting internally
-            const result = await smtpModule.sendReloadTaskFailureNotificationEmail(reloadParams);
+            const result = await sendReloadTaskFailureNotificationEmail(reloadParams);
 
             // The function should still attempt to send and return undefined
             expect(result).toBeUndefined();

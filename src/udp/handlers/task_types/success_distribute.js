@@ -3,7 +3,7 @@ import globals from '../../../globals.js';
 import getDistributeTaskExecutionResults from '../../../qrs_util/distribute_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
 import { postDistributeTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
-import { sendDistributeTaskSuccessNotificationEmail } from '../../../lib/qseow/smtp.js';
+import { sendDistributeTaskSuccessNotificationEmail } from '../../../lib/qseow/smtp/distribute-task-success.js';
 
 /**
  * Handler for successful distribute tasks.

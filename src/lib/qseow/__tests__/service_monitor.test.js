@@ -55,7 +55,7 @@ jest.unstable_mockModule('../msteams_notification.js', () => ({
     sendServiceMonitorNotificationTeams: sendTeams,
 }));
 const sendEmail = jest.fn();
-jest.unstable_mockModule('../smtp.js', () => ({
+jest.unstable_mockModule('../smtp/service-monitor.js', () => ({
     sendServiceMonitorNotificationEmail: sendEmail,
 }));
 const postInflux = jest.fn();
