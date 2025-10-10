@@ -3,6 +3,7 @@ import globals from '../globals.js';
 import schedulerAborted from './handlers/scheduler_aborted.js';
 import schedulerFailed from './handlers/scheduler_failed.js';
 import schedulerTaskSuccess from './handlers/scheduler_success.js';
+import distributeTaskCompletion from './handlers/distribute_task_completion.js';
 
 /**
  * Set up UDP server handlers for acting on Sense failed task events.
@@ -145,8 +146,31 @@ const udpInitTaskErrorServer = () => {
                 globals.logger.verbose(
                     `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
                 );
-            } else if (msg[0].toLowerCase() === '/scheduler-reload-failed/' || msg[0].toLowerCase() === '/scheduler-task-failed/') {
-                // Scheduler log appender detecting failed scheduler-started reload
+            } else if (msg[0].toLowerCase() === '/scheduler-distribute/') {
+                // Scheduler log appender detecting distribute task event (success, failed)
+
+                // Do some sanity checks on the message
+                // There should be exactly 11 fields in the message
+                if (msg.length < 11) {
+                    globals.logger.warn(
+                        `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Invalid number of fields in UDP message. Expected at least 11, got ${msg.length}.`,
+                    );
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Incoming log message was:\n${message.toString()}`);
+                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Aborting processing of this message.`);
+                    return;
+                }
+
+                globals.logger.verbose(
+                    `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Received distribute task UDP message from scheduler: Host=${msg[1]}, TaskName=${msg[2]}, AppName=${msg[3]}, User=${msg[4]}, TaskID=${msg[5]}, AppID=${msg[6]}, ExecutionID=${msg[9]}, Message=${msg[10]}`,
+                );
+
+                distributeTaskCompletion(msg);
+            } else if (
+                msg[0].toLowerCase() === '/scheduler-reload-failed/' ||
+                msg[0].toLowerCase() === '/scheduler-task-failed/' ||
+                msg[0].toLowerCase() === '/scheduler-reloadtask-failed/'
+            ) {
+                // Scheduler log appender detecting failed tasks
 
                 // Do some sanity checks on the message
                 // There should be exactly 11 fields in the message
@@ -161,7 +185,7 @@ const udpInitTaskErrorServer = () => {
 
                 schedulerFailed(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/' || msg[0].toLowerCase() === '/scheduler-task-aborted/') {
-                // Scheduler log appender detecting aborted scheduler-started reload
+                // Scheduler log appender detecting aborted tasks
 
                 // Do some sanity checks on the message
                 // There should be exactly 11 fields in the message
@@ -176,7 +200,7 @@ const udpInitTaskErrorServer = () => {
 
                 schedulerAborted(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/' || msg[0].toLowerCase() === '/scheduler-task-success/') {
-                // Scheduler log appender detecting successful scheduler-started reload task
+                // Scheduler log appender detecting successful tasks
                 // Support both legacy /scheduler-reloadtask-success/ and new generic /scheduler-task-success/ message types
 
                 // Do some sanity checks on the message

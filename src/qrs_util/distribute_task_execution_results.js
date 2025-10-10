@@ -53,7 +53,7 @@ export async function getDistributeTaskExecutionResults(distributeTaskId) {
 
         globals.logger.debug(`[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: distributeTaskId: ${distributeTaskId}`);
 
-        const endpoint = `compositetask/${distributeTaskId}`;
+        const endpoint = `reloadtask/${distributeTaskId}`;
         globals.logger.verbose(`[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
 

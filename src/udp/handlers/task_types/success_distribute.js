@@ -70,55 +70,10 @@ export const handleSuccessDistributeTask = async (msg, taskMetadata) => {
 
         if (storeInInfluxDb) {
             // Get results from last distribute task execution
-            // It may take a seconds or two from the finished-successfully log message is written until the execution results are available via the QRS.
-            // Specifically, it may take a while for the last "FinishedSuccess" message to appear in the executionDetails array.
-            //
-            // Try at most five times, with a 1 second delay between each attempt.
-            // Check if the message property of the last entry in the taskInfo.executionDetailsSorted array is "Changing task state from Started to FinishedSuccess"
-            // If it is, then we have the results we need and can continue.
-            // Then give up and don't store anything in InfluxDB, but show a log warning.
             let taskInfo;
-            let retryCount = 0;
-            while (retryCount < 5) {
-                taskInfo = await getDistributeTaskExecutionResults(distributeTaskId);
+            taskInfo = await getDistributeTaskExecutionResults(distributeTaskId);
 
-                if (
-                    taskInfo?.executionDetailsSorted[taskInfo.executionDetailsSorted.length - 1]?.message ===
-                    'Changing task state from Started to FinishedSuccess'
-                ) {
-                    // Is duration longer than 0 seconds?
-                    // I.e. is executionDuration.hours, executionDuration.minutes or executionDuration.seconds > 0?
-                    // Warn if not, as this is likely caused by the QRS not having updated the execution details yet
-                    if (
-                        taskInfo.executionDuration.hours === 0 &&
-                        taskInfo.executionDuration.minutes === 0 &&
-                        taskInfo.executionDuration.seconds === 0
-                    ) {
-                        globals.logger.warn(
-                            `[QSEOW] DISTRIBUTE TASK SUCCESS: Task info for distribute task ${distributeTaskId} retrieved successfully after ${retryCount} attempts, but duration is 0 seconds. This is likely caused by the QRS not having updated the execution details yet.`,
-                        );
-                    }
-
-                    globals.logger.debug(
-                        `[QSEOW] DISTRIBUTE TASK SUCCESS: Task info for distribute task ${distributeTaskId} retrieved successfully after ${retryCount} attempts`,
-                    );
-                    break;
-                }
-
-                retryCount += 1;
-
-                globals.logger.verbose(
-                    `[QSEOW] DISTRIBUTE TASK SUCCESS: Unable to get task info for distribute task ${distributeTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
-                );
-
-                await globals.sleep(1000);
-            }
-
-            if (
-                !taskInfo ||
-                taskInfo?.executionDetailsSorted[taskInfo.executionDetailsSorted.length - 1]?.message !==
-                    'Changing task state from Started to FinishedSuccess'
-            ) {
+            if (!taskInfo) {
                 globals.logger.warn(
                     `[QSEOW] DISTRIBUTE TASK SUCCESS: Unable to get task info for distribute task ${distributeTaskId}. Not storing task info in InfluxDB`,
                 );
