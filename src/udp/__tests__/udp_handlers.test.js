@@ -128,6 +128,8 @@ describe('udp_handlers', () => {
             postReloadTaskFailureNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskFailureNotificationInfluxDb: jest.fn(),
             postDistributeTaskFailureNotificationInfluxDb: jest.fn(),
+            postPreloadTaskFailureNotificationInfluxDb: jest.fn(),
+            postUserSyncTaskFailureNotificationInfluxDb: jest.fn(),
         }));
 
         events = {};

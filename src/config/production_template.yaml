@@ -202,6 +202,22 @@ Butler:
                     #   value: abc 123
                 dynamic:
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        preloadTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InflixDB
+                    - name: butler_instance
+                      value: prod-1
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
+        userSyncTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InflixDB
+                    - name: butler_instance
+                      value: prod-1
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
 
     # Store script logs of failed reloads on disk.
     # The script logs will be stored in daily directories under the specified main directory below
