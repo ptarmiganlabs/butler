@@ -12,21 +12,25 @@ const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
 
     globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
-        const address = globals.udpServerTaskResultSocket.address();
+        try {
+            const address = globals.udpServerTaskResultSocket.address();
 
-        globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
+            globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
-        // Publish MQTT message that UDP server has started
-        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            if (globals?.mqttClient?.connected) {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
-            } else {
-                globals.logger.warn(
-                    `[QSEOW] UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskFailureServerStatusTopic',
-                    )}`,
-                );
+            // Publish MQTT message that UDP server has started
+            if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
+                if (globals?.mqttClient?.connected) {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+                } else {
+                    globals.logger.warn(
+                        `[QSEOW] UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                            'Butler.mqttConfig.taskFailureServerStatusTopic',
+                        )}`,
+                    );
+                }
             }
+        } catch (err) {
+            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP listening handler: ${globals.getErrorMessage(err)}`);
         }
     });
 
