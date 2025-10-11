@@ -1,5 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import { GLOBALS_INIT_CHECK_INTERVAL_MS } from '../../../constants.js';
 import getUserSyncTaskExecutionResults from '../../../qrs_util/usersync_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
 import { postUserSyncTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
@@ -107,10 +108,10 @@ export const handleSuccessUserSyncTask = async (msg, taskMetadata) => {
                 retryCount += 1;
 
                 globals.logger.verbose(
-                    `[QSEOW] USER SYNC TASK SUCCESS: Unable to get task info for user sync task ${userSyncTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
+                    `[QSEOW] USER SYNC TASK SUCCESS: Unable to get task info for user sync task ${userSyncTaskId}. Attempt ${retryCount} of 5. Waiting ${GLOBALS_INIT_CHECK_INTERVAL_MS}ms before trying again`,
                 );
 
-                await globals.sleep(1000);
+                await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
             }
 
             if (!taskInfo) {

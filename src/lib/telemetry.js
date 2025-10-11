@@ -1,6 +1,7 @@
 import { PostHog } from 'posthog-node';
 
 import globals from '../globals.js';
+import { TELEMETRY_FLUSH_INTERVAL_MS, TELEMETRY_REQUEST_TIMEOUT_MS } from '../constants.js';
 
 // Define variable to hold the PostHog client
 let posthogClient;
@@ -535,8 +536,8 @@ export default function setupAnonUsageReportTimer(logger, hostInfo) {
         posthogClient = new PostHog('phc_5cmKiX9OubQjsSfOZuaolWaxo2z7WXqd295eB0uOtTb', {
             host: 'https://eu.posthog.com',
             flushAt: 1, // Flush events to PostHog as soon as they are captured
-            flushInterval: 60 * 1000, // Flush every 60 seconds
-            requestTimeout: 30 * 1000, // 30 secpnds timeout
+            flushInterval: TELEMETRY_FLUSH_INTERVAL_MS,
+            requestTimeout: TELEMETRY_REQUEST_TIMEOUT_MS,
             disableGeoip: false, // Enable geoip lookups
         });
 

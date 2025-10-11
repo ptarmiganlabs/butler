@@ -1,5 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import { GLOBALS_INIT_CHECK_INTERVAL_MS } from '../../../constants.js';
 import { sendReloadTaskSuccessNotificationEmail } from '../../../lib/qseow/smtp/reload-task-success.js';
 import { getReloadTaskExecutionResults } from '../../../qrs_util/reload_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
@@ -181,10 +182,10 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
                 retryCount += 1;
 
                 globals.logger.verbose(
-                    `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
+                    `[QSEOW] RELOAD TASK SUCCESS: Unable to get task info for reload task ${reloadTaskId}. Attempt ${retryCount} of 5. Waiting ${GLOBALS_INIT_CHECK_INTERVAL_MS}ms before trying again`,
                 );
 
-                await globals.sleep(1000);
+                await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
             }
 
             // Check if we failed to get valid task info after all retries

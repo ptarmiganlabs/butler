@@ -5,6 +5,7 @@ import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 import globals from '../../globals.js';
+import { MSTEAMS_TEXT_FIELD_MAX_LENGTH } from '../../constants.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
@@ -370,8 +371,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     appOwnerEmail: appOwner === undefined ? 'Unknown' : appOwner.email,
                 };
 
-                // Check if script log is longer than 3000 characters. Truncate if so.
-                if (templateContext.scriptLogHead.length >= 3000) {
+                // Check if script log is longer than max characters. Truncate if so.
+                if (templateContext.scriptLogHead.length >= MSTEAMS_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Teams.`,
                     );
@@ -395,7 +396,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
 
-                if (templateContext.scriptLogTail.length >= 3000) {
+                if (templateContext.scriptLogTail.length >= MSTEAMS_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `TEAMS: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Teams.`,
                     );
