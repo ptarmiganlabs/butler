@@ -14,7 +14,6 @@ const apiPutStartTask = {
                     examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
-            required: ['taskId'],
         },
         querystring: {
             type: 'object',
