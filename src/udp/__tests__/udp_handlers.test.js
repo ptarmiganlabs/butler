@@ -35,6 +35,7 @@ describe('udp_handlers', () => {
         }));
         await jest.unstable_mockModule('../../qrs_util/task_cp_util.js', () => ({
             isCustomPropertyValueSet: jest.fn(async () => true),
+            getTaskCustomPropertyValues: jest.fn(async () => []),
         }));
         await jest.unstable_mockModule('../../qrs_util/task_tag_util.js', () => ({
             default: jest.fn(async () => ['tA']),
@@ -85,6 +86,25 @@ describe('udp_handlers', () => {
         await jest.unstable_mockModule('../../lib/qseow/smtp/distribute-task-failed.js', () => ({
             sendDistributeTaskFailureNotificationEmail: jest.fn(),
         }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/preload-task-success.js', () => ({
+            sendPreloadTaskSuccessNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/preload-task-failed.js', () => ({
+            sendPreloadTaskFailureNotificationEmail: jest.fn(),
+        }));
+        await jest.unstable_mockModule('../../lib/qseow/smtp/index.js', () => ({
+            isSmtpConfigOk: jest.fn(() => true),
+            sendEmail: jest.fn(),
+            sendEmailBasic: jest.fn(),
+            sendReloadTaskFailureNotificationEmail: jest.fn(),
+            sendReloadTaskAbortedNotificationEmail: jest.fn(),
+            sendDistributeTaskFailureNotificationEmail: jest.fn(),
+            sendDistributeTaskSuccessNotificationEmail: jest.fn(),
+            sendReloadTaskSuccessNotificationEmail: jest.fn(),
+            sendPreloadTaskSuccessNotificationEmail: jest.fn(),
+            sendPreloadTaskFailureNotificationEmail: jest.fn(),
+            sendServiceMonitorNotificationEmail: jest.fn(),
+        }));
         await jest.unstable_mockModule('../../lib/qseow/slack_notification.js', () => ({
             sendReloadTaskFailureNotificationSlack: jest.fn(),
             sendReloadTaskAbortedNotificationSlack: jest.fn(),
@@ -102,6 +122,7 @@ describe('udp_handlers', () => {
             postUserSyncTaskSuccessNotificationInfluxDb: jest.fn(),
             postExternalProgramTaskSuccessNotificationInfluxDb: jest.fn(),
             postDistributeTaskSuccessNotificationInfluxDb: jest.fn(),
+            postPreloadTaskSuccessNotificationInfluxDb: jest.fn(),
         }));
         await jest.unstable_mockModule('../../lib/influxdb/task_failure.js', () => ({
             postReloadTaskFailureNotificationInfluxDb: jest.fn(),

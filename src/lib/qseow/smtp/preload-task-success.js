@@ -159,7 +159,7 @@ export async function sendPreloadTaskSuccessNotificationEmail(preloadParams) {
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `[QSEOW] EMAIL PRELOAD TASK SUCCESS ALERT: Rate limiting check passed for successful task notification. Task name: "${preloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL PRELOAD TASK SUCCESS ALERT: Sending preload task success notification email to ${recipientEmailAddress}, for task "${preloadParams.taskName}"`,
                     );
                     globals.logger.debug(
                         `[QSEOW] EMAIL PRELOAD TASK SUCCESS ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,

@@ -298,15 +298,13 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
     };
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const recipientEmailAddress of mainSendListUnique) {
         rateLimiterMemoryFailedReloads
             .consume(`${reloadParams.taskId}|${recipientEmailAddress}`, 1)
-            // eslint-disable-next-line no-loop-func
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting check passed for failed task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Sending reload task failed notification email to ${recipientEmailAddress}, for task "${reloadParams.taskName}"`,
                     );
                     globals.logger.debug(
                         `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,

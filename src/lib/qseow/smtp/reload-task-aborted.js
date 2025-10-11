@@ -1,5 +1,3 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable consistent-return */
 import globals from '../../../globals.js';
 import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../../../qrs_util/task_cp_util.js';
 import getAppOwner from '../../../qrs_util/get_app_owner.js';
@@ -294,15 +292,13 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
         appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
     };
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const recipientEmailAddress of mainSendListUnique) {
         rateLimiterMemoryAbortedReloads
             .consume(`${reloadParams.taskId}|${recipientEmailAddress}`, 1)
-            // eslint-disable-next-line no-loop-func
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting check passed for aborted task notification. Task name: "${reloadParams.taskName}", Recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Sending reload task aborted notification email ${recipientEmailAddress}, for task "${reloadParams.taskName}"`,
                     );
                     globals.logger.debug(
                         `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,

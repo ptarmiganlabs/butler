@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import globals from '../../../globals.js';
 import { isSmtpConfigOk, isEmailServiceMonitorNotificationConfig, rateLimiterMemoryServiceMonitor } from './config.js';
 import { sendEmail } from '../../smtp_core.js';
@@ -56,15 +55,13 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
     // Make sure send list does not contain any duplicate email addresses
     const mainSendListUnique = [...new Set(mainSendList)];
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const recipientEmailAddress of mainSendListUnique) {
         rateLimiterMemoryServiceMonitor
             .consume(`${serviceParams.host}|${serviceParams.serviceName}|${recipientEmailAddress}`, 1)
-            // eslint-disable-next-line no-loop-func
             .then(async (rateLimiterRes) => {
                 try {
                     globals.logger.info(
-                        `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting check passed for service monitor notification. Host: "${serviceParams.host}", service: "${serviceParams.serviceName}", recipient: "${recipientEmailAddress}"`,
+                        `[QSEOW] EMAIL SERVICE MONITOR: Sending Windows service monitoring notification email to "${recipientEmailAddress}". Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`,
                     );
                     globals.logger.debug(
                         `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
@@ -100,7 +97,6 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
                     globals.logger.error(`[QSEOW] EMAIL SERVICE MONITOR: ${globals.getErrorMessage(err)}`);
                 }
             })
-            // eslint-disable-next-line no-loop-func
             .catch((err) => {
                 globals.logger.warn(
                     `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`,

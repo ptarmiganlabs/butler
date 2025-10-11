@@ -1,5 +1,3 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable consistent-return */
 import globals from '../../../globals.js';
 import { getTaskCustomPropertyValues, isCustomPropertyValueSet } from '../../../qrs_util/task_cp_util.js';
 import { getQlikSenseUrls } from '../get_qs_urls.js';
@@ -149,7 +147,6 @@ export async function sendDistributeTaskFailureNotificationEmail(distributeParam
     globals.logger.debug(`[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Template context:\n${JSON.stringify(templateContext, null, 2)}`);
 
     // Sending emails to all recipients
-    // eslint-disable-next-line no-restricted-syntax
     for (const recipientEmailAddress of mainSendList) {
         // Make sure rate limiting is not causing emails to be skipped
         rateLimiterMemoryFailedDistribute
