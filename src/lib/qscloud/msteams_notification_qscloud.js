@@ -205,11 +205,6 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
 
-        // If we still have an object without good string representation, stringify it
-        if (errorMsg === '[object Object]') {
-            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
-        }
-
         globals.logger.error(`[QSCLOUD] TEAMS SEND: ${errorMsg}`);
     }
 }
@@ -431,11 +426,6 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     if (err.response.data) {
                         errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
                     }
-                }
-
-                // If we still have an object without good string representation, stringify it
-                if (errorMsg === '[object Object]') {
-                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
                 }
 
                 globals.logger.error(`[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: ${errorMsg}`);

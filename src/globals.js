@@ -42,13 +42,21 @@ class Settings {
         // Check SEA status - use direct check if isSea hasn't been initialized yet
         const isSeaApp = this.isSea !== undefined ? this.isSea : sea.isSea();
 
+        let errorMsg;
         if (isSeaApp) {
             // For SEA apps, prefer cleaner error messages
-            return err.message || err.toString();
+            errorMsg = err.message || err.toString();
+        } else {
+            // For non-SEA apps, show full stack trace for debugging
+            errorMsg = err.stack || err.message || err.toString();
         }
 
-        // For non-SEA apps, show full stack trace for debugging
-        return err.stack || err.message || err.toString();
+        // If we still have an object without good string representation, stringify it
+        if (errorMsg === '[object Object]') {
+            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+        }
+
+        return errorMsg;
     }
 
     async init() {

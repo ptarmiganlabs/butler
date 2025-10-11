@@ -406,11 +406,6 @@ async function sendTeams(teamsWebhookUrl, teamsConfig, templateContext, msgType)
             }
         }
 
-        // If we still have an object without good string representation, stringify it
-        if (errorMsg === '[object Object]') {
-            errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
-        }
-
         globals.logger.error(`[QSEOW] TEAMS SEND: ${errorMsg}`);
     }
 }
@@ -612,11 +607,6 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                     if (err.response.data) {
                         errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
                     }
-                }
-
-                // If we still have an object without good string representation, stringify it
-                if (errorMsg === '[object Object]') {
-                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
                 }
 
                 globals.logger.error(`[QSEOW] TEAMS RELOAD TASK FAILED: ${errorMsg}`);
@@ -831,11 +821,6 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                     }
                 }
 
-                // If we still have an object without good string representation, stringify it
-                if (errorMsg === '[object Object]') {
-                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
-                }
-
                 globals.logger.error(`[QSEOW] TEAMS RELOAD TASK ABORTED: ${errorMsg}`);
             }
             return true;
@@ -905,11 +890,6 @@ export function sendServiceMonitorNotificationTeams(serviceParams) {
                     if (err.response.data) {
                         errorMsg += ` | Response data: ${JSON.stringify(err.response.data)}`;
                     }
-                }
-
-                // If we still have an object without good string representation, stringify it
-                if (errorMsg === '[object Object]') {
-                    errorMsg = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
                 }
 
                 globals.logger.error(`[QSEOW] TEAMS SERVICE MONITOR: ${errorMsg}`);
