@@ -26,6 +26,10 @@ export const GLOBALS_INIT_CHECK_INTERVAL_MS = 1000; // 1 second - Interval betwe
 export const SLACK_TEXT_FIELD_MAX_LENGTH = 3000; // Maximum length for Slack API text fields
 export const MSTEAMS_TEXT_FIELD_MAX_LENGTH = 3000; // Maximum length for MS Teams text fields
 
+// Distribution Queue Configuration
+export const DISTRIBUTION_QUEUE_POLL_INTERVAL_MS = 30000; // 30 seconds - How often to check queued distribution tasks
+export const DISTRIBUTION_QUEUE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours - Maximum time a task can remain in queue
+
 // Buffer sizes and other limits
 // Currently no specific buffer size constants needed, but this section is here for future use
 // export const FILE_BUFFER_SIZE = 64 * 1024; // 64KB - File buffer size (if needed in the future)
