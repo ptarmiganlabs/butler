@@ -40,21 +40,23 @@ async function build(opts = {}) {
         serviceUptimeStart();
     }
 
-    // Load certificates to use when connecting to healthcheck API
-    //
-    // On macOS:
-    // When running in packaged app (using SEA): filename = /home/goran/code/butler/butler
-    // When running as Node.js: import.meta.url =  /Users/goran/code/butler/src/app.js
-    //
-    // Use the centralized certificate path utility from globals
-    const certificatePaths = globals.getCertificatePaths();
-    const certFile = certificatePaths.certPath;
-    const keyFile = certificatePaths.keyPath;
-    const caFile = certificatePaths.caPath;
+    // Load certificates to use when connecting to healthcheck API (only if connecting to Qlik Sense)
+    let certFile, keyFile, caFile;
+    if (globals.options.qsConnection) {
+        // On macOS:
+        // When running in packaged app (using SEA): filename = /home/goran/code/butler/butler
+        // When running as Node.js: import.meta.url =  /Users/goran/code/butler/src/app.js
+        //
+        // Use the centralized certificate path utility from globals
+        const certificatePaths = globals.getCertificatePaths();
+        certFile = certificatePaths.certPath;
+        keyFile = certificatePaths.keyPath;
+        caFile = certificatePaths.caPath;
 
-    globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
-    globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
-    globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
+        globals.logger.verbose(`MAIN: Using client cert file: ${certFile}`);
+        globals.logger.verbose(`MAIN: Using client cert key file: ${keyFile}`);
+        globals.logger.verbose(`MAIN: Using client cert CA file: ${caFile}`);
+    }
 
     // Set up heartbeats, if enabled in the config file
     if (globals.config.has('Butler.heartbeat.enable') && globals.config.get('Butler.heartbeat.enable') === true) {
@@ -103,10 +105,14 @@ async function build(opts = {}) {
         globals.logger.info(`API rate limit    : ${globals.options.apiRateLimit} calls per minute`);
         globals.logger.info('--------------------------------------');
 
-        // Log info about what Qlik Sense certificates are being used
-        globals.logger.info(`Client cert       : ${certFile}`);
-        globals.logger.info(`Client cert key   : ${keyFile}`);
-        globals.logger.info(`Client cert CA    : ${caFile}`);
+        // Log info about what Qlik Sense certificates are being used (only if connecting to Qlik Sense)
+        if (globals.options.qsConnection) {
+            globals.logger.info(`Client cert       : ${certFile}`);
+            globals.logger.info(`Client cert key   : ${keyFile}`);
+            globals.logger.info(`Client cert CA    : ${caFile}`);
+        } else {
+            globals.logger.info('Qlik Sense connection disabled (--no-qs-connection)');
+        }
 
         // Load approved directories for file system API operations from config file
         await globals.loadApprovedDirectories();

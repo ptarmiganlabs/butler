@@ -353,13 +353,18 @@ Configuration File:
             )}`,
         );
 
-        // Get certificate file paths for QRS connection
-        const certificates = this.loadCertificates();
-
         this.configEngine = null;
         this.configQRS = null;
         if (this.config.has('Butler.restServerApiDocGenerate') === false || this.config.get('Butler.restServerApiDocGenerate') === false) {
             this.logger.debug('CONFIG: API doc mode=off');
+
+            // Only load certificates if we're connecting to Qlik Sense
+            let certificates = null;
+            if (this.options.qsConnection) {
+                // Get certificate file paths for QRS connection
+                certificates = this.loadCertificates();
+            }
+
             // Deep copy of headers object
             const httpHeadersEngine = JSON.parse(JSON.stringify(this.config.get('Butler.configEngine.headers')));
 
@@ -370,8 +375,8 @@ Configuration File:
                 port: this.config.get('Butler.configEngine.port'),
                 isSecure: this.config.get('Butler.configEngine.useSSL'),
                 headers: httpHeadersEngine,
-                cert: certificates.cert,
-                key: certificates.key,
+                cert: certificates?.cert,
+                key: certificates?.key,
                 rejectUnauthorized: this.config.get('Butler.configEngine.rejectUnauthorized'),
             };
 
@@ -386,10 +391,10 @@ Configuration File:
                 useSSL: this.config.get('Butler.configQRS.useSSL'),
                 headers: httpHeadersQRS,
                 rejectUnauthorized: this.config.get('Butler.configQRS.rejectUnauthorized'),
-                cert: certificates.cert,
-                key: certificates.key,
-                ca: certificates.ca,
-                certPaths: certificates.paths,
+                cert: certificates?.cert,
+                key: certificates?.key,
+                ca: certificates?.ca,
+                certPaths: certificates?.paths,
             };
         } else {
             this.logger.debug('CONFIG: API doc mode=on');
