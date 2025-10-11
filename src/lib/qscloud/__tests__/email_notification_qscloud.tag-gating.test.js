@@ -29,7 +29,7 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
             getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo,
         }));
         await jest.unstable_mockModule('../util.js', () => ({ getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls }));
-        await jest.unstable_mockModule('../../qseow/smtp.js', () => ({
+        await jest.unstable_mockModule('../../qseow/smtp/index.js', () => ({
             sendEmail: mockSendEmail,
             isSmtpConfigOk: mockIsSmtpConfigOk,
         }));

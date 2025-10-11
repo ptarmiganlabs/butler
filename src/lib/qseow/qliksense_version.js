@@ -3,7 +3,7 @@ import axios from 'axios';
 import https from 'https';
 
 import globals from '../../globals.js';
-import { postQlikSenseVersionToInfluxDB } from '../post_to_influxdb.js';
+import { postQlikSenseVersionToInfluxDB } from '../influxdb/qlik_sense_version.js';
 
 /**
  * Checks the Qlik Sense version.

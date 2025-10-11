@@ -5,7 +5,7 @@ import globals from '../../globals.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
-import { sendEmail, isSmtpConfigOk } from '../qseow/smtp.js';
+import { sendEmail, isSmtpConfigOk } from '../qseow/smtp/index.js';
 import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
 
 let rateLimiterMemoryFailedReloads;

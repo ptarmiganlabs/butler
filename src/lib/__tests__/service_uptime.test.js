@@ -37,7 +37,7 @@ describe('lib/service_uptime', () => {
     beforeAll(async () => {
         await jest.unstable_mockModule('@breejs/later', () => ({ default: mockLater }));
         await jest.unstable_mockModule('moment', () => ({ default: mockMoment }));
-        await jest.unstable_mockModule('../post_to_influxdb.js', () => ({
+        await jest.unstable_mockModule('../influxdb/butler_metrics.js', () => ({
             postButlerMemoryUsageToInfluxdb: mockInflux.postButlerMemoryUsageToInfluxdb,
         }));
         await jest.unstable_mockModule('../post_to_new_relic.js', () => ({

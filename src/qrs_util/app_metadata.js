@@ -6,9 +6,15 @@ import globals from '../globals.js';
  * Function to get metadata for a specific app from QSEoW.
  *
  * @param {string} appId - The ID of the app.
- * @returns {Promise<object>} - Returns the metadata of the app.
+ * @returns {Promise<object>} - Returns the metadata of the app, empty object if app doesn't exist, or false on error.
  */
 async function getAppMetadata(appId) {
+    // Validate appId parameter
+    if (!appId || typeof appId !== 'string' || appId.trim() === '') {
+        globals.logger.warn(`[QSEOW] GET APP METADATA: Invalid or empty appId parameter: "${appId}"`);
+        return {};
+    }
+
     globals.logger.debug(`[QSEOW] GET APP METADATA: Retrieving metadata for app ${appId}`);
 
     try {

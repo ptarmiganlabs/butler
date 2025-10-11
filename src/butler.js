@@ -319,7 +319,7 @@ const start = async () => {
     }
 
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
-    globals.udpServerReloadTaskSocket = dgram.createSocket({
+    globals.udpServerTaskResultSocket = dgram.createSocket({
         type: 'udp4',
         reuseAddr: true,
     });
@@ -330,7 +330,7 @@ const start = async () => {
         udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
-        globals.udpServerReloadTaskSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
+        globals.udpServerTaskResultSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
     }
 };

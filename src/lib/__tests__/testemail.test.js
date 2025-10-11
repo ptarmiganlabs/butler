@@ -3,6 +3,10 @@ import { jest } from '@jest/globals';
 describe('lib/testemail', () => {
     let sendTestEmail;
     const mockGlobals = {
+        config: {
+            has: jest.fn().mockReturnValue(false),
+            get: jest.fn(),
+        },
         logger: { error: jest.fn() },
         getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
@@ -10,7 +14,7 @@ describe('lib/testemail', () => {
 
     beforeAll(async () => {
         await jest.unstable_mockModule('../../globals.js', () => ({ default: mockGlobals }));
-        await jest.unstable_mockModule('../qseow/smtp.js', () => ({ sendEmailBasic: mockSmtp.sendEmailBasic }));
+        await jest.unstable_mockModule('../qseow/smtp/index.js', () => ({ sendEmailBasic: mockSmtp.sendEmailBasic }));
         ({ default: sendTestEmail } = await import('../testemail.js'));
     });
 
