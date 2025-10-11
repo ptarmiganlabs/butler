@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import nodemailer from 'nodemailer';
 import hbs from 'nodemailer-express-handlebars';
 import expressHandlebars from 'express-handlebars';
@@ -51,7 +50,6 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
         const subject = subjectTemplate(templateContext);
 
         // Loop over all email recipients
-        // eslint-disable-next-line no-restricted-syntax
         for (const recipientEmail of recipientsEmail) {
             // Verify that email address is valid
             if (emailValidator.validate(recipientEmail) === true) {
@@ -67,13 +65,11 @@ export async function sendEmail(from, recipientsEmail, emailPriority, subjectHan
                 };
 
                 // Verify SMTP configuration
-                // eslint-disable-next-line no-await-in-loop
                 const smtpStatus = await transporter.verify();
                 globals.logger.debug(`[QSEOW] EMAIL CONFIG: SMTP status: ${smtpStatus}`);
                 globals.logger.debug(`[QSEOW] EMAIL CONFIG: Message=${JSON.stringify(message, null, 2)}`);
 
                 if (smtpStatus) {
-                    // eslint-disable-next-line no-await-in-loop
                     const result = await transporter.sendMail(message);
                     globals.logger.debug(
                         `[QSEOW] EMAIL CONFIG: Sending reload failure notification result: ${JSON.stringify(result, null, 2)}`,
@@ -110,7 +106,6 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
         const transporter = nodemailer.createTransport(smtpOptions);
 
         // Loop over all email recipients
-        // eslint-disable-next-line no-restricted-syntax
         for (const recipientEmail of recipientsEmail) {
             // Verify that email address is valid
             if (emailValidator.validate(recipientEmail) === true) {
@@ -125,13 +120,11 @@ export async function sendEmailBasic(from, recipientsEmail, emailPriority, subje
                 };
 
                 // Verify SMTP configuration
-                // eslint-disable-next-line no-await-in-loop
                 const smtpStatus = await transporter.verify();
                 globals.logger.debug(`[QSEOW] SMTP BASIC: SMTP status: ${smtpStatus}`);
                 globals.logger.debug(`[QSEOW] SMTP BASIC: Message=${JSON.stringify(message, null, 2)}`);
 
                 if (smtpStatus) {
-                    // eslint-disable-next-line no-await-in-loop
                     const result = await transporter.sendMail(message);
                     globals.logger.debug(`[QSEOW] SMTP BASIC: Sending email result: ${JSON.stringify(result, null, 2)}`);
                 } else {

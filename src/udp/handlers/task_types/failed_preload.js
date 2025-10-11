@@ -1,18 +1,17 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import getPreloadTaskExecutionResults from '../../../qrs_util/preload_task_execution_results.js';
+import { sendPreloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/index.js';
 
 /**
  * Handler for failed preload tasks.
  *
- * Placeholder handler for App Preload task failures.
- * Preload tasks load apps into memory for improved user access performance.
+ * Processes failed preload task events by:
+ * - Retrieving task execution results
+ * - Sending email notifications (if configured)
  *
- * TODO: Implement comprehensive handling for failed preload tasks including:
- * - Preload error logging and analysis
- * - Memory and performance impact tracking
- * - Notification sending (email, Slack, Teams, etc.)
- * - Metrics collection for InfluxDB
- * - Incident management integration
+ * Preload tasks load apps into memory for improved user access performance.
+ * Note: Preload tasks do not generate script logs.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with preload failure details:
@@ -27,25 +26,71 @@ import globals from '../../../globals.js';
  *   - msg[8]: Log level
  *   - msg[9]: Execution ID
  *   - msg[10]: Log message
- * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS (currently not used in this handler):
+ * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS containing:
  *   - taskType: Type of task (4=Preload)
  *   - tags: Array of tag objects with id and name
  *   - customProperties: Array of custom property objects
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} Returns true if processing was successful, false otherwise
  */
 export const handleFailedPreloadTask = async (msg, taskMetadata) => {
     try {
+        const preloadTaskId = msg[5];
+
         globals.logger.verbose(
-            `[QSEOW] TASKFAILURE: Preload task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
+            `[QSEOW] PRELOAD TASK FAILURE: Preload task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${preloadTaskId}`,
         );
 
-        // TODO: Implement handling for failed preload tasks
-        // This is a placeholder for future implementation
-        globals.logger.info(
-            `[QSEOW] TASKFAILURE: Preload task ${msg[2]} (${msg[5]}) failed. No processing configured yet for this task type.`,
-        );
+        globals.logger.info(`[QSEOW] PRELOAD TASK FAILURE: Preload task ${msg[2]} (${preloadTaskId}) failed.`);
+
+        // Get tags for the task that failed
+        const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
+        globals.logger.verbose(`[QSEOW] Tags for task ${preloadTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
+
+        // Get preload task custom properties
+        const taskCustomProperties =
+            taskMetadata?.customProperties?.map((cp) => ({
+                name: cp.definition.name,
+                value: cp.value,
+            })) || [];
+
+        // Get results from last preload task execution
+        const taskInfo = await getPreloadTaskExecutionResults(preloadTaskId);
+
+        if (!taskInfo) {
+            globals.logger.warn(
+                `[QSEOW] PRELOAD TASK FAILURE: Unable to get task info for preload task ${preloadTaskId}. Will continue with email notification if configured.`,
+            );
+        } else {
+            globals.logger.verbose(
+                `[QSEOW] PRELOAD TASK FAILURE: Task info for preload task ${preloadTaskId}: ${JSON.stringify(taskInfo, null, 2)}`,
+            );
+        }
+
+        // Send email notification for failed preload task
+        if (
+            globals.config.has('Butler.emailNotification.preloadTaskFailure.enable') &&
+            globals.config.get('Butler.emailNotification.preloadTaskFailure.enable') === true
+        ) {
+            sendPreloadTaskFailureNotificationEmail({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: preloadTaskId,
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                taskInfo,
+                qs_taskMetadata: taskMetadata,
+            });
+        }
+
+        return true;
     } catch (err) {
-        globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed preload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
+        globals.logger.error(`[QSEOW] PRELOAD TASK FAILURE: Error handling failed preload task: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] PRELOAD TASK FAILURE: Stack trace: ${err.stack}`);
+        return false;
     }
 };

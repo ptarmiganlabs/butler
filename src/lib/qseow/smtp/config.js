@@ -7,6 +7,8 @@ export let rateLimiterMemoryFailedReloads;
 export let rateLimiterMemoryAbortedReloads;
 export let rateLimiterMemorySuccessDistribute;
 export let rateLimiterMemoryFailedDistribute;
+export let rateLimiterMemorySuccessPreloads;
+export let rateLimiterMemoryFailedPreloads;
 export let rateLimiterMemoryServiceMonitor;
 
 // Initialize rate limiters
@@ -53,6 +55,24 @@ if (globals.config.has('Butler.emailNotification.distributeTaskFailure.rateLimit
     });
 } else {
     rateLimiterMemoryFailedDistribute = new RateLimiterMemory({ points: 1, duration: 300 });
+}
+
+if (globals.config.has('Butler.emailNotification.preloadTaskSuccess.rateLimit')) {
+    rateLimiterMemorySuccessPreloads = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.emailNotification.preloadTaskSuccess.rateLimit'),
+    });
+} else {
+    rateLimiterMemorySuccessPreloads = new RateLimiterMemory({ points: 1, duration: 300 });
+}
+
+if (globals.config.has('Butler.emailNotification.preloadTaskFailure.rateLimit')) {
+    rateLimiterMemoryFailedPreloads = new RateLimiterMemory({
+        points: 1,
+        duration: globals.config.get('Butler.emailNotification.preloadTaskFailure.rateLimit'),
+    });
+} else {
+    rateLimiterMemoryFailedPreloads = new RateLimiterMemory({ points: 1, duration: 300 });
 }
 
 if (globals.config.has('Butler.emailNotification.serviceStopped.rateLimit')) {
@@ -139,6 +159,50 @@ export function isEmailReloadAbortedNotificationConfigOk() {
             // SMTP is disabled
             globals.logger.error(
                 '[QSEOW] EMAIL CONFIG: Reload aborted email notifications are disabled in config file - will not send email',
+            );
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
+        return false;
+    }
+}
+
+/**
+ * Checks if email preload success notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
+export function isEmailPreloadSuccessNotificationConfigOk() {
+    try {
+        // First make sure email sending is enabled in the config file
+        if (!globals.config.get('Butler.emailNotification.preloadTaskSuccess.enable')) {
+            // SMTP is disabled
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Preload success email notifications are disabled in config file - will not send email',
+            );
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        globals.logger.error(`[QSEOW] EMAIL CONFIG: ${globals.getErrorMessage(err)}`);
+        return false;
+    }
+}
+
+/**
+ * Checks if email preload failure notification configuration is valid.
+ * @returns {boolean} True if configuration is valid, false otherwise.
+ */
+export function isEmailPreloadFailedNotificationConfigOk() {
+    try {
+        // First make sure email sending is enabled in the config file
+        if (!globals.config.get('Butler.emailNotification.preloadTaskFailure.enable')) {
+            // SMTP is disabled
+            globals.logger.error(
+                '[QSEOW] EMAIL CONFIG: Preload failure email notifications are disabled in config file - will not send email',
             );
             return false;
         }

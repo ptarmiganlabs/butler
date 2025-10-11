@@ -137,6 +137,14 @@ Butler:
                 dynamic:
                     useAppTags: true # Should app tags be sent to InfluxDb as tags?
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        preloadTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
 
     # Store script logs of failed reloads on disk.
     # The script logs will be stored in daily directories under the specified main directory below
@@ -465,6 +473,38 @@ Butler:
             subject: '✅ Qlik Sense distribute task success: "{{taskName}}"'
             bodyFileDirectory: ...
             htmlTemplateFile: success-distribute
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
+        preloadTaskSuccess:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_PreloadSuccessAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_PreloadSuccessAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '✅ Qlik Sense preload task success: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: success-preload
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
+        preloadTaskFailure:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_PreloadFailedAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_PreloadFailedAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '❌ Qlik Sense preload task failed: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: failed-preload
             fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
             recipients:
                 # - ...

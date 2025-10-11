@@ -559,3 +559,125 @@ export function postDistributeTaskSuccessNotificationInfluxDb(distributeParams) 
         globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: ${err.stack}`);
     }
 }
+
+// Store information about successful preload tasks to InfluxDB
+export function postPreloadTaskSuccessNotificationInfluxDb(preloadParams) {
+    try {
+        globals.logger.verbose('[QSEOW] PRELOAD TASK SUCCESS: Sending preload task notification to InfluxDB');
+
+        // Add tags
+        let tags = {};
+
+        // Get static tags as array from config file
+        const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
+
+        // Add static tags to tags object
+        if (configStaticTags) {
+            for (const item of configStaticTags) {
+                tags[item.name] = item.value;
+            }
+        }
+
+        // Add additional tags
+        tags.host = preloadParams.host;
+        tags.user = preloadParams.user;
+        tags.task_id = preloadParams.taskId;
+        tags.task_name = preloadParams.taskName;
+        tags.log_level = preloadParams.logLevel;
+
+        // Build InfluxDB datapoint
+        let datapoint = [
+            {
+                measurement: 'preload_task_success',
+                tags: tags,
+                fields: {
+                    log_timestamp: preloadParams.logTimeStamp,
+                    execution_id: preloadParams.executionId,
+                    log_message: preloadParams.logMessage,
+                },
+            },
+        ];
+
+        // Get task info
+        const { taskInfo } = preloadParams;
+
+        globals.logger.debug(`[QSEOW] PRELOAD TASK SUCCESS: Task info:\n${JSON.stringify(taskInfo, null, 2)}`);
+
+        // Use task info to enrich log entry sent to InfluxDB
+        datapoint[0].tags.task_executingNodeName = taskInfo.executingNodeName;
+        datapoint[0].tags.task_executionStatusNum = taskInfo.executionStatusNum;
+        datapoint[0].tags.task_exeuctionStatusText = taskInfo.executionStatusText;
+
+        datapoint[0].fields.task_executionStartTime_json = JSON.stringify(taskInfo.executionStartTime);
+        datapoint[0].fields.task_executionStopTime_json = JSON.stringify(taskInfo.executionStopTime);
+
+        datapoint[0].fields.task_executionDuration_json = JSON.stringify(taskInfo.executionDuration);
+
+        // Add execution duration in seconds
+        datapoint[0].fields.task_executionDuration_sec =
+            taskInfo.executionDuration.hours * 3600 + taskInfo.executionDuration.minutes * 60 + taskInfo.executionDuration.seconds;
+
+        // Add execution duration in minutes
+        datapoint[0].fields.task_executionDuration_min =
+            taskInfo.executionDuration.hours * 60 + taskInfo.executionDuration.minutes + taskInfo.executionDuration.seconds / 60;
+
+        // Add execution duration in hours
+        datapoint[0].fields.task_executionDuration_h =
+            taskInfo.executionDuration.hours + taskInfo.executionDuration.minutes / 60 + taskInfo.executionDuration.seconds / 3600;
+
+        // Should task tags be included?
+        if (globals.config.get('Butler.influxDb.preloadTaskSuccess.tag.dynamic.useTaskTags') === true) {
+            // Add task tags to InfluxDB datapoint
+            if (preloadParams.taskTags) {
+                for (const item of preloadParams.taskTags) {
+                    datapoint[0].tags[`taskTag_${item}`] = 'true';
+                }
+            }
+        }
+
+        // Add any static tags (defined in the config file)
+        const staticTags = globals.config.get('Butler.influxDb.preloadTaskSuccess.tag.static');
+        if (staticTags) {
+            for (const item of staticTags) {
+                datapoint[0].tags[item.name] = item.value;
+            }
+        }
+
+        const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+        // Send to InfluxDB
+        globals.influx
+            .writePoints(deepClonedDatapoint)
+
+            .then(() => {
+                globals.logger.silly(
+                    `[QSEOW] PRELOAD TASK SUCCESS: Influxdb datapoint for preload task notification: ${JSON.stringify(datapoint, null, 2)}`,
+                );
+
+                datapoint = null;
+                globals.logger.verbose('[QSEOW] PRELOAD TASK SUCCESS: Sent preload task notification to InfluxDB');
+            })
+            .catch((err) => {
+                if (globals.isSea) {
+                    globals.logger.error(
+                        `[QSEOW] PRELOAD TASK SUCCESS: Error saving preload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                } else {
+                    globals.logger.error(
+                        `[QSEOW] PRELOAD TASK SUCCESS: Error saving preload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+                    );
+                }
+            });
+    } catch (err) {
+        if (globals.isSea) {
+            globals.logger.error(
+                `[QSEOW] PRELOAD TASK SUCCESS: Error processing preload task success notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+            );
+        } else {
+            globals.logger.error(
+                `[QSEOW] PRELOAD TASK SUCCESS: Error processing preload task success notification to InfluxDB! ${globals.getErrorMessage(err)}`,
+            );
+        }
+        globals.logger.error(`[QSEOW] PRELOAD TASK SUCCESS: ${err.stack}`);
+    }
+}

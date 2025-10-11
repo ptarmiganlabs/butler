@@ -501,6 +501,39 @@ export const confifgFileSchema = {
                             required: ['enable', 'tag'],
                             additionalProperties: false,
                         },
+                        preloadTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                     },
                     required: [
                         'enable',
@@ -517,6 +550,7 @@ export const confifgFileSchema = {
                         'externalProgramTaskFailure',
                         'distributeTaskSuccess',
                         'distributeTaskFailure',
+                        'preloadTaskSuccess',
                     ],
                     additionalProperties: false,
                 },
@@ -1482,6 +1516,112 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                         distributeTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                alertEnableByCustomProperty: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        customPropertyName: { type: 'string' },
+                                        enabledValue: { type: 'string' },
+                                    },
+                                    required: ['enable', 'customPropertyName', 'enabledValue'],
+                                    additionalProperties: false,
+                                },
+                                alertEnabledByEmailAddress: {
+                                    type: 'object',
+                                    properties: {
+                                        customPropertyName: { type: 'string' },
+                                    },
+                                    required: ['customPropertyName'],
+                                    additionalProperties: false,
+                                },
+                                rateLimit: { type: 'number' },
+                                priority: {
+                                    type: 'string',
+                                    enum: ['low', 'normal', 'high'],
+                                    transform: ['trim', 'toLowerCase'],
+                                },
+                                subject: { type: 'string' },
+                                bodyFileDirectory: { type: 'string' },
+                                htmlTemplateFile: { type: 'string' },
+                                fromAddress: { type: 'string' },
+                                recipients: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'string',
+                                    },
+                                },
+                            },
+                            required: [
+                                'enable',
+                                'alertEnableByCustomProperty',
+                                'alertEnabledByEmailAddress',
+                                'rateLimit',
+                                'priority',
+                                'subject',
+                                'bodyFileDirectory',
+                                'htmlTemplateFile',
+                                'fromAddress',
+                                'recipients',
+                            ],
+                            additionalProperties: false,
+                        },
+                        preloadTaskSuccess: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                alertEnableByCustomProperty: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        customPropertyName: { type: 'string' },
+                                        enabledValue: { type: 'string' },
+                                    },
+                                    required: ['enable', 'customPropertyName', 'enabledValue'],
+                                    additionalProperties: false,
+                                },
+                                alertEnabledByEmailAddress: {
+                                    type: 'object',
+                                    properties: {
+                                        customPropertyName: { type: 'string' },
+                                    },
+                                    required: ['customPropertyName'],
+                                    additionalProperties: false,
+                                },
+                                rateLimit: { type: 'number' },
+                                priority: {
+                                    type: 'string',
+                                    enum: ['low', 'normal', 'high'],
+                                    transform: ['trim', 'toLowerCase'],
+                                },
+                                subject: { type: 'string' },
+                                bodyFileDirectory: { type: 'string' },
+                                htmlTemplateFile: { type: 'string' },
+                                fromAddress: { type: 'string' },
+                                recipients: {
+                                    type: ['array', 'null'],
+                                    items: {
+                                        type: 'string',
+                                    },
+                                },
+                            },
+                            required: [
+                                'enable',
+                                'alertEnableByCustomProperty',
+                                'alertEnabledByEmailAddress',
+                                'rateLimit',
+                                'priority',
+                                'subject',
+                                'bodyFileDirectory',
+                                'htmlTemplateFile',
+                                'fromAddress',
+                                'recipients',
+                            ],
+                            additionalProperties: false,
+                        },
+                        preloadTaskFailure: {
                             type: 'object',
                             properties: {
                                 enable: { type: 'boolean' },

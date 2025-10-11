@@ -194,6 +194,14 @@ Butler:
                       value: prod-1
                 dynamic:
                     useTaskTags: true # Should task tags be stored in InfluxDB as tags?
+        preloadTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
 
     # Store script logs of failed reloads on disk.
     # The script logs will be stored in daily directories under the specified main directory below
@@ -536,6 +544,50 @@ Butler:
             subject: '✅ Qlik Sense distribute task success: "{{taskName}}"' # Email subject. Can use template fields
             bodyFileDirectory: path/to/email_templates # Directory where email body template files are stored
             htmlTemplateFile: success-distribute # Name of email body template file to use
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+            recipients: # Array of email addresses to which the notification email will be sent
+                - <Email address 1>
+                - <Email address 2>
+        preloadTaskSuccess:
+            enable: false
+            # Custom property used to control which task successes will cause alert emails to be sent
+            # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+            # If this setting is false, alerts will be sent for all successful preload tasks.
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_PreloadSuccessAlertEnableEmail'
+                enabledValue: 'Yes'
+            # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+            # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_PreloadSuccessAlertSendToEmail'
+            rateLimit: 600 # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+            priority: high # high/normal/low
+            subject: '✅ Qlik Sense preload task success: "{{taskName}}"' # Email subject. Can use template fields
+            bodyFileDirectory: path/to/email_templates # Directory where email body template files are stored
+            htmlTemplateFile: success-preload # Name of email body template file to use
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
+            recipients: # Array of email addresses to which the notification email will be sent
+                - <Email address 1>
+                - <Email address 2>
+        preloadTaskFailure:
+            enable: false
+            # Custom property used to control which task failures will cause alert emails to be sent
+            # If this setting is true, alerts will not be sent for all tasks, but *only* for tasks with the CP set to the enabledValue.
+            # If this setting is false, alerts will be sent for all failed preload tasks.
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_PreloadFailedAlertEnableEmail'
+                enabledValue: 'Yes'
+            # Custom property used to say that alerts for a certain task should be sent to zero or more recipients
+            # These alerts will be sent irrespective of the alertEnableByCustomProperty.enable setting.
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_PreloadFailedAlertSendToEmail'
+            rateLimit: 600 # Min seconds between emails for a given taskID. Defaults to 5 minutes.
+            priority: high # high/normal/low
+            subject: '❌ Qlik Sense preload task failed: "{{taskName}}"' # Email subject. Can use template fields
+            bodyFileDirectory: path/to/email_templates # Directory where email body template files are stored
+            htmlTemplateFile: failed-preload # Name of email body template file to use
             fromAddress: Qlik Sense (no-reply) <qliksense-noreply@mydomain.com>
             recipients: # Array of email addresses to which the notification email will be sent
                 - <Email address 1>
