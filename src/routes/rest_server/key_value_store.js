@@ -167,26 +167,21 @@ async function handlerPostKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace === undefined || request.body.key === undefined || request.body.key === '') {
-            // Required parameter is missing
-            globals.logger.error('KEYVALUE: Required parameter missing.');
-            reply.send(httpErrors(400, 'Required parameter is missing'));
-        } else {
-            let ttl = 0;
-            if (request.body.ttl !== undefined) {
-                // TTL parameter available, use it
-                ttl = parseInt(request.body.ttl, 10);
-            }
-
-            await addKeyValuePair(request.params.namespace, request.body.key, request.body.value, request.body.ttl);
-
-            reply.code(201).send({
-                namespace: request.params.namespace,
-                key: request.body.key,
-                value: request.body.value,
-                ttl,
-            });
+        // Fastify schema validation ensures namespace and key are present and non-empty
+        let ttl = 0;
+        if (request.body.ttl !== undefined) {
+            // TTL parameter available, use it
+            ttl = parseInt(request.body.ttl, 10);
         }
+
+        await addKeyValuePair(request.params.namespace, request.body.key, request.body.value, request.body.ttl);
+
+        reply.code(201).send({
+            namespace: request.params.namespace,
+            key: request.body.key,
+            value: request.body.value,
+            ttl,
+        });
     } catch (err) {
         globals.logger.error(
             `KEYVALUE: Failed adding key-value to namespace: ${request.params.namespace}, error is: ${JSON.stringify(err, null, 2)}`,
@@ -204,38 +199,34 @@ async function handlerDeleteKeyValueInNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace === undefined || request.params.key === undefined || request.params.key === '') {
-            // Required parameter is missing
-            globals.logger.error('KEYVALUE: Required parameter missing.');
-            reply.send(httpErrors(400, 'Required parameter is missing'));
+        // Fastify schema validation ensures namespace and key are present and non-empty
+
+        // Does namespace exist?
+        const kv = getNamespace(request.params.namespace);
+
+        if (kv === undefined) {
+            // Namespace does not exist. Error.
+            globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
+            reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
         } else {
-            // Does namespace exist?
-            const kv = getNamespace(request.params.namespace);
-
-            if (kv === undefined) {
-                // Namespace does not exist. Error.
-                globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
-                reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
+            // Namespace exists. Is there a key specified?
+            if (request.params.key === undefined) {
+                // No key specified.
+                // In future version: Return list of all key-value pairs in this namespace
+                // Now: Return error
+                globals.logger.error(`KEYVALUE: No key specified for namespace: ${request.params.namespace}`);
+                reply.send(httpErrors(400, `No key specified for namespace: ${request.params.namespace}`));
             } else {
-                // Namespace exists. Is there a key specified?
-                if (request.params.key === undefined) {
-                    // No key specified.
-                    // In future version: Return list of all key-value pairs in this namespace
-                    // Now: Return error
-                    globals.logger.error(`KEYVALUE: No key specified for namespace: ${request.params.namespace}`);
-                    reply.send(httpErrors(400, `No key specified for namespace: ${request.params.namespace}`));
-                } else {
-                    // Key specified
-                    // keyvIndexDeleteKey(request.params.namespace, request.params.key);
-                    const value = await deleteKeyValuePair(request.params.namespace, request.params.key);
+                // Key specified
+                // keyvIndexDeleteKey(request.params.namespace, request.params.key);
+                const value = await deleteKeyValuePair(request.params.namespace, request.params.key);
 
-                    if (value === false) {
-                        // Key does not exist
-                        reply.send(httpErrors(400, `Key '${request.params.key}' not found in namespace: ${request.params.namespace}`));
-                    } else {
-                        // Key found and deleted
-                        reply.code(204).send();
-                    }
+                if (value === false) {
+                    // Key does not exist
+                    reply.send(httpErrors(400, `Key '${request.params.key}' not found in namespace: ${request.params.namespace}`));
+                } else {
+                    // Key found and deleted
+                    reply.code(204).send();
                 }
             }
         }
@@ -260,37 +251,33 @@ async function handlerDeleteNamespace(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace === undefined) {
-            // Required parameter is missing
-            globals.logger.error('KEYVALUE: No namespace specified.');
-            reply.send(httpErrors(400, 'No namespace specified'));
+        // Fastify schema validation ensures namespace is present and non-empty
+
+        // Does namespace exist?
+        // const kv = kvStore.keyv.find((item) => item.namespace === request.params.namespace);
+        const kv = getNamespace(request.params.namespace);
+
+        if (kv === undefined) {
+            // Namespace does not exist. Error.
+            globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
+            reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
         } else {
-            // Does namespace exist?
-            // const kv = kvStore.keyv.find((item) => item.namespace === request.params.namespace);
-            const kv = getNamespace(request.params.namespace);
+            // Namespace exists
 
-            if (kv === undefined) {
-                // Namespace does not exist. Error.
-                globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
-                reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
-            } else {
-                // Namespace exists
+            await deleteNamespace(request.params.namespace);
+            // // Remove all KV pairs from namespace
+            // await kv.keyv.clear();
 
-                await deleteNamespace(request.params.namespace);
-                // // Remove all KV pairs from namespace
-                // await kv.keyv.clear();
+            // // Delete the namespace
+            // kvStore.keyv = kvStore.keyv.filter(
+            //     (item) => item.namespace !== request.params.namespace
+            // );
 
-                // // Delete the namespace
-                // kvStore.keyv = kvStore.keyv.filter(
-                //     (item) => item.namespace !== request.params.namespace
-                // );
+            // Delete namespace from shadow list of all existing ns/key combos
+            // keyvIndexDeleteNamespace(request.params.namespace);
 
-                // Delete namespace from shadow list of all existing ns/key combos
-                // keyvIndexDeleteNamespace(request.params.namespace);
-
-                globals.logger.verbose(`KEYVALUE: Cleared namespace: ${request.params.namespace}`);
-                reply.code(204).send();
-            }
+            globals.logger.verbose(`KEYVALUE: Cleared namespace: ${request.params.namespace}`);
+            reply.code(204).send();
         }
     } catch (err) {
         globals.logger.error(`KEYVALUE: Failed clearing namespace: ${request.params.namespace}, error is: ${globals.getErrorMessage(err)}`);
@@ -307,41 +294,37 @@ async function handlerGetKeyList(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.params.namespace === undefined) {
-            // Required parameter is missing
-            globals.logger.error('KEYVALUE: No namespace specified.');
-            reply.send(httpErrors(400, 'No namespace specified'));
+        // Fastify schema validation ensures namespace is present and non-empty
+
+        // Does namespace exist?
+        const kv = getNamespace(request.params.namespace);
+
+        if (kv === undefined) {
+            // Namespace does not exist. Error.
+            globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
+            reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
         } else {
-            // Does namespace exist?
-            const kv = getNamespace(request.params.namespace);
+            // Namespace exists. Get list of all keys in it
 
-            if (kv === undefined) {
-                // Namespace does not exist. Error.
-                globals.logger.error(`KEYVALUE: Namespace not found: ${request.params.namespace}`);
-                reply.send(httpErrors(400, `Namespace not found: ${request.params.namespace}`));
-            } else {
-                // Namespace exists. Get list of all keys in it
-
-                const keyList = [];
-                // eslint-disable-next-line no-restricted-syntax
-                for await (const item of kv.keyv.iterator()) {
-                    keyList.push({ key: item[0] });
-                }
-
-                // let kvRes = kvStore.keyvIndex.filter(
-                //     (item) => item.namespace === request.params.namespace
-                // )[0];
-
-                // if (kvRes === undefined) {
-                //     // The namespace existed but is empty. Return empty datastructure to indicate this.
-                //     kvRes = {
-                //         namespace: request.params.namespace,
-                //         keys: [],
-                //     };
-                // }
-
-                reply.code(200).send(JSON.stringify({ namespace: request.params.namespace, keys: keyList }));
+            const keyList = [];
+            // eslint-disable-next-line no-restricted-syntax
+            for await (const item of kv.keyv.iterator()) {
+                keyList.push({ key: item[0] });
             }
+
+            // let kvRes = kvStore.keyvIndex.filter(
+            //     (item) => item.namespace === request.params.namespace
+            // )[0];
+
+            // if (kvRes === undefined) {
+            //     // The namespace existed but is empty. Return empty datastructure to indicate this.
+            //     kvRes = {
+            //         namespace: request.params.namespace,
+            //         keys: [],
+            //     };
+            // }
+
+            reply.code(200).send(JSON.stringify({ namespace: request.params.namespace, keys: keyList }));
         }
     } catch (err) {
         globals.logger.error(

@@ -8,11 +8,13 @@ const apiPutStartTask = {
             properties: {
                 taskId: {
                     type: 'string',
+                    minLength: 1,
                     description:
                         'ID of Qlik Sense task.\nButler will ignore the "magic" task ID of "-" (=dash, hyphen). This ID will not be reported as invalid.',
                     examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
+            required: ['taskId'],
         },
         querystring: {
             type: 'object',
