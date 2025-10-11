@@ -7,6 +7,7 @@ export const apiGetBase62ToBase16 = {
             properties: {
                 base62: {
                     type: 'string',
+                    minLength: 1,
                     description: 'The base62 encoded string that should be converted to base16',
                     examples: ['6DMW88LpSok9Z7P7hUK0wv7bF'],
                 },
@@ -64,6 +65,7 @@ export const apiGetBase16ToBase62 = {
             properties: {
                 base16: {
                     type: 'string',
+                    minLength: 1,
                     description: 'The base16 encoded string that should be converted to base62',
                     examples: ['3199af08bfeeaf5d420f27ed9c01e74370077'],
                 },

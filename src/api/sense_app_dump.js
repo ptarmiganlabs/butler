@@ -7,10 +7,12 @@ export const apiGetSenseAppDump = {
             properties: {
                 appId: {
                     type: 'string',
+                    minLength: 1,
                     description: 'ID of Qlik Sense app.',
                     examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
+            required: ['appId'],
         },
         response: {
             200: {
@@ -81,10 +83,12 @@ export const apiGetAppDump = {
             properties: {
                 appId: {
                     type: 'string',
+                    minLength: 1,
                     description: 'ID of Qlik Sense app.',
                     examples: ['210832b5-6174-4572-bd19-3e61eda675ef'],
                 },
             },
+            required: ['appId'],
         },
         response: {
             200: {

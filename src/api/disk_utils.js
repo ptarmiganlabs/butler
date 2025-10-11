@@ -5,14 +5,17 @@ export const apiFileCopy = {
         summary: 'Copy file(s) between well defined, approved locations.',
         body: {
             type: 'object',
+            required: ['fromFile', 'toFile'],
             properties: {
                 fromFile: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of source file.',
                     examples: ['subfolder/file1.qvd'],
                 },
                 toFile: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of destination file. Can be different from source file name, if needed.',
                     examples: ['archive/file1_20200925.qvd'],
                 },
@@ -21,12 +24,14 @@ export const apiFileCopy = {
                     description:
                         'Controls whether destination file should be overwritten if it already exists. Note that the copy operation will silently fail if you set this to false and the destination exists. Defaults to false.',
                     examples: [false],
+                    default: false,
                 },
                 preserveTimestamp: {
                     type: 'boolean',
                     description:
                         'When true, the timestamp of the source file(s) will be preserved on the destination file(s). When false, timestamp behaviour is OS-dependent. Defaults to false.',
                     examples: [false],
+                    default: false,
                 },
             },
         },
@@ -104,14 +109,17 @@ export const apiFileMove = {
         summary: 'Move file(s) between well defined, approved locations.',
         body: {
             type: 'object',
+            required: ['fromFile', 'toFile'],
             properties: {
                 fromFile: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of source file.',
                     examples: ['subfolder/file1.qvd'],
                 },
                 toFile: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of destination file. Can be different from source file name, if needed.',
                     examples: ['archive/file1_20200925.qvd'],
                 },
@@ -119,6 +127,7 @@ export const apiFileMove = {
                     type: 'boolean',
                     description: 'Controls whether destination file should be overwritten if it already exists. Defaults to false.',
                     examples: [false],
+                    default: false,
                 },
             },
         },
@@ -188,9 +197,11 @@ export const apiFileDelete = {
         summary: 'Delete file(s) in well defined, approved locations.',
         body: {
             type: 'object',
+            required: ['deleteFile'],
             properties: {
                 deleteFile: {
                     type: 'string',
+                    minLength: 1,
                     description:
                         'Name of file to be deleted. Use forward/backward slashes in paths as needed, depending on whether Butler runs on Windows/non-Windows platform.',
                     examples: ['data/qvdstore/sales/file1.qvd'],
@@ -246,9 +257,11 @@ export const apiCreateDir = {
         summary: 'Creates a directory anywhere in the file system.',
         body: {
             type: 'object',
+            required: ['directory'],
             properties: {
                 directory: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Path to directory that should be created. Can be a relative or absolute path.',
                     examples: ['/Users/joe/data/qvds/2020'],
                 },
@@ -298,9 +311,11 @@ export const apiCreateDirQvd = {
         summary: 'Creates a directory in designated QVD directory.',
         body: {
             type: 'object',
+            required: ['directory'],
             properties: {
                 directory: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Directory that should be created.',
                     examples: ['subfolder/2020-10'],
                 },

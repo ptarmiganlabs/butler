@@ -21,15 +21,9 @@ async function handlerGetBase62ToBase16(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.query.base62 === undefined) {
-            // Required parameter is missing
-            reply.send(httpErrors(400, 'Required parameter missing'));
-        } else {
-            const base16 = base62_to_Hex(request.query.base62);
-            return { base62: request.query.base62, base16 };
-        }
-
-        return null;
+        // Fastify schema validation ensures base62 parameter is present and non-empty
+        const base16 = base62_to_Hex(request.query.base62);
+        return { base62: request.query.base62, base16 };
     } catch (err) {
         globals.logger.error(
             `BASECONVERT: Failed converting from base62 to base16: ${request.query.base62}, error is: ${JSON.stringify(err, null, 2)}`,
@@ -49,15 +43,9 @@ async function handlerGetBase16ToBase62(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.query.base16 === undefined) {
-            // Required parameter is missing
-            reply.send(httpErrors(400, 'Required parameter missing'));
-        } else {
-            const base62 = hex_to_base62(request.query.base16);
-            return { base16: request.query.base16, base62 };
-        }
-
-        return null;
+        // Fastify schema validation ensures base16 parameter is present and non-empty
+        const base62 = hex_to_base62(request.query.base16);
+        return { base16: request.query.base16, base62 };
     } catch (err) {
         globals.logger.error(
             `BASECONVERT: Failed converting from base16 to base62: ${request.query.base16}, error is: ${JSON.stringify(err, null, 2)}`,

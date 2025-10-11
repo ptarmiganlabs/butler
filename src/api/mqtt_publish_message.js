@@ -7,11 +7,13 @@ const apiPutMqttMessage = {
             properties: {
                 topic: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Topic to which message should be published.',
                     examples: ['qliksense/new_data_notification/sales'],
                 },
                 message: {
                     type: 'string',
+                    minLength: 1,
                     description:
                         'The message is a generic text string and can thus contain anything that can be represented in a string, including JSON, key-value pairs, plain text etc.',
                     examples: ['dt=20201028'],

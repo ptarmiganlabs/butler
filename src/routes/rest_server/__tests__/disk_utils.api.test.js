@@ -286,23 +286,23 @@ describe('REST: disk utils endpoints', () => {
     test('Missing parameters return 400 with helpful message', async () => {
         const r1 = await app.inject({ method: 'PUT', url: '/v4/filecopy', payload: {} });
         expect(r1.statusCode).toBe(400);
-        expect(r1.json().message).toMatch(/required parameter missing/i);
+        expect(r1.json().message).toMatch(/required property|required parameter/i);
 
         const r2 = await app.inject({ method: 'PUT', url: '/v4/filemove', payload: {} });
         expect(r2.statusCode).toBe(400);
-        expect(r2.json().message).toMatch(/required parameter missing/i);
+        expect(r2.json().message).toMatch(/required property|required parameter/i);
 
         const r3 = await app.inject({ method: 'DELETE', url: '/v4/filedelete', payload: {} });
         expect(r3.statusCode).toBe(400);
-        expect(r3.json().message).toMatch(/required parameter missing/i);
+        expect(r3.json().message).toMatch(/required property|required parameter/i);
 
         const r4 = await app.inject({ method: 'POST', url: '/v4/createdir', payload: {} });
         expect(r4.statusCode).toBe(400);
-        expect(r4.json().message).toMatch(/required parameter missing/i);
+        expect(r4.json().message).toMatch(/required property|required parameter/i);
 
         const r5 = await app.inject({ method: 'POST', url: '/v4/createdirqvd', payload: {} });
         expect(r5.statusCode).toBe(400);
-        expect(r5.json().message).toMatch(/required parameter missing/i);
+        expect(r5.json().message).toMatch(/required property|required parameter/i);
     });
 
     test('OS-aware path handling: Windows vs POSIX', async () => {

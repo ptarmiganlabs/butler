@@ -7,16 +7,19 @@ const apiPutSlackPostMessage = {
             properties: {
                 channel: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Slack channel to post message into. Prefix channel name with #.',
                     examples: ['#reload-notification'],
                 },
                 from_user: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of sending user, as shown in the Slack message',
                     examples: ['Butler the Bot'],
                 },
                 msg: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Text going into the Slack message',
                     examples: ['This is a message from Qlik Sense'],
                 },

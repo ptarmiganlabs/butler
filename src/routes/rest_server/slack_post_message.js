@@ -17,33 +17,29 @@ async function handlerPutSlackPostMessage(request, reply) {
     try {
         logRESTCall(request);
 
-        if (request.body.channel === undefined || request.body.from_user === undefined || request.body.msg === undefined) {
-            // Required parameter is missing
-            reply.send(httpErrors(400, 'Required parameter(s) missing'));
-        } else {
-            const slackConfig = {
-                text: {
-                    blocks: [
-                        {
-                            type: 'section',
-                            text: {
-                                type: 'plain_text',
-                                text: request.body.msg,
-                            },
+        // Fastify schema validation ensures required fields are present and non-empty
+        const slackConfig = {
+            text: {
+                blocks: [
+                    {
+                        type: 'section',
+                        text: {
+                            type: 'plain_text',
+                            text: request.body.msg,
                         },
-                    ],
-                },
-                fromUser: request.body.from_user,
-                channel: request.body.channel,
-                iconEmoji: request.body.emoji,
-                messageType: 'restmsg',
-                webhookUrl: globals.config.get('Butler.slackNotification.restMessage.webhookURL'),
-            };
+                    },
+                ],
+            },
+            fromUser: request.body.from_user,
+            channel: request.body.channel,
+            iconEmoji: request.body.emoji,
+            messageType: 'restmsg',
+            webhookUrl: globals.config.get('Butler.slackNotification.restMessage.webhookURL'),
+        };
 
-            await slackSend(slackConfig, globals.logger);
+        await slackSend(slackConfig, globals.logger);
 
-            reply.code(201).send(request.body);
-        }
+        reply.code(201).send(request.body);
     } catch (err) {
         globals.logger.error(
             `SLACK: Failed sending Slack message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(err, null, 2)}`,
