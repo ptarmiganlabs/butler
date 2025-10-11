@@ -1,5 +1,56 @@
 # Changelog
 
+## [15.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.2.0...butler-v15.0.0) (2025-10-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **preload-alert:** send email when preload task fail or succeed
+* **distribute-alert:** send email when distribution tasks succeed
+* **distribute-alert:** send email when distribution tasks fail
+* **distribute-alert:** store info in InfluxDB about successful/failed distribution tasks
+* **email-alert:** add support for script log head/tail for reload task suceeded emails
+* store info about successful and failed distribution tasks in InfluxDB
+* store info about successful and failed external program tasks in InfluxDB
+* store info about successful user sync tasks in InfluxDB
+
+### Features
+
+* **config-file-validation:** more informative logging when config file is invalid ([d4b2558](https://github.com/ptarmiganlabs/butler/commit/d4b2558fa5c2ffba5ecd29dc09b3118bb6779413))
+* **distribute-alert:** send email when distribution tasks fail ([c7f3b37](https://github.com/ptarmiganlabs/butler/commit/c7f3b374b5b308b0a691fdc7d43b1c1e6aa92d6a))
+* **distribute-alert:** send email when distribution tasks succeed ([fdd0dde](https://github.com/ptarmiganlabs/butler/commit/fdd0ddeeaf03d248d1be5b425ff1e8caf5300151))
+* **distribute-alert:** store info in InfluxDB about successful/failed distribution tasks ([1dc9c2f](https://github.com/ptarmiganlabs/butler/commit/1dc9c2f558f1cca306b36bb9d842486de478b465))
+* **email-alert:** add support for script log head/tail for reload task suceeded emails ([e9b20bb](https://github.com/ptarmiganlabs/butler/commit/e9b20bb7cdf91c4e50a0f4388b8a4e89fd7c30b1))
+* **preload-alert:** send email when preload task fail or succeed ([009c56a](https://github.com/ptarmiganlabs/butler/commit/009c56adbe12eaf21d438bfd82682c74c8d1283f))
+* store info about successful and failed distribution tasks in InfluxDB ([6cb4d78](https://github.com/ptarmiganlabs/butler/commit/6cb4d78f38bb592d8f9da17dc24783e6d21fdde7))
+* store info about successful and failed external program tasks in InfluxDB ([a79b217](https://github.com/ptarmiganlabs/butler/commit/a79b217d9c6a7fa1b88514ef409e76952d2c474e))
+* store info about successful user sync tasks in InfluxDB ([5bd28f6](https://github.com/ptarmiganlabs/butler/commit/5bd28f6e1b9e0cefb3e73b046352fc4770138c32))
+* **udp:** add validation, error handling, and task type detection for UDP handlers ([48decbe](https://github.com/ptarmiganlabs/butler/commit/48decbe345e142eede68caa3f6c8d36fbe3e0b99))
+
+
+### Bug Fixes
+
+* **certificates:** Do not load Sense API certificates when --no-qs-connection is used when starting Butler ([f8fd8fd](https://github.com/ptarmiganlabs/butler/commit/f8fd8fd6391450c4955b9896c43dbd5d591245b5))
+* **email-templates:** update email footers for consistency and remove outdated links ([acb4b15](https://github.com/ptarmiganlabs/butler/commit/acb4b15f36b8d3fa7a2bf389c0e4b9af1065ec8a))
+* **qseow:** make log script retrieval more robust when reload tasks h… ([edd8970](https://github.com/ptarmiganlabs/butler/commit/edd89700cf930bc180458f031f67f06d45977fe6))
+* **qseow:** make log script retrieval more robust when reload tasks have failed, succeeded or been aborted ([86c397b](https://github.com/ptarmiganlabs/butler/commit/86c397b0967bf74d9179aabec7f3b1562728e03e))
+* **smtp:** easier to understand log messages when sending alert emails ([12f262a](https://github.com/ptarmiganlabs/butler/commit/12f262a1c994dd6e1c625ef08a72c1b62804a58a))
+* **udp:** correct task type enum values in comments ([1383b86](https://github.com/ptarmiganlabs/butler/commit/1383b86f0906df572130cf343908d57b162d9ada))
+* **udp:** prevent Butler crashes on External Program Task completion, add robust error handling, and refactor into manageable modules ([19a82f3](https://github.com/ptarmiganlabs/butler/commit/19a82f3b4bf84b3594f8991090c9fa031473d2a7))
+
+
+### Miscellaneous
+
+* **deps:** update dependencies to latest versions ([ed03415](https://github.com/ptarmiganlabs/butler/commit/ed034150ef40d2403dc9a421a24f9df27394d9ec))
+
+
+### Refactoring
+
+* **email:** restructure email related code for better maintainability and future development ([962ece3](https://github.com/ptarmiganlabs/butler/commit/962ece3c4b7b6cac5b6d2a9c78c119c29ba6f3c3))
+* implement shared task detail comparison function for sorting execution results ([ea76075](https://github.com/ptarmiganlabs/butler/commit/ea760753138a76d3052593904817c42f8497a04d))
+* restructure the codebase to make it easier to add more task event types ([91da101](https://github.com/ptarmiganlabs/butler/commit/91da10112b4a4757804a7c48824dabafd74ed2d6))
+* **udp:** split udp_handlers.js into multiple manageable files ([aa8561d](https://github.com/ptarmiganlabs/butler/commit/aa8561d15bc4d6ddecff09790f1e8aaab7da9a28))
+
 ## [14.2.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.1.0...butler-v14.2.0) (2025-10-07)
 
 
