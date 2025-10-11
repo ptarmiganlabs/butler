@@ -311,13 +311,12 @@ Butler:
                 userDirectory: # List of user directories whose users should never have their licenses released
                     - INTERNAL
                     - ADMIN
-                inactive:
-                    Ignore # Ignore/Yes/No. The value is case insensitive
-                    #   No = Don't release licenses for users marked as "Inactive=No" in the QMC
-                    #   Yes = Don't release licenses for users marked as "Inactive=Yes" in the QMC
-                    #   Ignore = Disregard this setting
-                blocked: Ignore # Ignore/Yes/No, No = Don't release licenses for users marked as "Blocked=No" in the QMC
-                removedExternally: ignore # Ignore/Yes/No, No = Don't release licenses for users marked as "Removed externally=No" in the QMC
+                inactive: ignore # ignore/yes/no. The value is case insensitive
+                    #   no = Don't release licenses for users marked as "Inactive=No" in the QMC
+                    #   yes = Don't release licenses for users marked as "Inactive=Yes" in the QMC
+                    #   ignore = Disregard this setting
+                blocked: ignore # ignore/yes/no, no = Don't release licenses for users marked as "Blocked=No" in the QMC
+                removedExternally: ignore # ignore/yes/no, no = Don't release licenses for users marked as "Removed externally=No" in the QMC
             licenseType: # License types to monitor and release
                 analyzer:
                     enable: true # Monitor and release Analyzer licenses
