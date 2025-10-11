@@ -516,54 +516,6 @@ Butler:
             fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
             recipients:
                 # - ...
-        userSyncTaskSuccess:
-            enable: false
-            alertEnableByCustomProperty:
-                enable: false
-                customPropertyName: 'Butler_UserSyncSuccessAlertEnableEmail'
-                enabledValue: 'Yes'
-            alertEnabledByEmailAddress:
-                customPropertyName: 'Butler_UserSyncSuccessAlertSendToEmail'
-            rateLimit: 600
-            priority: high
-            subject: '✅ Qlik Sense user sync task success: "{{taskName}}"'
-            bodyFileDirectory: ...
-            htmlTemplateFile: success-usersync
-            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
-            recipients:
-                # - ...
-        externalProgramTaskSuccess:
-            enable: false
-            alertEnableByCustomProperty:
-                enable: false
-                customPropertyName: 'Butler_ExternalProgramSuccessAlertEnableEmail'
-                enabledValue: 'Yes'
-            alertEnabledByEmailAddress:
-                customPropertyName: 'Butler_ExternalProgramSuccessAlertSendToEmail'
-            rateLimit: 600
-            priority: high
-            subject: '✅ Qlik Sense external program task success: "{{taskName}}"'
-            bodyFileDirectory: ...
-            htmlTemplateFile: success-externalprogram
-            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
-            recipients:
-                # - ...
-        externalProgramTaskFailure:
-            enable: false
-            alertEnableByCustomProperty:
-                enable: false
-                customPropertyName: 'Butler_ExternalProgramFailedAlertEnableEmail'
-                enabledValue: 'Yes'
-            alertEnabledByEmailAddress:
-                customPropertyName: 'Butler_ExternalProgramFailedAlertSendToEmail'
-            rateLimit: 600
-            priority: high
-            subject: '❌ Qlik Sense external program task failed: "{{taskName}}"'
-            bodyFileDirectory: ...
-            htmlTemplateFile: failed-externalprogram
-            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
-            recipients:
-                # - ...
         preloadTaskSuccess:
             enable: false
             alertEnableByCustomProperty:

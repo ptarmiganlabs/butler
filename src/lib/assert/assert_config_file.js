@@ -789,8 +789,26 @@ export async function configFileStructureAssert() {
             // - params: The parameters for the keyword
             // - message: The error message
 
+            globals.logger.error('VERIFY CONFIG FILE: Configuration validation failed with the following errors:');
+            globals.logger.error('---');
+
             for (const error of validate.errors) {
-                globals.logger.error(`VERIFY CONFIG FILE: ${error.instancePath} : ${error.message}`);
+                globals.logger.error(`  Path: ${error.instancePath || '(root)'}`);
+                globals.logger.error(`  Error: ${error.message}`);
+                globals.logger.error(`  Validation keyword: ${error.keyword}`);
+
+                // Show additional details for specific error types
+                if (error.keyword === 'additionalProperties' && error.params?.additionalProperty) {
+                    globals.logger.error(`  Additional property found: "${error.params.additionalProperty}"`);
+                    globals.logger.error(`  This property is not defined in the schema and needs to be either:`);
+                    globals.logger.error(`    - Removed from the config file, OR`);
+                    globals.logger.error(`    - Added to the schema definition`);
+                } else if (error.params) {
+                    globals.logger.error(`  Details: ${JSON.stringify(error.params, null, 2)}`);
+                }
+
+                globals.logger.error(`  Schema path: ${error.schemaPath}`);
+                globals.logger.error('---');
             }
 
             process.exit(1);
