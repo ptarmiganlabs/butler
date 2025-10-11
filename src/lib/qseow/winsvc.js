@@ -1,6 +1,18 @@
 import { exec } from 'child_process';
 
 /**
+ * Validates a hostname or IP address to prevent command injection
+ * @param {string} host Host to validate
+ * @returns {boolean} True if valid, false otherwise
+ */
+function isValidHost(host) {
+    // Allow alphanumeric characters, dots, hyphens, and underscores
+    // This covers standard hostnames, FQDNs, and IP addresses
+    const hostRegex = /^[a-zA-Z0-9._-]+$/;
+    return hostRegex.test(host);
+}
+
+/**
  * Get all names of services installed
  * @param {object} logger Logger object
  * @param {string} host Host from which to get services
@@ -18,6 +30,13 @@ export function all(logger, host = null) {
             logger.verbose('[QSEOW] WINSVC ALL: Getting all services on local machine');
             command = 'sc.exe query state= all';
         } else {
+            // Validate host parameter to prevent command injection
+            if (!isValidHost(host)) {
+                logger.error(`[QSEOW] WINSVC ALL: Invalid host parameter: ${host}`);
+                rejectAll(new Error('Invalid host parameter'));
+                return;
+            }
+
             // A host other that local machine is specfied
             logger.verbose(`[QSEOW] WINSVC ALL: Getting all services on host ${host}`);
             command = `sc.exe \\\\${host} query state= all`;
@@ -136,6 +155,13 @@ export function statusAll(logger, host = null) {
             logger.verbose('[QSEOW] WINSVC STATUSALL: Getting status of all services on local machine');
             command = 'sc.exe query state= all';
         } else {
+            // Validate host parameter to prevent command injection
+            if (!isValidHost(host)) {
+                logger.error(`[QSEOW] WINSVC STATUSALL: Invalid host parameter: ${host}`);
+                reject(new Error('Invalid host parameter'));
+                return;
+            }
+
             // A host other that local machine is specfied
             logger.verbose(`[QSEOW] WINSVC STATUSALL: Getting status of all services on host ${host}`);
             command = `sc.exe \\\\${host} query state= all`;
@@ -246,6 +272,13 @@ export function status(logger, serviceName, host = null) {
             logger.debug(`[QSEOW] WINSVC STATUS: Getting status of service ${serviceName} on local machine`);
             command = `sc.exe query "${serviceName}"`;
         } else {
+            // Validate host parameter to prevent command injection
+            if (!isValidHost(host)) {
+                logger.error(`[QSEOW] WINSVC STATUS: Invalid host parameter: ${host}`);
+                reject(new Error('Invalid host parameter'));
+                return;
+            }
+
             // A host other that local machine is specfied
             logger.debug(`[QSEOW] WINSVC STATUS: Getting status of service ${serviceName} on host ${host}`);
             command = `sc.exe \\\\${host} query "${serviceName}"`;
@@ -336,6 +369,13 @@ export function details(logger, serviceName, host = null) {
 
             command = `sc.exe qc "${serviceName}"`;
         } else {
+            // Validate host parameter to prevent command injection
+            if (!isValidHost(host)) {
+                logger.error(`[QSEOW] WINSVC DETAILS: Invalid host parameter: ${host}`);
+                reject(new Error('Invalid host parameter'));
+                return;
+            }
+
             // A host other that local machine is specfied
             logger.debug(`[QSEOW] WINSVC DETAILS: Getting details of service ${serviceName} on host ${host}`);
 
