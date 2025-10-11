@@ -163,7 +163,7 @@ const start = async () => {
                 globals.logger.info(`MAIN: Config visualisation server listening on ${address}/`);
 
                 configVisServer.ready((err2) => {
-                    if (err2) throw err;
+                    if (err2) throw err2;
                 });
             },
         );
@@ -195,7 +195,7 @@ const start = async () => {
                 globals.logger.verbose(`MAIN: Background REST server listening on ${address}`);
 
                 restServer.ready((err2) => {
-                    if (err2) throw err;
+                    if (err2) throw err2;
                     restServer.swagger();
                 });
             },
@@ -220,7 +220,7 @@ const start = async () => {
                 globals.logger.info(`MAIN: REST server listening on ${address}`);
 
                 proxyRestServer.ready((err2) => {
-                    if (err2) throw err;
+                    if (err2) throw err2;
                 });
             },
         );

@@ -32,6 +32,25 @@ export default [
 
         rules: {
             'prettier/prettier': 'error',
+            // Disallow unused variables to catch cases where error parameters are defined but not used
+            'no-unused-vars': [
+                'warn',
+                {
+                    vars: 'all',
+                    args: 'after-used',
+                    caughtErrors: 'all',
+                    ignoreRestSiblings: false,
+                },
+            ],
+            // Disallow variable declarations from shadowing variables declared in the outer scope
+            'no-shadow': [
+                'warn',
+                {
+                    builtinGlobals: false,
+                    hoist: 'all',
+                    allow: [],
+                },
+            ],
         },
     },
 ];
