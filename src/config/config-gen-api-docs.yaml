@@ -137,6 +137,46 @@ Butler:
                 dynamic:
                     useAppTags: true # Should app tags be sent to InfluxDb as tags?
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        userSyncTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        externalProgramTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        externalProgramTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InflixDB
+                    - name: butler_instance
+                      value: prod-1
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
+        distributeTaskSuccess:
+            enable: false
+            tag:
+                static: # Static attributes/dimensions to attach to events sent to InfluxDb
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        distributeTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InflixDB
+                    - name: butler_instance
+                      value: prod-1
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
         preloadTaskSuccess:
             enable: false
             tag:
@@ -167,14 +207,14 @@ Butler:
         appBaseUrl: http://10.11.12.13/sense/app # Base URL for Qlik Sense apps. App ID will be appended to this URL.
 
     genericUrls:
-        # - id: ptarmiganlabs_com
-        #   linkText: Ptarmigan Labs home page
-        #   comment: The home page of the company behind Butler
-        #   url: https://ptarmiganlabs.com
-        # - id: butler_docs
-        #   linkText: Butler documentation
-        #   comment: The documentation for Butler
-        #   url: https://butler.ptarmiganlabs.com
+        - id: ptarmiganlabs_com
+          linkText: Ptarmigan Labs home page
+          comment: The home page of the company behind Butler
+          url: https://ptarmiganlabs.com
+        - id: butler_docs
+          linkText: Butler documentation
+          comment: The documentation for Butler
+          url: https://butler.ptarmiganlabs.com
 
     # Settings for monitoring Qlik Sense version info
     # Version info is retrieved from the hostname:9032/v1/systeminfo endpoint in Qlik Sense
@@ -473,6 +513,54 @@ Butler:
             subject: '✅ Qlik Sense distribute task success: "{{taskName}}"'
             bodyFileDirectory: ...
             htmlTemplateFile: success-distribute
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
+        userSyncTaskSuccess:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_UserSyncSuccessAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_UserSyncSuccessAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '✅ Qlik Sense user sync task success: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: success-usersync
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
+        externalProgramTaskSuccess:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_ExternalProgramSuccessAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_ExternalProgramSuccessAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '✅ Qlik Sense external program task success: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: success-externalprogram
+            fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
+            recipients:
+                # - ...
+        externalProgramTaskFailure:
+            enable: false
+            alertEnableByCustomProperty:
+                enable: false
+                customPropertyName: 'Butler_ExternalProgramFailedAlertEnableEmail'
+                enabledValue: 'Yes'
+            alertEnabledByEmailAddress:
+                customPropertyName: 'Butler_ExternalProgramFailedAlertSendToEmail'
+            rateLimit: 600
+            priority: high
+            subject: '❌ Qlik Sense external program task failed: "{{taskName}}"'
+            bodyFileDirectory: ...
+            htmlTemplateFile: failed-externalprogram
             fromAddress: Qlik Sense (no-reply) <qliksense-noreply@...>
             recipients:
                 # - ...
@@ -827,11 +915,26 @@ Butler:
     # How? First you have /Users/goran/butler-test-dir1//abc which cleans up to /Users/goran/butler-test-dir1/abc,
     # then up one level (..).
     fileCopyApprovedDirectories:
+        - fromDirectory: /Users/goran/butler-test-dir1//abc//..
+          toDirectory: /Users/goran/butler-test-dir2
+        - fromDirectory: /Users/goran/butler-test-dir2
+          toDirectory: /Users/goran/butler-test-dir1
+        - fromDirectory: /from/some/directory2
+          toDirectory: /to/some/directory2
 
     # List of directories between which file moves via the REST API can be done.
     fileMoveApprovedDirectories:
+        - fromDirectory: /Users/goran/butler-test-dir1//abc//..
+          toDirectory: /Users/goran/butler-test-dir2
+        - fromDirectory: /Users/goran/butler-test-dir2
+          toDirectory: /Users/goran/butler-test-dir1
+        - fromDirectory: /from/some/directory2
+          toDirectory: /to/some/directory2
 
     fileDeleteApprovedDirectories:
+        - /Users/goran/butler-test-dir1
+        - /Users/goran/butler-test-dir1//abc//..
+        - /Users/goran/butler-test-dir2
 
     # If set to true, Butler will be started with a focus on creating an API documentation file
     # All configuration relating to outbound connetions (to Sense, email servers, MQTT broker etc) will be disabled.
