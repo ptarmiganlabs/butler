@@ -1,6 +1,7 @@
 import axios from 'axios';
 import https from 'https';
 import globals from '../globals.js';
+import { HTTP_TIMEOUT_MS } from '../constants.js';
 
 /**
  * QRS Client using Axios to replace qrs-interact functionality
@@ -55,7 +56,7 @@ class QrsClient {
         // Create axios instance
         this.axiosInstance = axios.create({
             baseURL: this.baseURL,
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             headers: {
                 'Content-Type': 'application/json',
                 'x-qlik-xrfkey': xrfkey,

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 // Load global variables and functions
 import globals from '../globals.js';
+import { HTTP_TIMEOUT_MS } from '../constants.js';
 import { handleQlikSenseCloudAppReloadFinished } from './qscloud/mqtt_event_app_reload_finished.js';
 import senseStartTask from '../qrs_util/sense_start_task.js';
 
@@ -184,7 +185,7 @@ function mqttInitHandlers() {
                 port: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.port'),
                 username: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.username'),
                 password: config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.password'),
-                connectTimeout: 30000, // 30 sec connection timeout
+                connectTimeout: HTTP_TIMEOUT_MS,
             };
 
             const brokerUrl = `mqtts://${mqttOptions.host}:${mqttOptions.port}`;

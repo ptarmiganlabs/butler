@@ -3,6 +3,7 @@ import axios from 'axios';
 
 // Load global variables and functions
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_VERY_SHORT_MS } from '../../constants.js';
 
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import apiPostNewRelicMetric from '../../api/newrelic_metric.js';
@@ -105,7 +106,7 @@ async function handlerPostNewRelicMetric(request, reply) {
                 headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
                 // eslint-disable-next-line no-await-in-loop
-                const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
+                const res = await axios.post(remoteUrl, payload, { headers, timeout: HTTP_TIMEOUT_VERY_SHORT_MS });
                 globals.logger.debug(
                     `NEWRELIC METRIC: Result code from posting metric to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,
                 );

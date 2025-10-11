@@ -4,6 +4,7 @@ import fs from 'fs';
 import https from 'https';
 
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
 import getAppOwner from '../../qrs_util/get_app_owner.js';
 
 let rateLimiterMemoryFailedReloads;
@@ -287,7 +288,7 @@ async function sendOutgoingWebhook(webhookConfig, reloadParams) {
                 globals.logger.debug(`[QSEOW] WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
 
                 axiosRequest = {
-                    timeout: 10000,
+                    timeout: HTTP_TIMEOUT_SHORT_MS,
                 };
 
                 if (lowercaseMethod === 'get') {
@@ -503,7 +504,7 @@ async function sendOutgoingWebhookServiceMonitor(webhookConfig, serviceParams) {
                 globals.logger.debug(`SERVICE MONITOR WEBHOOKOUT: Webhook config is valid: ${JSON.stringify(webhook)}`);
 
                 axiosRequest = {
-                    timeout: 10000,
+                    timeout: HTTP_TIMEOUT_SHORT_MS,
                 };
 
                 if (lowercaseMethod === 'get') {
@@ -694,7 +695,7 @@ async function sendOutgoingWebhookQlikSenseServerLicense(webhookConfig, serverLi
                 );
 
                 axiosRequest = {
-                    timeout: 10000,
+                    timeout: HTTP_TIMEOUT_SHORT_MS,
                 };
 
                 if (lowercaseMethod === 'get') {

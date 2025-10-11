@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 // Set up REST endpoint for Docker healthchecks
 import httpHealth from 'http';
+import { DOCKER_HEALTHCHECK_TIMEOUT_MS } from './constants.js';
 
 const optionsHealth = {
     host: 'localhost',
     port: '12398',
     path: '/health',
-    timeout: 2000,
+    timeout: DOCKER_HEALTHCHECK_TIMEOUT_MS,
 };
 
 /**

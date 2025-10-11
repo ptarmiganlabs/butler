@@ -1,5 +1,6 @@
 import axios from 'axios';
 import globals from '../../../globals.js';
+import { HTTP_TIMEOUT_MS } from '../../../constants.js';
 import { verifyGuid } from '../../guid_util.js';
 
 /**
@@ -24,7 +25,7 @@ export async function getQlikSenseCloudAppInfo(appId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);
@@ -59,7 +60,7 @@ export async function getQlikSenseCloudAppMetadata(appId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);
@@ -105,7 +106,7 @@ export async function getQlikSenseCloudAppItems(appId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);

@@ -1,5 +1,6 @@
 // Load global variables and functions
 import globals from '../../globals.js';
+import { DISTRIBUTION_QUEUE_POLL_INTERVAL_MS, DISTRIBUTION_QUEUE_MAX_AGE_MS } from '../../constants.js';
 import getTaskMetadata from '../../qrs_util/task_metadata.js';
 import { handleSuccessDistributeTask } from './task_types/success_distribute.js';
 import { handleFailedDistributeTask } from './task_types/failed_distribute.js';
@@ -19,10 +20,10 @@ import { handleFailedDistributeTask } from './task_types/failed_distribute.js';
 class DistributionTaskQueue {
     /**
      * Initialize the distribution task queue.
-     * @param {number} pollIntervalMs - Interval in milliseconds to check queued tasks (default: 30000 = 30 seconds)
-     * @param {number} maxAgeMs - Maximum time in milliseconds a task can remain in queue (default: 6 hours)
+     * @param {number} pollIntervalMs - Interval in milliseconds to check queued tasks (default from constants)
+     * @param {number} maxAgeMs - Maximum time in milliseconds a task can remain in queue (default from constants)
      */
-    constructor(pollIntervalMs = 30000, maxAgeMs = 6 * 60 * 60 * 1000) {
+    constructor(pollIntervalMs = DISTRIBUTION_QUEUE_POLL_INTERVAL_MS, maxAgeMs = DISTRIBUTION_QUEUE_MAX_AGE_MS) {
         this.queue = new Map(); // taskId -> { msg, taskMetadata, queuedAt, lastCheckedAt, checkCount }
         this.pollIntervalMs = pollIntervalMs;
         this.maxAgeMs = maxAgeMs;

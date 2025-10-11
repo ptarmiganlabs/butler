@@ -3,6 +3,7 @@ import axios from 'axios';
 
 // Load global variables and functions
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_VERY_SHORT_MS } from '../../constants.js';
 
 import { logRESTCall } from '../../lib/log_rest_call.js';
 import apiPostNewRelicEvent from '../../api/newrelic_event.js';
@@ -106,7 +107,7 @@ async function handlerPostNewRelicEvent(request, reply) {
                 const axiosRequest = {
                     url: eventApiUrl,
                     method: 'post',
-                    timeout: 5000,
+                    timeout: HTTP_TIMEOUT_VERY_SHORT_MS,
                     data: event,
                     headers,
                 };

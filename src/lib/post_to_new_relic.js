@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import globals from '../globals.js';
+import { HTTP_TIMEOUT_VERY_SHORT_MS } from '../constants.js';
 
 /**
  * Posts Butler uptime metrics to New Relic.
@@ -135,7 +136,7 @@ export async function postButlerUptimeToNewRelic(fields) {
                 } else {
                     headers['Api-Key'] = newRelicConfig[0].insertApiKey;
 
-                    const res = await axios.post(remoteUrl, payload, { headers, timeout: 5000 });
+                    const res = await axios.post(remoteUrl, payload, { headers, timeout: HTTP_TIMEOUT_VERY_SHORT_MS });
 
                     globals.logger.debug(
                         `NEW RELIC UPTIME: Result code from posting to New Relic account ${newRelicConfig[0].accountId}: ${res.status}, ${res.statusText}`,

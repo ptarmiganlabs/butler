@@ -23,6 +23,7 @@ import path from 'path';
 import fs from 'fs';
 import globals from '../../globals.js';
 import { getReloadTaskExecutionResults } from '../../qrs_util/reload_task_execution_results.js';
+import { MAX_RETRY_ATTEMPTS, RETRY_DELAY_MS, DOWNLOAD_DELAY_MS } from '../../constants.js';
 
 /**
  * Force API method for testing purposes.
@@ -51,10 +52,10 @@ function delay(milliseconds) {
  * @param {string} reloadTaskId - The GUID of the reload task.
  * @param {string} fileReferenceId - The file reference ID.
  * @param {Object} qrsInstance - QRS client instance.
- * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log.
+ * @param {number} [downloadDelayMs=DOWNLOAD_DELAY_MS] - Delay in milliseconds before downloading the script log.
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
-async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, downloadDelayMs = 500) {
+async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, downloadDelayMs = DOWNLOAD_DELAY_MS) {
     try {
         globals.logger.debug(
             `[QSEOW] GET SCRIPT LOG (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`,
@@ -97,7 +98,7 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
  * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log.
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
-async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId, qrsInstance, downloadDelayMs = 500) {
+async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId, qrsInstance, downloadDelayMs = DOWNLOAD_DELAY_MS) {
     try {
         globals.logger.debug(
             `[QSEOW] GET SCRIPT LOG (NEW API): ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`,
@@ -139,12 +140,19 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
  * @param {string} reloadTaskId - The GUID of the reload task.
  * @param {number} headLineCount - The number of lines to include from the start of the script log. Set to 0 to exclude head.
  * @param {number} tailLineCount - The number of lines to include from the end of the script log. Set to 0 to exclude tail.
- * @param {number} [maxRetries=3] - Maximum number of retry attempts if script log retrieval fails.
- * @param {number} [retryDelayMs=2000] - Delay in milliseconds between retry attempts.
- * @param {number} [downloadDelayMs=500] - Delay in milliseconds before downloading the script log (set to 0 to disable).
+ * @param {number} [maxRetries=MAX_RETRY_ATTEMPTS] - Maximum number of retry attempts if script log retrieval fails.
+ * @param {number} [retryDelayMs=RETRY_DELAY_MS] - Delay in milliseconds between retry attempts.
+ * @param {number} [downloadDelayMs=DOWNLOAD_DELAY_MS] - Delay in milliseconds before downloading the script log (set to 0 to disable).
  * @returns {Promise<Object|boolean>} - Returns an object containing executingNodeName, executionDetails, executionDetailsConcatenated, executionDuration, executionStartTime, executionStopTime, executionStatusNum, executionStatusText, scriptLogFull (array), scriptLogSize, scriptLogSizeRows, scriptLogSizeCharacters, scriptLogHead, scriptLogHeadCount, scriptLogTail, scriptLogTailCount. Returns false if an error occurs.
  */
-export async function getScriptLog(reloadTaskId, headLineCount, tailLineCount, maxRetries = 3, retryDelayMs = 2000, downloadDelayMs = 500) {
+export async function getScriptLog(
+    reloadTaskId,
+    headLineCount,
+    tailLineCount,
+    maxRetries = MAX_RETRY_ATTEMPTS,
+    retryDelayMs = RETRY_DELAY_MS,
+    downloadDelayMs = DOWNLOAD_DELAY_MS,
+) {
     let lastError;
     let preferredApiMethod = FORCE_API_METHOD; // Initialize with forced method if set
 
