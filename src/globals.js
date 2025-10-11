@@ -768,7 +768,7 @@ Configuration File:
         }
     }
 
-    initInfluxDB() {
+    async initInfluxDB() {
         const dbName = this.config.get('Butler.influxDb.dbName');
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
 
@@ -779,44 +779,39 @@ Configuration File:
         }
 
         if (enableInfluxdb) {
-            this.influx
-                .getDatabaseNames()
-                .then((names) => {
-                    if (!names.includes(dbName)) {
-                        this.influx
-                            .createDatabase(dbName)
-                            .then(() => {
-                                this.logger.info(`CONFIG: Created new InfluxDB database: ${dbName}`);
+            try {
+                const names = await this.influx.getDatabaseNames();
 
-                                const newPolicy = this.config.get('Butler.influxDb.retentionPolicy');
+                if (!names.includes(dbName)) {
+                    try {
+                        await this.influx.createDatabase(dbName);
+                        this.logger.info(`CONFIG: Created new InfluxDB database: ${dbName}`);
 
-                                // Create new default retention policy
-                                this.influx
-                                    .createRetentionPolicy(newPolicy.name, {
-                                        database: dbName,
-                                        duration: newPolicy.duration,
-                                        replication: 1,
-                                        isDefault: true,
-                                    })
-                                    .then(() => {
-                                        this.logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
-                                    })
-                                    .catch((err) => {
-                                        this.logger.error(
-                                            `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${this.getErrorMessage(err)}`,
-                                        );
-                                    });
-                            })
-                            .catch((err) => {
-                                this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${this.getErrorMessage(err)}`);
+                        const newPolicy = this.config.get('Butler.influxDb.retentionPolicy');
+
+                        // Create new default retention policy
+                        try {
+                            await this.influx.createRetentionPolicy(newPolicy.name, {
+                                database: dbName,
+                                duration: newPolicy.duration,
+                                replication: 1,
+                                isDefault: true,
                             });
-                    } else {
-                        this.logger.info(`CONFIG: Found InfluxDB database: ${dbName}`);
+                            this.logger.info(`CONFIG: Created new InfluxDB retention policy: ${newPolicy.name}`);
+                        } catch (err) {
+                            this.logger.error(
+                                `CONFIG: Error creating new InfluxDB retention policy "${newPolicy.name}"! ${this.getErrorMessage(err)}`,
+                            );
+                        }
+                    } catch (err) {
+                        this.logger.error(`CONFIG: Error creating new InfluxDB database "${dbName}"! ${this.getErrorMessage(err)}`);
                     }
-                })
-                .catch((err) => {
-                    this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${this.getErrorMessage(err)}`);
-                });
+                } else {
+                    this.logger.info(`CONFIG: Found InfluxDB database: ${dbName}`);
+                }
+            } catch (err) {
+                this.logger.error(`CONFIG: Error getting list of InfuxDB databases! ${this.getErrorMessage(err)}`);
+            }
         } else {
             this.logger.info('CONFIG: InfluxDB disabled, not connecting to InfluxDB');
         }
