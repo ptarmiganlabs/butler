@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
 
 let rateLimiterFailedReloads;
 let rateLimiterAbortedReloads;
@@ -118,7 +119,7 @@ async function sendSignl4(incidentConfig, reloadParams) {
         const axiosRequest = {
             url: incidentConfig.url,
             method: 'post',
-            timeout: 10000,
+            timeout: HTTP_TIMEOUT_SHORT_MS,
             data: {
                 Title: incidentConfig.event,
                 Message: `Task: ${reloadParams.taskName}`,

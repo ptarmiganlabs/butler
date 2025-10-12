@@ -1,5 +1,6 @@
 // Add dependencies
 import dgram from 'dgram';
+import { GLOBALS_INIT_TIMEOUT_MS, GLOBALS_INIT_CHECK_INTERVAL_MS } from './constants.js';
 
 // Suppress experimental warnings
 // https://stackoverflow.com/questions/55778283/how-to-disable-warnings-when-node-is-launched-via-a-global-shell-script
@@ -121,15 +122,15 @@ const start = async () => {
     }
 
     // Ensure that initialisation of globals is complete
-    // Sleep 5 seconds otherwise to llow globals to be initialised
+    // Sleep to allow globals to be initialised if needed
 
     function sleepLocal(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     if (!globals.initialised) {
-        globals.logger.info('START: Sleeping 5 seconds to allow globals to be initialised.');
-        await sleepLocal(5000);
+        globals.logger.info(`START: Sleeping ${GLOBALS_INIT_TIMEOUT_MS}ms to allow globals to be initialised.`);
+        await sleepLocal(GLOBALS_INIT_TIMEOUT_MS);
     } else {
         globals.logger.info('START: Globals initialised - all good.');
     }
@@ -250,18 +251,18 @@ const start = async () => {
     if (globals.config.get('Butler.mqttConfig.enable')) {
         mqttInitHandlers();
 
-        // Sleep 5 seconds to allow MQTT to connect
-        globals.logger.info('MAIN: Sleeping 5 seconds to allow MQTT to connect.');
+        // Sleep to allow MQTT to connect
+        globals.logger.info(`MAIN: Sleeping ${5 * GLOBALS_INIT_CHECK_INTERVAL_MS}ms to allow MQTT to connect.`);
         globals.logger.info('5...');
-        await globals.sleep(1000);
+        await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
         globals.logger.info('4...');
-        await globals.sleep(1000);
+        await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
         globals.logger.info('3...');
-        await globals.sleep(1000);
+        await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
         globals.logger.info('2...');
-        await globals.sleep(1000);
+        await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
         globals.logger.info('1...');
-        await globals.sleep(1000);
+        await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
     }
 
     // Set up service monitoring, if enabled in the config file

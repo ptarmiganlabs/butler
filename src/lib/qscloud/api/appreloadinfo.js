@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Duration, DateTime } from 'luxon';
 
 import globals from '../../../globals.js';
+import { HTTP_TIMEOUT_MS } from '../../../constants.js';
 
 /**
  * Get script log for a specific Qlik Sense Cloud app reload.
@@ -20,7 +21,7 @@ export async function getQlikSenseCloudAppReloadScriptLog(appId, reloadId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);
@@ -93,7 +94,7 @@ export async function getQlikSenseCloudAppReloadInfo(reloadId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);
