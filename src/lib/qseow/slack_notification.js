@@ -3,6 +3,7 @@ import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 import globals from '../../globals.js';
+import { SLACK_TEXT_FIELD_MAX_LENGTH } from '../../constants.js';
 import slackSend from '../slack_api.js';
 import getAppOwner from '../../qrs_util/get_app_owner.js';
 import { getQlikSenseUrls } from './get_qs_urls.js';
@@ -574,9 +575,9 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 templateContext.scriptLogTail = escapeForJson(templateContext.scriptLogTail);
                 templateContext.executionDetailsConcatenated = escapeForJson(templateContext.executionDetailsConcatenated);
 
-                // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
+                // Check if script log is longer than max characters for text fields sent to Slack API
                 // https://api.slack.com/reference/block-kit/blocks#section_fields
-                if (templateContext.scriptLogHead.length >= 3000) {
+                if (templateContext.scriptLogHead.length >= SLACK_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `[QSEOW] SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`,
                     );
@@ -600,7 +601,7 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
 
-                if (templateContext.scriptLogTail.length >= 3000) {
+                if (templateContext.scriptLogTail.length >= SLACK_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `[QSEOW] SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`,
                     );
@@ -775,9 +776,9 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     appOwnerEmail: appOwner.emails?.length > 0 ? appOwner.emails[0] : '',
                 };
 
-                // Check if script log is longer than 3000 characters, which is max for text fields sent to Slack API
+                // Check if script log is longer than max characters for text fields sent to Slack API
                 // https://api.slack.com/reference/block-kit/blocks#section_fields
-                if (templateContext.scriptLogHead.length >= 3000) {
+                if (templateContext.scriptLogHead.length >= SLACK_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `[QSEOW] SLACK: Script log head field is too long (${templateContext.scriptLogHead.length}), will truncate before posting to Slack.`,
                     );
@@ -801,7 +802,7 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                     templateContext.scriptLogHead += '\\n----Script log truncated by Butler----';
                 }
 
-                if (templateContext.scriptLogTail.length >= 3000) {
+                if (templateContext.scriptLogTail.length >= SLACK_TEXT_FIELD_MAX_LENGTH) {
                     globals.logger.warn(
                         `[QSEOW] SLACK: Script log head field is too long (${templateContext.scriptLogTail.length}), will truncate before posting to Slack.`,
                     );

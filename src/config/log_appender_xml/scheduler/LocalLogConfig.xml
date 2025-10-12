@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration>
-    <!-- Appender for detecting reload task failures. Only the last of potentially several retries is reported -->
-    <appender name="TaskFailureLogger" type="log4net.Appender.UdpAppender">
+    <!-- Appender for detecting failures in task types that have retries -->
+    <!-- (reload, external program, preload) -->
+    <!-- Only the last of potentially several retries is reported -->
+    <appender name="TaskFailLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
+            <!-- Log message for aborted reload tasks -->
             <param name="stringToMatch" value="Max retries reached" />
+            <!-- Preload tasks may have either of these log messages when failing -->
+            <param name="stringToMatch" value="Failed to start session" />
+            <param name="stringToMatch" value="Could not reserve an executor for task" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
@@ -13,15 +19,20 @@
         <layout type="log4net.Layout.PatternLayout">
             <converter>
                 <param name="name" value="hostname" />
-                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+                <param name="type"
+                    value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
             </converter>
-            <param name="conversionpattern" value="/scheduler-reload-failed/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+            <param name="conversionpattern"
+                value="/scheduler-task-failed/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
         </layout>
     </appender>
 
-    <!-- Appender for detecting aborted reloads -->
-    <appender name="AbortedReloadTaskLogger" type="log4net.Appender.UdpAppender">
+    <!-- Appender for detecting aborted tasks of types that have retries -->
+    <!-- (reload, external program, preload) -->
+    <appender
+        name="TaskAbortLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
+            <!-- Log message for aborted reload tasks -->
             <param name="stringToMatch" value="Execution State Change to Aborting" />
         </filter>
         <filter type="log4net.Filter.DenyAllFilter" />
@@ -31,14 +42,18 @@
         <layout type="log4net.Layout.PatternLayout">
             <converter>
                 <param name="name" value="hostname" />
-                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+                <param name="type"
+                    value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
             </converter>
-            <param name="conversionpattern" value="/scheduler-reload-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+            <param name="conversionpattern"
+                value="/scheduler-task-aborted/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
         </layout>
     </appender>
 
-    <!-- Appender for detecting successful reload tasks -->
-    <appender name="ReloadTaskSuccessLogger" type="log4net.Appender.UdpAppender">
+    <!-- Appender for detecting successful tasks of types that have retries -->
+    <!-- (reload, external program, preload, user sync) -->
+    <appender
+        name="TaskSuccessLogger" type="log4net.Appender.UdpAppender">
         <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Execution State Change to FinishedSuccess" />
         </filter>
@@ -49,55 +64,91 @@
         <layout type="log4net.Layout.PatternLayout">
             <converter>
                 <param name="name" value="hostname" />
-                <param name="type" value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+                <param name="type"
+                    value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
             </converter>
-            <param name="conversionpattern" value="/scheduler-reloadtask-success/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+            <param name="conversionpattern"
+                value="/scheduler-task-success//;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
         </layout>
     </appender>
 
+    <!-- Appender for detecting distribution tasks -->
+    <!-- The task may be in queued, running, finished etc state -->
+    <appender name="DistributionTaskLogger" type="log4net.Appender.UdpAppender">
+        <filter type="log4net.Filter.StringMatchFilter">
+            <param name="stringToMatch" value="Exiting execute of Distribute task request." />
+        </filter>
+        <filter type="log4net.Filter.DenyAllFilter" />
+        <param name="remoteAddress" value="<IP of server where Butler is running>" />
+        <param name="remotePort" value="9998" />
+        <param name="encoding" value="utf-8" />
+        <layout type="log4net.Layout.PatternLayout">
+            <converter>
+                <param name="name" value="hostname" />
+                <param name="type"
+                    value="Qlik.Sense.Logging.log4net.Layout.Pattern.HostNamePatternConverter" />
+            </converter>
+            <param name="conversionpattern"
+                value="/scheduler-distribute/;%hostname;%property{TaskName};%property{AppName};%property{User};%property{TaskId};%property{AppId};%date;%level;%property{ExecutionId};%message" />
+        </layout>
+    </appender>
 
-    <!-- Mail appender. Not dependent on Butler. Works as a basic solution, but does not support templating, script logs etc that Butler offers -->
+    <!-- Mail appender. Not dependent on Butler. Works as a basic solution, but does not support
+    templating, script logs etc that Butler offers -->
     <!-- <appender name="MailAppender" type="log4net.Appender.SmtpAppender"> -->
-        <!-- <filter type="log4net.Filter.StringMatchFilter"> -->
-            <!-- <param name="stringToMatch" value="Message from ReloadProvider" /> -->
-        <!-- </filter> -->
-        <!-- <filter type="log4net.Filter.DenyAllFilter" /> -->
-        <!-- <evaluator type="log4net.Core.LevelEvaluator"> -->
-            <!-- <param name="threshold" value="ERROR"/> -->
-            <!--Tip: Sets the level of logging, in this case any ERROR in the log will be sent as an email-->
-        <!-- </evaluator> -->
-        <!-- <param name="to" value="<email address to send failed task notification emails to>" /> -->
-        <!-- <param name="from" value="<sender email address used in notification emails>" /> -->
-        <!-- <param name="subject" value="Qlik Sense failed task (server <servername>)" /> -->
-        <!-- <param name="smtpHost" value="smtp.gmail.com" /> -->
-        <!-- <param name="port" value="587" /> -->
-        <!-- <param name="EnableSsl" value="true" /> -->
-        <!-- <param name="Authentication" value="Basic" /> -->
-        <!-- <param name="username" value="<Gmail username>" /> -->
-        <!-- <param name="password" value="<Gmail password>" /> -->
-        <!-- <param name="bufferSize" value="0" /> -->
-        <!-- Tip: Set this to 0 to make sure an email is sent on every error -->
-        <!-- <param name="lossy" value="true" /> -->
-        <!-- <layout type="log4net.Layout.PatternLayout"> -->
-            <!-- <param name="conversionPattern" value="%newline%date %-5level %newline%property{TaskName}%newline%property{AppName}%newline%message%newline%newline%newline" /> -->
-            <!-- Tip: Defined conversion pattern for the output. To be able to output custom properties in the log (example, Taskname), append %property{propertyname} to the output pattern-->
-        <!-- </layout> -->
+    <!-- <filter type="log4net.Filter.StringMatchFilter"> -->
+    <!-- <param name="stringToMatch" value="Message from ReloadProvider" /> -->
+    <!-- </filter> -->
+    <!-- <filter type="log4net.Filter.DenyAllFilter" /> -->
+    <!-- <evaluator type="log4net.Core.LevelEvaluator"> -->
+    <!-- <param name="threshold" value="ERROR"/> -->
+    <!--Tip:
+    Sets the level of logging, in this case any ERROR in the log will be sent as an email-->
+    <!-- </evaluator> -->
+    <!-- <param name="to" value="<email address to send failed task notification emails to>" /> -->
+    <!-- <param name="from" value="<sender email address used in notification emails>" /> -->
+    <!-- <param name="subject" value="Qlik Sense failed task (server <servername>)" /> -->
+    <!-- <param name="smtpHost" value="smtp.gmail.com" /> -->
+    <!-- <param name="port" value="587" /> -->
+    <!-- <param name="EnableSsl" value="true" /> -->
+    <!-- <param name="Authentication" value="Basic" /> -->
+    <!-- <param name="username" value="<Gmail username>" /> -->
+    <!-- <param name="password" value="<Gmail password>" /> -->
+    <!-- <param name="bufferSize" value="0" /> -->
+    <!-- Tip: Set this to 0 to make sure an email is sent on every error -->
+    <!-- <param name="lossy" value="true" /> -->
+    <!-- <layout type="log4net.Layout.PatternLayout"> -->
+    <!-- <param name="conversionPattern" value="%newline%date %-5level
+    %newline%property{TaskName}%newline%property{AppName}%newline%message%newline%newline%newline"
+    /> -->
+    <!-- Tip: Defined conversion pattern for the output. To be able to output custom properties in
+    the log (example, Taskname), append %property{propertyname} to the output pattern-->
+    <!-- </layout> -->
     <!-- </appender> -->
 
-    <!-- Send message to Butler on task failure -->
-    <!-- Send message to Butler on task abort -->
-    <!-- Send message to Butler on reload task success -->
-    <logger name="System.Scheduler.Scheduler.Master.Task.TaskSession">
-        <appender-ref ref="TaskFailureLogger" />
-        <appender-ref ref="AbortedReloadTaskLogger" />
-        <appender-ref ref="ReloadTaskSuccessLogger" />
+
+    <!-- Send message to Butler on task failure/abort/success -->
+    <!-- For task types reload, external program, preload, user sync -->
+    <logger
+        name="System.Scheduler.Scheduler.Master.Task.TaskSession">
+        <appender-ref ref="TaskFailLogger" />
+        <appender-ref ref="TaskAbortLogger" />
+        <appender-ref ref="TaskSuccessLogger" />
     </logger>
 
-    <!--Send email on task failure-->
+    <!-- Send message to Butler on distribution task completion (any result) -->
+    <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask">
+        <appender-ref ref="DistributionTaskLogger" />
+    </logger>
+
+    <!--Send
+    email on task failure-->
     <!-- <logger name="System.Scheduler.Scheduler.Slave.Tasks.ReloadTask"> -->
-        <!-- Tip: Logger name identifies the component to monitor. This can be found by investigating the actual log file-->
-        <!-- Tip: appender-ref should match the name identifying the appender. More than one appender can be configured in the same configuration file-->
-        <!-- <appender-ref ref="MailAppender" /> -->
+    <!-- Tip: Logger name identifies the component to monitor. This can be found by investigating
+    the actual log file-->
+    <!-- Tip: appender-ref should match the name identifying the appender. More than one appender
+    can be configured in the same configuration file-->
+    <!-- <appender-ref ref="MailAppender" /> -->
     <!-- </logger> -->
 
 </configuration>
