@@ -3,6 +3,7 @@ import axios from 'axios';
 import https from 'https';
 
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
 import { postQlikSenseVersionToInfluxDB } from '../influxdb/qlik_sense_version.js';
 
 /**
@@ -23,7 +24,7 @@ async function checkQlikSenseVersion(config, logger) {
             url: `/v1/systeminfo`,
             method: 'get',
             baseURL: `https://${globals.config.get('Butler.qlikSenseVersion.versionMonitor.host')}:9032`,
-            timeout: 10000,
+            timeout: HTTP_TIMEOUT_SHORT_MS,
             responseType: 'json',
             httpsAgent,
         };

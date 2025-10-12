@@ -1,5 +1,6 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import { GLOBALS_INIT_CHECK_INTERVAL_MS } from '../../../constants.js';
 import getExternalProgramTaskExecutionResults from '../../../qrs_util/externalprogram_task_execution_results.js';
 import getTaskTags from '../../../qrs_util/task_tag_util.js';
 import { postExternalProgramTaskSuccessNotificationInfluxDb } from '../../../lib/influxdb/task_success.js';
@@ -109,10 +110,10 @@ export const handleSuccessExternalProgramTask = async (msg, taskMetadata) => {
                 retryCount += 1;
 
                 globals.logger.verbose(
-                    `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Unable to get task info for external program task ${externalProgramTaskId}. Attempt ${retryCount} of 5. Waiting 1 second before trying again`,
+                    `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Unable to get task info for external program task ${externalProgramTaskId}. Attempt ${retryCount} of 5. Waiting ${GLOBALS_INIT_CHECK_INTERVAL_MS}ms before trying again`,
                 );
 
-                await globals.sleep(1000);
+                await globals.sleep(GLOBALS_INIT_CHECK_INTERVAL_MS);
             }
 
             if (

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import globals from '../../../globals.js';
+import { HTTP_TIMEOUT_MS } from '../../../constants.js';
 
 /**
  * Get info about a specific Qlik Sense Cloud user.
@@ -18,7 +19,7 @@ export async function getQlikSenseCloudUserInfo(userId) {
             headers: {
                 Authorization: `Bearer ${globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.auth.jwt.token')}`,
             },
-            timeout: 30000,
+            timeout: HTTP_TIMEOUT_MS,
             responseType: 'application/json',
         };
         const result = await axios.request(axiosConfig);

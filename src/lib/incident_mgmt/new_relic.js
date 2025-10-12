@@ -3,6 +3,7 @@ import axios from 'axios';
 import QrsClient from '../qrs_client.js';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
+import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
 
 /**
  * Retrieves the QRS configuration.
@@ -446,7 +447,7 @@ export async function sendNewRelicEvent(incidentConfig, reloadParams, destNewRel
                 const axiosRequest = {
                     url: eventApiUrl,
                     method: 'post',
-                    timeout: 10000,
+                    timeout: HTTP_TIMEOUT_SHORT_MS,
                     data: payload,
                     headers,
                 };
@@ -598,7 +599,7 @@ export async function sendNewRelicLog(incidentConfig, reloadParams, destNewRelic
                 const axiosRequest = {
                     url: logApiUrl,
                     method: 'post',
-                    timeout: 10000,
+                    timeout: HTTP_TIMEOUT_SHORT_MS,
                     data: payload,
                     headers: incidentConfig.headers,
                 };
