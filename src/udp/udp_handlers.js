@@ -124,8 +124,7 @@ const udpInitTaskErrorServer = () => {
         // mag[8]  : Message
 
         try {
-            globals.logger.debug(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
-            globals.logger.info(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
+            globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
 
             const msg = message.toString().split(';');
 
