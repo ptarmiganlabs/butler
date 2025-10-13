@@ -98,7 +98,7 @@
         "os": "^0.1.2",
         "posthog-node": "^5.9.5",
         "promise": "^8.3.0",
-        "rate-limiter-flexible": "^8.0.1",
+        "rate-limiter-flexible": "^8.1.0",
         "systeminformation": "^5.27.11",
         "upath": "^2.0.1",
         "uuid": "^13.0.0",
