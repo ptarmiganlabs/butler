@@ -215,304 +215,310 @@ const checkServiceStatus = async (config, logger, isFirstCheck = false) => {
             const serviceStatusAll = await statusAll(logger, host.host);
 
             servicesToCheck.forEach(async (service) => {
-                logger.debug(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
+                try {
+                    logger.debug(`Checking status of Windows service ${service.name} (="${service.friendlyName}") on host ${host.host}`);
 
-                // Does this service exist in the serviceStatusAll array?
-                const svcMonitored = serviceStatusAll.find((svc) => svc.name === service.name);
+                    // Does this service exist in the serviceStatusAll array?
+                    const svcMonitored = serviceStatusAll.find((svc) => svc.name === service.name);
 
-                if (svcMonitored === undefined) {
-                    logger.error(
-                        `Service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`,
+                    if (svcMonitored === undefined) {
+                        logger.error(
+                            `Service ${service.name} (="${service.friendlyName}") on host ${host.host} does not exist or cannot be reached.`,
+                        );
+                        return;
+                    }
+
+                    // Get status of this service
+                    const serviceStatus = await status(logger, service.name, host.host);
+                    logger.debug(
+                        `Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`,
                     );
-                    return;
-                }
 
-                // Get status of this service
-                const serviceStatus = await status(logger, service.name, host.host);
-                logger.debug(
-                    `Got reply: Service ${service.name} (="${service.friendlyName}") on host ${host.host} status: ${serviceStatus}`,
-                );
+                    // Get details about this service
+                    const serviceDetails = await details(logger, service.name, host.host);
+                    if (serviceStatus === 'STOPPED') {
+                        logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
 
-                // Get details about this service
-                const serviceDetails = await details(logger, service.name, host.host);
-                if (serviceStatus === 'STOPPED') {
-                    logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" is stopped`);
+                        // Update state machine
+                        const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
 
-                    // Update state machine
-                    const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
+                        const snapshotPrev = smService.stateSvc.getSnapshot();
+                        const prevState = snapshotPrev.value;
+                        logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
-                    const snapshotPrev = smService.stateSvc.getSnapshot();
-                    const prevState = snapshotPrev.value;
-                    logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
+                        smService.stateSvc.send({ type: 'STOP' });
 
-                    smService.stateSvc.send({ type: 'STOP' });
+                        const snapshotNew = smService.stateSvc.getSnapshot();
+                        const newState = snapshotNew.value;
+                        logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
 
-                    const snapshotNew = smService.stateSvc.getSnapshot();
-                    const newState = snapshotNew.value;
-                    logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
+                        // Has state changed?
+                        const stateChanged = prevState !== newState;
+                        if (stateChanged) {
+                            logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" has stopped!`);
 
-                    // Has state changed?
-                    const stateChanged = prevState !== newState;
-                    if (stateChanged) {
-                        logger.warn(`Service "${serviceDetails.displayName}" on host "${host.host}" has stopped!`);
+                            // Send message to enabled destinations
 
-                        // Send message to enabled destinations
+                            // New Relic
+                            if (
+                                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true &&
+                                config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
+                            ) {
+                                serviceMonitorNewRelicSend1(config, logger, {
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                        // New Relic
-                        if (
-                            config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.stopped.enable') === true &&
-                            config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
-                        ) {
-                            serviceMonitorNewRelicSend1(config, logger, {
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
+                            // MQTT
+                            if (
+                                config.get('Butler.mqttConfig.enable') === true &&
+                                config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
+                            ) {
+                                serviceMonitorMqttSend1(config, logger, {
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
+
+                            // Outgoing webhooks
+                            if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
+                                sendServiceMonitorWebhook({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
+
+                            // Post to Slack
+                            if (
+                                globals.config.get('Butler.slackNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationSlack({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
+
+                            // Post to Teams
+                            if (
+                                globals.config.get('Butler.teamsNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationTeams({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
+
+                            // Send email
+                            if (
+                                globals.config.get('Butler.emailNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationEmail({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
+                        }
+                    } else if (serviceStatus === 'RUNNING') {
+                        logger.verbose(`Service "${service.name}" is running`);
+
+                        // Update state machine
+                        const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
+
+                        // First check?
+                        if (isFirstCheck) {
+                            // Set state to running as this is the first/startup check and we don't want to alert in this case
+                            smService.stateSvc.send({ type: 'START' });
                         }
 
-                        // MQTT
-                        if (
-                            config.get('Butler.mqttConfig.enable') === true &&
-                            config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
-                        ) {
-                            serviceMonitorMqttSend1(config, logger, {
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
+                        const snapshotPrev = smService.stateSvc.getSnapshot();
+                        const prevState = snapshotPrev.value;
+                        logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
 
-                        // Outgoing webhooks
-                        if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
-                            sendServiceMonitorWebhook({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-
-                        // Post to Slack
-                        if (
-                            globals.config.get('Butler.slackNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationSlack({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-
-                        // Post to Teams
-                        if (
-                            globals.config.get('Butler.teamsNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationTeams({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-
-                        // Send email
-                        if (
-                            globals.config.get('Butler.emailNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationEmail({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-                    }
-                } else if (serviceStatus === 'RUNNING') {
-                    logger.verbose(`Service "${service.name}" is running`);
-
-                    // Update state machine
-                    const smService = serviceStateMachine.find((winsvc) => winsvc.id === `${host.host}|${service.name}`);
-
-                    // First check?
-                    if (isFirstCheck) {
-                        // Set state to running as this is the first/startup check and we don't want to alert in this case
                         smService.stateSvc.send({ type: 'START' });
-                    }
 
-                    const snapshotPrev = smService.stateSvc.getSnapshot();
-                    const prevState = snapshotPrev.value;
-                    logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", previous state=${prevState}`);
+                        const snapshotNew = smService.stateSvc.getSnapshot();
+                        const newState = snapshotNew.value;
+                        logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
 
-                    smService.stateSvc.send({ type: 'START' });
+                        // Has state changed?
+                        const stateChanged = prevState !== newState;
+                        if (stateChanged) {
+                            logger.info(`Service "${serviceDetails.displayName}" on host "${host.host}" has started.`);
+                            // Send message to enabled destinations
 
-                    const snapshotNew = smService.stateSvc.getSnapshot();
-                    const newState = snapshotNew.value;
-                    logger.verbose(`Service "${serviceDetails.displayName}" on host "${host.host}", new state=${newState}`);
+                            // New Relic
+                            if (
+                                config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true &&
+                                config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
+                            ) {
+                                serviceMonitorNewRelicSend1(config, logger, {
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                    // Has state changed?
-                    const stateChanged = prevState !== newState;
-                    if (stateChanged) {
-                        logger.info(`Service "${serviceDetails.displayName}" on host "${host.host}" has started.`);
-                        // Send message to enabled destinations
+                            // MQTT
+                            if (
+                                config.get('Butler.mqttConfig.enable') === true &&
+                                config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
+                            ) {
+                                serviceMonitorMqttSend1(config, logger, {
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                        // New Relic
-                        if (
-                            config.get('Butler.incidentTool.newRelic.serviceMonitor.monitorServiceState.running.enable') === true &&
-                            config.get('Butler.serviceMonitor.alertDestination.newRelic.enable') === true
-                        ) {
-                            serviceMonitorNewRelicSend1(config, logger, {
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
+                            // Outgoing webhooks
+                            if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
+                                sendServiceMonitorWebhook({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                        // MQTT
-                        if (
-                            config.get('Butler.mqttConfig.enable') === true &&
-                            config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
-                        ) {
-                            serviceMonitorMqttSend1(config, logger, {
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
+                            // Post to Slack
+                            if (
+                                globals.config.get('Butler.slackNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationSlack({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                        // Outgoing webhooks
-                        if (globals.config.get('Butler.serviceMonitor.alertDestination.webhook.enable') === true) {
-                            sendServiceMonitorWebhook({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
+                            // Post to Teams
+                            if (
+                                globals.config.get('Butler.teamsNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationTeams({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
 
-                        // Post to Slack
-                        if (
-                            globals.config.get('Butler.slackNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.slack.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationSlack({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-
-                        // Post to Teams
-                        if (
-                            globals.config.get('Butler.teamsNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.teams.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationTeams({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
-                        }
-
-                        // Send email
-                        if (
-                            globals.config.get('Butler.emailNotification.enable') === true &&
-                            globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
-                        ) {
-                            sendServiceMonitorNotificationEmail({
-                                serviceName: service.name,
-                                serviceFriendlyName: service.friendlyName,
-                                serviceStatus,
-                                serviceDetails,
-                                host: host.host,
-                                prevState: prevState.toUpperCase(),
-                                currState: newState.toUpperCase(),
-                                stateChanged,
-                            });
+                            // Send email
+                            if (
+                                globals.config.get('Butler.emailNotification.enable') === true &&
+                                globals.config.get('Butler.serviceMonitor.alertDestination.email.enable') === true
+                            ) {
+                                sendServiceMonitorNotificationEmail({
+                                    serviceName: service.name,
+                                    serviceFriendlyName: service.friendlyName,
+                                    serviceStatus,
+                                    serviceDetails,
+                                    host: host.host,
+                                    prevState: prevState.toUpperCase(),
+                                    currState: newState.toUpperCase(),
+                                    stateChanged,
+                                });
+                            }
                         }
                     }
-                }
 
-                // Messages sent no matter what the service status is
-                // MQTT
-                if (
-                    config.get('Butler.mqttConfig.enable') === true &&
-                    config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
-                ) {
-                    serviceMonitorMqttSend2(config, logger, {
-                        serviceName: service.name,
-                        serviceFriendlyName: service.friendlyName,
-                        serviceStatus,
-                        serviceDetails,
-                        host: host.host,
-                    });
-                }
+                    // Messages sent no matter what the service status is
+                    // MQTT
+                    if (
+                        config.get('Butler.mqttConfig.enable') === true &&
+                        config.get('Butler.serviceMonitor.alertDestination.mqtt.enable') === true
+                    ) {
+                        serviceMonitorMqttSend2(config, logger, {
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                        });
+                    }
 
-                // InfluDB
-                if (
-                    globals.config.get('Butler.influxDb.enable') === true &&
-                    globals.config.get('Butler.serviceMonitor.alertDestination.influxDb.enable') === true
-                ) {
-                    postWindowsServiceStatusToInfluxDB({
-                        serviceName: service.name,
-                        serviceFriendlyName: service.friendlyName,
-                        serviceStatus,
-                        serviceDetails,
-                        host: host.host,
-                    });
+                    // InfluDB
+                    if (
+                        globals.config.get('Butler.influxDb.enable') === true &&
+                        globals.config.get('Butler.serviceMonitor.alertDestination.influxDb.enable') === true
+                    ) {
+                        postWindowsServiceStatusToInfluxDB({
+                            serviceName: service.name,
+                            serviceFriendlyName: service.friendlyName,
+                            serviceStatus,
+                            serviceDetails,
+                            host: host.host,
+                        });
+                    }
+                } catch (err) {
+                    logger.error(
+                        `SERVICE MONITOR: Error checking service ${service.name} on host ${host.host}: ${globals.getErrorMessage(err)}`,
+                    );
                 }
             });
         } catch (err) {

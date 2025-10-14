@@ -50,7 +50,14 @@ function mqttInitHandlers() {
                 // - Butler.mqttConfig.azureEventGrid.clientKeyFile
 
                 // Helper function to read the contents of the certificate files:
-                const readCert = (filename) => fs.readFileSync(filename);
+                const readCert = (filename) => {
+                    try {
+                        return fs.readFileSync(filename);
+                    } catch (err) {
+                        logger.error(`MQTT INIT HANDLERS: Error reading certificate file ${filename}: ${globals.getErrorMessage(err)}`);
+                        throw err;
+                    }
+                };
 
                 const filename = fileURLToPath(import.meta.url);
                 const dirname = upath.dirname(filename);
@@ -61,18 +68,23 @@ function mqttInitHandlers() {
                 // const keyFile = path.join(execPath, config.get('Butler.mqttConfig.azureEventGrid.clientKeyFile'));
 
                 // Check that the certificate and key files exist
-                if (!fs.existsSync(certFile)) {
-                    logger.error(`MQTT INIT HANDLERS: Certificate file ${certFile} does not exist`);
-                    process.exit(1);
-                } else {
-                    logger.verbose(`MQTT INIT HANDLERS: Certificate file ${certFile} exists`);
-                }
+                try {
+                    if (!fs.existsSync(certFile)) {
+                        logger.error(`MQTT INIT HANDLERS: Certificate file ${certFile} does not exist`);
+                        process.exit(1);
+                    } else {
+                        logger.verbose(`MQTT INIT HANDLERS: Certificate file ${certFile} exists`);
+                    }
 
-                if (!fs.existsSync(keyFile)) {
-                    logger.error(`MQTT INIT HANDLERS: Key file ${keyFile} does not exist`);
-                    process.exit(1);
-                } else {
-                    logger.verbose(`MQTT INIT HANDLERS: Key file ${keyFile} exists`);
+                    if (!fs.existsSync(keyFile)) {
+                        logger.error(`MQTT INIT HANDLERS: Key file ${keyFile} does not exist`);
+                        process.exit(1);
+                    } else {
+                        logger.verbose(`MQTT INIT HANDLERS: Key file ${keyFile} exists`);
+                    }
+                } catch (err) {
+                    logger.error(`MQTT INIT HANDLERS: Error checking certificate files: ${globals.getErrorMessage(err)}`);
+                    throw err;
                 }
 
                 mqttOptions = {

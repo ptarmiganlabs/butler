@@ -33,7 +33,7 @@ async function build(opts = {}) {
     const configVisServer = Fastify({ logger: true });
 
     // Set up connection to Influxdb (if enabled)
-    globals.initInfluxDB();
+    await globals.initInfluxDB();
 
     // Start the uptime monitor if it is enabled in the config
     if (globals.config.has('Butler.uptimeMonitor.enable') && globals.config.get('Butler.uptimeMonitor.enable') === true) {
