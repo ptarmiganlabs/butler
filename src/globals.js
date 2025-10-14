@@ -406,6 +406,12 @@ Configuration File:
         // Create list of enabled API endpoints
         this.endpointsEnabled = [];
 
+        /**
+         * Recursively traverses an object and adds all keys with a value of true to this.endpointsEnabled array.
+         * Used to determine which API endpoints are enabled in the Butler config file.
+         * @param {Object} obj - Object to traverse.
+         * @returns {undefined}
+         */
         const getEnabledApiEndpoints = (obj) => {
             for (const [key, value] of Object.entries(obj)) {
                 if (typeof value === 'object' && value !== null) {
@@ -472,14 +478,31 @@ Configuration File:
         return instance;
     }
 
-    // Helper function to resolve certificate file paths
+    /**
+     * Resolves the path of a certificate file based on the current
+     * module's directory and the relative path provided in the
+     * configuration file.
+     *
+     * @param {string} certConfigPath - The relative path to the
+     * certificate file as specified in the configuration file.
+     * @returns {string} The resolved absolute path to the
+     * certificate file.
+     */
     resolveCertPath(certConfigPath) {
         const filename = fileURLToPath(import.meta.url);
         const dirname = upath.dirname(filename);
         return upath.resolve(dirname, certConfigPath);
     }
 
-    // Helper function to read the contents of the certificate files
+    /**
+     * Reads the contents of a certificate file specified by the given
+     * filename.
+     *
+     * @param {string} filename - The filename of the certificate file
+     * to be read.
+     * @returns {string|null} The contents of the certificate file, or
+     * null if an error occurred while reading the file.
+     */
     readCert(filename) {
         let cert = null;
         try {
@@ -490,7 +513,18 @@ Configuration File:
         return cert;
     }
 
-    // Utility function to load all certificates at once
+    /**
+     * Loads all certificates at once and returns an object containing
+     * the certificate contents and file paths.
+     *
+     * @returns {Object} An object containing the certificate contents and file
+     * paths.
+     * @property {string} cert - The contents of the client certificate file.
+     * @property {string} key - The contents of the client key file.
+     * @property {string} ca - The contents of the CA certificate file.
+     * @property {Object<string, string>} paths - An object containing the file
+     * paths to the certificate files.
+     */
     loadCertificates() {
         const certPath = this.resolveCertPath(this.config.get('Butler.cert.clientCert'));
         const keyPath = this.resolveCertPath(this.config.get('Butler.cert.clientCertKey'));
@@ -504,8 +538,23 @@ Configuration File:
         };
     }
 
-    // Utility function to get certificate paths for external use (e.g., in app.js)
-    // This resolves paths based on the calling context (SEA vs regular Node.js)
+    /**
+     * Resolves the paths of the client certificate, client key, and CA
+     * certificate files based on the current module's directory and
+     * the relative paths provided in the configuration file.
+     *
+     * Utility function to get certificate paths for external use (e.g., in app.js)
+     * This resolves paths based on the calling context (SEA vs regular Node.js)
+     *
+     * @returns {Object} An object containing the resolved paths to the
+     * certificate files.
+     * @property {string} certPath - The resolved absolute path to the client
+     * certificate file.
+     * @property {string} keyPath - The resolved absolute path to the client key
+     * file.
+     * @property {string} caPath - The resolved absolute path to the CA
+     * certificate file.
+     */
     getCertificatePaths() {
         // Use the same logic as in app.js for path resolution
         let dirname;
@@ -523,7 +572,15 @@ Configuration File:
         return { certPath, keyPath, caPath };
     }
 
-    // Helper function to load list of approved directories for file system operations via Butler's REST API
+    /**
+     * Loads approved directories for file system operations via Butler's REST API.
+     *
+     * Loads approved fromDir and toDir for fileCopy operation, approved fromDir and toDir for
+     * fileMove operation, and approved dir for fileDelete operation.
+     *
+     * Also checks if Butler is running on Linux-ish host and UNC path(s) are specified.
+     * Warns if so.
+     */
     async loadApprovedDirectories() {
         try {
             // Load approved fromDir and toDir for fileCopy operation
@@ -768,6 +825,17 @@ Configuration File:
         }
     }
 
+    /**
+     * Initialize InfluxDB.
+     *
+     * This function will connect to InfluxDB if enabled in the config file and create a new database if it does not exist.
+     * It will also create a new default retention policy if one does not exist.
+     *
+     * @throws {Error} If InfluxDB has not been initialized (race condition during startup of Butler).
+     * @throws {Error} If getting the list of InfluxDB databases fails.
+     * @throws {Error} If creating a new InfluxDB database fails.
+     * @throws {Error} If creating a new InfluxDB retention policy fails.
+     */
     async initInfluxDB() {
         const dbName = this.config.get('Butler.influxDb.dbName');
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
@@ -824,7 +892,12 @@ Configuration File:
     //     return this.config;
     // }
 
-    // Static function to check if a file exists
+    /**
+     * Synchronously checks if a file exists
+     *
+     * @param {string} filepath - path to the file to check
+     * @returns {boolean} true if the file exists, false otherwise
+     */
     static checkFileExistsSync(filepath) {
         let flag = true;
         try {
@@ -835,12 +908,20 @@ Configuration File:
         return flag;
     }
 
-    // Static sleep function
+    /**
+     * Synchronously sleep for a given amount of milliseconds.
+     *
+     * @param {number} ms - milliseconds to sleep for
+     * @returns {Promise<void>} a promise that resolves after the sleep period
+     */
     static sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    // Static function to check if Butler is running in a Docker container
+    /**
+     * Checks if Butler is running in a Docker container.
+     * @returns {boolean} true if running in Docker, false otherwise
+     */
     static isRunningInDocker() {
         try {
             fs.accessSync('/.dockerenv');
@@ -850,7 +931,13 @@ Configuration File:
         }
     }
 
-    // Function to get static engine http headers, ready for use with axios
+    /**
+     * Function to get static engine http headers, ready for use with axios
+     *
+     * It takes the static headers configuration from the engine config and returns an object with the header names as keys and the header values as values.
+     *
+     * @returns {Object} an object with the static engine http headers
+     */
     getEngineHttpHeaders() {
         const headersConfig = this.configEngine.headers.static;
 
@@ -863,7 +950,13 @@ Configuration File:
         return headersObj;
     }
 
-    // Function to get static QRS http headers, ready for use with axios
+    /**
+     * Function to get static QRS http headers, ready for use with axios
+     *
+     * It takes the static headers configuration from the QRS config and returns an object with the header names as keys and the header values as values.
+     *
+     * @returns {Object} an object with the static QRS http headers
+     */
     getQRSHttpHeaders() {
         const headersConfig = this.configQRS.headers.static;
 
