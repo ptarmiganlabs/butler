@@ -12,21 +12,25 @@ const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
 
     globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
-        const address = globals.udpServerTaskResultSocket.address();
+        try {
+            const address = globals.udpServerTaskResultSocket.address();
 
-        globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
+            globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
-        // Publish MQTT message that UDP server has started
-        if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
-            if (globals?.mqttClient?.connected) {
-                globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
-            } else {
-                globals.logger.warn(
-                    `[QSEOW] UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
-                        'Butler.mqttConfig.taskFailureServerStatusTopic',
-                    )}`,
-                );
+            // Publish MQTT message that UDP server has started
+            if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
+                if (globals?.mqttClient?.connected) {
+                    globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
+                } else {
+                    globals.logger.warn(
+                        `[QSEOW] UDP SERVER INIT: MQTT client not connected. Unable to publish message to topic ${globals.config.get(
+                            'Butler.mqttConfig.taskFailureServerStatusTopic',
+                        )}`,
+                    );
+                }
             }
+        } catch (err) {
+            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP listening handler: ${globals.getErrorMessage(err)}`);
         }
     });
 
@@ -163,7 +167,7 @@ const udpInitTaskErrorServer = () => {
                     `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Received distribute task UDP message from scheduler: Host=${msg[1]}, TaskName=${msg[2]}, AppName=${msg[3]}, User=${msg[4]}, TaskID=${msg[5]}, AppID=${msg[6]}, ExecutionID=${msg[9]}, Message=${msg[10]}`,
                 );
 
-                distributeTaskCompletion(msg);
+                await distributeTaskCompletion(msg);
             } else if (
                 msg[0].toLowerCase() === '/scheduler-reload-failed/' ||
                 msg[0].toLowerCase() === '/scheduler-task-failed/' ||
@@ -182,7 +186,7 @@ const udpInitTaskErrorServer = () => {
                     return;
                 }
 
-                schedulerFailed(msg);
+                await schedulerFailed(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/' || msg[0].toLowerCase() === '/scheduler-task-aborted/') {
                 // Scheduler log appender detecting aborted tasks
 
@@ -197,7 +201,7 @@ const udpInitTaskErrorServer = () => {
                     return;
                 }
 
-                schedulerAborted(msg);
+                await schedulerAborted(msg);
             } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/' || msg[0].toLowerCase() === '/scheduler-task-success/') {
                 // Scheduler log appender detecting successful tasks
                 // Support both legacy /scheduler-reloadtask-success/ and new generic /scheduler-task-success/ message types
@@ -212,7 +216,7 @@ const udpInitTaskErrorServer = () => {
                     globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Aborting processing of this message.`);
                     return;
                 }
-                schedulerTaskSuccess(msg);
+                await schedulerTaskSuccess(msg);
             } else {
                 globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${msg[0]}"`);
             }

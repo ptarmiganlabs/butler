@@ -29,6 +29,16 @@ const start = async () => {
     const globals = await settingsObj.init();
     globals.logger.verbose(`START: Globals init done: ${globals.initialised}`);
 
+    // Set up global handler for unhandled promise rejections
+    process.on('unhandledRejection', (reason, promise) => {
+        globals.logger.error(`UNHANDLED REJECTION: Reason: ${globals.getErrorMessage(reason)}`);
+        globals.logger.error(`UNHANDLED REJECTION: Promise: ${promise}`);
+        // Log stack trace if available
+        if (reason && reason.stack) {
+            globals.logger.error(`UNHANDLED REJECTION: Stack trace: ${reason.stack}`);
+        }
+    });
+
     const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
         './lib/qseow/qliksense_license.js'
