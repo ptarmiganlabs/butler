@@ -5,13 +5,19 @@
     <!-- (reload, external program, preload) -->
     <!-- Only the last of potentially several retries is reported -->
     <appender name="TaskFailLogger" type="log4net.Appender.UdpAppender">
+        <!-- Log message for failed reload tasks -->
         <filter type="log4net.Filter.StringMatchFilter">
-            <!-- Log message for aborted reload tasks -->
             <param name="stringToMatch" value="Max retries reached" />
-            <!-- Preload tasks may have either of these log messages when failing -->
+        </filter>
+
+        <!-- Preload tasks may have either of these log messages when failing -->
+        <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Failed to start session" />
+        </filter>
+        <filter type="log4net.Filter.StringMatchFilter">
             <param name="stringToMatch" value="Could not reserve an executor for task" />
         </filter>
+
         <filter type="log4net.Filter.DenyAllFilter" />
         <param name="remoteAddress" value="<IP of server where Butler is running>" />
         <param name="remotePort" value="9998" />
