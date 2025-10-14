@@ -140,8 +140,6 @@ async function handlerPutStartTask(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter (task ID) missing. Should be a task ID or "-" if task info is passed in body'));
         } else {
-            // One task should be started, it's ID is specied by the taskId URL parameter
-
             // Handle taskId passed in URL
             // Is task ID a valid guid?
             if (request.params.taskId === '-') {

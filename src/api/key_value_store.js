@@ -35,16 +35,19 @@ export const apiGetKVPair = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: '',
                     examples: ['Sales ETL step 2'],
                 },
             },
+            required: ['namespace'],
         },
         querystring: {
             type: 'object',
             properties: {
                 key: {
                     type: 'string',
+                    minLength: 1,
                     description: '',
                     examples: ['Last extract timestamp'],
                 },
@@ -108,16 +111,19 @@ export const apiGetKVExists = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: '',
                     examples: ['Sales ETL step 2'],
                 },
             },
+            required: ['namespace'],
         },
         querystring: {
             type: 'object',
             properties: {
                 key: {
                     type: 'string',
+                    minLength: 1,
                     description: '',
                     examples: ['Last extract timestamp'],
                 },
@@ -191,16 +197,19 @@ export const apiPostKVPair = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of namespace.',
                     examples: ['Sales ETL step 2'],
                 },
             },
+            required: ['namespace'],
         },
         body: {
             type: 'object',
             properties: {
                 key: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Key to use',
                     examples: ['ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1'],
                 },
@@ -216,6 +225,7 @@ export const apiPostKVPair = {
                     examples: [10000],
                 },
             },
+            required: ['key'],
         },
         response: {
             201: {
@@ -279,11 +289,13 @@ export const apiDeleteKVPair = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of namespace.',
                     examples: ['Sales ETL step 2'],
                 },
                 key: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Key to use',
                     examples: ['ce68c8ca-b3ff-4371-8285-7c9ce5040e42_parameter_1'],
                 },
@@ -331,10 +343,12 @@ export const apiDeleteNamespace = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of namespace.',
                     examples: ['Sales ETL step 2'],
                 },
             },
+            required: ['namespace'],
         },
         response: {
             204: {
@@ -377,10 +391,12 @@ export const apiGetKeysInNamespace = {
             properties: {
                 namespace: {
                     type: 'string',
+                    minLength: 1,
                     description: 'Name of namespace whose keys should be returned.',
                     examples: ['Sales ETL step 2'],
                 },
             },
+            required: ['namespace'],
         },
         response: {
             200: {

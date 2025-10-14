@@ -53,50 +53,46 @@ async function handlerGetSenseAppDump(request, reply) {
 
         logRESTCall(request);
 
-        if (request.params.appId === undefined) {
-            // Required parameter is missing
-            reply.send(httpErrors(400, 'Required parameter missing'));
-        } else {
-            globals.logger.info(`APPDUMP: Dumping app: ${request.params.appId}`);
+        // Fastify schema validation ensures appId parameter is present and non-empty
+        globals.logger.info(`APPDUMP: Dumping app: ${request.params.appId}`);
 
-            // Get http headers from Butler config file
-            const httpHeaders = globals.getEngineHttpHeaders();
+        // Get http headers from Butler config file
+        const httpHeaders = globals.getEngineHttpHeaders();
 
-            // create a new session
-            const configEnigma = {
-                schema: qixSchema,
-                url: SenseUtilities.buildUrl({
-                    host: globals.configEngine.host,
-                    port: globals.configEngine.port,
-                    prefix: '',
-                    secure: globals.configEngine.isSecure,
+        // create a new session
+        const configEnigma = {
+            schema: qixSchema,
+            url: SenseUtilities.buildUrl({
+                host: globals.configEngine.host,
+                port: globals.configEngine.port,
+                prefix: '',
+                secure: globals.configEngine.isSecure,
+            }),
+            createSocket: (url) =>
+                new WebSocket(url, {
+                    key: globals.configEngine.key,
+                    cert: globals.configEngine.cert,
+                    headers: httpHeaders,
+                    rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
                 }),
-                createSocket: (url) =>
-                    new WebSocket(url, {
-                        key: globals.configEngine.key,
-                        cert: globals.configEngine.cert,
-                        headers: httpHeaders,
-                        rejectUnauthorized: globals.config.get('Butler.configEngine.rejectUnauthorized'),
-                    }),
-            };
+        };
 
-            const session = enigma.create(configEnigma);
-            const global = await session.open();
+        const session = enigma.create(configEnigma);
+        const global = await session.open();
 
-            // We can now interact with the global object, for example get the document list.
-            // Please refer to the Engine API documentation for available methods.
-            const app = await global.openDoc(request.params.appId, '', '', '', true);
-            const data = await serializeApp(app);
+        // We can now interact with the global object, for example get the document list.
+        // Please refer to the Engine API documentation for available methods.
+        const app = await global.openDoc(request.params.appId, '', '', '', true);
+        const data = await serializeApp(app);
 
-            reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
+        reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
 
-            // Close connection to Sense server
-            try {
-                await session.close();
-            } catch (err) {
-                globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${globals.getErrorMessage(err)}`);
-                reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
-            }
+        // Close connection to Sense server
+        try {
+            await session.close();
+        } catch (err) {
+            globals.logger.error(`APPDUMP: Error closing connection to Sense engine: ${globals.getErrorMessage(err)}`);
+            reply.send(httpErrors(500, 'Failed closing connection to Sense server'));
         }
     } catch (err) {
         globals.logger.error(`APPDUMP: Failed dumping app: ${request.params.appId}, error is: ${globals.getErrorMessage(err)}`);

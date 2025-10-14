@@ -18,16 +18,12 @@ function handlerPutMqttMessage(request, reply) {
 
         if (globals.mqttClient) {
             try {
-                if (request.body.topic === undefined || request.body.message === undefined) {
-                    // Required parameter is missing
-                    reply.send(httpErrors(400, 'Required parameter missing'));
-                } else {
-                    // Use data in request to publish MQTT message
-                    if (globals.mqttClient) {
-                        globals.mqttClient.publish(request.body.topic, request.body.message);
-                    }
-                    reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
+                // Fastify schema validation ensures topic and message are present and non-empty
+                // Use data in request to publish MQTT message
+                if (globals.mqttClient) {
+                    globals.mqttClient.publish(request.body.topic, request.body.message);
                 }
+                reply.type('application/json; charset=utf-8').code(201).send(JSON.stringify(request.body));
             } catch (err) {
                 globals.logger.error(
                     `PUBLISHMQTT: Failed publishing MQTT message: ${JSON.stringify(request.body, null, 2)}, error is: ${JSON.stringify(
