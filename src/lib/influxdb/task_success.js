@@ -461,6 +461,8 @@ export function postDistributeTaskSuccessNotificationInfluxDb(distributeParams) 
         tags.task_id = distributeParams.taskId;
         tags.task_name = distributeParams.taskName;
         tags.log_level = distributeParams.logLevel;
+        tags.app_id = distributeParams?.qs_taskMetadata?.app?.id;
+        tags.app_name = distributeParams?.qs_taskMetadata?.app?.name;
 
         // Build InfluxDB datapoint
         let datapoint = [
@@ -584,6 +586,8 @@ export function postPreloadTaskSuccessNotificationInfluxDb(preloadParams) {
         tags.task_id = preloadParams.taskId;
         tags.task_name = preloadParams.taskName;
         tags.log_level = preloadParams.logLevel;
+        tags.app_id = preloadParams?.qs_taskMetadata?.app?.id;
+        tags.app_name = preloadParams?.qs_taskMetadata?.app?.name;
 
         // Build InfluxDB datapoint
         let datapoint = [
