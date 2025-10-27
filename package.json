@@ -96,7 +96,7 @@
         "nodemailer": "^7.0.9",
         "nodemailer-express-handlebars": "^7.0.0",
         "os": "^0.1.2",
-        "posthog-node": "^5.9.5",
+        "posthog-node": "^5.10.3",
         "promise": "^8.3.0",
         "rate-limiter-flexible": "^8.1.0",
         "systeminformation": "^5.27.11",
