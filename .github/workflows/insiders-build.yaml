@@ -398,10 +398,10 @@ jobs:
         runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
             - name: Setup Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
               with:
                   node-version: 23
 
@@ -425,7 +425,7 @@ jobs:
                   github.repository_owner == 'ptarmiganlabs' &&
                   matrix.os == 'ubuntu-latest'
               continue-on-error: true
-              uses: snyk/actions/node@master
+              uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   # This is where you will need to introduce the Snyk API token created with your Snyk account
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -438,7 +438,7 @@ jobs:
                   github.repository_owner == 'ptarmiganlabs' &&
                   matrix.os == 'ubuntu-latest'
               continue-on-error: true
-              uses: github/codeql-action/upload-sarif@v4
+              uses: github/codeql-action/upload-sarif@cf1bb45a277cb3c205638b2cd5c984db1c46a412 # v4.31.7
               with:
                   sarif_file: snyk.sarif
 
@@ -459,7 +459,7 @@ jobs:
                   ${{ matrix.build }}
 
             - name: Upload insider build artifacts to GitHub
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
               with:
                   name: ${{ matrix.artifact_insider }}
                   path: ${{ matrix.artifact_insider }}
@@ -475,7 +475,7 @@ jobs:
             BUTLER_INSIDER_DOWNLOAD_PATH: ${{ vars.BUTLER_INSIDER_DOWNLOAD_PATH || './download' }}
         steps:
             - name: Download Windows insider build artifact
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
               with:
                   name: butler--win-x64--${{ github.sha }}.zip
                   path: ${{ env.BUTLER_INSIDER_DOWNLOAD_PATH }}
