@@ -18,6 +18,5 @@ permissions:
 
 jobs:
     scan-scheduled:
-        # uses: 'google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.2'
-        # Use full commit SHA
-        uses: 'google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@e92b5d07338d4f0ba0981dffed17c48976ca4730' #v2.2.3
+        # Use full commit SHA for security
+        uses: 'google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@b77c075a1235514558f0eb88dbd31e22c45e0cd2' # v2.3.0

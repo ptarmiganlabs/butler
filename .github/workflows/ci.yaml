@@ -24,7 +24,7 @@ jobs:
       - name: Show github.ref
         run: echo "$GITHUB_REF"
 
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         id: release
         if: github.repository_owner == 'ptarmiganlabs'
         with:
@@ -57,10 +57,10 @@ jobs:
           echo "sha             : ${{ steps.release.outputs['sha'] }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -105,10 +105,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -133,7 +133,7 @@ jobs:
           find ./build -type f -name "*.json" -o -name "*.spdx*" -exec ls -la {} \;
 
       - name: Upload SBOM to Release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           allowUpdates: true
           omitBodyDuringUpdate: true
@@ -145,7 +145,7 @@ jobs:
           tag: ${{ needs.release-please.outputs.release_tag_name }}
 
       - name: Upload SBOM as Workflow Artifact (backup)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: sbom-${{ needs.release-please.outputs.release_version }}
           path: './build/'
@@ -179,10 +179,10 @@ jobs:
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -315,7 +315,7 @@ jobs:
           ls -la
 
       - name: Upload to existing release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           allowUpdates: true
           omitBodyDuringUpdate: true
@@ -366,10 +366,10 @@ jobs:
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -497,7 +497,7 @@ jobs:
           ls -la
 
       - name: Upload release artifacts to GitHub
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           allowUpdates: true
           artifactContentType: raw
@@ -540,10 +540,10 @@ jobs:
           Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -632,7 +632,7 @@ jobs:
           Compress-Archive -Path "./config" -Update -DestinationPath "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
 
       - name: Upload to existing release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           allowUpdates: true
           omitBodyDuringUpdate: true
@@ -668,10 +668,10 @@ jobs:
           echo "upload_url : ${{ needs.release-please.outputs.release_upload_url }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: 22
 
@@ -722,7 +722,7 @@ jobs:
           ls -la
 
       - name: Upload to existing release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           allowUpdates: true
           omitBodyDuringUpdate: true

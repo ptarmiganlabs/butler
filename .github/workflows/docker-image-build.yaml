@@ -45,19 +45,19 @@ jobs:
           echo "Inputs: ${{ github.event.inputs }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
-      
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
@@ -66,16 +66,16 @@ jobs:
       # https://github.com/marketplace/actions/docker-login
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       # Docker tag has format: refs/tags/butler-v1.2.3
-      # We need to extract the tag semver from the full tag      
+      # We need to extract the tag semver from the full tag
       # Store the tag in GITHUB_ENV environment variable
       - name: Create clean tag for Docker
         run: |
@@ -122,7 +122,7 @@ jobs:
       # https://github.com/marketplace/actions/docker-metadata-action
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
@@ -150,7 +150,7 @@ jobs:
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         if: |
           github.event_name != 'pull_request' &&
           github.repository_owner == 'ptarmiganlabs'
@@ -172,13 +172,13 @@ jobs:
 
       # Send MQTT message similar to this:
       # { "topic":"control/github_actions_action_runner",
-      #   "payload":"{ 
-      #     \"type\":\"docker-build\", 
-      #     \"repo\": \"ptarmiganlabs/butler\", 
+      #   "payload":"{
+      #     \"type\":\"docker-build\",
+      #     \"repo\": \"ptarmiganlabs/butler\",
       #     \"job\": \"build\", \
       #     "workflow\": \"Build Docker image CI\",
       #     \"status\": \"completed\",
-      #     \"conclusion\":\"success\" 
+      #     \"conclusion\":\"success\"
       #   }"
       # }
       # - name: Send job status to MQTT when done
@@ -192,4 +192,3 @@ jobs:
       #     payload: '{ "type":"docker-build", "repo": "${{ github.repository }}", "job": "${{ github.job }}", "workflow": "${{ github.workflow }}","status": "completed","conclusion":"${{ env.JOB_STATUS }}" }'
       #     username: ${{ secrets.PUBLIC_MQTT_BROKER_USER }}
       #     connectTimeout: 30000
-
