@@ -124,14 +124,14 @@ Butler:
             name: 10d
             duration: 10d
         tag:
-            static: # Static tags to attach to all data stored in InflixDB
+            static: # Static tags to attach to all data stored in InfluxDB
                 # - name: butler_instance
                 #   value: dev
         reloadTaskFailure:
             enable: true
             tailScriptLogLines: 20
             tag:
-                static: # Static tags to attach to data stored in InflixDB
+                static: # Static tags to attach to data stored in InfluxDB
                     - name: butler_instance
                       value: prod-1
                 dynamic:
@@ -162,6 +162,14 @@ Butler:
                     #   value: abc 123
                 dynamic:
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        userSyncTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InfluxDB
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
         externalProgramTaskSuccess:
             enable: false
             tag:
@@ -173,9 +181,9 @@ Butler:
         externalProgramTaskFailure:
             enable: false
             tag:
-                static: # Static tags to attach to data stored in InflixDB
-                    - name: butler_instance
-                      value: prod-1
+                static: # Static tags to attach to data stored in InfluxDB
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
                 dynamic:
                     useTaskTags: true # Should task tags be stored in InfluxDB as tags?
         distributeTaskSuccess:
@@ -189,9 +197,9 @@ Butler:
         distributeTaskFailure:
             enable: false
             tag:
-                static: # Static tags to attach to data stored in InflixDB
-                    - name: butler_instance
-                      value: prod-1
+                static: # Static tags to attach to data stored in InfluxDB
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
                 dynamic:
                     useTaskTags: true # Should task tags be stored in InfluxDB as tags?
         preloadTaskSuccess:
@@ -202,6 +210,14 @@ Butler:
                     #   value: abc 123
                 dynamic:
                     useTaskTags: true # Should task tags be sent to InfluxDb as tags?
+        preloadTaskFailure:
+            enable: false
+            tag:
+                static: # Static tags to attach to data stored in InfluxDB
+                    # - name: event-specific-tag 1
+                    #   value: abc 123
+                dynamic:
+                    useTaskTags: true # Should task tags be stored in InfluxDB as tags?
 
     # Store script logs of failed reloads on disk.
     # The script logs will be stored in daily directories under the specified main directory below
@@ -247,7 +263,7 @@ Butler:
                     # If enabled, version info will be stored as measurements in InfluxDB.
                     enable: false
                     tag:
-                        static: # Static attributes/tags to attach to the data sent to InflixDB
+                        static: # Static attributes/tags to attach to the data sent to InfluxDB
                             - name: foo
                               value: bar
 
@@ -264,7 +280,7 @@ Butler:
                 influxDb: # Store license data in InfluxDB
                     enable: false
                     tag:
-                        static: # Static attributes/tags to attach to the data sent to InflixDB
+                        static: # Static attributes/tags to attach to the data sent to InfluxDB
                             - name: foo
                               value: bar
                 mqtt:
@@ -287,7 +303,7 @@ Butler:
                 influxDb: # Store license data in InfluxDB
                     enable: false
                     tag:
-                        static: # Static attributes/tags to attach to the data sent to InflixDB
+                        static: # Static attributes/tags to attach to the data sent to InfluxDB
                             - name: foo
                               value: bar
         licenseRelease: # Release unused Qlik Sense access licenses
@@ -311,7 +327,8 @@ Butler:
                 userDirectory: # List of user directories whose users should never have their licenses released
                     - INTERNAL
                     - ADMIN
-                inactive: ignore # ignore/yes/no. The value is case insensitive
+                inactive:
+                    ignore # ignore/yes/no. The value is case insensitive
                     #   no = Don't release licenses for users marked as "Inactive=No" in the QMC
                     #   yes = Don't release licenses for users marked as "Inactive=Yes" in the QMC
                     #   ignore = Disregard this setting
@@ -328,7 +345,7 @@ Butler:
                 influxDb: # Store info about released licenses in InfluxDB
                     enable: false
                     tag:
-                        static: # Static attributes/tags to attach to the data sent to InflixDB
+                        static: # Static attributes/tags to attach to the data sent to InfluxDB
                             - name: foo
                               value: bar
 

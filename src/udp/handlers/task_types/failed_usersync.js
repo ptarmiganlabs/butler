@@ -1,18 +1,17 @@
 // Load global variables and functions
 import globals from '../../../globals.js';
+import { postUserSyncTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed user sync tasks.
  *
- * Placeholder handler for User Sync task failures.
- * User Sync tasks synchronize user directories with Qlik Sense.
+ * - Processes failed user sync task events by:
+ * - Extracting task metadata (tags, custom properties)
+ * - Sending notifications to configured destinations:
+ * - InfluxDB metrics (if enabled)
  *
- * TODO: Implement comprehensive handling for failed user sync tasks including:
- * - Sync error logging and analysis
- * - User directory sync status tracking
- * - Notification sending (email, Slack, Teams, etc.)
- * - Metrics collection for InfluxDB
- * - Incident management integration
+ * User Sync tasks synchronize user directories with Qlik Sense.
+ * Note: User sync tasks do not generate script logs.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with user sync failure details:
@@ -27,7 +26,7 @@ import globals from '../../../globals.js';
  *   - msg[8]: Log level
  *   - msg[9]: Execution ID
  *   - msg[10]: Log message
- * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS (currently not used in this handler):
+ * @param {Object} taskMetadata - Task metadata retrieved from Qlik Sense QRS:
  *   - taskType: Type of task (2=UserSync)
  *   - tags: Array of tag objects with id and name
  *   - customProperties: Array of custom property objects
@@ -35,17 +34,46 @@ import globals from '../../../globals.js';
  */
 export const handleFailedUserSyncTask = async (msg, taskMetadata) => {
     try {
+        const userSyncTaskId = msg[5];
+
         globals.logger.verbose(
-            `[QSEOW] TASKFAILURE: User sync task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
+            `[QSEOW] USER SYNC TASK FAILURE: User sync task failed: UDP msg=${msg[0]}, Host=${msg[1]}, Task name=${msg[2]}, Task ID=${userSyncTaskId}`,
         );
 
-        // TODO: Implement handling for failed user sync tasks
-        // This is a placeholder for future implementation
-        globals.logger.info(
-            `[QSEOW] TASKFAILURE: User sync task ${msg[2]} (${msg[5]}) failed. No processing configured yet for this task type.`,
-        );
+        globals.logger.info(`[QSEOW] USER SYNC TASK FAILURE: User sync task ${msg[2]} (${userSyncTaskId}) failed.`);
+
+        // Get tags for the task that failed
+        const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
+        globals.logger.verbose(`[QSEOW] Tags for task ${userSyncTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
+
+        // Get user sync task custom properties
+        const taskCustomProperties =
+            taskMetadata?.customProperties?.map((cp) => ({
+                name: cp.definition.name,
+                value: cp.value,
+            })) || [];
+
+        // Post to InfluxDB when a user sync task has failed
+        if (
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.get('Butler.influxDb.userSyncTaskFailure.enable') === true
+        ) {
+            postUserSyncTaskFailureNotificationInfluxDb({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: userSyncTaskId,
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_taskMetadata: taskMetadata,
+            });
+        }
     } catch (err) {
-        globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed user sync task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
+        globals.logger.error(`[QSEOW] USER SYNC TASK FAILURE: Error handling failed user sync task: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] USER SYNC TASK FAILURE: Stack trace: ${err.stack}`);
     }
 };

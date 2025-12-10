@@ -1,5 +1,3 @@
-import { type } from 'os';
-
 export const confifgFileSchema = {
     type: 'object',
     properties: {
@@ -369,6 +367,39 @@ export const confifgFileSchema = {
                             required: ['enable', 'tag'],
                             additionalProperties: false,
                         },
+                        userSyncTaskFailure: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                         externalProgramTaskSuccess: {
                             type: 'object',
                             properties: {
@@ -534,6 +565,39 @@ export const confifgFileSchema = {
                             required: ['enable', 'tag'],
                             additionalProperties: false,
                         },
+                        preloadTaskFailure: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                tag: {
+                                    type: 'object',
+                                    properties: {
+                                        static: {
+                                            type: ['array', 'null'],
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                        dynamic: {
+                                            type: 'object',
+                                            properties: {
+                                                useTaskTags: { type: 'boolean' },
+                                            },
+                                        },
+                                    },
+                                    required: ['static', 'dynamic'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['enable', 'tag'],
+                            additionalProperties: false,
+                        },
                     },
                     required: [
                         'enable',
@@ -546,11 +610,13 @@ export const confifgFileSchema = {
                         'reloadTaskFailure',
                         'reloadTaskSuccess',
                         'userSyncTaskSuccess',
+                        'userSyncTaskFailure',
                         'externalProgramTaskSuccess',
                         'externalProgramTaskFailure',
                         'distributeTaskSuccess',
                         'distributeTaskFailure',
                         'preloadTaskSuccess',
+                        'preloadTaskFailure',
                     ],
                     additionalProperties: false,
                 },

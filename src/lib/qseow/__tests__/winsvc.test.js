@@ -162,6 +162,7 @@ describe('winsvc helpers', () => {
         // Remote host path should still parse
         const names = await all(logger, 'REMOTEHOST');
         expect(names).toContain('RunningService');
+        expect(names.length).toBeGreaterThan(0);
 
         // statusAll error path rejects with error
         execMock.mockImplementationOnce((cmd, cb) => {
@@ -212,6 +213,7 @@ describe('winsvc helpers', () => {
 
     test('all() handles remote host command correctly', async () => {
         const names = await all(logger, 'REMOTEHOST');
+        expect(names).toContain('RunningService');
         expect(execMock).toHaveBeenCalledWith('sc.exe \\\\REMOTEHOST query state= all', expect.any(Function));
         expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Getting all services on host REMOTEHOST'));
     });
@@ -408,5 +410,171 @@ describe('winsvc helpers', () => {
         await statusAll(logger, 'TESTHOST');
         expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('Running command'));
         expect(logger.verbose).toHaveBeenCalledWith(expect.stringContaining('Getting status of all services on host TESTHOST'));
+    });
+
+    // Hostname validation tests
+    describe('hostname validation', () => {
+        test('all() accepts valid hostnames', async () => {
+            // Valid hostname patterns
+            const validHosts = [
+                'server1',
+                'SERVER1',
+                'my-server',
+                'server_01',
+                'server.domain.com',
+                '192.168.1.100',
+                'host-123.example.com',
+                'my_server-2024',
+            ];
+
+            for (const host of validHosts) {
+                await expect(all(logger, host)).resolves.toBeDefined();
+            }
+        });
+
+        test('all() rejects invalid hostnames', async () => {
+            // Invalid hostname patterns (potential command injection)
+            const invalidHosts = [
+                'server; rm -rf /',
+                'host & whoami',
+                'server | cat /etc/passwd',
+                'host$(whoami)',
+                'server`id`',
+                'host\nwhoami',
+                'host\rls',
+                'server\\whoami',
+                'host/path',
+                'server<test',
+                'host>output',
+                'server*',
+                'host?query',
+                'server[1]',
+                'host{test}',
+                'server (test)',
+                "host'test",
+                'server"test',
+                'host=value',
+                'server+test',
+                'host,test',
+                'server:8080',
+            ];
+
+            for (const host of invalidHosts) {
+                await expect(all(logger, host)).rejects.toThrow('Invalid host parameter');
+                expect(logger.error).toHaveBeenCalledWith(expect.stringContaining(`Invalid host parameter: ${host}`));
+                jest.clearAllMocks();
+            }
+        });
+
+        test('statusAll() accepts valid hostnames', async () => {
+            const validHosts = ['webserver', 'db-server-01', 'app.server.local', '10.0.0.1', 'node_1.cluster'];
+
+            for (const host of validHosts) {
+                await expect(statusAll(logger, host)).resolves.toBeDefined();
+            }
+        });
+
+        test('statusAll() rejects invalid hostnames', async () => {
+            const invalidHosts = ['server; calc', 'host && ping google.com', 'server || echo test', 'host$(cat /etc/hosts)'];
+
+            for (const host of invalidHosts) {
+                await expect(statusAll(logger, host)).rejects.toThrow('Invalid host parameter');
+                expect(logger.error).toHaveBeenCalledWith(expect.stringContaining(`Invalid host parameter: ${host}`));
+                jest.clearAllMocks();
+            }
+        });
+
+        test('status() accepts valid hostnames', async () => {
+            const validHosts = ['server1', 'host-2', '192.168.0.1', 'my.server.com'];
+
+            for (const host of validHosts) {
+                execMock.mockImplementationOnce((cmd, cb) => {
+                    cb(null, 'SERVICE_NAME: TestSvc\r\n        STATE              : 4  RUNNING');
+                });
+                await expect(status(logger, 'TestSvc', host)).resolves.toBeDefined();
+            }
+        });
+
+        test('status() rejects invalid hostnames', async () => {
+            const invalidHosts = ['server; shutdown /s', 'host & net user', 'server | type C:\\Windows\\System32\\config\\sam'];
+
+            for (const host of invalidHosts) {
+                await expect(status(logger, 'TestSvc', host)).rejects.toThrow('Invalid host parameter');
+                expect(logger.error).toHaveBeenCalledWith(expect.stringContaining(`Invalid host parameter: ${host}`));
+                jest.clearAllMocks();
+            }
+        });
+
+        test('details() accepts valid hostnames', async () => {
+            const validHosts = ['fileserver', 'backup-server', '172.16.0.1', 'prod.app.local'];
+
+            for (const host of validHosts) {
+                execMock.mockImplementationOnce((cmd, cb) => {
+                    const stdout = [
+                        'SERVICE_NAME: TestSvc',
+                        'DISPLAY_NAME              : Test Service',
+                        '        START_TYPE         : 2   AUTO_START',
+                        '        BINARY_PATH_NAME   : C:\\test.exe',
+                        '        DEPENDENCIES       : ',
+                    ].join('\r\n');
+                    cb(null, stdout);
+                });
+                await expect(details(logger, 'TestSvc', host)).resolves.toBeDefined();
+            }
+        });
+
+        test('details() rejects invalid hostnames', async () => {
+            const invalidHosts = ['server; del /F /Q C:\\*', 'host & format C:', 'server || powershell.exe', 'host`Get-Process`'];
+
+            for (const host of invalidHosts) {
+                await expect(details(logger, 'TestSvc', host)).rejects.toThrow('Invalid host parameter');
+                expect(logger.error).toHaveBeenCalledWith(expect.stringContaining(`Invalid host parameter: ${host}`));
+                jest.clearAllMocks();
+            }
+        });
+
+        test('null or undefined host should bypass validation (localhost)', async () => {
+            // null host should work (localhost)
+            await expect(all(logger, null)).resolves.toBeDefined();
+            await expect(statusAll(logger, null)).resolves.toBeDefined();
+
+            execMock.mockImplementationOnce((cmd, cb) => {
+                cb(null, 'SERVICE_NAME: TestSvc\r\n        STATE              : 4  RUNNING');
+            });
+            await expect(status(logger, 'TestSvc', null)).resolves.toBeDefined();
+
+            execMock.mockImplementationOnce((cmd, cb) => {
+                const stdout = [
+                    'SERVICE_NAME: TestSvc',
+                    'DISPLAY_NAME              : Test Service',
+                    '        START_TYPE         : 2   AUTO_START',
+                    '        BINARY_PATH_NAME   : C:\\test.exe',
+                    '        DEPENDENCIES       : ',
+                ].join('\r\n');
+                cb(null, stdout);
+            });
+            await expect(details(logger, 'TestSvc', null)).resolves.toBeDefined();
+        });
+
+        test('validation prevents command injection attempts', async () => {
+            // Test various command injection patterns
+            const injectionAttempts = [
+                'host;powershell',
+                'server&net',
+                'host|type',
+                'server$(cmd)',
+                'host`calc`',
+                'server\ncmd',
+                'host\rdir',
+            ];
+
+            for (const maliciousHost of injectionAttempts) {
+                await expect(all(logger, maliciousHost)).rejects.toThrow('Invalid host parameter');
+                await expect(statusAll(logger, maliciousHost)).rejects.toThrow('Invalid host parameter');
+                await expect(status(logger, 'TestSvc', maliciousHost)).rejects.toThrow('Invalid host parameter');
+                await expect(details(logger, 'TestSvc', maliciousHost)).rejects.toThrow('Invalid host parameter');
+                jest.clearAllMocks();
+            }
+        });
     });
 });

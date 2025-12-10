@@ -10,7 +10,6 @@ import distributeTaskCompletion from './handlers/distribute_task_completion.js';
  */
 const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
-
     globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
         try {
             const address = globals.udpServerTaskResultSocket.address();
@@ -35,7 +34,6 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Handler for UDP error event
-
     globals.udpServerTaskResultSocket.on('error', (message, remote) => {
         try {
             const address = globals.udpServerTaskResultSocket.address();
@@ -59,7 +57,6 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Main handler for UDP messages relating to failed tasks
-
     globals.udpServerTaskResultSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===

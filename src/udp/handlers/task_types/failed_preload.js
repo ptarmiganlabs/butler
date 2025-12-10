@@ -2,6 +2,7 @@
 import globals from '../../../globals.js';
 import getPreloadTaskExecutionResults from '../../../qrs_util/preload_task_execution_results.js';
 import { sendPreloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/index.js';
+import { postPreloadTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed preload tasks.
@@ -64,6 +65,26 @@ export const handleFailedPreloadTask = async (msg, taskMetadata) => {
             globals.logger.verbose(
                 `[QSEOW] PRELOAD TASK FAILURE: Task info for preload task ${preloadTaskId}: ${JSON.stringify(taskInfo, null, 2)}`,
             );
+        }
+
+        // Post to InfluxDB when a preload task has failed
+        if (
+            globals.config.get('Butler.influxDb.enable') === true &&
+            globals.config.get('Butler.influxDb.preloadTaskFailure.enable') === true
+        ) {
+            postPreloadTaskFailureNotificationInfluxDb({
+                host: msg[1],
+                user: msg[4].replace(/\\/g, '/'),
+                taskName: msg[2],
+                taskId: preloadTaskId,
+                logTimeStamp: msg[7],
+                logLevel: msg[8],
+                executionId: msg[9],
+                logMessage: msg[10],
+                qs_taskTags: taskTags,
+                qs_taskCustomProperties: taskCustomProperties,
+                qs_taskMetadata: taskMetadata,
+            });
         }
 
         // Send email notification for failed preload task

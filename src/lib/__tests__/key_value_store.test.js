@@ -37,6 +37,7 @@ describe('lib/key_value_store', () => {
     }
 
     const mockGlobals = {
+        getErrorMessage: (err) => err.message || String(err),
         config: {
             has: jest.fn((k) => k === 'Butler.keyValueStore.maxKeysPerNamespace'),
             get: jest.fn((k) => {
@@ -49,7 +50,6 @@ describe('lib/key_value_store', () => {
         logger: {
             error: jest.fn(),
         },
-        getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
     const loadModule = async () => {
