@@ -15,3 +15,4 @@ export {
     postExternalProgramTaskSuccessNotificationInfluxDb,
 } from './task_success.js';
 export { postReloadTaskFailureNotificationInfluxDb } from './task_failure.js';
+export { postUdpQueueMetricsToInfluxdb, setupUdpQueueMetricsStorage } from './udp_queue_metrics.js';

@@ -49,6 +49,7 @@ const start = async () => {
 
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
+    const { setupUdpQueueMetricsStorage } = await import('./lib/influxdb/udp_queue_metrics.js');
 
     const {
         configFileEmailAssert,
@@ -352,6 +353,12 @@ const start = async () => {
         // Start UDP server for failed task events
         globals.udpServerTaskResultSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
+
+        // Set up periodic storage of UDP queue metrics to InfluxDB
+        const udpQueueMetricsIntervalId = setupUdpQueueMetricsStorage();
+        if (udpQueueMetricsIntervalId) {
+            globals.logger.info('[UDP Queue Metrics] Periodic metrics storage to InfluxDB initialized');
+        }
     }
 };
 

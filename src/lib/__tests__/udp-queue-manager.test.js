@@ -248,7 +248,7 @@ describe('UdpQueueManager', () => {
         it.skip('should detect backpressure when threshold exceeded', async () => {
             // Note: This test is skipped due to timing sensitivity with async queue processing
             // The backpressure functionality is working correctly in production
-            
+
             // Create a queue manager with smaller size for easier testing
             const smallConfig = {
                 messageQueue: {
