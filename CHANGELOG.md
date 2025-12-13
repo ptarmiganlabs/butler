@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v15.0.0...butler-v15.0.1) (2025-12-13)
+
+
+### Refactoring
+
+* remove macOS x64 build jobs. Bye-bye Intel- based macs... ([f04b6fc](https://github.com/ptarmiganlabs/butler/commit/f04b6fc71e793ab5d3254914705663f42601db7c))
+* Restructure template config file to make it easier to read ([4376ebb](https://github.com/ptarmiganlabs/butler/commit/4376ebb2ea259e495e4505c5da9f4fd75dc4d513))
+
 ## [15.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.2.0...butler-v15.0.0) (2025-12-10)
 
 
