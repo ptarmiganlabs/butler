@@ -335,6 +335,16 @@ const start = async () => {
         reuseAddr: true,
     });
 
+    // Add error handler for UDP socket
+    globals.udpServerTaskResultSocket.on('error', (err) => {
+        globals.logger.error(`[QSEOW] UDP server error: ${err.message}`);
+    });
+
+    // Add close handler for UDP socket
+    globals.udpServerTaskResultSocket.on('close', () => {
+        globals.logger.warn('[QSEOW] UDP server socket closed');
+    });
+
     // ---------------------------------------------------
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {

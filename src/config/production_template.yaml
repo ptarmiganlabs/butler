@@ -975,6 +975,25 @@ Butler:
         enable: false # Should the UDP server responsible for receving task failure/aborted events be started?
         serverHost: 10.11.12.13 # FQDN or IP (or localhost) of server where Butler is running
         portTaskFailure: 9998
+        # Message queue settings for handling incoming UDP messages
+        messageQueue:
+            maxConcurrent: 10 # Max number of messages being processed simultaneously (default: 10)
+            maxSize: 200 # Max queue size before messages are dropped (default: 200)
+            backpressureThreshold: 80 # Warn when queue utilization reaches this % (default: 80)
+        # Rate limiting to prevent message flooding
+        rateLimit:
+            enable: false # Enable rate limiting (default: false)
+            maxMessagesPerMinute: 600 # Max messages per minute, ~10/sec (default: 600)
+        maxMessageSize: 65507 # Max UDP message size in bytes (default: 65507, UDP max)
+        # Queue metrics storage in InfluxDB
+        queueMetrics:
+            influxdb:
+                enable: false # Store queue metrics in InfluxDB (default: false)
+                writeFrequency: 20000 # How often to write metrics, milliseconds (default: 20000)
+                measurementName: reload_task_queue # InfluxDB measurement name (default: reload_task_queue)
+                tags: # Optional tags added to queue metrics
+                    # - name: env
+                    #   value: prod
 
     restServerConfig:
         enable: false # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.
