@@ -177,7 +177,7 @@ async function processUdpMessage(message, remote) {
             // Engine log appender detecting failed reload, also ones initiated interactively by users
 
             // Do some sanity checks on the message
-            // There should be exactly 11 fields in the message
+            // There should be exactly 9 fields in the message
             if (msg.length !== 9) {
                 globals.logger.warn(
                     `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,

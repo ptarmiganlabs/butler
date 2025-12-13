@@ -359,6 +359,7 @@ export class UdpQueueManager {
      */
     async addToQueue(processFunction) {
         let queueSize;
+        let shouldLogDropped = false;
         const release = await this.metricsMutex.acquire();
         try {
             this.updateTimeWindowMetrics();
@@ -371,16 +372,21 @@ export class UdpQueueManager {
                 this.metrics.messagesDroppedTotal++;
                 this.metrics.messagesDroppedQueueFull++;
                 this.droppedSinceLastLog++;
-                this.logDroppedMessages();
-                return false;
+                shouldLogDropped = true;
+            } else {
+                this.metrics.messagesQueued++;
             }
-
-            this.metrics.messagesQueued++;
 
             // Capture queue size while holding mutex to avoid race condition
             queueSize = this.queue.size;
         } finally {
             release();
+        }
+
+        // Log dropped messages outside mutex
+        if (shouldLogDropped) {
+            this.logDroppedMessages();
+            return false;
         }
 
         // Check backpressure with captured queue size
