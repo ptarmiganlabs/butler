@@ -2945,15 +2945,7 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                     },
-                    required: [
-                        'enable',
-                        'serverHost',
-                        'portTaskFailure',
-                        'messageQueue',
-                        'rateLimit',
-                        'maxMessageSize',
-                        'queueMetrics',
-                    ],
+                    required: ['enable', 'serverHost', 'portTaskFailure', 'messageQueue', 'rateLimit', 'maxMessageSize', 'queueMetrics'],
                     additionalProperties: false,
                 },
 

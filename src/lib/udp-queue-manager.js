@@ -303,9 +303,7 @@ export class UdpQueueManager {
         } else if (utilizationPercent < threshold * 0.8 && this.backpressureActive) {
             // Clear backpressure when utilization drops below 80% of threshold
             this.backpressureActive = false;
-            this.logger.info(
-                `[UDP Queue] Backpressure cleared for ${this.queueType}: Queue utilization ${utilizationPercent.toFixed(1)}%`,
-            );
+            this.logger.info(`[UDP Queue] Backpressure cleared for ${this.queueType}: Queue utilization ${utilizationPercent.toFixed(1)}%`);
         }
 
         // Log warning every 60 seconds if backpressure is active
@@ -326,9 +324,7 @@ export class UdpQueueManager {
     logDroppedMessages() {
         const now = Date.now();
         if (this.droppedSinceLastLog > 0 && now - this.lastDropLog > 60000) {
-            this.logger.warn(
-                `[UDP Queue] Dropped ${this.droppedSinceLastLog} messages for ${this.queueType} in the last minute`,
-            );
+            this.logger.warn(`[UDP Queue] Dropped ${this.droppedSinceLastLog} messages for ${this.queueType} in the last minute`);
             this.droppedSinceLastLog = 0;
             this.lastDropLog = now;
         }
@@ -487,8 +483,7 @@ export class UdpQueueManager {
                 messagesQueued: this.metrics.messagesQueued,
                 messagesProcessed: this.metrics.messagesProcessed,
                 messagesProcessedLastMinute: this.lastMinuteMetrics.processed,
-                messagesProcessedSuccessful:
-                    this.metrics.messagesProcessed - this.metrics.messagesFailed,
+                messagesProcessedSuccessful: this.metrics.messagesProcessed - this.metrics.messagesFailed,
                 messagesFailed: this.metrics.messagesFailed,
                 messagesDroppedTotal: this.metrics.messagesDroppedTotal,
                 messagesDroppedRateLimit: this.metrics.messagesDroppedRateLimit,
