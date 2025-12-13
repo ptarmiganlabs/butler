@@ -3049,6 +3049,7 @@ export const confifgFileSchema = {
                         senseListApps: { type: 'boolean' },
                         senseStartTask: { type: 'boolean' },
                         slackPostMessage: { type: 'boolean' },
+                        udpQueueStatus: { type: 'boolean' },
                     },
                     required: [
                         'apiListEnabledEndpoints',
@@ -3069,6 +3070,7 @@ export const confifgFileSchema = {
                         'senseListApps',
                         'senseStartTask',
                         'slackPostMessage',
+                        'udpQueueStatus',
                     ],
                     additionalProperties: false,
                 },

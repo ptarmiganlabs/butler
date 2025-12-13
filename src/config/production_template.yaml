@@ -1062,6 +1062,7 @@ Butler:
         senseListApps: false
         senseStartTask: false
         slackPostMessage: false
+        udpQueueStatus: false # Enable GET /v4/udpqueue/status endpoint to monitor UDP message queue
 
     restServerEndpointsConfig:
         newRelic:
