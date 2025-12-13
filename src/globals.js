@@ -15,6 +15,7 @@ import { readFileSync } from 'fs';
 import { Command, Option } from 'commander';
 import 'winston-daily-rotate-file';
 import sea from 'node:sea';
+import { UdpQueueManager } from './lib/udp-queue-manager.js';
 
 let instance = null;
 
@@ -469,6 +470,23 @@ Configuration File:
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
         this.udpServerTaskResultSocket = null;
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
+
+        // Initialize UDP queue manager if UDP server is enabled
+        if (this.config.get('Butler.udpServerConfig.enable')) {
+            try {
+                const queueConfig = {
+                    messageQueue: this.config.get('Butler.udpServerConfig.messageQueue'),
+                    rateLimit: this.config.get('Butler.udpServerConfig.rateLimit'),
+                    maxMessageSize: this.config.get('Butler.udpServerConfig.maxMessageSize'),
+                };
+                this.udpQueueManager = new UdpQueueManager(queueConfig, this.logger, 'reload_task_events');
+                this.logger.info('CONFIG: UDP queue manager initialized');
+            } catch (err) {
+                this.logger.error(`CONFIG: Error initializing UDP queue manager: ${this.getErrorMessage(err)}`);
+            }
+        } else {
+            this.udpQueueManager = null;
+        }
 
         // Indicate that we have finished initialising
         this.initialised = true;

@@ -40,9 +40,8 @@ const start = async () => {
     });
 
     const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
-    const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
-        './lib/qseow/qliksense_license.js'
-    );
+    const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } =
+        await import('./lib/qseow/qliksense_license.js');
     const { setupQlikSenseVersionMonitor } = await import('./lib/qseow/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.
@@ -50,6 +49,7 @@ const start = async () => {
 
     const udpInitTaskErrorServer = (await import('./udp/udp_handlers.js')).default;
     const mqttInitHandlers = (await import('./lib/mqtt_handlers.js')).default;
+    const { setupUdpQueueMetricsStorage } = await import('./lib/influxdb/udp_queue_metrics.js');
 
     const {
         configFileEmailAssert,
@@ -335,6 +335,16 @@ const start = async () => {
         reuseAddr: true,
     });
 
+    // Add error handler for UDP socket
+    globals.udpServerTaskResultSocket.on('error', (err) => {
+        globals.logger.error(`[QSEOW] UDP server error: ${err.message}`);
+    });
+
+    // Add close handler for UDP socket
+    globals.udpServerTaskResultSocket.on('close', () => {
+        globals.logger.warn('[QSEOW] UDP server socket closed');
+    });
+
     // ---------------------------------------------------
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {
@@ -343,6 +353,12 @@ const start = async () => {
         // Start UDP server for failed task events
         globals.udpServerTaskResultSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
         globals.logger.debug(`Server for UDP server: ${globals.udpHost}`);
+
+        // Set up periodic storage of UDP queue metrics to InfluxDB
+        const udpQueueMetricsIntervalId = setupUdpQueueMetricsStorage();
+        if (udpQueueMetricsIntervalId) {
+            globals.logger.info('[UDP Queue Metrics] Periodic metrics storage to InfluxDB initialized');
+        }
     }
 };
 

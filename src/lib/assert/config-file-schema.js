@@ -2895,8 +2895,57 @@ export const confifgFileSchema = {
                             format: 'hostname',
                         },
                         portTaskFailure: { type: 'number' },
+                        messageQueue: {
+                            type: 'object',
+                            properties: {
+                                maxConcurrent: { type: 'number' },
+                                maxSize: { type: 'number' },
+                                backpressureThreshold: { type: 'number' },
+                            },
+                            required: ['maxConcurrent', 'maxSize', 'backpressureThreshold'],
+                            additionalProperties: false,
+                        },
+                        rateLimit: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                maxMessagesPerMinute: { type: 'number' },
+                            },
+                            required: ['enable', 'maxMessagesPerMinute'],
+                            additionalProperties: false,
+                        },
+                        maxMessageSize: { type: 'number' },
+                        queueMetrics: {
+                            type: 'object',
+                            properties: {
+                                influxdb: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        writeFrequency: { type: 'number' },
+                                        measurementName: { type: 'string' },
+                                        tags: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    name: { type: 'string' },
+                                                    value: { type: 'string' },
+                                                },
+                                                required: ['name', 'value'],
+                                                additionalProperties: false,
+                                            },
+                                        },
+                                    },
+                                    required: ['enable', 'writeFrequency', 'measurementName'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['influxdb'],
+                            additionalProperties: false,
+                        },
                     },
-                    required: ['enable', 'serverHost', 'portTaskFailure'],
+                    required: ['enable', 'serverHost', 'portTaskFailure', 'messageQueue', 'rateLimit', 'maxMessageSize', 'queueMetrics'],
                     additionalProperties: false,
                 },
 
@@ -3000,6 +3049,7 @@ export const confifgFileSchema = {
                         senseListApps: { type: 'boolean' },
                         senseStartTask: { type: 'boolean' },
                         slackPostMessage: { type: 'boolean' },
+                        udpQueueStatus: { type: 'boolean' },
                     },
                     required: [
                         'apiListEnabledEndpoints',
@@ -3020,6 +3070,7 @@ export const confifgFileSchema = {
                         'senseListApps',
                         'senseStartTask',
                         'slackPostMessage',
+                        'udpQueueStatus',
                     ],
                     additionalProperties: false,
                 },

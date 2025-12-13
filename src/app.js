@@ -295,6 +295,7 @@ async function build(opts = {}) {
         await restServer.register(import('./routes/rest_server/sense_list_apps.js'), { options: Object.assign({}, opts) });
         await restServer.register(import('./routes/rest_server/sense_start_task.js'), { options: Object.assign({}, opts) });
         await restServer.register(import('./routes/rest_server/slack_post_message.js'), { options: Object.assign({}, opts) });
+        await restServer.register(import('./routes/rest_server/udp_queue_status.js'), { options: Object.assign({}, opts) });
 
         // ---------------------------------------------------
         // Configure X-HTTP-Method-Override handling

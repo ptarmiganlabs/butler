@@ -124,106 +124,149 @@ const udpInitTaskErrorServer = () => {
         // mag[7]  : Level of log event
         // mag[8]  : Message
 
+        // Get queue manager
+        const queueManager = globals.udpQueueManager;
+
+        if (!queueManager) {
+            // Queue manager not initialized, process directly (backward compatibility)
+            await processUdpMessage(message, remote);
+            return;
+        }
+
         try {
-            globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
+            // Validate message size
+            if (!queueManager.validateMessageSize(message)) {
+                globals.logger.warn(`[UDP Queue] Message exceeds size limit: ${message.length} bytes`);
+                await queueManager.handleSizeDrop();
+                return;
+            }
 
-            const msg = message.toString().split(';');
+            // Check rate limit if enabled
+            if (!queueManager.checkRateLimit()) {
+                await queueManager.handleRateLimitDrop();
+                return;
+            }
 
-            if (msg[0].toLowerCase() === '/engine-reload-failed/') {
-                // Engine log appender detecting failed reload, also ones initiated interactively by users
+            // Add message to queue for processing
+            const queued = await queueManager.addToQueue(async () => {
+                await processUdpMessage(message, remote);
+            });
 
-                // Do some sanity checks on the message
-                // There should be exactly 11 fields in the message
-                if (msg.length !== 9) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,
-                    );
-                    globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
-                    return;
-                }
-
-                globals.logger.verbose(
-                    `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
-                );
-            } else if (msg[0].toLowerCase() === '/scheduler-distribute/') {
-                // Scheduler log appender detecting distribute task event (success, failed)
-
-                // Do some sanity checks on the message
-                // There should be exactly 11 fields in the message
-                if (msg.length < 11) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Invalid number of fields in UDP message. Expected at least 11, got ${msg.length}.`,
-                    );
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Aborting processing of this message.`);
-                    return;
-                }
-
-                globals.logger.verbose(
-                    `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Received distribute task UDP message from scheduler: Host=${msg[1]}, TaskName=${msg[2]}, AppName=${msg[3]}, User=${msg[4]}, TaskID=${msg[5]}, AppID=${msg[6]}, ExecutionID=${msg[9]}, Message=${msg[10]}`,
-                );
-
-                await distributeTaskCompletion(msg);
-            } else if (
-                msg[0].toLowerCase() === '/scheduler-reload-failed/' ||
-                msg[0].toLowerCase() === '/scheduler-task-failed/' ||
-                msg[0].toLowerCase() === '/scheduler-reloadtask-failed/'
-            ) {
-                // Scheduler log appender detecting failed tasks
-
-                // Do some sanity checks on the message
-                // There should be exactly 11 fields in the message
-                if (msg.length !== 11) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
-                    );
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
-                    return;
-                }
-
-                await schedulerFailed(msg);
-            } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/' || msg[0].toLowerCase() === '/scheduler-task-aborted/') {
-                // Scheduler log appender detecting aborted tasks
-
-                // Do some sanity checks on the message
-                // There should be exactly 11 fields in the message
-                if (msg.length !== 11) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
-                    );
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
-                    return;
-                }
-
-                await schedulerAborted(msg);
-            } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/' || msg[0].toLowerCase() === '/scheduler-task-success/') {
-                // Scheduler log appender detecting successful tasks
-                // Support both legacy /scheduler-reloadtask-success/ and new generic /scheduler-task-success/ message types
-
-                // Do some sanity checks on the message
-                // There should be exactly 11 fields in the message
-                if (msg.length !== 11) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
-                    );
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Incoming log message was:\n${message.toString()}`);
-                    globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Aborting processing of this message.`);
-                    return;
-                }
-                await schedulerTaskSuccess(msg);
-            } else {
-                globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${msg[0]}"`);
+            if (!queued) {
+                globals.logger.debug(`[UDP Queue] Message dropped due to full queue`);
             }
         } catch (err) {
-            globals.logger.error(
-                `[QSEOW] UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${globals.getErrorMessage(err)}`,
-            );
-            globals.logger.error(`[QSEOW] UDP HANDLER: Incoming log message was\n${message}`);
+            globals.logger.error(`[UDP Queue] Error handling message: ${globals.getErrorMessage(err)}`);
         }
     });
 };
+
+/**
+ * Process UDP message (extracted from inline handler for queue support)
+ *
+ * @param {Buffer} message - The UDP message
+ * @param {object} remote - Remote address info
+ */
+async function processUdpMessage(message, remote) {
+    try {
+        globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
+
+        const msg = message.toString().split(';');
+
+        if (msg[0].toLowerCase() === '/engine-reload-failed/') {
+            // Engine log appender detecting failed reload, also ones initiated interactively by users
+
+            // Do some sanity checks on the message
+            // There should be exactly 9 fields in the message
+            if (msg.length !== 9) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Invalid number of fields in UDP message. Expected 9, got ${msg.length}.`,
+                );
+                globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
+                return;
+            }
+
+            globals.logger.verbose(
+                `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${msg[1]}, AppID=${msg[2]}, User directory=${msg[4]}, User=${msg[5]}`,
+            );
+        } else if (msg[0].toLowerCase() === '/scheduler-distribute/') {
+            // Scheduler log appender detecting distribute task event (success, failed)
+
+            // Do some sanity checks on the message
+            // There should be exactly 11 fields in the message
+            if (msg.length < 11) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Invalid number of fields in UDP message. Expected at least 11, got ${msg.length}.`,
+                );
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Incoming log message was:\n${message.toString()}`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Aborting processing of this message.`);
+                return;
+            }
+
+            globals.logger.verbose(
+                `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Received distribute task UDP message from scheduler: Host=${msg[1]}, TaskName=${msg[2]}, AppName=${msg[3]}, User=${msg[4]}, TaskID=${msg[5]}, AppID=${msg[6]}, ExecutionID=${msg[9]}, Message=${msg[10]}`,
+            );
+
+            await distributeTaskCompletion(msg);
+        } else if (
+            msg[0].toLowerCase() === '/scheduler-reload-failed/' ||
+            msg[0].toLowerCase() === '/scheduler-task-failed/' ||
+            msg[0].toLowerCase() === '/scheduler-reloadtask-failed/'
+        ) {
+            // Scheduler log appender detecting failed tasks
+
+            // Do some sanity checks on the message
+            // There should be exactly 11 fields in the message
+            if (msg.length !== 11) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                );
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${message.toString()}`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
+                return;
+            }
+
+            await schedulerFailed(msg);
+        } else if (msg[0].toLowerCase() === '/scheduler-reload-aborted/' || msg[0].toLowerCase() === '/scheduler-task-aborted/') {
+            // Scheduler log appender detecting aborted tasks
+
+            // Do some sanity checks on the message
+            // There should be exactly 11 fields in the message
+            if (msg.length !== 11) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                );
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${message.toString()}`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
+                return;
+            }
+
+            await schedulerAborted(msg);
+        } else if (msg[0].toLowerCase() === '/scheduler-reloadtask-success/' || msg[0].toLowerCase() === '/scheduler-task-success/') {
+            // Scheduler log appender detecting successful tasks
+            // Support both legacy /scheduler-reloadtask-success/ and new generic /scheduler-task-success/ message types
+
+            // Do some sanity checks on the message
+            // There should be exactly 11 fields in the message
+            if (msg.length !== 11) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Invalid number of fields in UDP message. Expected 11, got ${msg.length}.`,
+                );
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Incoming log message was:\n${message.toString()}`);
+                globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Aborting processing of this message.`);
+                return;
+            }
+            await schedulerTaskSuccess(msg);
+        } else {
+            globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${msg[0]}"`);
+        }
+    } catch (err) {
+        globals.logger.error(
+            `[QSEOW] UDP HANDLER: Failed processing log event. No action will be taken for this event. Error: ${globals.getErrorMessage(err)}`,
+        );
+        globals.logger.error(`[QSEOW] UDP HANDLER: Incoming log message was\n${message}`);
+    }
+}
 
 export default udpInitTaskErrorServer;
