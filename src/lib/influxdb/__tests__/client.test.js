@@ -231,7 +231,7 @@ describe('lib/influxdb/client', () => {
             },
         });
 
-        expect(() => createInfluxDbClient(config)).toThrow('Invalid InfluxDB v2 config: org, bucket and token are required.');
+        expect(() => createInfluxDbClient(config)).toThrow('Invalid InfluxDB v2 config: org, bucket, and token are required.');
     });
 
     test('writes legacy point payloads using the InfluxDB v3 client', async () => {

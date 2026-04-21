@@ -210,7 +210,7 @@ export function createInfluxDbClient(config) {
         const v2Config = getInfluxDbV2Config(config);
 
         if (!v2Config.org || !v2Config.bucket || !v2Config.token) {
-            throw new Error('Invalid InfluxDB v2 config: org, bucket and token are required.');
+            throw new Error('Invalid InfluxDB v2 config: org, bucket, and token are required.');
         }
 
         return new InfluxDbCompatClient({
