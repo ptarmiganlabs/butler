@@ -62,6 +62,18 @@ export function getInfluxDbV3Config(config) {
     return safeConfigGet(config, 'Butler.influxDb.v3Config', {});
 }
 
+function addLegacyFieldsToPoint(fields, handlers) {
+    Object.entries(fields ?? {}).forEach(([key, value]) => {
+        if (typeof value === 'number') {
+            handlers.number(key, value);
+        } else if (typeof value === 'boolean') {
+            handlers.boolean(key, value);
+        } else if (typeof value === 'string') {
+            handlers.string(key, value);
+        }
+    });
+}
+
 function createPointV2(point) {
     const convertedPoint = new Point2(point.measurement);
 
@@ -71,14 +83,10 @@ function createPointV2(point) {
         }
     });
 
-    Object.entries(point.fields ?? {}).forEach(([key, value]) => {
-        if (typeof value === 'number') {
-            convertedPoint.floatField(key, value);
-        } else if (typeof value === 'boolean') {
-            convertedPoint.booleanField(key, value);
-        } else if (typeof value === 'string') {
-            convertedPoint.stringField(key, value);
-        }
+    addLegacyFieldsToPoint(point.fields, {
+        number: (key, value) => convertedPoint.floatField(key, value),
+        boolean: (key, value) => convertedPoint.booleanField(key, value),
+        string: (key, value) => convertedPoint.stringField(key, value),
     });
 
     if (point.timestamp) {
@@ -97,14 +105,10 @@ function createPointV3(point) {
         }
     });
 
-    Object.entries(point.fields ?? {}).forEach(([key, value]) => {
-        if (typeof value === 'number') {
-            convertedPoint.setFloatField(key, value);
-        } else if (typeof value === 'boolean') {
-            convertedPoint.setBooleanField(key, value);
-        } else if (typeof value === 'string') {
-            convertedPoint.setStringField(key, value);
-        }
+    addLegacyFieldsToPoint(point.fields, {
+        number: (key, value) => convertedPoint.setFloatField(key, value),
+        boolean: (key, value) => convertedPoint.setBooleanField(key, value),
+        string: (key, value) => convertedPoint.setStringField(key, value),
     });
 
     if (point.timestamp) {
@@ -226,10 +230,9 @@ export function createInfluxDbClient(config) {
     if (version === 3) {
         const v3Config = getInfluxDbV3Config(config);
 
+        // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
         setInfluxV3Logger({
-            // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
             error() {},
-            // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
             warn() {},
         });
 
