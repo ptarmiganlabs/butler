@@ -202,7 +202,7 @@ export const confifgFileSchema = {
                             format: 'hostname',
                         },
                         hostPort: { type: 'number' },
-                        version: { type: 'number' },
+                        version: { type: 'number', enum: [1, 2, 3] },
                         auth: {
                             type: 'object',
                             properties: {
@@ -217,6 +217,67 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                         dbName: { type: 'string' },
+                        v1Config: {
+                            type: 'object',
+                            properties: {
+                                auth: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean' },
+                                        username: { type: 'string' },
+                                        password: {
+                                            type: 'string',
+                                            format: 'password',
+                                        },
+                                    },
+                                    required: ['enable', 'username', 'password'],
+                                    additionalProperties: false,
+                                },
+                                dbName: { type: 'string' },
+                                retentionPolicy: {
+                                    type: 'object',
+                                    properties: {
+                                        name: { type: 'string' },
+                                        duration: { type: 'string' },
+                                    },
+                                    required: ['name', 'duration'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['auth', 'dbName', 'retentionPolicy'],
+                            additionalProperties: false,
+                        },
+                        v2Config: {
+                            type: 'object',
+                            properties: {
+                                org: { type: 'string' },
+                                bucket: { type: 'string' },
+                                description: { type: 'string' },
+                                token: {
+                                    type: 'string',
+                                    format: 'password',
+                                },
+                                retentionDuration: { type: 'string' },
+                            },
+                            required: ['org', 'bucket', 'description', 'token', 'retentionDuration'],
+                            additionalProperties: false,
+                        },
+                        v3Config: {
+                            type: 'object',
+                            properties: {
+                                database: { type: 'string' },
+                                description: { type: 'string' },
+                                token: {
+                                    type: 'string',
+                                    format: 'password',
+                                },
+                                retentionDuration: { type: 'string' },
+                                writeTimeout: { type: 'number' },
+                                queryTimeout: { type: 'number' },
+                            },
+                            required: ['database', 'description', 'token', 'retentionDuration', 'writeTimeout', 'queryTimeout'],
+                            additionalProperties: false,
+                        },
                         retentionPolicy: {
                             type: 'object',
                             properties: {
@@ -603,9 +664,6 @@ export const confifgFileSchema = {
                         'enable',
                         'hostIP',
                         'hostPort',
-                        'auth',
-                        'dbName',
-                        'retentionPolicy',
                         'tag',
                         'reloadTaskFailure',
                         'reloadTaskSuccess',

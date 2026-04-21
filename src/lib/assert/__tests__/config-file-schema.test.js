@@ -36,6 +36,19 @@ describe('config-file-schema', () => {
             expect(systemInfo.additionalProperties).toBe(false);
         });
 
+        test('should have versioned InfluxDB config blocks', () => {
+            const influxDb = confifgFileSchema.properties.Butler.properties.influxDb;
+
+            expect(influxDb).toBeDefined();
+            expect(influxDb.properties.version.enum).toEqual([1, 2, 3]);
+            expect(influxDb.properties.v1Config.properties.auth).toBeDefined();
+            expect(influxDb.properties.v2Config.properties.org).toBeDefined();
+            expect(influxDb.properties.v2Config.properties.bucket).toBeDefined();
+            expect(influxDb.properties.v2Config.properties.token).toBeDefined();
+            expect(influxDb.properties.v3Config.properties.database).toBeDefined();
+            expect(influxDb.properties.v3Config.properties.token).toBeDefined();
+        });
+
         test('should have configVisualisation object with proper structure', () => {
             const configVis = confifgFileSchema.properties.Butler.properties.configVisualisation;
 
