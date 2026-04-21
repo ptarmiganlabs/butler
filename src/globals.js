@@ -2,7 +2,6 @@ import os from 'os';
 import crypto from 'crypto';
 import fs from 'fs-extra';
 import upath from 'upath';
-import Influx from 'influx';
 import si from 'systeminformation';
 import isUncPath from 'is-unc-path';
 import winston from 'winston';
@@ -15,6 +14,15 @@ import { readFileSync } from 'fs';
 import { Command, Option } from 'commander';
 import 'winston-daily-rotate-file';
 import sea from 'node:sea';
+import {
+    createInfluxDbClient,
+    getInfluxDbHost,
+    getInfluxDbPort,
+    getInfluxDbV1Config,
+    getInfluxDbV2Config,
+    getInfluxDbV3Config,
+    getInfluxDbVersion,
+} from './lib/influxdb/client.js';
 
 let instance = null;
 
@@ -443,22 +451,27 @@ Configuration File:
         // Set up InfluxDB
         this.logger.info(`CONFIG: Influxdb enabled: ${this.config.get('Butler.influxDb.enable')}`);
         if (this.config.get('Butler.influxDb.enable') === true) {
-            this.logger.info(`CONFIG: Influxdb host IP: ${this.config.get('Butler.influxDb.hostIP')}`);
-            this.logger.info(`CONFIG: Influxdb host port: ${this.config.get('Butler.influxDb.hostPort')}`);
-            this.logger.info(`CONFIG: Influxdb db name: ${this.config.get('Butler.influxDb.dbName')}`);
+            const influxDbVersion = getInfluxDbVersion(this.config);
+
+            this.logger.info(`CONFIG: Influxdb version: ${influxDbVersion}`);
+            this.logger.info(`CONFIG: Influxdb host IP: ${getInfluxDbHost(this.config)}`);
+            this.logger.info(`CONFIG: Influxdb host port: ${getInfluxDbPort(this.config)}`);
+
+            if (influxDbVersion === 1) {
+                this.logger.info(`CONFIG: Influxdb db name: ${getInfluxDbV1Config(this.config).dbName}`);
+            } else if (influxDbVersion === 2) {
+                const v2Config = getInfluxDbV2Config(this.config);
+                this.logger.info(`CONFIG: Influxdb org: ${v2Config.org}`);
+                this.logger.info(`CONFIG: Influxdb bucket: ${v2Config.bucket}`);
+            } else if (influxDbVersion === 3) {
+                this.logger.info(`CONFIG: Influxdb database: ${getInfluxDbV3Config(this.config).database}`);
+            }
         }
 
         // Set up Influxdb client
         this.influx = null;
         if (this.config.get('Butler.influxDb.enable')) {
-            this.influx = new Influx.InfluxDB({
-                host: this.config.get('Butler.influxDb.hostIP'),
-                port: `${this.config.has('Butler.influxDb.hostPort') ? this.config.get('Butler.influxDb.hostPort') : '8086'}`,
-                database: this.config.get('Butler.influxDb.dbName'),
-                username: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.username') : ''}`,
-                password: `${this.config.get('Butler.influxDb.auth.enable') ? this.config.get('Butler.influxDb.auth.password') : ''}`,
-                schema: [],
-            });
+            this.influx = createInfluxDbClient(this.config);
         }
 
         // Folder under which QVD folders are to be created
@@ -837,8 +850,8 @@ Configuration File:
      * @throws {Error} If creating a new InfluxDB retention policy fails.
      */
     async initInfluxDB() {
-        const dbName = this.config.get('Butler.influxDb.dbName');
         const enableInfluxdb = this.config.get('Butler.influxDb.enable');
+        const influxDbVersion = getInfluxDbVersion(this.config);
 
         // Ensure that InfluxDB has been created
         if (this.influx === undefined) {
@@ -847,6 +860,27 @@ Configuration File:
         }
 
         if (enableInfluxdb) {
+            if (influxDbVersion !== 1) {
+                if (influxDbVersion === 2) {
+                    const v2Config = getInfluxDbV2Config(this.config);
+
+                    this.logger.info(
+                        `CONFIG: Using InfluxDB v2 bucket "${v2Config.bucket}" in org "${v2Config.org}". Butler will not auto-create v2 resources.`,
+                    );
+                } else if (influxDbVersion === 3) {
+                    const v3Config = getInfluxDbV3Config(this.config);
+
+                    this.logger.info(
+                        `CONFIG: Using InfluxDB v3 database "${v3Config.database}". Butler will not auto-create v3 resources.`,
+                    );
+                }
+
+                return;
+            }
+
+            const v1Config = getInfluxDbV1Config(this.config);
+            const dbName = v1Config.dbName;
+
             try {
                 const names = await this.influx.getDatabaseNames();
 
@@ -855,7 +889,7 @@ Configuration File:
                         await this.influx.createDatabase(dbName);
                         this.logger.info(`CONFIG: Created new InfluxDB database: ${dbName}`);
 
-                        const newPolicy = this.config.get('Butler.influxDb.retentionPolicy');
+                        const newPolicy = v1Config.retentionPolicy;
 
                         // Create new default retention policy
                         try {

@@ -33,6 +33,14 @@ describe('success_preload', () => {
                 const configMap = {
                     'Butler.influxDb.enable': true,
                     'Butler.influxDb.preloadTaskSuccess.enable': true,
+                    'Butler.emailNotification.reloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskAborted.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.serviceStopped.rateLimit': 60,
                 };
                 return configMap[key] !== undefined ? configMap[key] : false;
             }),
@@ -180,6 +188,14 @@ describe('success_preload', () => {
                 const configMap = {
                     'Butler.influxDb.enable': false,
                     'Butler.influxDb.preloadTaskSuccess.enable': false,
+                    'Butler.emailNotification.reloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskAborted.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.serviceStopped.rateLimit': 60,
                 };
                 return configMap[key] !== undefined ? configMap[key] : false;
             });
@@ -208,6 +224,14 @@ describe('success_preload', () => {
                 const configMap = {
                     'Butler.influxDb.enable': true,
                     'Butler.influxDb.preloadTaskSuccess.enable': true,
+                    'Butler.emailNotification.reloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskAborted.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.serviceStopped.rateLimit': 60,
                 };
                 return configMap[key] !== undefined ? configMap[key] : false;
             });
@@ -229,6 +253,14 @@ describe('success_preload', () => {
                     'Butler.influxDb.enable': true,
                     'Butler.influxDb.preloadTaskSuccess.enable': true,
                     'Butler.influxDb.preloadTaskSuccess.tag.dynamic.useTaskTags': true,
+                    'Butler.emailNotification.reloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.reloadTaskAborted.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.distributeTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskSuccess.rateLimit': 60,
+                    'Butler.emailNotification.preloadTaskFailure.rateLimit': 60,
+                    'Butler.emailNotification.serviceStopped.rateLimit': 60,
                 };
                 return configMap[key] !== undefined ? configMap[key] : false;
             });

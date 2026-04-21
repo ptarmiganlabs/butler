@@ -25,7 +25,12 @@ describe('lib/config_obfuscate', () => {
                 configVisualisation: { host: 'vis.example.com' },
                 heartbeat: { remoteURL: 'https://heartbeat.example.com' },
                 thirdPartyToolsCredentials: { newRelic: [] },
-                influxDb: { hostIP: '192.168.1.1', auth: { username: 'user', password: 'pass' } },
+                influxDb: {
+                    hostIP: '192.168.1.1',
+                    v1Config: { auth: { username: 'user', password: 'pass' } },
+                    v2Config: { token: 'v2-token' },
+                    v3Config: { token: 'v3-token' },
+                },
                 qlikSenseVersion: { versionMonitor: { host: 'version.example.com' } },
                 teamsNotification: {
                     reloadTaskFailure: { webhookURL: 'http://teams1.com' },
@@ -90,8 +95,10 @@ describe('lib/config_obfuscate', () => {
         testConfig.Butler.configVisualisation.host = 'somehost.example.com';
         testConfig.Butler.heartbeat.remoteURL = 'https://example.com/heartbeat';
         testConfig.Butler.influxDb.hostIP = '192.168.1.100';
-        testConfig.Butler.influxDb.auth.username = 'testuser';
-        testConfig.Butler.influxDb.auth.password = 'testpassword';
+        testConfig.Butler.influxDb.v1Config.auth.username = 'testuser';
+        testConfig.Butler.influxDb.v1Config.auth.password = 'testpassword';
+        testConfig.Butler.influxDb.v2Config.token = 'test-v2-token';
+        testConfig.Butler.influxDb.v3Config.token = 'test-v3-token';
         testConfig.Butler.qlikSenseVersion.versionMonitor.host = 'qlik.example.com';
         testConfig.Butler.configEngine.host = 'engine.example.com';
         testConfig.Butler.configQRS.host = 'qrs.example.com';
@@ -101,8 +108,10 @@ describe('lib/config_obfuscate', () => {
         expect(result.Butler.configVisualisation.host).toBe('som**********');
         expect(result.Butler.heartbeat.remoteURL).toBe('https://ex**********');
         expect(result.Butler.influxDb.hostIP).toBe('192**********');
-        expect(result.Butler.influxDb.auth.username).toBe('tes**********');
-        expect(result.Butler.influxDb.auth.password).toBe('**********');
+        expect(result.Butler.influxDb.v1Config.auth.username).toBe('tes**********');
+        expect(result.Butler.influxDb.v1Config.auth.password).toBe('**********');
+        expect(result.Butler.influxDb.v2Config.token).toBe('**********');
+        expect(result.Butler.influxDb.v3Config.token).toBe('**********');
         expect(result.Butler.qlikSenseVersion.versionMonitor.host).toBe('qli**********');
         expect(result.Butler.configEngine.host).toBe('eng**********');
         expect(result.Butler.configQRS.host).toBe('qrs**********');

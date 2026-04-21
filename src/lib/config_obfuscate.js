@@ -8,6 +8,8 @@ import globals from '../globals.js';
 function configObfuscate(config) {
     try {
         const obfuscatedConfig = { ...config };
+        const maskValue = (value, visibleChars = 0) =>
+            typeof value === 'string' && value.length > 0 ? value.substring(0, visibleChars) + '*'.repeat(10) : value;
 
         // Obfuscate Butler.configVisualisation.host, keep first 3 chars, mask the rest with *
         obfuscatedConfig.Butler.configVisualisation.host =
@@ -26,13 +28,21 @@ function configObfuscate(config) {
         );
 
         // Obfuscate Butler.influxDb.hostIP, keep first 3 chars, mask the rest with *
-        obfuscatedConfig.Butler.influxDb.hostIP = obfuscatedConfig.Butler.influxDb.hostIP.substring(0, 3) + '*'.repeat(10);
-
-        // Obfuscate Butler.influxDb.auth.username, keep first 3 chars, mask the rest with *
-        obfuscatedConfig.Butler.influxDb.auth.username = obfuscatedConfig.Butler.influxDb.auth.username.substring(0, 3) + '*'.repeat(10);
-
-        // Obfuscate Butler.influxDb.auth.password, keep first 0 chars, mask the rest with *
-        obfuscatedConfig.Butler.influxDb.auth.password = '*'.repeat(10);
+        obfuscatedConfig.Butler.influxDb.hostIP = maskValue(obfuscatedConfig.Butler.influxDb.hostIP, 3);
+        if (obfuscatedConfig.Butler.influxDb.auth) {
+            obfuscatedConfig.Butler.influxDb.auth.username = maskValue(obfuscatedConfig.Butler.influxDb.auth.username, 3);
+            obfuscatedConfig.Butler.influxDb.auth.password = maskValue(obfuscatedConfig.Butler.influxDb.auth.password);
+        }
+        if (obfuscatedConfig.Butler.influxDb.v1Config?.auth) {
+            obfuscatedConfig.Butler.influxDb.v1Config.auth.username = maskValue(obfuscatedConfig.Butler.influxDb.v1Config.auth.username, 3);
+            obfuscatedConfig.Butler.influxDb.v1Config.auth.password = maskValue(obfuscatedConfig.Butler.influxDb.v1Config.auth.password);
+        }
+        if (obfuscatedConfig.Butler.influxDb.v2Config) {
+            obfuscatedConfig.Butler.influxDb.v2Config.token = maskValue(obfuscatedConfig.Butler.influxDb.v2Config.token);
+        }
+        if (obfuscatedConfig.Butler.influxDb.v3Config) {
+            obfuscatedConfig.Butler.influxDb.v3Config.token = maskValue(obfuscatedConfig.Butler.influxDb.v3Config.token);
+        }
 
         // Obfuscate Butler.qlikSenseVersion.versionMonitor.host, keep first 3 chars, mask the rest with *
         obfuscatedConfig.Butler.qlikSenseVersion.versionMonitor.host =

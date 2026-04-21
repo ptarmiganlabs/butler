@@ -113,16 +113,31 @@ Butler:
         enable: false # Master switch for InfluxDB integration. If false, no data will be sent to InfluxDB.
         hostIP: influxdb.mycompany.com # IP or FQDN of Influxdb server
         hostPort: 8086 # Port where Influxdb is listening. Default=8086
-        auth:
-            enable: false # Does InfluxDB require login?
-            username: user_joe
-            password: joesecret
-        dbName: butler # Name of database in InfluxDB to which Butler's data is written
-        # Default retention policy that should be created in InfluxDB when Butler creates a new database there.
-        # Any data older than retention policy threshold will be purged from InfluxDB.
-        retentionPolicy:
-            name: 10d
-            duration: 10d
+        version: 1 # InfluxDB major version. Supported values are 1, 2 and 3.
+        v1Config: # Settings for InfluxDB v1.x only
+            auth:
+                enable: false # Does InfluxDB require login?
+                username: user_joe
+                password: joesecret
+            dbName: butler # Name of database in InfluxDB to which Butler's data is written
+            # Default retention policy that should be created in InfluxDB when Butler creates a new database there.
+            # Any data older than retention policy threshold will be purged from InfluxDB.
+            retentionPolicy:
+                name: 10d
+                duration: 10d
+        v2Config: # Settings for InfluxDB v2.x only
+            org: my-org
+            bucket: butler
+            description: Butler metrics
+            token: my-v2-token
+            retentionDuration: 10d
+        v3Config: # Settings for InfluxDB v3.x only
+            database: butler
+            description: Butler metrics
+            token: my-v3-token
+            retentionDuration: 10d
+            writeTimeout: 10000
+            queryTimeout: 60000
         tag:
             static: # Static tags to attach to all data stored in InfluxDB
                 # - name: butler_instance
