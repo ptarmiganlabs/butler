@@ -164,13 +164,12 @@ jobs:
                           security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
 
                           echo "DEBUG: Importing certificate into keychain"
-                          security import certificate.p12 -k "${KEYCHAIN_NAME}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                          security import certificate.p12 -k "${KEYCHAIN_NAME}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign -A
 
-                          echo "DEBUG: Importing Apple intermediate CA certificates so codesign can build the trust chain"
-                          curl -s https://www.apple.com/certificateauthority/DeveloperIDCA.cer -o DeveloperIDCA.cer
-                          security import DeveloperIDCA.cer -k "${KEYCHAIN_NAME}" -T /usr/bin/codesign
-                          curl -s https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o AppleWWDRCAG3.cer
-                          security import AppleWWDRCAG3.cer -k "${KEYCHAIN_NAME}" -T /usr/bin/codesign
+                          echo "DEBUG: Importing Apple Developer ID G2 intermediate CA"
+                          curl -L -s -o DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+                          security import DeveloperIDG2CA.cer -k "${KEYCHAIN_NAME}"
+                          rm DeveloperIDG2CA.cer
 
                           echo "DEBUG: Setting keychain timeout to prevent locking"
                           security set-keychain-settings -t 3600 -l "${KEYCHAIN_NAME}"
