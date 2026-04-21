@@ -199,10 +199,10 @@ export function createInfluxDbClient(config) {
             version,
             client: new Influx.InfluxDB({
                 host,
-                port: `${port}`,
+                port: String(port),
                 database: v1Config.dbName,
-                username: `${v1Config.auth?.enable ? v1Config.auth?.username : ''}`,
-                password: `${v1Config.auth?.enable ? v1Config.auth?.password : ''}`,
+                username: v1Config.auth?.enable ? v1Config.auth?.username : '',
+                password: v1Config.auth?.enable ? v1Config.auth?.password : '',
                 schema: [],
             }),
             database: v1Config.dbName,
@@ -227,7 +227,9 @@ export function createInfluxDbClient(config) {
         const v3Config = getInfluxDbV3Config(config);
 
         setInfluxV3Logger({
+            // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
             error() {},
+            // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
             warn() {},
         });
 
