@@ -252,11 +252,13 @@ export const confifgFileSchema = {
                             properties: {
                                 org: { type: 'string' },
                                 bucket: { type: 'string' },
+                                // Retained for config parity/documentation even though the runtime client does not use it yet.
                                 description: { type: 'string' },
                                 token: {
                                     type: 'string',
                                     format: 'password',
                                 },
+                                // Retained for config parity/documentation even though the runtime client does not use it yet.
                                 retentionDuration: { type: 'string' },
                             },
                             required: ['org', 'bucket', 'token'],
@@ -266,13 +268,16 @@ export const confifgFileSchema = {
                             type: 'object',
                             properties: {
                                 database: { type: 'string' },
+                                // Retained for config parity/documentation even though the runtime client does not use it yet.
                                 description: { type: 'string' },
                                 token: {
                                     type: 'string',
                                     format: 'password',
                                 },
+                                // Retained for config parity/documentation even though the runtime client does not use it yet.
                                 retentionDuration: { type: 'string' },
                                 writeTimeout: { type: 'number' },
+                                // Retained for config parity/documentation even though the runtime client does not use it yet.
                                 queryTimeout: { type: 'number' },
                             },
                             required: ['database', 'token'],
@@ -677,6 +682,8 @@ export const confifgFileSchema = {
                         'preloadTaskFailure',
                     ],
                     allOf: [
+                        // v2/v3 require their dedicated config blocks, while v1 still supports
+                        // either the structured v1Config block or the legacy flat v1 settings.
                         {
                             if: {
                                 properties: {
