@@ -221,6 +221,7 @@ paths:
         If the source directory contains subdirectories, these will be copied
         too.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -348,6 +349,7 @@ paths:
         If the source directory contains subdirectories, these will be moved
         too.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -453,6 +455,7 @@ paths:
 
         Defining approved directories is done in Butler's config file.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -534,6 +537,7 @@ paths:
       description: Creates a directory in QVD directory (which is defined in Butler's
         config file).
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -601,6 +605,7 @@ paths:
         If permissions don't allow a directory to be created, or if the path is
         invalid, an error will be returned.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -780,6 +785,7 @@ paths:
         I.e. if a previouly posted key also had a TTL, it will be replace with
         the most recent TTL.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1143,6 +1149,7 @@ paths:
     put:
       summary: Publish a message to a MQTT topic.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1161,7 +1168,6 @@ paths:
               required:
                 - topic
                 - message
-        required: true
       responses:
         "201":
           description: MQTT message successfully published.
@@ -1218,6 +1224,7 @@ paths:
       summary: Post events to New Relic.
       description: This endpoint posts events to the New Relic event API.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1255,7 +1262,6 @@ paths:
                         example: dev.server.com
               required:
                 - eventType
-        required: true
       responses:
         "202":
           description: Data accepted and sent to New Relic.
@@ -1312,6 +1318,7 @@ paths:
       summary: Post metrics to New Relic.
       description: This endpoint posts metrics to the New Relic metrics API.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1363,7 +1370,6 @@ paths:
                 - name
                 - type
                 - value
-        required: true
       responses:
         "202":
           description: Data accepted and sent to New Relic.
@@ -1543,6 +1549,7 @@ paths:
     post:
       summary: Create a new schedule.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1600,7 +1607,6 @@ paths:
                 - timezone
                 - qlikSenseTaskId
                 - startupState
-        required: true
       responses:
         "201":
           description: Schedule successfully retrieved.
@@ -2259,6 +2265,7 @@ paths:
     put:
       summary: Do a stand-alone reload of a Qlik Sense app, without using a task.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2638,6 +2645,7 @@ paths:
 
         It's thus possible to add new integrations in future Butler versions.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2801,6 +2809,7 @@ paths:
 
         It's thus possible to add new integrations in future Butler versions.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2940,6 +2949,7 @@ paths:
       summary: Send message to Slack.
       description: Sends a basic message to Slack.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -2965,7 +2975,6 @@ paths:
                 - channel
                 - from_user
                 - msg
-        required: true
       responses:
         "201":
           description: Message successfully sent to Slack.
