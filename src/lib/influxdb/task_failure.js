@@ -2,25 +2,48 @@ import _ from 'lodash';
 
 import globals from '../../globals.js';
 
-// Store information about failed reload tasks to InfluxDB
+/**
+ * Sends failed reload task notifications to InfluxDB.
+ *
+ * Collects static tags from config, builds a datapoint with task metadata and log details,
+ * and appends script log data (head/tail) if available. Supports dynamic app/task tags
+ * and static tags defined in the config file.
+ *
+ * @param {Object} reloadParams Reload task failure parameters.
+ * @param {string} reloadParams.host Host name.
+ * @param {string} reloadParams.user User name.
+ * @param {string} reloadParams.taskId Task ID.
+ * @param {string} reloadParams.taskName Task name.
+ * @param {string} reloadParams.appId Application ID.
+ * @param {string} reloadParams.appName Application name.
+ * @param {string} reloadParams.logTimeStamp Log timestamp.
+ * @param {string} reloadParams.logLevel Log level.
+ * @param {string} reloadParams.executionId Execution ID.
+ * @param {string} reloadParams.logMessage Log message.
+ * @param {Object} [reloadParams.scriptLog] Script log data (optional).
+ * @param {string[]} [reloadParams.appTags] Application tags.
+ * @param {string[]} [reloadParams.taskTags] Task tags.
+ * @returns {void}
+ */
 export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     try {
         globals.logger.info('[QSEOW] RELOAD TASK FAILED: Sending reload task notification to InfluxDB');
 
-        // Add tags
+        // Initialize an empty tags object to accumulate all tag key-value pairs for the InfluxDB measurement
         let tags = {};
 
         // Get static tags as array from config file
         const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-        // Add static tags to tags object
+        // Iterate over the global static tags array from config and add each tag key/value to the tags object
         if (configStaticTags) {
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
         }
 
-        // Add additional tags
+        // Attach task-specific dimensional tags that uniquely identify the failed task execution
+        // These tags enable filtering and grouping in InfluxDB queries by host, user, app, task, and log level
         tags.host = reloadParams.host;
         tags.user = reloadParams.user;
         tags.task_id = reloadParams.taskId;
@@ -29,7 +52,8 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         tags.app_name = reloadParams.appName;
         tags.log_level = reloadParams.logLevel;
 
-        // Build InfluxDB datapoint
+        // Construct the InfluxDB datapoint array with measurement name, accumulated tags, and core log fields.
+        // The measurement 'reload_task_failed' routes this data to the correct series in InfluxDB
         let datapoint = [
             {
                 measurement: 'reload_task_failed',
@@ -42,7 +66,7 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
             },
         ];
 
-        // Get script logs
+        // Retrieve the script log data if it was provided; this contains the detailed console output from the failed task execution
         const scriptLogData = reloadParams.scriptLog;
 
         // Handle case where scriptLog retrieval failed
@@ -51,7 +75,8 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
                 `[QSEOW] RELOAD TASK FAILED INFLUXDB: Script log data is not available. InfluxDB entry will be stored without script log details.`,
             );
 
-            // Set minimal fields without script log data
+            // Set minimal/default tag and field values as placeholders when script log data is unavailable
+            // so that InfluxDB queries can still filter on execution status and node name even without full details
             datapoint[0].tags.task_executingNodeName = 'unknown';
             datapoint[0].tags.task_executionStatusNum = -1;
             datapoint[0].tags.task_exeuctionStatusText = 'Script log not available';
@@ -75,13 +100,17 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
             globals.logger.debug(`[QSEOW] RELOAD TASK FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
             // Use script log data to enrich log entry sent to InfluxDB
+            // Extract node name and execution status details from the script log to tag the datapoint
             datapoint[0].tags.task_executingNodeName = scriptLogData.executingNodeName;
             datapoint[0].tags.task_executionStatusNum = scriptLogData.executionStatusNum;
             datapoint[0].tags.task_exeuctionStatusText = scriptLogData.executionStatusText;
 
+            // Serialize the execution start/stop time objects to JSON strings for InfluxDB storage
+            // since InfluxDB only accepts primitive field values
             datapoint[0].fields.task_executionStartTime_json = JSON.stringify(scriptLogData.executionStartTime);
             datapoint[0].fields.task_executionStopTime_json = JSON.stringify(scriptLogData.executionStopTime);
 
+            // Serialize the full duration object to JSON for detailed duration inspection
             datapoint[0].fields.task_executionDuration_json = JSON.stringify(scriptLogData.executionDuration);
             // Add execution duration in seconds
             datapoint[0].fields.task_executionDuration_sec =
@@ -99,16 +128,20 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
                 scriptLogData.executionDuration.minutes / 60 +
                 scriptLogData.executionDuration.seconds / 3600;
 
+            // Store the total script log size and the count of tail lines for reporting
             datapoint[0].fields.task_scriptLogSize = scriptLogData.scriptLogSize;
             datapoint[0].fields.task_scriptLogTailCount = scriptLogData.scriptLogTailCount;
 
             // Set main log message
+            // Concatenate execution details with the truncated script log tail to form the full log payload
             const msg = `${scriptLogData.executionDetailsConcatenated}\r\n-------------------------------\r\n\r\n${scriptLogData.scriptLogTail}`;
             datapoint[0].fields.scriptLog = msg;
             datapoint[0].fields.reload_log = msg;
         }
 
         // Should app tags be included?
+        // Check if dynamic app tags are enabled in config, and if so, iterate over appTags to
+        // add each one as a boolean tag (e.g., appTag_production = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.reloadTaskFailure.tag.dynamic.useAppTags') === true) {
             if (reloadParams.appTags) {
                 // Add app tags to InfluxDB datapoint
@@ -119,6 +152,8 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         }
 
         // Should task tags be included?
+        // Check if dynamic task tags are enabled in config, and if so, iterate over taskTags to
+        // add each one as a boolean tag (e.g., taskTag_critical = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.reloadTaskFailure.tag.dynamic.useTaskTags') === true) {
             if (reloadParams.taskTags) {
                 // Add task tags to InfluxDB datapoint
@@ -129,6 +164,8 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
         }
 
         // Add any static tags (defined in the config file)
+        // These are function-specific static tags from the config (e.g., environment, datacenter)
+        // that apply specifically to reload task failure notifications
         const staticTags = globals.config.get('Butler.influxDb.reloadTaskFailure.tag.static');
         if (staticTags) {
             for (const item of staticTags) {
@@ -136,21 +173,29 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
             }
         }
 
+        // Deep clone the datapoint to prevent mutation of the original object reference
+        // This ensures immutability so the original datapoint can still be logged for debugging
+        // after the InfluxDB write completes
         const deepClonedDatapoint = _.cloneDeep(datapoint);
 
         // Send to InfluxDB
+        // Asynchronously write the datapoint to InfluxDB via the writePoints API
+        // then log the result (success or error) in the promise handlers
         globals.influx
             .writePoints(deepClonedDatapoint)
 
             .then(() => {
+                // Log the full datapoint at silly level for maximum debug detail
                 globals.logger.silly(
                     `[QSEOW] RELOAD TASK FAILED: Influxdb datapoint for reload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
+                // Nullify the reference to allow garbage collection and log completion
                 datapoint = null;
                 globals.logger.verbose('[QSEOW] RELOAD TASK FAILED: Sent reload task notification to InfluxDB');
             })
             .catch((err) => {
+                // Log the error with full stack trace information from globals.getErrorMessage()
                 if (globals.isSea) {
                     globals.logger.error(
                         `[QSEOW] RELOAD TASK FAILED: Error saving reload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
@@ -166,32 +211,51 @@ export function postReloadTaskFailureNotificationInfluxDb(reloadParams) {
     }
 }
 
-// Store information about failed external program tasks to InfluxDB
+/**
+ * Sends failed external program task notifications to InfluxDB.
+ *
+ * Collects static tags from config, builds a datapoint with task metadata and log details,
+ * and supports dynamic task tags and static tags defined in the config file.
+ *
+ * @param {Object} taskParams External program task failure parameters.
+ * @param {string} taskParams.host Host name.
+ * @param {string} taskParams.user User name.
+ * @param {string} taskParams.taskId Task ID.
+ * @param {string} taskParams.taskName Task name.
+ * @param {string} taskParams.logTimeStamp Log timestamp.
+ * @param {string} taskParams.logLevel Log level.
+ * @param {string} taskParams.executionId Execution ID.
+ * @param {string} taskParams.logMessage Log message.
+ * @param {string[]} [taskParams.qs_taskTags] Task tags.
+ * @returns {void}
+ */
 export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
     try {
         globals.logger.info('[QSEOW] EXTERNAL PROGRAM TASK FAILED: Sending external program task notification to InfluxDB');
 
-        // Add tags
+        // Initialize an empty tags object to accumulate all tag key-value pairs for the InfluxDB measurement
         let tags = {};
 
         // Get static tags as array from config file
         const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-        // Add static tags to tags object
+        // Iterate over the global static tags array from config and add each tag key/value to the tags object
         if (configStaticTags) {
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
         }
 
-        // Add additional tags
+        // Attach task-specific dimensional tags that uniquely identify the failed external program task execution
+        // These tags enable filtering and grouping in InfluxDB queries by host, user, task, and log level
         tags.host = taskParams.host;
         tags.user = taskParams.user;
         tags.task_id = taskParams.taskId;
         tags.task_name = taskParams.taskName;
         tags.log_level = taskParams.logLevel;
 
-        // Build InfluxDB datapoint
+        // Construct the InfluxDB datapoint array with measurement name, accumulated tags, and core log fields.
+        // The measurement 'external_program_task_failed' routes this data to the correct series in InfluxDB
         let datapoint = [
             {
                 measurement: 'external_program_task_failed',
@@ -205,6 +269,8 @@ export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
         ];
 
         // Should task tags be included?
+        // Check if dynamic task tags are enabled in config, and if so, iterate over qs_taskTags to
+        // add each one as a boolean tag (e.g., taskTag_critical = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.externalProgramTaskFailure.tag.dynamic.useTaskTags') === true) {
             if (taskParams.qs_taskTags) {
                 // Add task tags to InfluxDB datapoint
@@ -215,6 +281,8 @@ export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
         }
 
         // Add any static tags (defined in the config file)
+        // These are function-specific static tags from the config (e.g., environment, datacenter)
+        // that apply specifically to external program task failure notifications
         const staticTags = globals.config.get('Butler.influxDb.externalProgramTaskFailure.tag.static');
         if (staticTags) {
             for (const item of staticTags) {
@@ -222,21 +290,29 @@ export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
             }
         }
 
+        // Deep clone the datapoint to prevent mutation of the original object reference
+        // This ensures immutability so the original datapoint can still be logged for debugging
+        // after the InfluxDB write completes
         const deepClonedDatapoint = _.cloneDeep(datapoint);
 
         // Send to InfluxDB
+        // Asynchronously write the datapoint to InfluxDB via the writePoints API
+        // then log the result (success or error) in the promise handlers
         globals.influx
             .writePoints(deepClonedDatapoint)
 
             .then(() => {
+                // Log the full datapoint at silly level for maximum debug detail
                 globals.logger.silly(
                     `[QSEOW] EXTERNAL PROGRAM TASK FAILED: Influxdb datapoint for external program task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
+                // Nullify the reference to allow garbage collection and log completion
                 datapoint = null;
                 globals.logger.verbose('[QSEOW] EXTERNAL PROGRAM TASK FAILED: Sent external program task notification to InfluxDB');
             })
             .catch((err) => {
+                // Log the error with full stack trace information from globals.getErrorMessage()
                 if (globals.isSea) {
                     globals.logger.error(
                         `[QSEOW] EXTERNAL PROGRAM TASK FAILED: Error saving external program task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
@@ -254,6 +330,7 @@ export function postExternalProgramTaskFailureNotificationInfluxDb(taskParams) {
 
 /**
  * Store distribute task failure info in InfluxDB
+ *
  * @param {Object} taskParams - Distribute task failure parameters
  * @param {string} taskParams.host - Host name
  * @param {string} taskParams.user - User name
@@ -271,20 +348,21 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
     try {
         globals.logger.info('[QSEOW] DISTRIBUTE TASK FAILED: Sending distribute task notification to InfluxDB');
 
-        // Add tags
+        // Initialize an empty tags object to accumulate all tag key-value pairs for the InfluxDB measurement
         let tags = {};
 
         // Get static tags as array from config file
         const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-        // Add static tags to tags object
+        // Iterate over the global static tags array from config and add each tag key/value to the tags object
         if (configStaticTags) {
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
         }
 
-        // Add additional tags
+        // Attach task-specific dimensional tags that uniquely identify the failed distribute task execution
+        // These tags enable filtering and grouping in InfluxDB queries by host, user, app, task, and log level
         tags.host = taskParams.host;
         tags.user = taskParams.user;
         tags.task_id = taskParams.taskId;
@@ -293,7 +371,8 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
         tags.app_id = taskParams?.qs_taskMetadata?.app?.id;
         tags.app_name = taskParams?.qs_taskMetadata?.app?.name;
 
-        // Build InfluxDB datapoint
+        // Construct the InfluxDB datapoint array with measurement name, accumulated tags, and core log fields.
+        // The measurement 'distribute_task_failed' routes this data to the correct series in InfluxDB
         let datapoint = [
             {
                 measurement: 'distribute_task_failed',
@@ -307,6 +386,8 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
         ];
 
         // Should task tags be included?
+        // Check if dynamic task tags are enabled in config, and if so, iterate over qs_taskTags to
+        // add each one as a boolean tag (e.g., taskTag_critical = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.distributeTaskFailure.tag.dynamic.useTaskTags') === true) {
             if (taskParams.qs_taskTags) {
                 // Add task tags to InfluxDB datapoint
@@ -317,6 +398,8 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
         }
 
         // Add any static tags (defined in the config file)
+        // These are function-specific static tags from the config (e.g., environment, datacenter)
+        // that apply specifically to distribute task failure notifications
         const staticTags = globals.config.get('Butler.influxDb.distributeTaskFailure.tag.static');
         if (staticTags) {
             for (const item of staticTags) {
@@ -324,21 +407,29 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
             }
         }
 
+        // Deep clone the datapoint to prevent mutation of the original object reference
+        // This ensures immutability so the original datapoint can still be logged for debugging
+        // after the InfluxDB write completes
         const deepClonedDatapoint = _.cloneDeep(datapoint);
 
         // Send to InfluxDB
+        // Asynchronously write the datapoint to InfluxDB via the writePoints API
+        // then log the result (success or error) in the promise handlers
         globals.influx
             .writePoints(deepClonedDatapoint)
 
             .then(() => {
+                // Log the full datapoint at silly level for maximum debug detail
                 globals.logger.silly(
                     `[QSEOW] DISTRIBUTE TASK FAILED: Influxdb datapoint for distribute task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
+                // Nullify the reference to allow garbage collection and log completion
                 datapoint = null;
                 globals.logger.verbose('[QSEOW] DISTRIBUTE TASK FAILED: Sent distribute task notification to InfluxDB');
             })
             .catch((err) => {
+                // Log the error with full stack trace information from globals.getErrorMessage()
                 if (globals.isSea) {
                     globals.logger.error(
                         `[QSEOW] DISTRIBUTE TASK FAILED: Error saving distribute task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
@@ -358,6 +449,7 @@ export function postDistributeTaskFailureNotificationInfluxDb(taskParams) {
 
 /**
  * Store preload task failure info in InfluxDB
+ *
  * @param {Object} taskParams - Preload task failure parameters
  * @param {string} taskParams.host - Host name
  * @param {string} taskParams.user - User name
@@ -375,20 +467,21 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
     try {
         globals.logger.info('[QSEOW] PRELOAD TASK FAILED: Sending preload task notification to InfluxDB');
 
-        // Add tags
+        // Initialize an empty tags object to accumulate all tag key-value pairs for the InfluxDB measurement
         let tags = {};
 
         // Get static tags as array from config file
         const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-        // Add static tags to tags object
+        // Iterate over the global static tags array from config and add each tag key/value to the tags object
         if (configStaticTags) {
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
         }
 
-        // Add additional tags
+        // Attach task-specific dimensional tags that uniquely identify the failed preload task execution
+        // These tags enable filtering and grouping in InfluxDB queries by host, user, app, task, and log level
         tags.host = taskParams.host;
         tags.user = taskParams.user;
         tags.task_id = taskParams.taskId;
@@ -397,7 +490,8 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
         tags.app_id = taskParams?.qs_taskMetadata?.app?.id;
         tags.app_name = taskParams?.qs_taskMetadata?.app?.name;
 
-        // Build InfluxDB datapoint
+        // Construct the InfluxDB datapoint array with measurement name, accumulated tags, and core log fields.
+        // The measurement 'preload_task_failed' routes this data to the correct series in InfluxDB
         let datapoint = [
             {
                 measurement: 'preload_task_failed',
@@ -411,6 +505,8 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
         ];
 
         // Should task tags be included?
+        // Check if dynamic task tags are enabled in config, and if so, iterate over qs_taskTags to
+        // add each one as a boolean tag (e.g., taskTag_critical = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.preloadTaskFailure.tag.dynamic.useTaskTags') === true) {
             if (taskParams.qs_taskTags) {
                 // Add task tags to InfluxDB datapoint
@@ -421,6 +517,8 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
         }
 
         // Add any static tags (defined in the config file)
+        // These are function-specific static tags from the config (e.g., environment, datacenter)
+        // that apply specifically to preload task failure notifications
         const staticTags = globals.config.get('Butler.influxDb.preloadTaskFailure.tag.static');
         if (staticTags) {
             for (const item of staticTags) {
@@ -428,21 +526,29 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
             }
         }
 
+        // Deep clone the datapoint to prevent mutation of the original object reference
+        // This ensures immutability so the original datapoint can still be logged for debugging
+        // after the InfluxDB write completes
         const deepClonedDatapoint = _.cloneDeep(datapoint);
 
         // Send to InfluxDB
+        // Asynchronously write the datapoint to InfluxDB via the writePoints API
+        // then log the result (success or error) in the promise handlers
         globals.influx
             .writePoints(deepClonedDatapoint)
 
             .then(() => {
+                // Log the full datapoint at silly level for maximum debug detail
                 globals.logger.silly(
                     `[QSEOW] PRELOAD TASK FAILED: Influxdb datapoint for preload task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
+                // Nullify the reference to allow garbage collection and log completion
                 datapoint = null;
                 globals.logger.verbose('[QSEOW] PRELOAD TASK FAILED: Sent preload task notification to InfluxDB');
             })
             .catch((err) => {
+                // Log the error with full stack trace information from globals.getErrorMessage()
                 if (globals.isSea) {
                     globals.logger.error(
                         `[QSEOW] PRELOAD TASK FAILED: Error saving preload task notification to InfluxDB! ${globals.getErrorMessage(err)}`,
@@ -460,6 +566,7 @@ export function postPreloadTaskFailureNotificationInfluxDb(taskParams) {
 
 /**
  * Store user sync task failure info in InfluxDB
+ *
  * @param {Object} taskParams - User sync task failure parameters
  * @param {string} taskParams.host - Host name
  * @param {string} taskParams.user - User name
@@ -477,27 +584,29 @@ export function postUserSyncTaskFailureNotificationInfluxDb(taskParams) {
     try {
         globals.logger.info('[QSEOW] USER SYNC TASK FAILED: Sending user sync task notification to InfluxDB');
 
-        // Add tags
+        // Initialize an empty tags object to accumulate all tag key-value pairs for the InfluxDB measurement
         let tags = {};
 
         // Get static tags as array from config file
         const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-        // Add static tags to tags object
+        // Iterate over the global static tags array from config and add each tag key/value to the tags object
         if (configStaticTags) {
             for (const item of configStaticTags) {
                 tags[item.name] = item.value;
             }
         }
 
-        // Add additional tags
+        // Attach task-specific dimensional tags that uniquely identify the failed user sync task execution
+        // These tags enable filtering and grouping in InfluxDB queries by host, user, task, and log level
         tags.host = taskParams.host;
         tags.user = taskParams.user;
         tags.task_id = taskParams.taskId;
         tags.task_name = taskParams.taskName;
         tags.log_level = taskParams.logLevel;
 
-        // Build InfluxDB datapoint
+        // Construct the InfluxDB datapoint array with measurement name, accumulated tags, and core log fields.
+        // The measurement 'user_sync_task_failed' routes this data to the correct series in InfluxDB
         let datapoint = [
             {
                 measurement: 'user_sync_task_failed',
@@ -511,6 +620,8 @@ export function postUserSyncTaskFailureNotificationInfluxDb(taskParams) {
         ];
 
         // Should task tags be included?
+        // Check if dynamic task tags are enabled in config, and if so, iterate over qs_taskTags to
+        // add each one as a boolean tag (e.g., taskTag_critical = "true") on the datapoint
         if (globals.config.get('Butler.influxDb.userSyncTaskFailure.tag.dynamic.useTaskTags') === true) {
             if (taskParams.qs_taskTags) {
                 // Add task tags to InfluxDB datapoint
@@ -521,6 +632,8 @@ export function postUserSyncTaskFailureNotificationInfluxDb(taskParams) {
         }
 
         // Add any static tags (defined in the config file)
+        // These are function-specific static tags from the config (e.g., environment, datacenter)
+        // that apply specifically to user sync task failure notifications
         const staticTags = globals.config.get('Butler.influxDb.userSyncTaskFailure.tag.static');
         if (staticTags) {
             for (const item of staticTags) {
@@ -528,21 +641,29 @@ export function postUserSyncTaskFailureNotificationInfluxDb(taskParams) {
             }
         }
 
+        // Deep clone the datapoint to prevent mutation of the original object reference
+        // This ensures immutability so the original datapoint can still be logged for debugging
+        // after the InfluxDB write completes
         const deepClonedDatapoint = _.cloneDeep(datapoint);
 
         // Send to InfluxDB
+        // Asynchronously write the datapoint to InfluxDB via the writePoints API
+        // then log the result (success or error) in the promise handlers
         globals.influx
             .writePoints(deepClonedDatapoint)
 
             .then(() => {
+                // Log the full datapoint at silly level for maximum debug detail
                 globals.logger.silly(
                     `[QSEOW] USER SYNC TASK FAILED: Influxdb datapoint for user sync task notification: ${JSON.stringify(datapoint, null, 2)}`,
                 );
 
+                // Nullify the reference to allow garbage collection and log completion
                 datapoint = null;
                 globals.logger.verbose('[QSEOW] USER SYNC TASK FAILED: Sent user sync task notification to InfluxDB');
             })
             .catch((err) => {
+                // Log the error with full stack trace information from globals.getErrorMessage()
                 if (globals.isSea) {
                     globals.logger.error(
                         `[QSEOW] USER SYNC TASK FAILED: Error saving user sync task notification to InfluxDB! ${globals.getErrorMessage(err)}`,

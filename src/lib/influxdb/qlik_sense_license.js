@@ -2,45 +2,50 @@ import _ from 'lodash';
 
 import globals from '../../globals.js';
 
-// Function to store Qlik Sense server license status to InfluxDB
-// 1st parameter is an object with the following structure:
-// {
-//     "licenseExpired": <boolean>,
-//     "expiryDate": <date>,
-//     "expiryDateStr": "<string>
-//     "daysUntilExpiry": <number>,
-//   }
+/**
+ * Sends Qlik Sense server license status to InfluxDB.
+ *
+ * Collects static and feature-specific tags from config, builds a datapoint
+ * with license expiry information, and writes it to InfluxDB.
+ *
+ * @param {Object} qlikSenseServerLicenseStatus Server license status object.
+ * @param {boolean} qlikSenseServerLicenseStatus.licenseExpired Whether the server license has expired.
+ * @param {string} qlikSenseServerLicenseStatus.expiryDateStr Formatted expiry date string.
+ * @param {number} qlikSenseServerLicenseStatus.daysUntilExpiry Days until the license expires.
+ * @returns {Promise<void>} Resolves when the datapoint has been written.
+ */
 export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServerLicenseStatus) {
+    // Log at verbose level that we are about to send server license data to InfluxDB
     globals.logger.verbose('[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Sending Qlik Sense server license status to InfluxDB');
 
-    // Get tags from config file
+    // Retrieve feature-specific tags configured for server license monitoring
     // Stored in array Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.serverLicenseMonitor.destination.influxDb.tag.static');
 
-    // Add tags
+    // Initialize empty tags object to hold all key-value pairs sent with the datapoint
     let tags = {};
 
-    // Get static tags as array from config file
+    // Fetch the static tags array from the config file (applied to all metrics)
     const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-    // Add static tags to tags object
+    // Populate tags object with static tags from config
     if (configStaticTags) {
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
     }
 
-    // Add feature specific tags in configTags variable
+    // Merge feature-specific tags into the tags object
     if (configTags) {
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
     }
 
-    // Do a deep clone of the tags object
+    // Deep clone the combined tags to avoid mutating the original references
     const tagsCloned = _.cloneDeep(tags);
 
-    // Build InfluxDB datapoint
+    // Construct the InfluxDB datapoint with the measurement name, combined tags, and license expiry fields
     let datapoint = [
         {
             measurement: 'qlik_sense_server_license',
@@ -53,10 +58,13 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
         },
     ];
 
-    // Write to InfluxDB
+    // Deep clone the datapoint before writing to prevent mutation
     const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+    // Wait for the InfluxDB write to complete
     await globals.influx.writePoints(deepClonedDatapoint);
 
+    // Log the full datapoint at silly level for debugging
     globals.logger.silly(
         `[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
             datapoint,
@@ -65,98 +73,62 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
         )}`,
     );
 
+    // Clean up the reference and log success at verbose level
     datapoint = null;
     globals.logger.verbose('[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
 }
 
-// Function to store Qlik Sense access license status to InfluxDB
-// License JSON has the following structure:
-// {
-//     "totalTokens": 0,
-//     "availableTokens": 0,
-//     "tokensEnabled": false,
-//     "userAccess": {
-//         "enabled": false,
-//         "tokenCost": 1,
-//         "allocatedTokens": 0,
-//         "usedTokens": 0,
-//         "quarantinedTokens": 0,
-//         "schemaPath": "AccessTypeOverview.UserAccessDetails"
-//     },
-//     "loginAccess": {
-//         "enabled": false,
-//         "tokenCost": 0.1,
-//         "allocatedTokens": 0,
-//         "usedTokens": 0,
-//         "unavailableTokens": 0,
-//         "schemaPath": "AccessTypeOverview.LoginAccessDetails"
-//     },
-//     "professionalAccess": {
-//         "enabled": true,
-//         "total": 25,
-//         "allocated": 5,
-//         "used": 0,
-//         "quarantined": 0,
-//         "excess": 0,
-//         "available": 20,
-//         "schemaPath": "AccessTypeOverview.Details"
-//     },
-//     "analyzerAccess": {
-//         "enabled": true,
-//         "total": 25,
-//         "allocated": 4,
-//         "used": 0,
-//         "quarantined": 0,
-//         "excess": 0,
-//         "available": 21,
-//         "schemaPath": "AccessTypeOverview.Details"
-//     },
-//     "analyzerTimeAccess": {
-//         "enabled": true,
-//         "allocatedMinutes": 700,
-//         "usedMinutes": 0,
-//         "unavailableMinutes": 0,
-//         "schemaPath": "AccessTypeOverview.AnalyzerTimeAccessDetails"
-//     },
-//     "schemaPath": "AccessTypeOverview"
-// }
+/**
+ * Sends aggregated Qlik Sense end-user license status to InfluxDB.
+ *
+ * Collects static and feature-specific tags from config, then builds one or more
+ * datapoints based on which license types (analyzer, professional, token, etc.)
+ * are enabled. Each enabled license type produces a separate datapoint.
+ *
+ * @param {Object} qlikSenseLicenseStatus License status object containing analyzerAccess,
+ *   professionalAccess, loginAccess, userAccess, and analyzerTimeAccess sub-objects.
+ * @returns {Promise<void>} Resolves when the datapoints have been written.
+ */
 export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatus) {
+    // Log at verbose level that we are about to send end-user license data to InfluxDB
     globals.logger.verbose('[QSEOW] END USER ACCESS LICENSE: Sending Qlik Sense license status to InfluxDB');
 
-    // Get tags from config file
+    // Retrieve feature-specific tags configured for license monitoring
     // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag.static');
 
-    // Add tags
+    // Initialize empty tags object to hold all key-value pairs sent with the datapoint
     let tags = {};
 
-    // Get static tags as array from config file
+    // Fetch the static tags array from the config file (applied to all metrics)
     const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-    // Add static tags to tags object
+    // Populate tags object with static tags from config
     if (configStaticTags) {
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
         }
     }
 
-    // Add feature specific tags in configTags variable
+    // Merge feature-specific tags into the tags object
     if (configTags) {
         for (const item of configTags) {
             tags[item.name] = item.value;
         }
     }
 
-    // Build InfluxDB datapoint
+    // Initialize an array that will hold one or more datapoints (one per enabled license type)
     let datapoint = [];
 
-    // Is there any data for "analyzerAccess" license type?
+    // Check if analyzer access licenses are enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.analyzerAccess.enabled === true) {
+        // Set the license type tag to identify this license category
         tags.license_type = 'analyzer';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with analyzer license metrics (allocated, available, excess, quarantined, total, used)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -171,13 +143,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Is there any data for "analyzerTimeAccess" license type?
+    // Check if analyzer capacity (time-based) licenses are enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.analyzerTimeAccess.enabled === true) {
+        // Set the license type tag to identify this license category
         tags.license_type = 'analyzer_capacity';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with analyzer capacity metrics (allocated, unavailable, used — all in minutes)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -189,13 +163,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Is there any data for "professionalAccess" license type?
+    // Check if professional access licenses are enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.professionalAccess.enabled === true) {
+        // Set the license type tag to identify this license category
         tags.license_type = 'professional';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with professional license metrics (allocated, available, excess, quarantined, total, used)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -210,13 +186,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Is there any data for "loginAccess" license type?
+    // Check if login access token licenses are enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.loginAccess.enabled === true) {
+        // Set the license type tag to identify this license category
         tags.license_type = 'token_login';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with login token metrics (allocated, token cost, unavailable, used)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -229,13 +207,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Is there any data for "userAccess" license type?
+    // Check if user access token licenses are enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.userAccess.enabled === true) {
+        // Set the license type tag to identify this license category
         tags.license_type = 'token_user';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with user token metrics (allocated, quarantined, token cost, used)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -248,13 +228,15 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Are tokens available?
+    // Check if token availability is enabled and build a corresponding datapoint
     if (qlikSenseLicenseStatus.tokensEnabled === true) {
+        // Set the license type tag to indicate this is a token-level metric
         tags.license_type = 'tokens_available';
 
-        // Do a deep clone of the tags object
+        // Deep clone the tags to prevent reference sharing between datapoints
         const tagsCloned = _.cloneDeep(tags);
 
+        // Push a datapoint with overall token availability metrics (available and total)
         datapoint.push({
             measurement: 'qlik_sense_license',
             tags: tagsCloned,
@@ -265,33 +247,51 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         });
     }
 
-    // Write to InfluxDB
+    // Deep clone the full array of datapoints before writing to prevent mutation
     const deepClonedDatapoint = _.cloneDeep(datapoint);
+
+    // Wait for all datapoints to be written to InfluxDB
     await globals.influx.writePoints(deepClonedDatapoint);
 
+    // Log the full array of datapoints at silly level for debugging
     globals.logger.silly(
         `[QSEOW] END USER ACCESS LICENSE: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
     );
 
+    // Clean up the reference and log success at info level (since multiple datapoints were sent)
     datapoint = null;
     globals.logger.info('[QSEOW] END USER ACCESS LICENSE: Sent aggregated Qlik Sense license status to InfluxDB');
 }
 
-// Function to store info about released Qlik Sense licenses to InfluxDB
+/**
+ * Sends information about released Qlik Sense licenses to InfluxDB.
+ *
+ * Collects static and feature-specific tags from config, sets license type and user
+ * tags based on the license info, builds a datapoint with days since last use,
+ * and writes it to InfluxDB.
+ *
+ * @param {Object} licenseInfo Released license information.
+ * @param {string} licenseInfo.licenseType Type of the released license.
+ * @param {string} licenseInfo.userDir User directory.
+ * @param {string} licenseInfo.userId User ID.
+ * @param {number} licenseInfo.daysSinceLastUse Number of days since the license was last used.
+ * @returns {Promise<void>} Resolves when the datapoint has been written.
+ */
 export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
+    // Log at verbose level that we are about to send released license info to InfluxDB
     globals.logger.verbose('[QSEOW] END USER ACCESS LICENSE RELEASE: Sending info on released Qlik Sense license to InfluxDB');
 
-    // Get tags from config file
-    // Stored in array Butler.qlikSenseLicense.licenseMonitor.destination.influxDb.tag
+    // Retrieve feature-specific tags configured for license release tracking
+    // Stored in array Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag
     const configTags = globals.config.get('Butler.qlikSenseLicense.licenseRelease.destination.influxDb.tag.static');
 
-    // Add tags
+    // Initialize empty tags object to hold all key-value pairs sent with the datapoint
     let tags = {};
 
-    // Get static tags as array from config file
+    // Fetch the static tags array from the config file (applied to all metrics)
     const configStaticTags = globals.config.get('Butler.influxDb.tag.static');
 
-    // Add static tags to tags object
+    // Populate tags object with static tags from config
     if (configStaticTags) {
         for (const item of configStaticTags) {
             tags[item.name] = item.value;
