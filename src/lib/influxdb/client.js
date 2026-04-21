@@ -125,6 +125,7 @@ class InfluxDbCompatClient {
         this.org = org;
         this.bucket = bucket;
         this.database = database;
+        this.writeApi = null;
     }
 
     async writePoints(points) {
@@ -138,20 +139,12 @@ class InfluxDbCompatClient {
         }
 
         if (this.version === 2) {
-            const writeApi = this.client.getWriteApi(this.org, this.bucket);
-
-            try {
-                writeApi.writePoints(points.map((point) => createPointV2(point)));
-                await writeApi.close();
-            } catch (err) {
-                try {
-                    await writeApi.close();
-                } catch {
-                    // Ignore close errors after the original write failure.
-                }
-
-                throw err;
+            if (this.writeApi === null) {
+                this.writeApi = this.client.getWriteApi(this.org, this.bucket);
             }
+
+            this.writeApi.writePoints(points.map((point) => createPointV2(point)));
+            await this.writeApi.flush();
 
             return;
         }
@@ -216,6 +209,10 @@ export function createInfluxDbClient(config) {
     if (version === 2) {
         const v2Config = getInfluxDbV2Config(config);
 
+        if (!v2Config.org || !v2Config.bucket || !v2Config.token) {
+            throw new Error('Invalid InfluxDB v2 config: org, bucket and token are required.');
+        }
+
         return new InfluxDbCompatClient({
             version,
             client: new InfluxDB2({
@@ -229,6 +226,10 @@ export function createInfluxDbClient(config) {
 
     if (version === 3) {
         const v3Config = getInfluxDbV3Config(config);
+
+        if (!v3Config.database || !v3Config.token) {
+            throw new Error('Invalid InfluxDB v3 config: database and token are required.');
+        }
 
         // Butler logs write failures itself, so the library logger is muted to avoid duplicate noise.
         setInfluxV3Logger({

@@ -6,6 +6,7 @@ const mockV1Client = {
 
 const mockV2WriteApi = {
     writePoints: jest.fn(),
+    flush: jest.fn(),
     close: jest.fn(),
 };
 
@@ -128,6 +129,7 @@ describe('lib/influxdb/client', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockV1Client.writePoints.mockResolvedValue(undefined);
+        mockV2WriteApi.flush.mockResolvedValue(undefined);
         mockV2WriteApi.close.mockResolvedValue(undefined);
         mockV2WriteApi.writePoints.mockImplementation(() => {});
         mockV3Client.write.mockResolvedValue(undefined);
@@ -181,7 +183,55 @@ describe('lib/influxdb/client', () => {
                 pointTimestamp: timestamp,
             }),
         ]);
-        expect(mockV2WriteApi.close).toHaveBeenCalled();
+        expect(mockV2WriteApi.flush).toHaveBeenCalled();
+        expect(mockV2WriteApi.close).not.toHaveBeenCalled();
+    });
+
+    test('reuses a single InfluxDB v2 WriteApi across writes', async () => {
+        const config = createConfig({
+            'Butler.influxDb.version': 2,
+            'Butler.influxDb.hostIP': 'influx.example.com',
+            'Butler.influxDb.hostPort': 8086,
+            'Butler.influxDb.v2Config': {
+                org: 'my-org',
+                bucket: 'butler',
+                token: 'secret-token',
+            },
+        });
+
+        const client = createInfluxDbClient(config);
+
+        await client.writePoints([
+            {
+                measurement: 'metric_one',
+                tags: { host: 'server1' },
+                fields: { duration_sec: 1 },
+            },
+        ]);
+        await client.writePoints([
+            {
+                measurement: 'metric_two',
+                tags: { host: 'server2' },
+                fields: { duration_sec: 2 },
+            },
+        ]);
+
+        expect(mockV2Client.getWriteApi).toHaveBeenCalledTimes(1);
+        expect(mockV2WriteApi.writePoints).toHaveBeenCalledTimes(2);
+        expect(mockV2WriteApi.flush).toHaveBeenCalledTimes(2);
+    });
+
+    test('throws when required InfluxDB v2 config is missing', () => {
+        const config = createConfig({
+            'Butler.influxDb.version': 2,
+            'Butler.influxDb.hostIP': 'influx.example.com',
+            'Butler.influxDb.hostPort': 8086,
+            'Butler.influxDb.v2Config': {
+                bucket: 'butler',
+            },
+        });
+
+        expect(() => createInfluxDbClient(config)).toThrow('Invalid InfluxDB v2 config: org, bucket and token are required.');
     });
 
     test('writes legacy point payloads using the InfluxDB v3 client', async () => {
@@ -208,5 +258,18 @@ describe('lib/influxdb/client', () => {
 
         expect(mockSetInfluxV3Logger).toHaveBeenCalled();
         expect(mockV3Client.write).toHaveBeenCalledWith(expect.stringContaining('"measurement":"reload_task_failed"'), 'butler');
+    });
+
+    test('throws when required InfluxDB v3 config is missing', () => {
+        const config = createConfig({
+            'Butler.influxDb.version': 3,
+            'Butler.influxDb.hostIP': 'influx.example.com',
+            'Butler.influxDb.hostPort': 8181,
+            'Butler.influxDb.v3Config': {
+                writeTimeout: 5000,
+            },
+        });
+
+        expect(() => createInfluxDbClient(config)).toThrow('Invalid InfluxDB v3 config: database and token are required.');
     });
 });

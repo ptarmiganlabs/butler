@@ -259,7 +259,7 @@ export const confifgFileSchema = {
                                 },
                                 retentionDuration: { type: 'string' },
                             },
-                            required: ['org', 'bucket', 'description', 'token', 'retentionDuration'],
+                            required: ['org', 'bucket', 'token'],
                             additionalProperties: false,
                         },
                         v3Config: {
@@ -275,7 +275,7 @@ export const confifgFileSchema = {
                                 writeTimeout: { type: 'number' },
                                 queryTimeout: { type: 'number' },
                             },
-                            required: ['database', 'description', 'token', 'retentionDuration', 'writeTimeout', 'queryTimeout'],
+                            required: ['database', 'token'],
                             additionalProperties: false,
                         },
                         retentionPolicy: {
@@ -675,6 +675,71 @@ export const confifgFileSchema = {
                         'distributeTaskFailure',
                         'preloadTaskSuccess',
                         'preloadTaskFailure',
+                    ],
+                    allOf: [
+                        {
+                            if: {
+                                properties: {
+                                    version: { const: 2 },
+                                },
+                                required: ['version'],
+                            },
+                            then: {
+                                properties: {
+                                    v2Config: { type: 'object' },
+                                },
+                                required: ['v2Config'],
+                            },
+                        },
+                        {
+                            if: {
+                                properties: {
+                                    version: { const: 3 },
+                                },
+                                required: ['version'],
+                            },
+                            then: {
+                                properties: {
+                                    v3Config: { type: 'object' },
+                                },
+                                required: ['v3Config'],
+                            },
+                        },
+                        {
+                            if: {
+                                anyOf: [
+                                    {
+                                        not: {
+                                            required: ['version'],
+                                        },
+                                    },
+                                    {
+                                        properties: {
+                                            version: { const: 1 },
+                                        },
+                                        required: ['version'],
+                                    },
+                                ],
+                            },
+                            then: {
+                                anyOf: [
+                                    {
+                                        properties: {
+                                            v1Config: { type: 'object' },
+                                        },
+                                        required: ['v1Config'],
+                                    },
+                                    {
+                                        properties: {
+                                            auth: { type: 'object' },
+                                            dbName: { type: 'string' },
+                                            retentionPolicy: { type: 'object' },
+                                        },
+                                        required: ['auth', 'dbName', 'retentionPolicy'],
+                                    },
+                                ],
+                            },
+                        },
                     ],
                     additionalProperties: false,
                 },
