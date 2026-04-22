@@ -83,6 +83,6 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
         datapoint = null;
         globals.logger.verbose('[QSEOW] QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
     } catch (err) {
-        globals.logger.error(`[QSEOW] QLIK SENSE VERSION: Error sending to InfluxDB: ${err.message}`);
+        globals.logger.error(`[QSEOW] QLIK SENSE VERSION: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`);
     }
 }
