@@ -81,6 +81,8 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
         globals.logger.error(
             `[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`,
         );
+
+        throw err;
     }
 }
 
