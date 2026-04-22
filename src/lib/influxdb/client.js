@@ -269,8 +269,15 @@ class InfluxDbCompatClient {
             const versionMsg = `InfluxDB v${this.version} write error: `;
 
             if (err instanceof Error) {
-                err.message = `${versionMsg}${err.message}`;
-                throw err;
+                const wrappedError = new Error(`${versionMsg}${err.message}`, { cause: err });
+
+                if (typeof err.stack === 'string') {
+                    const stackLines = err.stack.split('\n');
+                    stackLines[0] = `${err.name}: ${wrappedError.message}`;
+                    wrappedError.stack = stackLines.join('\n');
+                }
+
+                throw wrappedError;
             }
 
             throw new Error(`${versionMsg}${String(err)}`);
