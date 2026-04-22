@@ -266,10 +266,14 @@ class InfluxDbCompatClient {
                 await this.client.write(lineProtocol, this.database);
             }
         } catch (err) {
-            const versionMsg = `InfluxDB v${this.version}`;
-            const error = new Error(`${versionMsg} write error: ${err.message}`);
-            error.cause = err;
-            throw error;
+            const versionMsg = `InfluxDB v${this.version} write error: `;
+
+            if (err instanceof Error) {
+                err.message = `${versionMsg}${err.message}`;
+                throw err;
+            }
+
+            throw new Error(`${versionMsg}${String(err)}`);
         }
     }
 
