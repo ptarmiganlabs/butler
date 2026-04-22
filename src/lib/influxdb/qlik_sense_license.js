@@ -269,7 +269,7 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
         datapoint = null;
         globals.logger.info('[QSEOW] END USER ACCESS LICENSE: Sent aggregated Qlik Sense license status to InfluxDB');
     } catch (err) {
-        globals.logger.error(`[QSEOW] END USER ACCESS LICENSE: Error sending to InfluxDB: ${err.message}`);
+        globals.logger.error(`[QSEOW] END USER ACCESS LICENSE: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`);
     }
 }
 
