@@ -72,13 +72,17 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
     // Deep clone the datapoint before writing to prevent mutation
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
-    // Wait for the InfluxDB write to complete
-    await globals.influx.writePoints(deepClonedDatapoint);
+    try {
+        // Wait for the InfluxDB write to complete
+        await globals.influx.writePoints(deepClonedDatapoint);
 
-    // Log the full datapoint at silly level for debugging
-    globals.logger.silly(`[QSEOW] QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`);
+        // Log the full datapoint at silly level for debugging
+        globals.logger.silly(`[QSEOW] QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`);
 
-    // Clean up the reference and log success at verbose level
-    datapoint = null;
-    globals.logger.verbose('[QSEOW] QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
+        // Clean up the reference and log success at verbose level
+        datapoint = null;
+        globals.logger.verbose('[QSEOW] QLIK SENSE VERSION: Sent Qlik Sense version to InfluxDB');
+    } catch (err) {
+        globals.logger.error(`[QSEOW] QLIK SENSE VERSION: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`);
+    }
 }

@@ -61,21 +61,29 @@ export async function postQlikSenseServerLicenseStatusToInfluxDB(qlikSenseServer
     // Deep clone the datapoint before writing to prevent mutation
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
-    // Wait for the InfluxDB write to complete
-    await globals.influx.writePoints(deepClonedDatapoint);
+    try {
+        // Wait for the InfluxDB write to complete
+        await globals.influx.writePoints(deepClonedDatapoint);
 
-    // Log the full datapoint at silly level for debugging
-    globals.logger.silly(
-        `[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
-            datapoint,
-            null,
-            2,
-        )}`,
-    );
+        // Log the full datapoint at silly level for debugging
+        globals.logger.silly(
+            `[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Influxdb datapoint for Qlik Sense server license status: ${JSON.stringify(
+                datapoint,
+                null,
+                2,
+            )}`,
+        );
 
-    // Clean up the reference and log success at verbose level
-    datapoint = null;
-    globals.logger.verbose('[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
+        // Clean up the reference and log success at verbose level
+        datapoint = null;
+        globals.logger.verbose('[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Sent Qlik Sense server license status to InfluxDB');
+    } catch (err) {
+        globals.logger.error(
+            `[QSEOW] QLIK SENSE SERVER LICENSE STATUS: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`,
+        );
+
+        throw err;
+    }
 }
 
 /**
@@ -250,17 +258,21 @@ export async function postQlikSenseLicenseStatusToInfluxDB(qlikSenseLicenseStatu
     // Deep clone the full array of datapoints before writing to prevent mutation
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
-    // Wait for all datapoints to be written to InfluxDB
-    await globals.influx.writePoints(deepClonedDatapoint);
+    try {
+        // Wait for all datapoints to be written to InfluxDB
+        await globals.influx.writePoints(deepClonedDatapoint);
 
-    // Log the full array of datapoints at silly level for debugging
-    globals.logger.silly(
-        `[QSEOW] END USER ACCESS LICENSE: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
-    );
+        // Log the full array of datapoints at silly level for debugging
+        globals.logger.silly(
+            `[QSEOW] END USER ACCESS LICENSE: Influxdb datapoint for Qlik Sense license status: ${JSON.stringify(datapoint, null, 2)}`,
+        );
 
-    // Clean up the reference and log success at info level (since multiple datapoints were sent)
-    datapoint = null;
-    globals.logger.info('[QSEOW] END USER ACCESS LICENSE: Sent aggregated Qlik Sense license status to InfluxDB');
+        // Clean up the reference and log success at info level (since multiple datapoints were sent)
+        datapoint = null;
+        globals.logger.info('[QSEOW] END USER ACCESS LICENSE: Sent aggregated Qlik Sense license status to InfluxDB');
+    } catch (err) {
+        globals.logger.error(`[QSEOW] END USER ACCESS LICENSE: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`);
+    }
 }
 
 /**
@@ -322,12 +334,17 @@ export async function postQlikSenseLicenseReleasedToInfluxDB(licenseInfo) {
 
     // Write to InfluxDB
     const deepClonedDatapoint = _.cloneDeep(datapoint);
-    await globals.influx.writePoints(deepClonedDatapoint);
 
-    globals.logger.silly(
-        `[QSEOW] END USER ACCESS LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`,
-    );
+    try {
+        await globals.influx.writePoints(deepClonedDatapoint);
 
-    datapoint = null;
-    globals.logger.debug('[QSEOW] END USER ACCESS LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB');
+        globals.logger.silly(
+            `[QSEOW] END USER ACCESS LICENSE RELEASE: Influxdb datapoint for released Qlik Sense license: ${JSON.stringify(datapoint, null, 2)}`,
+        );
+
+        datapoint = null;
+        globals.logger.debug('[QSEOW] END USER ACCESS LICENSE RELEASE: Sent info on released Qlik Sense license to InfluxDB');
+    } catch (err) {
+        globals.logger.error(`[QSEOW] END USER ACCESS LICENSE RELEASE: Error sending to InfluxDB: ${globals.getErrorMessage(err)}`);
+    }
 }

@@ -230,38 +230,57 @@ class InfluxDbCompatClient {
      *
      * @param {LegacyInfluxPoint[]} points Points to write.
      * @returns {Promise<void>} Resolves when the points have been submitted.
+     * @throws {Error} If the write fails for any InfluxDB version.
      */
     async writePoints(points) {
         if (!Array.isArray(points) || points.length === 0) {
             return;
         }
 
-        if (this.version === 1) {
-            await this.client.writePoints(points);
-            return;
-        }
-
-        if (this.version === 2) {
-            if (this.writeApi === null) {
-                // Reuse a single WriteApi to avoid the overhead of recreating it for every write.
-                this.writeApi = this.client.getWriteApi(this.org, this.bucket);
+        try {
+            if (this.version === 1) {
+                await this.client.writePoints(points);
+                return;
             }
 
-            this.writeApi.writePoints(points.map((point) => createPointV2(point)));
-            // Flush after each call so Butler keeps the same "await writePoints()" behavior as before.
-            await this.writeApi.flush();
+            if (this.version === 2) {
+                if (this.writeApi === null) {
+                    // Reuse a single WriteApi to avoid the overhead of recreating it for every write.
+                    this.writeApi = this.client.getWriteApi(this.org, this.bucket);
+                }
 
-            return;
-        }
+                this.writeApi.writePoints(points.map((point) => createPointV2(point)));
+                // Flush after each call so Butler keeps the same "await writePoints()" behavior as before.
+                await this.writeApi.flush();
 
-        if (this.version === 3) {
-            // The v3 client writes line protocol, so convert compat points before submitting them.
-            const lineProtocol = points
-                .map((point) => createPointV3(point))
-                .map((point) => point.toLineProtocol())
-                .join('\n');
+                return;
+            }
 
-            await this.client.write(lineProtocol, this.database);
+            if (this.version === 3) {
+                // The v3 client writes line protocol, so convert compat points before submitting them.
+                const lineProtocol = points
+                    .map((point) => createPointV3(point))
+                    .map((point) => point.toLineProtocol())
+                    .join('\n');
+
+                await this.client.write(lineProtocol, this.database);
+            }
+        } catch (err) {
+            const versionMsg = `InfluxDB v${this.version} write error: `;
+
+            if (err instanceof Error) {
+                const wrappedError = new Error(`${versionMsg}${err.message}`, { cause: err });
+
+                if (typeof err.stack === 'string') {
+                    const stackLines = err.stack.split('\n');
+                    stackLines[0] = `${err.name}: ${wrappedError.message}`;
+                    wrappedError.stack = stackLines.join('\n');
+                }
+
+                throw wrappedError;
+            }
+
+            throw new Error(`${versionMsg}${String(err)}`);
         }
     }
 
