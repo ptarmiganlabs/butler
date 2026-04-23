@@ -1,5 +1,39 @@
 # Changelog
 
+## [15.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v15.0.0...butler-v15.1.0) (2026-04-23)
+
+
+### Features
+
+* **influxdb:** add v2 and v3 support ([c6e1bfd](https://github.com/ptarmiganlabs/butler/commit/c6e1bfdb23030667d9cffecd803cc88743590bdf))
+
+
+### Bug Fixes
+
+* **ci:** import Apple intermediate CA certificates for codesigning trust chain ([07fe151](https://github.com/ptarmiganlabs/butler/commit/07fe15199d2b860ac59bd4879cb700f704478130))
+* **influxdb:** add better error handling for InfluxDB write operations ([7149376](https://github.com/ptarmiganlabs/butler/commit/7149376aec08360df8547430c9b8fb9b370ecac6))
+* **influxdb:** enforce versioned config requirements ([7c79c7e](https://github.com/ptarmiganlabs/butler/commit/7c79c7eca563bfca842624df93ece9ecb15f18d2))
+
+
+### Miscellaneous
+
+* **ci:** update certificate import process for macOS builds ([5fbfa51](https://github.com/ptarmiganlabs/butler/commit/5fbfa51556a4787588281e10f42a180705bb1181))
+* **influxdb:** address review nits ([6ed71e1](https://github.com/ptarmiganlabs/butler/commit/6ed71e1ef79832ff7c46223cc94b76239f1353b8))
+* **influxdb:** polish validation errors ([a89d85a](https://github.com/ptarmiganlabs/butler/commit/a89d85ad871640bae7d2d894ad37f5edb32bef29))
+* update dependencies to latest versions ([a25d281](https://github.com/ptarmiganlabs/butler/commit/a25d281ea673c29ed74ccb613eb58d8f03315726))
+
+
+### Refactoring
+
+* **influxdb:** simplify point conversion helpers ([c80452a](https://github.com/ptarmiganlabs/butler/commit/c80452affa463346e6402afa2de8fe70c588916f))
+* remove macOS x64 build jobs. Bye-bye Intel- based macs... ([f04b6fc](https://github.com/ptarmiganlabs/butler/commit/f04b6fc71e793ab5d3254914705663f42601db7c))
+* Restructure template config file to make it easier to read ([4376ebb](https://github.com/ptarmiganlabs/butler/commit/4376ebb2ea259e495e4505c5da9f4fd75dc4d513))
+
+
+### Documentation
+
+* **influxdb:** document compatibility client ([d592ced](https://github.com/ptarmiganlabs/butler/commit/d592ced7b2e7882910247b9a1f31755aa70a2aa0))
+
 ## [15.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v14.2.0...butler-v15.0.0) (2025-12-10)
 
 
