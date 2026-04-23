@@ -1,3 +1,17 @@
+/**
+ * REST API Schemas for Schedule Management.
+ *
+ * Defines Fastify schemas for Butler's schedule management endpoints:
+ * - apiGETSchedules: Get schedule information
+ * - apiPOSTSchedule: Create new schedules
+ * - apiDELETESchedule: Delete schedules
+ * - apiPUTSchedule: Update existing schedules
+ * - apiPUTScheduleStart: Start a schedule
+ * - apiPUTScheduleStop: Stop a schedule
+ *
+ * Schedules trigger Qlik Sense tasks at cron-defined intervals.
+ */
+
 export const apiGETSchedules = {
     schema: {
         summary: 'Get all information available for existing schedule(s).',

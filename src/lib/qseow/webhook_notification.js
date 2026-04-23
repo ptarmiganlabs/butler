@@ -1,3 +1,16 @@
+/**
+ * Webhook Notification Module.
+ *
+ * This module sends webhook notifications for various Butler events:
+ * - Reload task failures
+ * - Reload task aborts
+ * - Service monitor alerts
+ * - Qlik Sense server license status
+ * - Qlik Sense version
+ *
+ * Supports rate limiting to prevent webhook flooding.
+ */
+
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import axios from 'axios';
 import fs from 'fs';

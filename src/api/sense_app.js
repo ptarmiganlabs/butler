@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for Qlik Sense App Reload.
+ *
+ * Defines the Fastify schema for triggering standalone app reloads.
+ * Does not use Qlik Sense tasks - performs reload directly via QIX Engine.
+ */
+
 const apiPutAppReload = {
     schema: {
         summary: 'Do a stand-alone reload of a Qlik Sense app, without using a task.',

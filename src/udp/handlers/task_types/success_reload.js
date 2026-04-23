@@ -1,3 +1,17 @@
+/**
+ * Handler for Successful Reload Tasks.
+ *
+ * Processes successful reload task completion events from the Qlik Sense scheduler.
+ *
+ * Sends notifications via all configured channels:
+ * - Email notifications
+ * - InfluxDB metrics
+ * - MQTT messages (basic and full payload)
+ *
+ * Retrieves execution results, task/app tags, custom properties, and script logs from QRS.
+ * Supports conditional notifications based on task tags and custom properties.
+ */
+
 // Load global variables and functions
 import globals from '../../../globals.js';
 import { GLOBALS_INIT_CHECK_INTERVAL_MS } from '../../../constants.js';

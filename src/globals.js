@@ -1,3 +1,19 @@
+/**
+ * Butler Global Configuration Singleton.
+ *
+ * This module provides the global configuration and state for Butler:
+ * - Configuration management (YAML file parsing)
+ * - Logging (Winston logger setup)
+ * - Certificate paths for Qlik Sense communication
+ * - QRS and Engine HTTP headers
+ * - MQTT client instance
+ * - UDP server instances
+ * - Scheduled task configuration
+ * - InfluxDB and New Relic clients
+ *
+ * Uses the singleton pattern - call init() to get the globals object.
+ */
+
 import os from 'os';
 import crypto from 'crypto';
 import fs from 'fs-extra';

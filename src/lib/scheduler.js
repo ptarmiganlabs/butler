@@ -1,13 +1,27 @@
+/**
+ * Scheduler module for managing Qlik Sense task schedules.
+ *
+ * This module provides cron-based scheduling functionality for automatically starting Qlik Sense tasks.
+ * It persists schedules to a YAML configuration file and reloads them on Butler startup.
+ *
+ * The scheduler uses the cron-job-manager library to manage scheduled tasks and integrates with
+ * the Qlik Sense QRS API to trigger task executions.
+ */
+
 import fs from 'fs';
 import yaml from 'js-yaml';
 import CronJobManager from 'cron-job-manager';
 import globals from '../globals.js';
 import senseStartTask from '../qrs_util/sense_start_task.js';
 
+// Global cron job manager instance - manages all scheduled tasks
 const cronManager = new CronJobManager();
 
 /**
  * Saves the current schedules to disk.
+ *
+ * Writes the in-memory schedule configuration to the YAML file specified
+ * in the Butler config file. This ensures schedules persist across restarts.
  */
 function saveSchedulesToDisk() {
     // First add a top level for readability
@@ -18,17 +32,26 @@ function saveSchedulesToDisk() {
 /**
  * Adds a cron entry for a new schedule.
  *
+ * Registers a new scheduled task with the cron job manager. The task will execute
+ * the Qlik Sense task specified in newSchedule.qlikSenseTaskId according
+ * to the cron expression in newSchedule.cronSchedule.
+ *
  * @param {Object} newSchedule - The new schedule to add.
  */
 function addCronEntry(newSchedule) {
+    // Register the cron job with the cron job manager
+    // Each schedule is identified by its unique ID
     cronManager.add(
         newSchedule.id.toString(),
         newSchedule.cronSchedule,
         () => {
+            // Callback function executed when cron triggers
+            // Log the scheduled event and start the Qlik Sense task
             globals.logger.info(`SCHEDULER: Cron event for schedule ID ${newSchedule.id.toString()}: ${newSchedule.name}`);
             senseStartTask(newSchedule.qlikSenseTaskId);
         },
         {
+            // Start the cron job immediately if startupState is 'started' or 'start'
             start: newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? true : false,
             timeZone: newSchedule.timeZone,
         },
@@ -38,22 +61,26 @@ function addCronEntry(newSchedule) {
 /**
  * Adds a new schedule.
  *
+ * Adds the schedule to the in-memory configuration, persists it to disk,
+ * and registers it with the cron job manager.
+ *
  * @param {Object} newSchedule - The new schedule to add.
  */
 export function addSchedule(newSchedule) {
     try {
         globals.logger.debug(`SCHEDULER: Adding new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
 
+        // Add the new schedule to the in-memory configuration array
         globals.configSchedule.push(newSchedule);
 
+        // Set the initial lastKnownState based on startupState
         newSchedule.lastKnownState = newSchedule.startupState === 'started' || newSchedule.startupState === 'start' ? 'started' : 'stopped';
 
-        // Persist schedule to disk
+        // Persist schedule to disk so it's reloaded on next startup
         saveSchedulesToDisk();
 
-        // Add schedule to cron manager
+        // Register with cron job manager to actually schedule the task
         addCronEntry(newSchedule);
-        // startSchedule(newSchedule.id);
 
         globals.logger.verbose(`SCHEDULER: Added new schedule: ${JSON.stringify(newSchedule, null, 2)}`);
     } catch (err) {
@@ -65,16 +92,22 @@ export function addSchedule(newSchedule) {
 
 /**
  * Loads schedules from disk.
+ *
+ * Reads the scheduler configuration from the YAML file specified in the
+ * Butler config file and registers all schedules with the cron job manager.
  */
 export function loadSchedulesFromDisk() {
     // Load scheduler config, if available
     try {
         if (globals.config.has('Butler.scheduler')) {
+            // Check if scheduler feature is enabled
             if (globals.config.get('Butler.scheduler.enable') === true) {
                 const scheduleFile = globals.config.get('Butler.scheduler.configfile');
+                // Read and parse the YAML schedule file
                 const tmpScheduleArray = yaml.load(fs.readFileSync(scheduleFile, 'utf8')).butlerSchedule;
 
-                // Create schedules, incl cron jobs for all schedules
+                // Create schedules, including cron jobs for all schedules
+                // Each schedule is registered with the cron job manager
                 tmpScheduleArray.forEach((element) => {
                     addSchedule(element);
                 });
@@ -91,6 +124,9 @@ export function loadSchedulesFromDisk() {
 /**
  * Starts all currently defined schedules.
  *
+ * Iterates through all registered schedules and starts their cron jobs.
+ * Updates the lastKnownState and persists to disk.
+ *
  * @returns {Promise<void>}
  */
 export function startAllSchedules() {
@@ -98,12 +134,13 @@ export function startAllSchedules() {
         globals.logger.debug('SCHEDULER: Starting all schedules');
 
         try {
+            // Start each schedule via the cron manager
             for (const element of globals.configSchedule) {
                 cronManager.start(element.id.toString());
-                element.lastKnownState = 'started'; // Set schedule status
+                element.lastKnownState = 'started'; // Update in-memory state
             }
 
-            // Persist schedule to disk
+            // Persist the updated state to disk
             saveSchedulesToDisk();
             resolve();
         } catch (err) {

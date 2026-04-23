@@ -1,3 +1,21 @@
+/**
+ * Butler Configuration File JSON Schema.
+ *
+ * This module defines the JSON Schema for validating Butler's YAML configuration file.
+ * Used by the config-file-schema.js assertion module to verify all required settings.
+ *
+ * Schema covers all Butler configuration sections:
+ * - Butler (main settings)
+ * - Butler.restServerConfig (REST server config)
+ * - Butler.certificateLocations (TLS certificates)
+ * - Butler.configQRS (Qlik Sense Repository connection)
+ * - Butler.configEngine (QIX Engine connection)
+ * - Butler.mqttConfig (MQTT broker)
+ * - Butler.udpServerConfig (UDP server)
+ * - Butler.influxDb (InfluxDB connection)
+ * - etc.
+ */
+
 export const confifgFileSchema = {
     type: 'object',
     properties: {

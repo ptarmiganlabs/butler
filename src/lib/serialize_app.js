@@ -1,15 +1,24 @@
 /**
  * Modern replacement for the serializeapp library
- * Serializes a Qlik Sense App into JSON with backwards compatibility
+ * Serializes a Qlik Sense App into JSON with backwards compatibility.
+ *
+ * This module provides functions to serialize Qlik Sense apps into JSON format.
+ * It can extract various object types including dimensions, measures, visualizations,
+ * and master items from a Qlik Sense app.
  */
 
 /**
- * Get a list of objects of a specific type from the app
+ * Get a list of objects of a specific type from the app.
+ *
+ * Creates a session object to list all objects of the specified type,
+ * then retrieves full property trees for each object.
+ *
  * @param {Object} app - The Qlik Sense app object
- * @param {string} objectType - Type of objects to retrieve
+ * @param {string} objectType - Type of objects to retrieve (e.g., 'visualization', 'masterobject')
  * @returns {Promise<Array>} Promise resolving to array of object properties
  */
 async function getList(app, objectType) {
+    // Create a session object that will list all objects of the specified type
     const list = await app.createSessionObject({
         qAppObjectListDef: {
             qType: objectType,
@@ -25,7 +34,11 @@ async function getList(app, objectType) {
         qExtendsId: '',
     });
 
+    // Get the layout to access the list of objects
     const layout = await list.getLayout();
+
+    // For each object in the list, get its full property tree
+    // This resolves all the nested properties and child objects
     const objects = await Promise.all(
         layout.qAppObjectList.qItems.map(async (d) => {
             const handle = await app.getObject(d.qInfo.qId);

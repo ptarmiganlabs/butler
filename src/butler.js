@@ -1,4 +1,15 @@
-// Add dependencies
+/**
+ * Butler Main Entry Point.
+ *
+ * This module is the main entry point for Butler for Qlik Sense.
+ * It initializes the global configuration singleton, sets up:
+ * - UDP servers for task event handling
+ * - Service monitors (Qlik license, version)
+ * - Unhandled promise rejection handlers
+ *
+ * Then delegates to app.js for Fastify server initialization.
+ */
+
 import dgram from 'dgram';
 import { GLOBALS_INIT_TIMEOUT_MS, GLOBALS_INIT_CHECK_INTERVAL_MS } from './constants.js';
 
@@ -40,9 +51,8 @@ const start = async () => {
     });
 
     const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
-    const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } = await import(
-        './lib/qseow/qliksense_license.js'
-    );
+    const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } =
+        await import('./lib/qseow/qliksense_license.js');
     const { setupQlikSenseVersionMonitor } = await import('./lib/qseow/qliksense_version.js');
 
     // The build function creates a new instance of the App class and returns it.

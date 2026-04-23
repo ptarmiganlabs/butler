@@ -1,3 +1,13 @@
+/**
+ * Qlik Sense Cloud Microsoft Teams Notification Module.
+ *
+ * This module sends Microsoft Teams notifications for Qlik Sense Cloud (QSC) events.
+ * Currently supports:
+ * - App reload failure notifications
+ *
+ * Uses Handlebars templates for message formatting with rate limiting.
+ */
+
 import fs from 'fs';
 
 import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';

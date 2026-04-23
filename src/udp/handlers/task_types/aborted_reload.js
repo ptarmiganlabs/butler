@@ -1,3 +1,21 @@
+/**
+ * Handler for Aborted Reload Tasks.
+ *
+ * Processes reload task abort events from the Qlik Sense scheduler.
+ * Aborts can occur via QMC, APIs, or other administrative actions.
+ *
+ * Sends notifications via all configured channels:
+ * - SIGNL4 incident management
+ * - New Relic (events and logs)
+ * - Slack messages
+ * - Microsoft Teams messages
+ * - Email notifications
+ * - Webhook calls
+ * - MQTT messages (basic and full payload)
+ *
+ * Retrieves script logs and app metadata from QRS for enriched notifications.
+ */
+
 // Load global variables and functions
 import globals from '../../../globals.js';
 import { sendReloadTaskAbortedNotificationEmail } from '../../../lib/qseow/smtp/reload-task-aborted.js';

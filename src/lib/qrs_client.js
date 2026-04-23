@@ -4,12 +4,24 @@ import globals from '../globals.js';
 import { HTTP_TIMEOUT_MS } from '../constants.js';
 
 /**
- * QRS Client using Axios to replace qrs-interact functionality
- * Maintains the same API as qrs-interact for drop-in replacement
+ * QRS Client using Axios to replace qrs-interact functionality.
+ *
+ * Provides a simplified interface to the Qlik Sense Repository Service (QRS) API.
+ * Maintains the same API as qrs-interact for drop-in replacement.
+ *
+ * The client handles:
+ * - SSL/TLS with client certificates
+ * - XSRF protection via xrfkey parameter
+ * - HTTP timeout configuration
+ * - Error handling that maintains compatibility with qrs-interact
  */
 class QrsClient {
+    /**
+     * Creates a new QRS API client instance.
+     * @param {Object} config - Configuration options (uses globals as fallback)
+     */
     constructor(config = {}) {
-        // Use provided config or fall back to globals
+        // Use provided config or fall back to globals from Butler configuration
         this.config = {
             hostname: config.hostname || globals.config.get('Butler.configQRS.host'),
             portNumber: config.portNumber || globals.config.get('Butler.configQRS.port'),
@@ -25,11 +37,11 @@ class QrsClient {
             },
         };
 
-        // Build base URL
+        // Build base URL for QRS API (e.g., https://server:4242/qrs/)
         const protocol = this.config.useSSL ? 'https' : 'http';
         this.baseURL = `${protocol}://${this.config.hostname}:${this.config.portNumber}/qrs/`;
 
-        // Create HTTPS agent if using SSL
+        // Create HTTPS agent with client certificates if using SSL
         let httpsAgent;
         if (this.config.useSSL) {
             const agentConfig = {
@@ -50,10 +62,10 @@ class QrsClient {
             httpsAgent = new https.Agent(agentConfig);
         }
 
-        // Generate random xrfkey for CSRF protection
+        // Generate random xrfkey for XSRF protection (required by Qlik Sense QRS API)
         const xrfkey = this.generateXrfKey();
 
-        // Create axios instance
+        // Create axios instance with base configuration
         this.axiosInstance = axios.create({
             baseURL: this.baseURL,
             timeout: HTTP_TIMEOUT_MS,
@@ -63,7 +75,7 @@ class QrsClient {
                 ...this.config.headers,
             },
             httpsAgent,
-            // Add xrfkey parameter to all requests
+            // Add xrfkey parameter to all requests (XSRF protection)
             params: {
                 xrfkey: xrfkey,
             },
@@ -71,7 +83,7 @@ class QrsClient {
     }
 
     /**
-     * Generate a random 16-character string for xrfkey
+     * Generate a random 16-character string for xrfkey (XSRF protection).
      * @private
      * @returns {string} Random 16-character string
      */
@@ -85,7 +97,7 @@ class QrsClient {
     }
 
     /**
-     * GET request to QRS API
+     * GET request to QRS API.
      * @param {string} endpoint - The API endpoint (without /qrs/ prefix)
      * @returns {Promise<Object>} Response object with statusCode and body properties
      */
@@ -105,14 +117,14 @@ class QrsClient {
                     body: error.response.data,
                 };
             } else {
-                // Network error or other issue
+                // Network error or other issue - re-throw
                 throw error;
             }
         }
     }
 
     /**
-     * POST request to QRS API
+     * POST request to QRS API.
      * @param {string} endpoint - The API endpoint (without /qrs/ prefix)
      * @param {Object} data - Data to send in the request body
      * @returns {Promise<Object>} Response object with statusCode and body properties
@@ -133,14 +145,14 @@ class QrsClient {
                     body: error.response.data,
                 };
             } else {
-                // Network error or other issue
+                // Network error or other issue - re-throw
                 throw error;
             }
         }
     }
 
     /**
-     * PUT request to QRS API
+     * PUT request to QRS API.
      * @param {string} endpoint - The API endpoint (without /qrs/ prefix)
      * @param {Object} data - Data to send in the request body
      * @returns {Promise<Object>} Response object with statusCode and body properties
@@ -161,14 +173,14 @@ class QrsClient {
                     body: error.response.data,
                 };
             } else {
-                // Network error or other issue
+                // Network error or other issue - re-throw
                 throw error;
             }
         }
     }
 
     /**
-     * DELETE request to QRS API
+     * DELETE request to QRS API.
      * @param {string} endpoint - The API endpoint (without /qrs/ prefix)
      * @returns {Promise<Object>} Response object with statusCode and body properties
      */
@@ -188,7 +200,7 @@ class QrsClient {
                     body: error.response.data,
                 };
             } else {
-                // Network error or other issue
+                // Network error or other issue - re-throw
                 throw error;
             }
         }

@@ -1,3 +1,15 @@
+/**
+ * Qlik Sense Cloud MQTT Event Handler - App Reload Finished.
+ *
+ * This module processes MQTT events received from Qlik Sense Cloud via an MQTT gateway.
+ * It handles app reload finished events (success or failure) and triggers appropriate notifications.
+ *
+ * Processing flow:
+ * 1. Receive MQTT message with app reload info
+ * 2. Fetch app metadata and script logs from QSC API
+ * 3. Send notifications via configured channels (Teams, Slack, Email)
+ */
+
 import path from 'path';
 import fs from 'fs';
 

@@ -1,3 +1,13 @@
+/**
+ * New Relic Service Monitor Notification Module.
+ *
+ * This module sends service status notifications to New Relic:
+ * - Service state change events
+ * - Service status logs
+ *
+ * Used by the service monitor to track Windows service state changes in New Relic.
+ */
+
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 import { sendNewRelicEvent, sendNewRelicLog } from './new_relic.js';

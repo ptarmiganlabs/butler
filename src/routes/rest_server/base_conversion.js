@@ -1,3 +1,14 @@
+/**
+ * REST Server Routes for Base Conversion.
+ *
+ * This module registers Fastify route handlers for Base62/Base16 conversion.
+ * Schema definitions delegate to: ../api/base_conversion.js
+ *
+ * Registered endpoints:
+ * - GET /v4/base62to16: Convert base62 string to base16
+ * - GET /v4/base16to62: Convert base16 string to base62
+ */
+
 /* eslint-disable camelcase */
 import httpErrors from 'http-errors';
 

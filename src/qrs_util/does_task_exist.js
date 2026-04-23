@@ -9,9 +9,10 @@ import globals from '../globals.js';
  */
 const doesTaskExist = async (taskId) => {
     try {
-        // Get http headers from Butler config file
+        // Get http headers from Butler config file for QRS API authentication
         const httpHeaders = globals.getQRSHttpHeaders();
 
+        // Create QRS API client instance with hostname, port, headers, and certificates
         const qrsInstance = new QrsClient({
             hostname: globals.configQRS.host,
             portNumber: globals.configQRS.port,
@@ -22,15 +23,16 @@ const doesTaskExist = async (taskId) => {
             },
         });
 
-        // Get info about the task
+        // Query QRS API to check if task exists
         try {
             globals.logger.debug(`TASKEXISTS 1: task?filter=id eq ${taskId}`);
 
+            // Use filter to find task by ID - returns array of matching tasks
             const result = await qrsInstance.Get(`task?filter=id eq ${taskId}`);
             globals.logger.debug(`TASKEXISTS: Got response: ${result.statusCode} for task ID ${taskId}`);
 
             if (result.statusCode === 200 && result.body.length > 0) {
-                // Task exists
+                // Task was found - return existence flag and basic task info
                 return {
                     exists: true,
                     task: {

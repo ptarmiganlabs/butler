@@ -1,3 +1,13 @@
+/**
+ * REST API Schemas for Qlik Sense App Dump/Restore.
+ *
+ * Defines Fastify schemas for serializing Qlik Sense apps to JSON:
+ * - apiGetSenseAppDump: Export app to JSON (includes all sheets, stories, etc.)
+ * - apiPostSenseAppRestore: Restore app from JSON dump
+ *
+ * Used for backup/restore and migration scenarios.
+ */
+
 export const apiGetSenseAppDump = {
     schema: {
         summary: 'Dump a Sense app to JSON.',

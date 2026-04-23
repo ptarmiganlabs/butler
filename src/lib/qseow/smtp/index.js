@@ -1,3 +1,17 @@
+/**
+ * SMTP Email Module - Central Re-export.
+ *
+ * This module provides a central re-export point for all SMTP-related functionality.
+ * Import from this module to access email configuration, sending functions, and task notifications.
+ *
+ * Exported functions:
+ * - isSmtpConfigOk: Validate SMTP configuration
+ * - sendEmail: Send templated emails
+ * - sendEmailBasic: Send simple text emails
+ * - Task notification functions (reload, distribute, preload)
+ * - Service monitor notifications
+ */
+
 // Central re-export point for SMTP functionality
 export { isSmtpConfigOk } from './config.js';
 export { sendEmail, sendEmailBasic } from '../../smtp_core.js';

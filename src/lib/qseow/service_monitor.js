@@ -1,3 +1,17 @@
+/**
+ * Windows Service Monitor Module.
+ *
+ * This module monitors Windows service states using xstate state machines.
+ * Sends notifications when service states change via all configured channels:
+ * - New Relic
+ * - Webhooks
+ * - Slack
+ * - Microsoft Teams
+ * - Email
+ *
+ * Uses the Windows Service API via winsvc.js for status checking.
+ */
+
 import later from '@breejs/later';
 import { createMachine, createActor } from 'xstate';
 

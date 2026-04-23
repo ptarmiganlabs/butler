@@ -1,3 +1,20 @@
+/**
+ * UDP Task Abort Router.
+ *
+ * This module processes UDP messages from the Qlik Sense scheduler for aborted tasks.
+ * It serves as a central router that determines the task type from task metadata
+ * and delegates to the appropriate task-type-specific handler.
+ *
+ * Supported task types and their handlers:
+ * - Type 0 (Reload): handleAbortedReloadTask
+ * - Type 1 (External Program): handleAbortedExternalProgramTask
+ * - Type 2 (User Sync): handleAbortedUserSyncTask
+ * - Type 3 (Distribute): handleAbortedDistributeTask
+ * - Type 4 (Preload): handleAbortedPreloadTask
+ *
+ * The UDP messages are sent via custom Qlik Sense log appenders.
+ */
+
 // Load global variables and functions
 import globals from '../../globals.js';
 import getTaskMetadata from '../../qrs_util/task_metadata.js';

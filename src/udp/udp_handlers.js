@@ -1,3 +1,17 @@
+/**
+ * UDP Server Handlers for Qlik Sense Task Events.
+ *
+ * This module sets up a UDP server to receive task failure, abort, and success
+ * notifications from the Qlik Sense scheduler via custom log appenders.
+ *
+ * The UDP server receives messages from the following Qlik Sense log appenders:
+ * - /scheduler-reload-failed/ - Reload task failures
+ * - /scheduler-reload-aborted/ - Reload task aborts
+ * - /scheduler-reloadtask-success/ - Reload task success
+ * - /scheduler-distribute/ - Distribution task events
+ * - /engine-reload-failed/ - Engine-level reload failures
+ */
+
 // Load global variables and functions
 import globals from '../globals.js';
 import schedulerAborted from './handlers/scheduler_aborted.js';
@@ -6,10 +20,16 @@ import schedulerTaskSuccess from './handlers/scheduler_success.js';
 import distributeTaskCompletion from './handlers/distribute_task_completion.js';
 
 /**
- * Set up UDP server handlers for acting on Sense failed task events.
+ * Set up UDP server handlers for acting on Qlik Sense task events.
+ *
+ * Registers event handlers for:
+ * - 'listening': UDP server started successfully
+ * - 'error': UDP server error occurred
+ * - 'message': UDP message received from scheduler
  */
 const udpInitTaskErrorServer = () => {
     // Handler for UDP server startup event
+    // Called when UDP server successfully binds to its port
     globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
         try {
             const address = globals.udpServerTaskResultSocket.address();
@@ -17,6 +37,7 @@ const udpInitTaskErrorServer = () => {
             globals.logger.info(`[QSEOW] TASKFAILURE: UDP server listening on ${address.address}:${address.port}`);
 
             // Publish MQTT message that UDP server has started
+            // This allows external systems to know the UDP server is operational
             if (globals.config.has('Butler.mqttConfig.enable') && globals.config.get('Butler.mqttConfig.enable') === true) {
                 if (globals?.mqttClient?.connected) {
                     globals.mqttClient.publish(globals.config.get('Butler.mqttConfig.taskFailureServerStatusTopic'), 'start');
@@ -34,6 +55,7 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Handler for UDP error event
+    // Called when an error occurs with the UDP server
     globals.udpServerTaskResultSocket.on('error', (message, remote) => {
         try {
             const address = globals.udpServerTaskResultSocket.address();
@@ -57,6 +79,7 @@ const udpInitTaskErrorServer = () => {
     });
 
     // Main handler for UDP messages relating to failed tasks
+    // Called when a UDP message is received from the scheduler
     globals.udpServerTaskResultSocket.on('message', async (message, remote) => {
         // ---------------------------------------------------------
         // === Message from Scheduler reload failed log appender ===

@@ -1,4 +1,22 @@
+/**
+ * Handler for Failed Preload Tasks.
+ *
+ * Processes preload task failure events from the Qlik Sense scheduler.
+ * Preload tasks load apps into memory for improved user access performance.
+ *
+ * Sends notifications via configured channels:
+ * - Email notifications
+ * - InfluxDB metrics
+ *
+ * Note: Preload tasks do not generate script logs like reload tasks do.
+ * This handler does not call script log retrieval functions.
+ */
+
 // Load global variables and functions
+// globals: Central configuration and logging object
+// getPreloadTaskExecutionResults: Retrieves execution details from QRS API
+// sendPreloadTaskFailureNotificationEmail: Sends email notifications on failure
+// postPreloadTaskFailureNotificationInfluxDb: Posts metrics to InfluxDB
 import globals from '../../../globals.js';
 import getPreloadTaskExecutionResults from '../../../qrs_util/preload_task_execution_results.js';
 import { sendPreloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/index.js';
@@ -8,11 +26,12 @@ import { postPreloadTaskFailureNotificationInfluxDb } from '../../../lib/influxd
  * Handler for failed preload tasks.
  *
  * Processes failed preload task events by:
- * - Retrieving task execution results
+ * - Retrieving task execution results from QRS API
  * - Sending email notifications (if configured)
+ * - Posting metrics to InfluxDB (if configured)
  *
  * Preload tasks load apps into memory for improved user access performance.
- * Note: Preload tasks do not generate script logs.
+ * Note: Preload tasks do not generate script logs like reload tasks do.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with preload failure details:
@@ -35,6 +54,7 @@ import { postPreloadTaskFailureNotificationInfluxDb } from '../../../lib/influxd
  */
 export const handleFailedPreloadTask = async (msg, taskMetadata) => {
     try {
+        // Extract task ID from the UDP message (msg[5] contains the Task ID)
         const preloadTaskId = msg[5];
 
         globals.logger.verbose(
@@ -43,18 +63,18 @@ export const handleFailedPreloadTask = async (msg, taskMetadata) => {
 
         globals.logger.info(`[QSEOW] PRELOAD TASK FAILURE: Preload task ${msg[2]} (${preloadTaskId}) failed.`);
 
-        // Get tags for the task that failed
+        // Extract tags from task metadata for use in notifications and logging
         const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
         globals.logger.verbose(`[QSEOW] Tags for task ${preloadTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
 
-        // Get preload task custom properties
+        // Extract custom properties from task metadata for use in notifications
         const taskCustomProperties =
             taskMetadata?.customProperties?.map((cp) => ({
                 name: cp.definition.name,
                 value: cp.value,
             })) || [];
 
-        // Get results from last preload task execution
+        // Retrieve detailed execution results from Qlik Sense QRS API
         const taskInfo = await getPreloadTaskExecutionResults(preloadTaskId);
 
         if (!taskInfo) {
@@ -67,7 +87,7 @@ export const handleFailedPreloadTask = async (msg, taskMetadata) => {
             );
         }
 
-        // Post to InfluxDB when a preload task has failed
+        // Post failure metrics to InfluxDB if enabled in configuration
         if (
             globals.config.get('Butler.influxDb.enable') === true &&
             globals.config.get('Butler.influxDb.preloadTaskFailure.enable') === true
@@ -87,7 +107,7 @@ export const handleFailedPreloadTask = async (msg, taskMetadata) => {
             });
         }
 
-        // Send email notification for failed preload task
+        // Send email notification for failed preload task if enabled in configuration
         if (
             globals.config.has('Butler.emailNotification.preloadTaskFailure.enable') &&
             globals.config.get('Butler.emailNotification.preloadTaskFailure.enable') === true

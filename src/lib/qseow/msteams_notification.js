@@ -1,3 +1,14 @@
+/**
+ * Microsoft Teams Notification Module for Qlik Sense Enterprise on Windows.
+ *
+ * This module sends Microsoft Teams notifications for task events:
+ * - Reload task success/failure/abort
+ * - Distribution task success/failure
+ * - Service monitor alerts
+ *
+ * Uses Handlebars templates for message formatting with rate limiting.
+ */
+
 /* eslint-disable no-param-reassign */
 import fs from 'fs';
 import { Webhook, SimpleTextCard } from 'ms-teams-wrapper';

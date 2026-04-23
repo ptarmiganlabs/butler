@@ -1,3 +1,13 @@
+/**
+ * SIGNL4 Incident Management Notification Module.
+ *
+ * This module sends notifications to SIGNL4 for task events:
+ * - Reload task failure
+ * - Reload task abort
+ *
+ * SIGNL4 is a mobile alert notification service for incident management.
+ */
+
 import axios from 'axios';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';

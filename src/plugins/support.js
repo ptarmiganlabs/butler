@@ -1,3 +1,12 @@
+/**
+ * Fastify Support Plugin.
+ *
+ * This plugin decorates Fastify with custom support functions.
+ * Used for testing and development purposes.
+ *
+ * @see https://github.com/fastify/fastify-plugin
+ */
+
 import fp from 'fastify-plugin';
 
 // the use of fastify-plugin is required to be able

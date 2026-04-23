@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for Qlik Sense App Listing.
+ *
+ * Defines the Fastify schema for listing all apps in a Qlik Sense environment.
+ * Returns app metadata including ID, name, and publish state.
+ */
+
 export const apiGetSenseListApps = {
     schema: {
         summary: 'Get a list of all apps in Sense environment.',

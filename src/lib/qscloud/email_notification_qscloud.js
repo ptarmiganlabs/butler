@@ -1,3 +1,13 @@
+/**
+ * Qlik Sense Cloud Email Notification Module.
+ *
+ * This module sends email notifications for Qlik Sense Cloud (QSC) events.
+ * Currently supports:
+ * - App reload failure notifications
+ *
+ * Uses Handlebars templates for email body formatting and includes rate limiting.
+ */
+
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
