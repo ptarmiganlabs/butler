@@ -1,3 +1,13 @@
+/**
+ * REST Server Routes for New Relic Metric Posting.
+ *
+ * This module registers Fastify route handlers for New Relic metrics.
+ * Schema definitions delegate to: ../api/newrelic_metric.js
+ *
+ * Registered endpoints:
+ * - POST /v4/newrelic/metric: Post custom metrics to New Relic
+ */
+
 import httpErrors from 'http-errors';
 import axios from 'axios';
 

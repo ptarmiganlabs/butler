@@ -1,3 +1,13 @@
+/**
+ * REST Server Routes for Qlik Sense App Listing.
+ *
+ * This module registers Fastify route handlers for listing Qlik Sense apps.
+ * Schema definitions delegate to: ../api/sense_list_apps.js
+ *
+ * Registered endpoints:
+ * - GET /v4/apps/list: List all apps
+ */
+
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import WebSocket from 'ws';

@@ -1,3 +1,15 @@
+/**
+ * REST API Schema for Qlik Sense Task Start.
+ *
+ * Defines the Fastify schema for starting Qlik Sense reload/distribution tasks.
+ * Supports starting tasks by:
+ * - Task ID (single or multiple)
+ * - Tags (starts all tasks with specified tag)
+ * - Custom properties (starts tasks matching property criteria)
+ *
+ * Also supports storing key-value pairs in Butler's KV store alongside task start.
+ */
+
 const apiPutStartTask = {
     schema: {
         summary: 'Start a Qlik Sense task.',

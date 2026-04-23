@@ -1,3 +1,22 @@
+/**
+ * Main Fastify Application Builder.
+ *
+ * This module creates and configures the Fastify HTTP servers for Butler:
+ * - REST Server: Main API server with all endpoints
+ * - Proxy REST Server: Reverse proxy for Qlik Sense communication
+ * - Docker Health Check Server: Lightweight health check endpoint
+ * - Config Visualization Server: Configuration file viewer
+ *
+ * It also initializes:
+ * - InfluxDB connections
+ * - Uptime monitoring
+ * - Heartbeat timer
+ * - MQTT handlers
+ * - Scheduler
+ * - Anonymous usage reporting
+ * - REST route registration
+ */
+
 import path from 'path';
 import fs from 'fs';
 import sea from 'node:sea';

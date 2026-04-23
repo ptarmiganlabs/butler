@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for Slack Message Posting.
+ *
+ * Defines the Fastify schema for sending messages via Slack webhook.
+ * Allows external systems to send Slack notifications through Butler.
+ */
+
 const apiPutSlackPostMessage = {
     schema: {
         summary: 'Send message to Slack.',

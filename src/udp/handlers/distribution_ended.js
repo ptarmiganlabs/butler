@@ -1,4 +1,14 @@
-// Load global variables and functions
+/**
+ * Handler for distribution task completion events.
+ *
+ * This module processes UDP messages from the Qlik Sense scheduler when distribution tasks complete.
+ * Distribution tasks copy Qlik Sense apps to target streams or spaces.
+ *
+ * The handler validates the task exists in Sense, retrieves metadata to determine task type,
+ * and routes to the appropriate outcome-specific handler (success, failure, or abort).
+ */
+
+ // Load global variables and functions
 import globals from '../../globals.js';
 import getTaskMetadata from '../../qrs_util/task_metadata.js';
 import doesTaskExist from '../../qrs_util/does_task_exist.js';
@@ -10,12 +20,11 @@ import { handleAbortedDistributeTask } from './task_types/aborted_distribute.js'
 /**
  * Handler for distribution task completion events.
  *
- * This function processes UDP messages for completed distribution tasks from the Qlik Sense scheduler.
- * It validates that the task is actually a distribute task, retrieves task metadata,
- * and routes to the appropriate outcome-specific handler (success, failure, or abort).
+ * This module processes UDP messages from the Qlik Sense scheduler when distribution tasks complete.
+ * Distribution tasks copy Qlik Sense apps to target streams or spaces.
  *
- * Distribution tasks copy Qlik Sense apps to target streams or spaces and do not have
- * associated app IDs or script logs like reload tasks do.
+ * The handler validates the task exists in Sense, retrieves metadata to determine task type,
+ * and routes to the appropriate outcome-specific handler (success, failure, or abort).
  *
  * @async
  * @param {Array<string>} msg - UDP message array with distribution completion details:
@@ -34,23 +43,24 @@ import { handleAbortedDistributeTask } from './task_types/aborted_distribute.js'
  */
 const distributionEnded = async (msg) => {
     try {
+        // Extract task ID from the UDP message (msg[5] contains the Task ID)
         const taskId = msg[5];
 
-        // Does task ID exist in Sense?
+        // Verify the task exists in Qlik Sense
         const taskExists = await doesTaskExist(taskId);
         if (taskExists.exists !== true) {
             globals.logger.warn(`[QSEOW] DISTRIBUTION ENDED: Task ID ${taskId} does not exist in Sense`);
             return false;
         }
 
-        // Get task metadata to determine task type
+        // Retrieve full task metadata to determine the task type (reload, distribute, preload, etc.)
         const taskMetadata = await getTaskMetadata(taskId);
         if (taskMetadata === false) {
             globals.logger.error(`[QSEOW] DISTRIBUTION ENDED: Could not get task metadata for task ${taskId}. Aborting further processing`);
             return;
         }
 
-        // Verify this is actually a distribute task
+        // Verify this is actually a distribute task (taskType 3 = Distribute)
         // Task types: 0=Reload, 1=ExternalProgram, 2=UserSync, 3=Distribute, 4=Preload
         const taskType = taskMetadata?.taskType;
 
@@ -74,7 +84,7 @@ const distributionEnded = async (msg) => {
 
         globals.logger.debug(`[QSEOW] DISTRIBUTION ENDED: Processing distribute task ${msg[2]} (${taskId})`);
 
-        // Determine the outcome of the distribution task from taskMetadata.operational.lastExecutionResult.status
+        // Extract the execution status from task metadata to determine the outcome
         // Possible status values:
         // 0: NeverStarted, 1: Triggered, 2: Started, 3: Queued, 4: AbortInitiated, 5: Aborting
         // 6: Aborted, 7: FinishedSuccess, 8: FinishedFail, 9: Skipped, 10: Retry

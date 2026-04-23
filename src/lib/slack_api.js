@@ -3,6 +3,7 @@ import globals from '../globals.js';
 
 /**
  * Sends a message to a Slack channel using the provided configuration.
+ *
  * @param {Object} slackConfig - Configuration for the Slack message.
  * @param {string} slackConfig.webhookUrl - The Slack webhook URL.
  * @param {string} slackConfig.messageType - The type of message (basic, formatted, restmsg).
@@ -19,29 +20,35 @@ import globals from '../globals.js';
  * @returns {Promise<void>}
  */
 async function slackSend(slackConfig, logger) {
-    // TODO Sanity check Slack config
+    // Validate that text is provided - it's mandatory for all message types
     if (slackConfig.text === undefined) {
         logger.error('SLACK SEND: Text missing - mandatory when sending Slack messages');
         return;
     }
 
+    // Build the Slack message payload
     let body = {};
     try {
+        // Set common payload fields with fallbacks to empty strings
         body = {
             username: slackConfig.fromUser === '' ? '' : slackConfig.fromUser,
             channel: slackConfig.channel === '' ? '' : slackConfig.channel,
             icon_emoji: slackConfig.iconEmoji === '' ? '' : slackConfig.iconEmoji,
         };
 
+        // Parse message based on type
         if (slackConfig.messageType === 'basic') {
+            // Basic message - use text as-is
             Object.assign(body, slackConfig.text);
         } else if (slackConfig.messageType === 'formatted') {
-            // Parse the JSON string into an object
+            // Formatted message - parse JSON text into Slack blocks
             Object.assign(body, JSON.parse(slackConfig.text));
         } else if (slackConfig.messageType === 'restmsg') {
+            // REST message format
             Object.assign(body, slackConfig.text);
         }
 
+        // Send the POST request to Slack webhook
         const res = await axios.post(slackConfig.webhookUrl, JSON.stringify(body));
         logger.debug(`SLACK SEND: Result from POST to Slack webhook: ${res.statusText} (${res.status}): ${res.data}`);
     } catch (err) {

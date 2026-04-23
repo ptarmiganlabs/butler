@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for New Relic Metric Posting.
+ *
+ * Defines the Fastify schema for posting custom metrics to New Relic.
+ * Used for performance monitoring and alerting.
+ */
+
 const apiPostNewRelicMetric = {
     schema: {
         summary: 'Post metrics to New Relic.',

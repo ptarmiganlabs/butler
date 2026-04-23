@@ -1,3 +1,13 @@
+/**
+ * REST Server Routes for Qlik Sense App Operations.
+ *
+ * This module registers Fastify route handlers for standalone app reloads.
+ * Schema definitions delegate to: ../api/sense_app.js
+ *
+ * Registered endpoints:
+ * - PUT /v4/app/:appId/reload: Trigger standalone app reload
+ */
+
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';
 import SenseUtilities from 'enigma.js/sense-utilities.js';

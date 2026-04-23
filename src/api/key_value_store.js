@@ -1,3 +1,17 @@
+/**
+ * REST API Schemas for Key-Value Store Operations.
+ *
+ * Defines Fastify schemas for Butler's key-value store REST API endpoints:
+ * - apiGetAllNamespaces: List all namespaces
+ * - apiGetKVPair: Get a key-value pair
+ * - apiGetKVNamespaceKeys: Get all keys in a namespace
+ * - apiPostKVSet: Set a key-value pair
+ * - apiDeleteKVNamespace: Delete a namespace
+ * - apiDeleteKVKey: Delete a key
+ *
+ * The key-value store persists data across Butler restarts.
+ */
+
 export const apiGetAllNamespaces = {
     schema: {
         description: '',

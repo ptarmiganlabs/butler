@@ -1,3 +1,14 @@
+/**
+ * REST Server Routes for Qlik Sense App Dump/Restore.
+ *
+ * This module registers Fastify route handlers for serializing Qlik Sense apps.
+ * Schema definitions delegate to: ../api/sense_app_dump.js
+ *
+ * Registered endpoints:
+ * - GET /v4/app/:appId/dump: Export app to JSON
+ * - POST /v4/app/:appId/restore: Restore app from JSON
+ */
+
 import serializeApp from '../../lib/serialize_app.js';
 import httpErrors from 'http-errors';
 import enigma from 'enigma.js';

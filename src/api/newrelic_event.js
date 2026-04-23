@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for New Relic Event Posting.
+ *
+ * Defines the Fastify schema for posting custom events to New Relic.
+ * Used for monitoring and alerting integration.
+ */
+
 const apiPostNewRelicEvent = {
     schema: {
         summary: 'Post events to New Relic.',

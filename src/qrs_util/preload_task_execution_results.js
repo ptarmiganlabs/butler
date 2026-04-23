@@ -3,6 +3,13 @@
  *
  * This module provides functions to retrieve execution results from Qlik Sense preload tasks.
  * Preload tasks are used to load apps into memory for improved user access performance.
+ *
+ * The main function queries the Qlik Sense Repository Service (QRS) API to retrieve detailed
+ * information about the last execution of a preload task, including:
+ * - Execution status (success, failed, aborted, etc.)
+ * - Execution duration
+ * - Start and stop timestamps in multiple formats
+ * - Detailed execution step information
  */
 
 import QrsClient from '../lib/qrs_client.js';
@@ -10,6 +17,8 @@ import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
 import { compareTaskDetails } from './task_execution_details_sort.js';
 
+// Mapping of numeric task status codes to human-readable status strings
+// These status values come from the Qlik Sense operational.lastExecutionResult.status field
 const taskStatusLookup = {
     0: 'NeverStarted',
     1: 'Triggered',
@@ -28,13 +37,27 @@ const taskStatusLookup = {
 
 /**
  * Gets preload task execution results from the Qlik Sense QRS API.
- * Retrieves detailed information about the last execution of a preload task, including status, duration, and execution details.
+ *
+ * Retrieves detailed information about the last execution of a preload task, including status,
+ * duration, start/stop times, and execution step details.
+ *
  * @param {string} preloadTaskId - The GUID of the preload task.
- * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (executionResultId, taskName, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
+ * @returns {Promise<Object|boolean>} - Returns an object containing task execution details:
+ *   - executionResultId: The ID of the execution result
+ *   - taskName: The name of the preload task
+ *   - executingNodeName: The name of the Qlik Sense node that executed the task
+ *   - executionDetailsSorted: Array of execution step details, sorted by date
+ *   - executionDetailsConcatenated: All execution details as a concatenated string
+ *   - executionStatusNum: Numeric status code
+ *   - executionStatusText: Human-readable status text
+ *   - executionDuration: Duration of execution in hours/minutes/seconds
+ *   - executionStartTime: Start timestamp in multiple formats
+ *   - executionStopTime: Stop timestamp in multiple formats
+ *   Returns false if an error occurs.
  */
 export default async function getPreloadTaskExecutionResults(preloadTaskId) {
     try {
-        // Set up Sense repository service configuration
+        // Set up Sense repository service configuration with certificates for authentication
         const configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
@@ -44,21 +67,25 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
             },
         };
 
-        // Merge YAML-configured headers with hardcoded headers
+        // Merge YAML-configured headers with hardcoded headers for API requests
         configQRS.headers = {
             ...globals.getQRSHttpHeaders(),
         };
 
+        // Create QRS API client instance
         const qrsInstance = new QrsClient(configQRS);
 
         globals.logger.debug(`[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: preloadTaskId: ${preloadTaskId}`);
 
+        // Query the reloadtask endpoint to get preload task details
+        // Note: Using reloadtask endpoint even for preload tasks (QRS API design)
         const endpoint = `reloadtask/${preloadTaskId}`;
         globals.logger.verbose(`[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
 
         globals.logger.debug(`[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: body: ${JSON.stringify(result1.body)}`);
 
+        // Extract relevant execution information from the QRS response
         const taskInfo = {
             executionResultId: result1.body.operational.lastExecutionResult.id,
             taskName: result1.body.name,
@@ -70,19 +97,23 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
         };
 
         // Get execution details as a single string by concatenating the individual execution step details
+        // Each line contains the timestamp and message from each execution step
         for (const execDetail of taskInfo.executionDetailsSorted) {
             taskInfo.executionDetailsConcatenated = `${taskInfo.executionDetailsConcatenated + execDetail.detailCreatedDate}\t${
                 execDetail.message
             }\n`;
         }
 
-        // Add duration as JSON
+        // Calculate execution duration from the duration field (in milliseconds)
+        // Convert to hours/minutes/seconds using Luxon Duration
         const taskDuration = Duration.fromMillis(result1.body.operational.lastExecutionResult.duration);
         taskInfo.executionDuration = taskDuration.shiftTo('hours', 'minutes', 'seconds').toObject();
         taskInfo.executionDuration.seconds = Math.floor(taskInfo.executionDuration.seconds);
 
-        // Add start datetime in various formats
+        // Process start datetime - handle special case for SQL Server datetime minimum (1753)
+        // Qlik Sense uses SQL Server datetime which has a minimum value of January 1, 1753
         if (result1.body.operational.lastExecutionResult.startTime.substring(0, 4) === '1753') {
+            // Task has never been started - use placeholder values
             taskInfo.executionStartTime = {
                 startTimeUTC: '-',
                 startTimeLocal1: '-',
@@ -92,6 +123,7 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
                 startTimeLocal5: '-',
             };
         } else {
+            // Parse the start time and provide in multiple formats
             const luxonDT = DateTime.fromISO(result1.body.operational.lastExecutionResult.startTime);
             taskInfo.executionStartTime = {
                 startTimeUTC: result1.body.operational.lastExecutionResult.startTime,
@@ -103,8 +135,9 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
             };
         }
 
-        // Add stop datetime in various formats
+        // Process stop datetime - handle special case for SQL Server datetime minimum (1753)
         if (result1.body.operational.lastExecutionResult.stopTime.substring(0, 4) === '1753') {
+            // Task has not completed - use placeholder values
             taskInfo.executionStopTime = {
                 stopTimeUTC: '-',
                 stopTimeLocal1: '-',
@@ -114,6 +147,7 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
                 stopTimeLocal5: '-',
             };
         } else {
+            // Parse the stop time and provide in multiple formats
             const luxonDT = DateTime.fromISO(result1.body.operational.lastExecutionResult.stopTime);
             taskInfo.executionStopTime = {
                 stopTimeUTC: result1.body.operational.lastExecutionResult.stopTime,
@@ -125,8 +159,9 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
             };
         }
 
-        // Add various datetime formats to task history entries
+        // Process each execution detail entry to add multiple timestamp formats
         taskInfo.executionDetailsSorted = taskInfo.executionDetailsSorted.map((item) => {
+            // Handle SQL Server datetime minimum value (1753)
             if (item.detailCreatedDate.substring(0, 4) === '1753') {
                 return {
                     timestampUTC: '-',
@@ -140,6 +175,7 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
                 };
             }
 
+            // Parse timestamp and provide in multiple formats
             const luxonDT = DateTime.fromISO(item.detailCreatedDate);
             return {
                 timestampUTC: item.detailCreatedDate,

@@ -1,3 +1,14 @@
+/**
+ * Slack Notification Module for Qlik Sense Enterprise on Windows.
+ *
+ * This module sends Slack notifications for task events:
+ * - Reload task success/failure/abort
+ * - Distribution task success/failure
+ * - Service monitor alerts
+ *
+ * Uses Handlebars templates for message formatting with rate limiting.
+ */
+
 import fs from 'fs';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';

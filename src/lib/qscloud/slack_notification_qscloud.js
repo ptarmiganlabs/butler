@@ -1,3 +1,13 @@
+/**
+ * Qlik Sense Cloud Slack Notification Module.
+ *
+ * This module sends Slack notifications for Qlik Sense Cloud (QSC) events.
+ * Currently supports:
+ * - App reload failure notifications
+ *
+ * Uses Handlebars templates for message formatting with rate limiting.
+ */
+
 import fs from 'fs';
 import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';

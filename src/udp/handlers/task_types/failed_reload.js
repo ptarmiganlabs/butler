@@ -1,3 +1,22 @@
+/**
+ * Handler for Failed Reload Tasks.
+ *
+ * Processes reload task failure events from the Qlik Sense scheduler.
+ * Failures can occur due to script errors, data connection issues, etc.
+ *
+ * Sends notifications via all configured channels:
+ * - SIGNL4 incident management
+ * - New Relic (events and logs)
+ * - InfluxDB metrics
+ * - Slack messages
+ * - Microsoft Teams messages
+ * - Email notifications
+ * - Webhook calls
+ * - MQTT messages (basic and full payload)
+ *
+ * Stores script logs to disk and retrieves app metadata from QRS.
+ */
+
 // Load global variables and functions
 import globals from '../../../globals.js';
 import { sendReloadTaskFailureNotificationEmail } from '../../../lib/qseow/smtp/reload-task-failed.js';

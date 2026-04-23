@@ -1,3 +1,16 @@
+/**
+ * REST API Schemas for File System Operations.
+ *
+ * Defines Fastify schema definitions for Butler's file management REST API endpoints:
+ * - apiFileCopy: Copy files between approved directories
+ * - apiFileMove: Move files between approved directories
+ * - apiFileDelete: Delete files in approved directories
+ * - apiCreateDir: Create directories in the filesystem
+ * - apiCreateDirQvd: Create directories in the QVD storage location
+ *
+ * All operations are restricted to pre-approved directories for security.
+ */
+
 export const apiFileCopy = {
     schema: {
         description:

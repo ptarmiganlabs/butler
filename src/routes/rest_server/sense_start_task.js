@@ -1,3 +1,14 @@
+/**
+ * REST Server Routes for Qlik Sense Task Start.
+ *
+ * This module registers Fastify route handlers for starting Qlik Sense tasks.
+ * Schema definitions delegate to: ../api/sense_start_task.js
+ *
+ * Registered endpoints:
+ * - PUT /v4/tasks/start: Start one or more tasks
+ * - PUT /v4/tasks/start/:taskId: Start specific task
+ */
+
 import httpErrors from 'http-errors';
 
 // Load global variables and functions

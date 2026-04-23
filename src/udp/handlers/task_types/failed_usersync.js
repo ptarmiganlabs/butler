@@ -1,17 +1,19 @@
 // Load global variables and functions
+// globals: Central configuration and logging object
+// postUserSyncTaskFailureNotificationInfluxDb: Posts failure metrics to InfluxDB
 import globals from '../../../globals.js';
 import { postUserSyncTaskFailureNotificationInfluxDb } from '../../../lib/influxdb/task_failure.js';
 
 /**
  * Handler for failed user sync tasks.
  *
- * - Processes failed user sync task events by:
+ * Processes failed user sync task events by:
  * - Extracting task metadata (tags, custom properties)
  * - Sending notifications to configured destinations:
- * - InfluxDB metrics (if enabled)
+ *   - InfluxDB metrics (if enabled)
  *
  * User Sync tasks synchronize user directories with Qlik Sense.
- * Note: User sync tasks do not generate script logs.
+ * Note: User sync tasks do not generate script logs like reload tasks do.
  *
  * @async
  * @param {Array<string>} msg - UDP message array with user sync failure details:
@@ -34,6 +36,7 @@ import { postUserSyncTaskFailureNotificationInfluxDb } from '../../../lib/influx
  */
 export const handleFailedUserSyncTask = async (msg, taskMetadata) => {
     try {
+        // Extract task ID from the UDP message (msg[5] contains the Task ID)
         const userSyncTaskId = msg[5];
 
         globals.logger.verbose(
@@ -42,18 +45,18 @@ export const handleFailedUserSyncTask = async (msg, taskMetadata) => {
 
         globals.logger.info(`[QSEOW] USER SYNC TASK FAILURE: User sync task ${msg[2]} (${userSyncTaskId}) failed.`);
 
-        // Get tags for the task that failed
+        // Extract tags from task metadata for use in notifications and logging
         const taskTags = taskMetadata?.tags?.map((tag) => tag.name) || [];
         globals.logger.verbose(`[QSEOW] Tags for task ${userSyncTaskId}: ${JSON.stringify(taskTags, null, 2)}`);
 
-        // Get user sync task custom properties
+        // Extract custom properties from task metadata for use in notifications
         const taskCustomProperties =
             taskMetadata?.customProperties?.map((cp) => ({
                 name: cp.definition.name,
                 value: cp.value,
             })) || [];
 
-        // Post to InfluxDB when a user sync task has failed
+        // Post failure metrics to InfluxDB if enabled in configuration
         if (
             globals.config.get('Butler.influxDb.enable') === true &&
             globals.config.get('Butler.influxDb.userSyncTaskFailure.enable') === true

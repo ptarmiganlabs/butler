@@ -1,3 +1,17 @@
+/**
+ * REST Server Routes for File System Operations.
+ *
+ * This module registers Fastify route handlers for Butler's file management API.
+ * All schema definitions delegate to: ../api/disk_utils.js
+ *
+ * Registered endpoints:
+ * - PUT /v4/files/copy: Copy files between approved directories
+ * - PUT /v4/files/move: Move files between approved directories
+ * - DELETE /v4/files/delete: Delete files in approved directories
+ * - POST /v4/filescreatedir: Create directories anywhere
+ * - POST /v4/filescreatedir/qvd: Create directories in QVD storage
+ */
+
 import httpErrors from 'http-errors';
 import fs from 'fs-extra';
 import upath from 'upath';

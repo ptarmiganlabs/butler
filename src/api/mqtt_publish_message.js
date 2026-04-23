@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for MQTT Message Publishing.
+ *
+ * Defines the Fastify schema for publishing messages to MQTT topics.
+ * Allows external systems to trigger MQTT events via Butler's REST API.
+ */
+
 const apiPutMqttMessage = {
     schema: {
         summary: 'Publish a message to a MQTT topic.',

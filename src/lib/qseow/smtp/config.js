@@ -1,3 +1,15 @@
+/**
+ * SMTP Configuration and Rate Limiters.
+ *
+ * This module provides SMTP email configuration and rate limiting for Butler.
+ * Rate limiters prevent email flooding during high task failure scenarios.
+ *
+ * Rate limiters are defined for:
+ * - Reload task success/failure/abort
+ * - Distribution task success/failure
+ * - Preload task success/failure
+ */
+
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../../globals.js';
 

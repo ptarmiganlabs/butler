@@ -1,3 +1,10 @@
+/**
+ * REST API Schemas for Base Conversion Utilities.
+ *
+ * Defines Fastify schemas for converting between Base62 and Base16 encoding.
+ * Used by Qlik Sense for encoding task and app IDs in URLs.
+ */
+
 export const apiGetBase62ToBase16 = {
     schema: {
         description: 'Converts strings from base62 to base16.',

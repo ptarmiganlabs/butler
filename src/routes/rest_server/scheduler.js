@@ -1,3 +1,18 @@
+/**
+ * REST Server Routes for Schedule Management.
+ *
+ * This module registers Fastify route handlers for Butler's scheduler API.
+ * Schema definitions delegate to: ../api/scheduler.js
+ *
+ * Registered endpoints:
+ * - GET /v4/scheduler/schedule: List schedules
+ * - POST /v4/scheduler/schedule: Create schedule
+ * - DELETE /v4/scheduler/schedule/:scheduleId: Delete schedule
+ * - PUT /v4/scheduler/schedule/:scheduleId: Update schedule
+ * - PUT /v4/scheduler/schedule/:scheduleId/start: Start schedule
+ * - PUT /v4/scheduler/schedule/:scheduleId/stop: Stop schedule
+ */
+
 import httpErrors from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
 

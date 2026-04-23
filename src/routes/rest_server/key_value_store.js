@@ -1,3 +1,18 @@
+/**
+ * REST Server Routes for Key-Value Store.
+ *
+ * This module registers Fastify route handlers for Butler's KV store API.
+ * Schema definitions delegate to: ../api/key_value_store.js
+ *
+ * Registered endpoints:
+ * - GET /v4/kvstore/namespace: List all namespaces
+ * - GET /v4/kvstore/namespace/:namespace/key/:key: Get a key-value pair
+ * - GET /v4/kvstore/namespace/:namespace/keys: Get all keys in namespace
+ * - POST /v4/kvstore/set: Set a key-value pair
+ * - DELETE /v4/kvstore/namespace/:namespace: Delete a namespace
+ * - DELETE /v4/kvstore/namespace/:namespace/key/:key: Delete a key
+ */
+
 /* eslint-disable no-lonely-if */
 import httpErrors from 'http-errors';
 

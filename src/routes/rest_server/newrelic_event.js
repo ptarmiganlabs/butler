@@ -1,3 +1,13 @@
+/**
+ * REST Server Routes for New Relic Event Posting.
+ *
+ * This module registers Fastify route handlers for New Relic events.
+ * Schema definitions delegate to: ../api/newrelic_event.js
+ *
+ * Registered endpoints:
+ * - POST /v4/newrelic/event: Post custom events to New Relic
+ */
+
 import httpErrors from 'http-errors';
 import axios from 'axios';
 

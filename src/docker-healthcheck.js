@@ -1,5 +1,18 @@
 /* eslint-disable no-console */
 // Set up REST endpoint for Docker healthchecks
+/**
+ * Docker Health Check Entry Point.
+ *
+ * This standalone script provides a health check endpoint for Docker container orchestration.
+ * It makes an HTTP request to Butler's internal health check API and reports
+ * the result as a process exit code:
+ * - Exit code 0: Butler is healthy (HTTP 200)
+ * - Exit code 1: Butler is unhealthy (non-200 response) or unreachable
+ *
+ * Usage: Run as `node docker-healthcheck.js` from the container
+ * The health endpoint is typically served on localhost:12398/health
+ */
+
 import httpHealth from 'http';
 import { DOCKER_HEALTHCHECK_TIMEOUT_MS } from './constants.js';
 

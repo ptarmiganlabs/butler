@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for API Endpoint Listing.
+ *
+ * Defines the Fastify schema for Butler's API endpoint listing endpoint.
+ * Returns an array of all enabled REST API endpoint keys from the Butler config file.
+ */
+
 const apiGetAPIEndpointsEnabled = {
     schema: {
         description:

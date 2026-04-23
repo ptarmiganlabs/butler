@@ -1,3 +1,20 @@
+/**
+ * UDP Task Success Router.
+ *
+ * This module processes UDP messages from the Qlik Sense scheduler for successful tasks.
+ * It serves as a central router that determines the task type from task metadata
+ * and delegates to the appropriate task-type-specific handler.
+ *
+ * Supported task types and their handlers:
+ * - Type 0 (Reload): handleSuccessReloadTask
+ * - Type 1 (External Program): handleSuccessExternalProgramTask
+ * - Type 2 (User Sync): handleSuccessUserSyncTask
+ * - Type 3 (Distribute): handleSuccessDistributeTask
+ * - Type 4 (Preload): handleSuccessPreloadTask
+ *
+ * The UDP messages are sent via custom Qlik Sense log appenders.
+ */
+
 // Load global variables and functions
 import globals from '../../globals.js';
 import getTaskMetadata from '../../qrs_util/task_metadata.js';

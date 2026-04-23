@@ -1,3 +1,10 @@
+/**
+ * REST API Schema for Butler Health Check.
+ *
+ * Defines the Fastify schema for Butler's health check endpoint.
+ * Returns a simple response indicating Butler is operational along with its version.
+ */
+
 const apiGetButlerPing = {
     schema: {
         description: 'Tests if Butler is alive and responding',
