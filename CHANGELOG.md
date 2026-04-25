@@ -1,5 +1,23 @@
 # Changelog
 
+## [15.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.0...butler-v15.1.1) (2026-04-25)
+
+
+### Bug Fixes
+
+* **ci:** improve keychain path handling in CI workflow ([340c57e](https://github.com/ptarmiganlabs/butler/commit/340c57e135163f0bc69ed5aa395d436ae8370c7c))
+* **ci:** include dev dependencies in install commands for CI workflows ([a1ba759](https://github.com/ptarmiganlabs/butler/commit/a1ba75962e014c22013fd58d16e7594fd7628d93))
+* **ci:** update keychain path references in CI workflows ([9a16ccb](https://github.com/ptarmiganlabs/butler/commit/9a16ccbdba6749bc99db49584b04ab06ce1facfe))
+* **ci:** update test command for more stable CI ([3aa39e7](https://github.com/ptarmiganlabs/butler/commit/3aa39e7885457604a51f0c45af5c8006bc3530bc))
+* **ci:** use bash array for keychain list to handle paths with spaces ([a5f341f](https://github.com/ptarmiganlabs/butler/commit/a5f341f4657407587c2f6003b38b4640882938b8))
+
+
+### Miscellaneous
+
+* Disable OSV scanner as it does not support pinned deps ([b237d5b](https://github.com/ptarmiganlabs/butler/commit/b237d5b81d95c2d1f7b151a611ce96c48ea8732c))
+* Update Node.js version in release binaries to 24 ([dd0154f](https://github.com/ptarmiganlabs/butler/commit/dd0154f34cc8db07a3dca74098aafce1511e940b))
+* update package dependencies ([501a92e](https://github.com/ptarmiganlabs/butler/commit/501a92e0b536d7b4cb8c72829cc134f920f09ed9))
+
 ## [15.1.0](https://github.com/ptarmiganlabs/butler/compare/butler-v15.0.0...butler-v15.1.0) (2026-04-23)
 
 
