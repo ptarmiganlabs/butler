@@ -1,5 +1,14 @@
 # Changelog
 
+## [15.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.2...butler-v15.1.3) (2026-04-25)
+
+
+### Bug Fixes
+
+* **ci:** add comment for clarity in macOS codesigning step ([2a218a7](https://github.com/ptarmiganlabs/butler/commit/2a218a7d05ca8e271756fc9644b2b1dea30a3ade))
+* **ci:** update macOS ARM64 job dependencies and reset keychain state ([f6b40a8](https://github.com/ptarmiganlabs/butler/commit/f6b40a838b8fb15060e707c329a7dd1312c61b89))
+* **ci:** update macOS ARM64 job dependencies to remove insiders-build requirement ([0677293](https://github.com/ptarmiganlabs/butler/commit/0677293514467f0110a1f3441f46554f5be95091))
+
 ## [15.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.1...butler-v15.1.2) (2026-04-25)
 
 
