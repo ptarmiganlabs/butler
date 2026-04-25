@@ -232,40 +232,63 @@ jobs:
 
           echo "DEBUG: Setting KEYCHAIN_NAME environment variable"
           export KEYCHAIN_NAME="build.keychain"
+          export KEYCHAIN_PATH="$HOME/Library/Keychains/${KEYCHAIN_NAME}-db"
 
           echo "DEBUG: Creating new keychain"
           security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+          echo "DEBUG: Keychain path is: ${KEYCHAIN_PATH}"
 
           echo "DEBUG: Getting current keychain list"
-          OLD_KEYCHAIN_NAMES=$(security list-keychains -d user | sed -e 's/"//g' | xargs)
-          echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_NAMES}"
+          mapfile -t OLD_KEYCHAIN_PATHS < <(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/"//g')
+          echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_PATHS[*]}"
 
           echo "DEBUG: Setting keychain search list"
-          security list-keychains -d user -s "${KEYCHAIN_NAME}" ${OLD_KEYCHAIN_NAMES}
+          security list-keychains -d user -s "${KEYCHAIN_PATH}" "${OLD_KEYCHAIN_PATHS[@]}"
 
           echo "DEBUG: Getting current default keychain"
           DEFAULT_KEYCHAIN=$(security default-keychain -d user | sed -e 's/"//g' | xargs)
           echo "DEBUG: Default keychain is: ${DEFAULT_KEYCHAIN}"
 
           echo "DEBUG: Setting our keychain as default"
-          security default-keychain -d user -s "${KEYCHAIN_NAME}"
+          security default-keychain -d user -s "${KEYCHAIN_PATH}"
 
           echo "DEBUG: Unlocking keychain"
-          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_PATH}"
 
           echo "DEBUG: Importing certificate into keychain"
-          security import certificate.p12 -k "${KEYCHAIN_NAME}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign -A
+          security import certificate.p12 -k "${KEYCHAIN_PATH}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign -A
 
           echo "DEBUG: Importing Apple Developer ID G2 intermediate CA"
           curl -L -s -o DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
-          security import DeveloperIDG2CA.cer -k "${KEYCHAIN_NAME}"
+          security import DeveloperIDG2CA.cer -k "${KEYCHAIN_PATH}"
           rm DeveloperIDG2CA.cer
 
           echo "DEBUG: Setting keychain timeout to prevent locking"
-          security set-keychain-settings -t 3600 -l "${KEYCHAIN_NAME}"
+          security set-keychain-settings -t 3600 -l "${KEYCHAIN_PATH}"
 
           echo "DEBUG: Setting key partition list"
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_NAME}"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_PATH}"
+
+          echo "DEBUG: Runner architecture"
+          uname -m
+
+          echo "DEBUG: macOS version"
+          sw_vers
+
+          echo "DEBUG: Keychains after setup"
+          security list-keychains -d user
+
+          echo "DEBUG: Default keychain after setup"
+          security default-keychain -d user
+
+          echo "DEBUG: Available signing identities in build keychain"
+          security find-identity -v -p codesigning "${KEYCHAIN_PATH}" || true
+
+          echo "DEBUG: Matching certificate entries in build keychain"
+          security find-certificate -a -c "$MACOS_CERTIFICATE_NAME" "${KEYCHAIN_PATH}" || true
+
+          echo "DEBUG: Binary architecture before codesign"
+          file "./${DIST_FILE_NAME}"
 
           echo "DEBUG: Performing codesign operation"
           codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
@@ -277,8 +300,6 @@ jobs:
           # Notarize
           # Store the notarization credentials so that we can prevent a UI password dialog from blocking the CI
           echo "Create keychain profile"
-          # Get the absolute path to the keychain in ~/Library/Keychains/ with the -db suffix macOS adds to keychain files
-          KEYCHAIN_PATH=~/Library/Keychains/${KEYCHAIN_NAME}-db
           echo "DEBUG: Using keychain at path: ${KEYCHAIN_PATH}"
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD" --keychain "${KEYCHAIN_PATH}"
 
