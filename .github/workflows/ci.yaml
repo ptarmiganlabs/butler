@@ -186,14 +186,10 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Install tool for creating stand-alone executables
-              run: |
-                  npm install --save-exact esbuild
-
             - name: Install dependencies
               run: |
                   pwd 
-                  npm ci --include=prod
+                  npm ci --include=dev --include=prod
 
             - name: Build binaries
               run: |
@@ -390,14 +386,10 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Install tool for creating stand-alone executables
-              run: |
-                  npm install --save-exact esbuild
-
             - name: Install dependencies
               run: |
                   pwd 
-                  npm ci --include=prod
+                  npm ci --include=dev --include=prod
 
             - name: Build binaries
               run: |
@@ -518,14 +510,10 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Install tool for creating stand-alone executables
-              run: |
-                  npm install --save-exact esbuild
-
             - name: Install dependencies
               run: |
                   pwd 
-                  npm ci --include=prod
+                  npm ci --include=dev --include=prod
 
             - name: Build binaries
               run: |
