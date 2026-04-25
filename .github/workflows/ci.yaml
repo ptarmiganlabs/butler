@@ -152,7 +152,7 @@ jobs:
                   retention-days: 3
 
     release-macos-arm64:
-        needs: [release-please, insiders-build]
+        needs: release-please
         runs-on:
             - self-hosted
             - arm64
