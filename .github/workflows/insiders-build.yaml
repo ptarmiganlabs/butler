@@ -182,23 +182,25 @@ jobs:
                           echo "DEBUG: Runner architecture"
                           uname -m
 
-                          echo "DEBUG: macOS version"
-                          sw_vers
+                          if [ "${ACTIONS_STEP_DEBUG}" = "true" ]; then
+                            echo "DEBUG: macOS version"
+                            sw_vers
 
-                          echo "DEBUG: Keychains after setup"
-                          security list-keychains -d user
+                            echo "DEBUG: Keychains after setup"
+                            security list-keychains -d user
 
-                          echo "DEBUG: Default keychain after setup"
-                          security default-keychain -d user
+                            echo "DEBUG: Default keychain after setup"
+                            security default-keychain -d user
 
-                          echo "DEBUG: Available signing identities in build keychain"
-                          security find-identity -v -p codesigning "${KEYCHAIN_PATH}" || true
+                            echo "DEBUG: Available signing identities in build keychain"
+                            security find-identity -v -p codesigning "${KEYCHAIN_PATH}" || true
 
-                          echo "DEBUG: Matching certificate entries in build keychain"
-                          security find-certificate -a -c "$MACOS_CERTIFICATE_NAME" "${KEYCHAIN_PATH}" || true
+                            echo "DEBUG: Matching certificate entries in build keychain"
+                            security find-certificate -a -c "$MACOS_CERTIFICATE_NAME" "${KEYCHAIN_PATH}" || true
 
-                          echo "DEBUG: Binary architecture before codesign"
-                          file "./${DIST_FILE_NAME}"
+                            echo "DEBUG: Binary architecture before codesign"
+                            file "./${DIST_FILE_NAME}"
+                          fi
 
                           echo "DEBUG: Performing codesign operation"
                           codesign --force -s "$MACOS_CERTIFICATE_NAME" -v "./${DIST_FILE_NAME}" --deep --strict --options=runtime --timestamp --entitlements ./release-config/${DIST_FILE_NAME}.entitlements
