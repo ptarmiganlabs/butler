@@ -149,7 +149,11 @@ jobs:
                           echo "DEBUG: Keychain path is: ${KEYCHAIN_PATH}"
 
                           echo "DEBUG: Getting current keychain list"
-                          mapfile -t OLD_KEYCHAIN_PATHS < <(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/"//g')
+                          OLD_KEYCHAIN_PATHS=()
+                          while IFS= read -r keychain_path; do
+                              [ -n "$keychain_path" ] || continue
+                              OLD_KEYCHAIN_PATHS+=("$keychain_path")
+                          done < <(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/"//g')
                           echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_PATHS[*]}"
 
                           echo "DEBUG: Setting keychain search list"
@@ -244,7 +248,7 @@ jobs:
                           security default-keychain -d user -s "$DEFAULT_KEYCHAIN" || echo "WARNING: Failed to restore default keychain, continuing anyway"
 
                           echo "DEBUG: Restoring original keychain list"
-                          security list-keychains -d user -s ${OLD_KEYCHAIN_NAMES} || echo "WARNING: Failed to restore keychain list, continuing anyway"
+                          security list-keychains -d user -s "${OLD_KEYCHAIN_PATHS[@]}" || echo "WARNING: Failed to restore keychain list, continuing anyway"
 
 
                           # -------------------
