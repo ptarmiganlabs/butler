@@ -7,6 +7,7 @@
         "build:docker": "docker build -t butler:latest -t butler:$(node -p \"require('./package.json').version\") .",
         "build:macos": "./build-script/build-macos.sh",
         "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit --coverage",
+        "test:ci": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit",
         "test:watch": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit --watch --coverage",
         "test:jshint": "node_modules/jshint/bin/jshint butler.js",
         "format": "npm run format:prettier",
