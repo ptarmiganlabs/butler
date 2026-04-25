@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.1.2](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.1...butler-v15.1.2) (2026-04-25)
+
+
+### Bug Fixes
+
+* **ci:** enhance debug output for macOS codesigning process ([c3cac37](https://github.com/ptarmiganlabs/butler/commit/c3cac3737b6c287e197cf346881dbccfe18eda8f))
+
 ## [15.1.1](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.0...butler-v15.1.1) (2026-04-25)
 
 
