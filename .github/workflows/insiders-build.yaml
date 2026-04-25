@@ -149,11 +149,11 @@ jobs:
                           echo "DEBUG: Keychain path is: ${KEYCHAIN_PATH}"
 
                           echo "DEBUG: Getting current keychain list"
-                          OLD_KEYCHAIN_NAMES=$(security list-keychains -d user | sed -e 's/"//g' | xargs)
-                          echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_NAMES}"
+                          mapfile -t OLD_KEYCHAIN_PATHS < <(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/"//g')
+                          echo "DEBUG: Current keychains: ${OLD_KEYCHAIN_PATHS[*]}"
 
                           echo "DEBUG: Setting keychain search list"
-                          security list-keychains -d user -s "${KEYCHAIN_PATH}" ${OLD_KEYCHAIN_NAMES}
+                          security list-keychains -d user -s "${KEYCHAIN_PATH}" "${OLD_KEYCHAIN_PATHS[@]}"
 
                           echo "DEBUG: Getting current default keychain"
                           DEFAULT_KEYCHAIN=$(security default-keychain -d user | sed -e 's/"//g' | xargs)
