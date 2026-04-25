@@ -314,7 +314,7 @@ jobs:
             - name: Install dependencies
               run: |
                   pwd
-                                    npm ci --include=dev --include=prod
+                  npm ci --include=dev --include=prod
 
             - name: Run unit tests
               run: npm run test:ci
