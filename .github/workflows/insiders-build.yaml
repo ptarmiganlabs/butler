@@ -313,11 +313,11 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  pwd 
+                  pwd
                   npm ci
 
             - name: Run unit tests
-              run: npm run test
+              run: npm run test:ci
 
             - name: Run Snyk to check for vulnerabilities
               # Snyk can be used to break the build when it detects security issues.
