@@ -152,7 +152,7 @@ jobs:
                   retention-days: 3
 
     release-macos-arm64:
-        needs: release-please
+        needs: [release-please, insiders-build]
         runs-on:
             - self-hosted
             - arm64
@@ -211,7 +211,11 @@ jobs:
                   npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
 
                   chmod +x "${DIST_FILE_NAME}"
-                  security delete-keychain build.keychain || true
+
+                  # Reset any leftover keychain state from previous runs on this machine
+                  security default-keychain -d user -s ~/Library/Keychains/login.keychain-db 2>/dev/null || true
+                  security list-keychains -d user -s ~/Library/Keychains/login.keychain-db ~/Library/Keychains/System.keychain 2>/dev/null || true
+                  security delete-keychain build.keychain 2>/dev/null || true
 
                   pwd
                   ls -la
