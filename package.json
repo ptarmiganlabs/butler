@@ -108,7 +108,7 @@
         "winston": "^3.19.0",
         "winston-daily-rotate-file": "^5.0.0",
         "ws": "^8.20.0",
-        "xstate": "^5.30.0"
+        "xstate": "^5.31.0"
     },
     "devDependencies": {
         "@babel/plugin-syntax-import-assertions": "^7.28.6",
