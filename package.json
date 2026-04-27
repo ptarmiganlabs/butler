@@ -129,7 +129,7 @@
         "lockfile-lint": "^5.0.0",
         "npm-check-updates": "^21.0.3",
         "prettier": "^3.8.3",
-        "snyk": "^1.1304.0",
+        "snyk": "^1.1304.1",
         "typescript": "^6.0.3"
     }
 }
