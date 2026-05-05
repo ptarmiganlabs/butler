@@ -59,6 +59,15 @@ echo "DEBUG: Getting current default keychain"
 DEFAULT_KEYCHAIN=$(security default-keychain -d user | sed -e 's/"//g' | xargs)
 echo "DEBUG: Default keychain is: ${DEFAULT_KEYCHAIN}"
 
+# Set up cleanup trap to ensure keychain is restored even if the script fails
+cleanup() {
+    echo "DEBUG: Restoring original default keychain"
+    security default-keychain -d user -s "$DEFAULT_KEYCHAIN" || echo "WARNING: Failed to restore default keychain, continuing anyway"
+    echo "DEBUG: Restoring original keychain list"
+    security list-keychains -d user -s "${OLD_KEYCHAIN_PATHS[@]}" || echo "WARNING: Failed to restore keychain list, continuing anyway"
+}
+trap cleanup EXIT
+
 echo "DEBUG: Setting our keychain as default"
 security default-keychain -d user -s "${KEYCHAIN_PATH}"
 
@@ -67,6 +76,11 @@ security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" "${KEYCHAIN_PATH}"
 
 echo "DEBUG: Importing certificate into keychain"
 security import certificate.p12 -k "${KEYCHAIN_PATH}" -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign -A
+
+echo "DEBUG: Importing Apple Developer ID G2 intermediate CA"
+curl -L -s -o DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+security import DeveloperIDG2CA.cer -k "${KEYCHAIN_PATH}"
+rm DeveloperIDG2CA.cer
 
 echo "DEBUG: Setting keychain timeout to prevent locking"
 security set-keychain-settings -t 3600 -l "${KEYCHAIN_PATH}"
@@ -133,12 +147,6 @@ cd ..
 # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
 echo "Notarize insider app"
 xcrun notarytool submit "./${DIST_FILE_NAME}--macos-arm64--${GITHUB_SHA}.zip" --keychain-profile "notarytool-profile" --wait --keychain "${KEYCHAIN_PATH}"
-
-echo "DEBUG: Restoring original default keychain"
-security default-keychain -d user -s "$DEFAULT_KEYCHAIN" || echo "WARNING: Failed to restore default keychain, continuing anyway"
-
-echo "DEBUG: Restoring original keychain list"
-security list-keychains -d user -s "${OLD_KEYCHAIN_PATHS[@]}" || echo "WARNING: Failed to restore keychain list, continuing anyway"
 
 # -------------------
 # Clean up

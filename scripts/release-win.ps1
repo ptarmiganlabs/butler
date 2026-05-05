@@ -11,39 +11,21 @@ node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe
 
 # -------------------
 # Remove the signature from the executable
-$processOptions1 = @{
-    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-    Wait = $true
-    ArgumentList = "remove", "/s", "./${env:DIST_FILE_NAME}.exe"
-    WorkingDirectory = "."
-    NoNewWindow = $true
-}
-Start-Process @processOptions1
+& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" remove /s "./${env:DIST_FILE_NAME}.exe"
+if ($LASTEXITCODE -ne 0) { throw "signtool remove failed with exit code $LASTEXITCODE" }
 
 npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
 
 # -------------------
 # Sign the executable
 # 1st signing
-$processOptions1 = @{
-    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-    Wait = $true
-    ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha1", "/v", "./${env:DIST_FILE_NAME}.exe"
-    WorkingDirectory = "."
-    NoNewWindow = $true
-}
-Start-Process @processOptions1
+& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha1 /v "./${env:DIST_FILE_NAME}.exe"
+if ($LASTEXITCODE -ne 0) { throw "signtool sign (1st pass) failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # 2nd signing
-$processOptions2 = @{
-    FilePath = "C:\Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe"
-    Wait = $true
-    ArgumentList = "sign", "/sha1", "$env:CODESIGN_WIN_THUMBPRINT", "/tr", "http://time.certum.pl", "/td", "sha256", "/fd", "sha256", "/v", "./${env:DIST_FILE_NAME}.exe"
-    WorkingDirectory = "."
-    NoNewWindow = $true
-}
-Start-Process @processOptions2
+& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha256 /v "./${env:DIST_FILE_NAME}.exe"
+if ($LASTEXITCODE -ne 0) { throw "signtool sign (2nd pass) failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # Create release binary zip
