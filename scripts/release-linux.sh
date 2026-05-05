@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-./node_modules/.bin/esbuild src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+./node_modules/.bin/esbuild src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
 node --experimental-sea-config build-script/sea-config.json
 
 # Get a copy of the Node executable

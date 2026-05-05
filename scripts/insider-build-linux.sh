@@ -7,7 +7,7 @@ BUILD_DATE=$(date +%Y%m%d)
 VERSION=$(grep -o '"version": "[^"]*"' package.json | cut -d'"' -f4)
 sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION-$BUILD_DATE-$GIT_SHA\"/" package.json
 
-./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
 node --experimental-sea-config build-script/sea-config.json
 
 # Get a copy of the Node executable

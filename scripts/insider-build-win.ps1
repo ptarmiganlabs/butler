@@ -6,7 +6,7 @@ $BUILD_DATE = (Get-Date -Format "yyyyMMdd")
 (Get-Content package.json) -replace '"version": "(.*)"', ('"version": "$1-' + $BUILD_DATE + '-' + $GIT_SHA + '"') | Set-Content package.json
 
 # Create a single JS file using esbuild
-./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node23 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
 
 # Generate blob to be injected into the binary
 node --experimental-sea-config build-script/sea-config.json

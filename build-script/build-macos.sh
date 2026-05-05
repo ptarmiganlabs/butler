@@ -7,7 +7,7 @@
   --outfile=./build/build.cjs  \
   --format=cjs  \
   --platform=node  \
-  --target=node23  \
+  --target=node24  \
   --minify  \
   --inject:./src/lib/import-meta-url.js  \
   --define:import.meta.url=import_meta_url
