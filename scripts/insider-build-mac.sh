@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# Ensure build output directory exists
+mkdir -p build
+
 # Inject git SHA and date into package.json
 GIT_SHA=$(git rev-parse --short HEAD)
 BUILD_DATE=$(date +%Y%m%d)

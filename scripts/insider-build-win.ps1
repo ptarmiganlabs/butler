@@ -1,5 +1,8 @@
 $ErrorActionPreference = 'Stop'
 
+# Ensure build output directory exists
+New-Item -ItemType Directory -Path ./build -Force | Out-Null
+
 # Inject git SHA and date into package.json
 $GIT_SHA = (git rev-parse --short HEAD)
 if ($LASTEXITCODE -ne 0) { throw "git rev-parse failed with exit code $LASTEXITCODE" }

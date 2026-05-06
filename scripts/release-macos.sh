@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# Ensure build output directory exists
+mkdir -p build
+
 # Create a single JS file using esbuild
 ./node_modules/.bin/esbuild src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
 

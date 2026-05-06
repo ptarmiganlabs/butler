@@ -8,6 +8,7 @@ permissions: {}
 jobs:
     insiders-build:
         permissions:
+            contents: read
             security-events: write
         strategy:
             matrix:
@@ -53,7 +54,7 @@ jobs:
                   github.repository_owner == 'ptarmiganlabs' &&
                   matrix.os == 'ubuntu-latest'
               continue-on-error: true
-              uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # master
+              uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # unpinned release; no version tag available
               env:
                   # This is where you will need to introduce the Snyk API token created with your Snyk account
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -106,7 +107,8 @@ jobs:
                   path: ${{ matrix.artifact_insider }}
 
     deploy-windows-insider:
-        permissions: {}
+        permissions:
+            actions: read
         needs: insiders-build
         runs-on: ${{ vars.BUTLER_INSIDER_DEPLOY_RUNNER || 'host2-win' }}
         if: success()

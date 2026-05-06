@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 Write-Host "Starting Butler log monitoring..."
-$currentTime = Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC'
+$currentTime = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss') + ' UTC'
 Write-Host "Monitor run time: $currentTime"
 Write-Host "Server: $env:SERVER_NAME"
 Write-Host "Service: $env:BUTLER_INSIDER_SERVICE_NAME"

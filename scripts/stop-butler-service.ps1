@@ -27,7 +27,7 @@ if ($service) {
                 Add-Content -Path $env:GITHUB_OUTPUT -Value "service_stopped=partial"
             }
         } catch {
-            Write-Host "Failed to stop service"
+            Write-Host "Failed to stop service: $($_.Exception.Message)"
             Add-Content -Path $env:GITHUB_OUTPUT -Value "service_stopped=failed"
         }
     } else {
