@@ -82,36 +82,55 @@ try {
     Write-Host "Email script path: $emailScript"
     Write-Host "Template path: $($emailParams.TemplatePath)"
     
-    # Create log files for debugging
-    $logDir = Join-Path $scriptDir "logs"
-    if (-not (Test-Path $logDir)) {
-        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+    # Only capture and persist detailed script output when explicitly debugging.
+    $debugOutputEnabled = ($env:ACTIONS_STEP_DEBUG -eq 'true') -or ($env:BUTLER_EMAIL_SCRIPT_DEBUG -eq 'true')
+    $logDir = $null
+    $outputLogPath = $null
+    $errorLogPath = $null
+
+    if ($debugOutputEnabled) {
+        $logDir = Join-Path $scriptDir "logs"
+        if (-not (Test-Path $logDir)) {
+            New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+        }
+        $outputLogPath = Join-Path $logDir "email-output.log"
+        $errorLogPath = Join-Path $logDir "email-error.log"
     }
-    $outputLogPath = Join-Path $logDir "email-output.log"
-    $errorLogPath = Join-Path $logDir "email-error.log"
     
-    # Execute script and capture all output
-    Write-Host "Executing email script with output capture..."
+    # Execute script. Only capture detailed output in explicit debug mode.
+    if ($debugOutputEnabled) {
+        Write-Host "Executing email script with output capture (debug mode enabled)..."
+    } else {
+        Write-Host "Executing email script..."
+    }
+
     try {
-        $output = & $emailScript @emailParams 2>&1
-        $output | Out-File -FilePath $outputLogPath -Encoding UTF8
-        
-        Write-Host "Email script completed. Output captured to: $outputLogPath"
-        Write-Host "--- Script Output ---"
-        Write-Host $output
-        Write-Host "--- End Script Output ---"
+        if ($debugOutputEnabled) {
+            $output = & $emailScript @emailParams 2>&1
+            $output | Out-File -FilePath $outputLogPath -Encoding UTF8
+
+            Write-Host "Email script completed. Output captured to: $outputLogPath"
+            Write-Host "--- Script Output ---"
+            Write-Host $output
+            Write-Host "--- End Script Output ---"
+        } else {
+            & $emailScript @emailParams *> $null
+        }
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "SUCCESS: Error alert email sent successfully!"
             Add-Content -Path $env:GITHUB_OUTPUT -Value "email_sent=true"
         } else {
-            Write-Host "ERROR: Email script returned exit code: $LASTEXITCODE"
+            Write-Host "ERROR: Email script returned a non-zero exit code."
             Add-Content -Path $env:GITHUB_OUTPUT -Value "email_sent=false"
         }
     } catch {
-        $_.Exception.Message | Out-File -FilePath $errorLogPath -Encoding UTF8
-        Write-Host "ERROR: Exception while running email script: $($_.Exception.Message)"
-        Write-Host "Error details saved to: $errorLogPath"
+        if ($debugOutputEnabled -and $errorLogPath) {
+            $_.Exception.Message | Out-File -FilePath $errorLogPath -Encoding UTF8
+            Write-Host "ERROR: Exception while running email script. Error details saved to: $errorLogPath"
+        } else {
+            Write-Host "ERROR: Exception while running email script."
+        }
         Add-Content -Path $env:GITHUB_OUTPUT -Value "email_sent=error"
     }
     
