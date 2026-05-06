@@ -1,0 +1,39 @@
+Write-Host "Verifying deployment..."
+
+$serviceName = $env:BUTLER_INSIDER_SERVICE_NAME
+$deployPath = $env:BUTLER_INSIDER_DEPLOY_PATH
+
+try {
+    # Check if deployment directory exists and has files
+    if (Test-Path $deployPath) {
+        Write-Host "Deployment directory exists: $deployPath"
+        $files = Get-ChildItem -Path $deployPath -Recurse
+        Write-Host "Number of files in deployment: $($files.Count)"
+
+        # Check for the main executable
+        $executable = Get-ChildItem -Path $deployPath -Name "butler.exe" -Recurse
+        if ($executable) {
+            Write-Host "[OK] Main executable found: $executable"
+        } else {
+            Write-Host "[WARN] Main executable not found"
+        }
+    } else {
+        Write-Host "[ERROR] Deployment directory not found"
+    }
+
+    # Check service status
+    $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+    if ($service) {
+        Write-Host "Service '$serviceName' status: $($service.Status)"
+        if ($service.Status -eq 'Running') {
+            Write-Host "[OK] Service is running"
+        } else {
+            Write-Host "[WARN] Service is not running"
+        }
+    } else {
+        Write-Host "[WARN] Service '$serviceName' not found"
+    }
+
+} catch {
+    Write-Host "[ERROR] Verification failed: $($_.Exception.Message)" -ForegroundColor Red
+}
