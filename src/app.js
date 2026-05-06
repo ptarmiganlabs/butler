@@ -19,6 +19,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import { randomBytes } from 'crypto';
 import sea from 'node:sea';
 import handlebars from 'handlebars';
 import yaml from 'js-yaml';
@@ -401,6 +402,18 @@ async function build(opts = {}) {
             reply.send(error);
         });
 
+        // Add security headers to every response from the config visualisation server
+        configVisServer.addHook('onSend', async (_request, reply, payload) => {
+            reply.header('X-Frame-Options', 'SAMEORIGIN');
+            reply.header('X-Content-Type-Options', 'nosniff');
+            reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+            reply.header('Cross-Origin-Embedder-Policy', 'require-corp');
+            reply.header('Cross-Origin-Opener-Policy', 'same-origin');
+            reply.header('Cross-Origin-Resource-Policy', 'same-origin');
+            reply.header('Cache-Control', 'no-store');
+            return payload;
+        });
+
         // This loads all plugins defined in plugins.
         // Those should be support plugins that are reused through your application
         await configVisServer.register(import('./plugins/sensible.js'), { options: Object.assign({}, opts) });
@@ -514,16 +527,26 @@ async function build(opts = {}) {
             // Compile handlebars template
             const compiledTemplate = handlebars.compile(template);
 
+            // Generate a per-request CSP nonce
+            const cspNonce = randomBytes(16).toString('base64');
+
             // Get config as HTML encoded JSON string
             const butlerConfigJsonEncoded = JSON.stringify(newConfig);
 
             // Render the template
-            const renderedText = compiledTemplate({ butlerConfigJsonEncoded, butlerConfigYaml });
+            const renderedText = compiledTemplate({ butlerConfigJsonEncoded, butlerConfigYaml, cspNonce });
 
             globals.logger.debug(`CONFIG VIS: Rendered text: ${renderedText}`);
 
-            // Send reply as HTML
-            reply.code(200).header('Content-Type', 'text/html; charset=utf-8').send(renderedText);
+            // Send reply as HTML, with Content Security Policy
+            reply
+                .code(200)
+                .header('Content-Type', 'text/html; charset=utf-8')
+                .header(
+                    'Content-Security-Policy',
+                    `default-src 'none'; script-src 'self' 'nonce-${cspNonce}'; style-src 'self' 'nonce-${cspNonce}'; img-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; object-src 'none'`,
+                )
+                .send(renderedText);
         });
     }
 

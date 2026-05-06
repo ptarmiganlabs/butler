@@ -6,13 +6,10 @@
 
         <link rel="stylesheet" href="jsontree.js.css" />
         <script src="jsontree.js"></script>
-
-        <!-- Include Prism CSS -->
         <link rel="stylesheet" href="prism.css" />
-        <!-- Include Prism JS -->
         <script src="prism.js"></script>
 
-        <style>
+        <style nonce="{{cspNonce}}">
             #header {
                 display: flex;
                 justify-content: space-between;
@@ -74,6 +71,18 @@
             #downloadYaml:active {
                 box-shadow: 0 2px #0056b3; /* Adjust shadow for pressed effect */
                 transform: translateY(4px); /* Move button down to mimic press */
+            }
+
+            #download-icon {
+                vertical-align: middle;
+                margin-right: 5px;
+                height: 32px;
+                width: 32px;
+            }
+
+            #tree-1 {
+                width: 100%;
+                max-width: 100%;
             }
 
             body {
@@ -147,50 +156,49 @@
                 <div id="buttons">
                     <button id="downloadYaml">
                         <img
+                            id="download-icon"
                             src="download-solid.svg"
                             alt="Download icon"
-                            style="vertical-align: middle; margin-right: 5px; height: 32px; width: 32px"
                         />
                         Download obfuscated YAML
                     </button>
                 </div>
-                <!-- Tab links -->
                 <div class="tab">
-                    <button class="tablinks" onclick="openTab(event, 'YAML')">YAML</button>
-                    <button class="tablinks" onclick="openTab(event, 'JSONTree')">JSON tree view</button>
+                    <button id="tabBtnYaml" class="tablinks">YAML</button>
+                    <button id="tabBtnJsonTree" class="tablinks">JSON tree view</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tab content -->
         <div id="YAML" class="tabcontent">
             <h3>YAML configuration</h3>
-            <pre class="line-numbers"><code class="language-yaml">{{butlerConfigYaml}}</code></pre>
+            <pre class="line-numbers"><code class="language-yaml">{{{butlerConfigYaml}}}</code></pre>
         </div>
 
         <div id="JSONTree" class="tabcontent">
             <h3>JSON tree view</h3>
-            <div
-                id="tree-1"
-                data-jsontree-js="{
-                title: {
-                    show: false,
-                    showTreeControls: true,
-                    showCopyButton: true
-                },
-                showCounts: true, 
-                sortPropertyNames: false, 
-                sortPropertyNamesInAlphabeticalOrder: false, 
-                data: {{butlerConfigJsonEncoded}} }"
-                style="width: 100%; max-width: 100%"
-            ></div>
+            <div id="tree-1"></div>
+            <script nonce="{{cspNonce}}">
+                (function () {
+                    var data = {{{butlerConfigJsonEncoded}}};
+                    document.getElementById('tree-1').setAttribute(
+                        'data-jsontree-js',
+                        JSON.stringify({
+                            title: { show: false, showTreeControls: true, showCopyButton: true },
+                            showCounts: true,
+                            sortPropertyNames: false,
+                            sortPropertyNamesInAlphabeticalOrder: false,
+                            data: data,
+                        }),
+                    );
+                })();
+            </script>
         </div>
 
-        <script>
-            // Function that gets data from handlebars template butlerConfigYamlObfuscated and returns it
+        <script nonce="{{cspNonce}}">
             function getYamlFromHandlebars() {
                 try {
-                    const yamlData = `{{butlerConfigYaml}}`;
+                    const yamlData = `{{{butlerConfigYaml}}}`;
                     return yamlData;
                 } catch (error) {
                     console.error('There was a problem getting YAML config data from Handlebars template:', error);
@@ -203,40 +211,40 @@
                 var blob = new Blob([butlerConfigYaml], { type: 'text/yaml' });
                 var url = URL.createObjectURL(blob);
 
-                // Create a temporary link to trigger the download
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'config.yaml'; // The default file name for downloading
-                document.body.appendChild(a); // Append to the document
-                a.click(); // Simulate click to trigger download
-                document.body.removeChild(a); // Remove the element after download
-                URL.revokeObjectURL(url); // Clean up the URL object
+                a.download = 'config.yaml';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             });
 
             function openTab(evt, tabName) {
-                // Declare all variables
                 var i, tabcontent, tablinks;
 
-                // Get all elements with class="tabcontent" and hide them
                 tabcontent = document.getElementsByClassName('tabcontent');
                 for (i = 0; i < tabcontent.length; i++) {
                     tabcontent[i].style.display = 'none';
                 }
 
-                // Get all elements with class="tablinks" and remove the class "active"
                 tablinks = document.getElementsByClassName('tablinks');
                 for (i = 0; i < tablinks.length; i++) {
                     tablinks[i].className = tablinks[i].className.replace(' active', '');
                 }
 
-                // Show the current tab, and add an "active" class to the button that opened the tab
                 document.getElementById(tabName).style.display = 'block';
                 evt.currentTarget.className += ' active';
             }
 
-            // Optionally, auto-open the first tab when the page loads
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementsByClassName('tablinks')[0].click();
+                document.getElementById('tabBtnYaml').addEventListener('click', function (event) {
+                    openTab(event, 'YAML');
+                });
+                document.getElementById('tabBtnJsonTree').addEventListener('click', function (event) {
+                    openTab(event, 'JSONTree');
+                });
+                document.getElementById('tabBtnYaml').click();
             });
         </script>
     </body>
