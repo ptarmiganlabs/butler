@@ -10,8 +10,13 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 jobs:
   update-label:
+    permissions:
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     if: |
       github.event_name != 'pull_request' &&
