@@ -9,8 +9,8 @@ LABEL description="Adding superpowers to Qlik Sense Enterprise on Windows."
 WORKDIR /nodeapp
 
 # Install app dependencies separately (creating a separate layer for node_modules, effectively caching them between image rebuilds)
-COPY package.json .
-RUN npm install
+COPY package*.json .
+RUN npm ci --omit=dev
 
 # Copy app's source files
 COPY . .

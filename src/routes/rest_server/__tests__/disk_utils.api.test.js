@@ -109,6 +109,15 @@ describe('REST: disk utils endpoints', () => {
         expect(await waitForExists(full)).toBe(true);
     });
 
+    test('POST /v4/createdirqvd rejects path traversal attempts with 403', async () => {
+        const traversalAttempts = ['../../etc', '../../../tmp/evil', '..\\..\\Windows'];
+
+        for (const dir of traversalAttempts) {
+            const res = await app.inject({ method: 'POST', url: '/v4/createdirqvd', payload: { directory: dir } });
+            expect(res.statusCode).toBe(403);
+        }
+    });
+
     test('PUT /v4/filecopy copies approved file', async () => {
         const src = upath.join(tmpRoot, 'from', 'a.txt');
         const dst = upath.join(tmpRoot, 'to', 'a.txt');

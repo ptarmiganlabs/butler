@@ -328,18 +328,29 @@ async function handlerCreateDirQvd(request, reply) {
     try {
         logRESTCall(request);
 
-        // TODO: Add check to make sure the created dir is really a subpath of the QVD folder
         if (request.body.directory === undefined) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${globals.qvdFolder}/${request.body.directory}`);
+            // Resolve the full path and verify it stays within the QVD folder to prevent path traversal
+            const resolvedDir = upath.normalizeSafe(`${globals.qvdFolder}/${request.body.directory}`);
+            const normalizedQvdFolder = upath.normalizeSafe(globals.qvdFolder);
 
-            mkdirp(`${globals.qvdFolder}/${request.body.directory}`)
+            if (!isDirectoryChildOf(resolvedDir, normalizedQvdFolder)) {
+                globals.logger.error(
+                    `CREATEDIRQVD: Path traversal attempt detected. Requested directory "${request.body.directory}" resolves outside QVD folder.`,
+                );
+                reply.send(httpErrors(403, 'Directory must be within the QVD folder'));
+                return;
+            }
+
+            globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${resolvedDir}`);
+
+            mkdirp(resolvedDir)
                 .then((dir) => globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`))
 
                 .catch((error) => {
-                    globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(err)}`);
+                    globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(error)}`);
                     reply.send(httpErrors(500, 'Failed to create directory'));
                 });
 
