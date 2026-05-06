@@ -55,7 +55,7 @@ try {
     # Add credentials if available (PowerShell 5.1 compatible)
     if ($env:SMTP_USERNAME) {
         $emailParams.Username = $env:SMTP_USERNAME
-        Write-Host "SMTP Username configured: $($env:SMTP_USERNAME)"
+        Write-Host "SMTP Username configured: [SET]"
         if ($env:SMTP_PASSWORD) {
             # Use plain text password for PS 5.1 compatibility
             $emailParams.Password = $env:SMTP_PASSWORD
