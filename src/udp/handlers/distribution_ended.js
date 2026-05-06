@@ -8,7 +8,7 @@
  * and routes to the appropriate outcome-specific handler (success, failure, or abort).
  */
 
- // Load global variables and functions
+// Load global variables and functions
 import globals from '../../globals.js';
 import getTaskMetadata from '../../qrs_util/task_metadata.js';
 import doesTaskExist from '../../qrs_util/does_task_exist.js';
