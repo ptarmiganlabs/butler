@@ -77,7 +77,9 @@ export async function postQlikSenseVersionToInfluxDB(qlikSenseVersion) {
         await globals.influx.writePoints(deepClonedDatapoint);
 
         // Log the full datapoint at silly level for debugging
-        globals.logger.silly(`[QSEOW] QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`);
+        globals.logger.silly(
+            `[QSEOW] QLIK SENSE VERSION: Influxdb datapoint for Qlik Sense version: ${JSON.stringify(datapoint, null, 2)}`,
+        );
 
         // Clean up the reference and log success at verbose level
         datapoint = null;

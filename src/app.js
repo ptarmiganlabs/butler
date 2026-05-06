@@ -24,7 +24,6 @@ import handlebars from 'handlebars';
 import yaml from 'js-yaml';
 
 import Fastify from 'fastify';
-// import AutoLoad from '@fastify/autoload';
 import FastifySwagger from '@fastify/swagger';
 import FastifySwaggerUi from '@fastify/swagger-ui';
 import FastifyReplyFrom from '@fastify/reply-from';

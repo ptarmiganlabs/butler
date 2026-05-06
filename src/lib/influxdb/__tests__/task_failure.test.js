@@ -33,9 +33,8 @@ jest.unstable_mockModule('../../../globals.js', () => ({
     default: mockGlobals,
 }));
 
-const { postReloadTaskFailureNotificationInfluxDb, postExternalProgramTaskFailureNotificationInfluxDb } = await import(
-    '../task_failure.js'
-);
+const { postReloadTaskFailureNotificationInfluxDb, postExternalProgramTaskFailureNotificationInfluxDb } =
+    await import('../task_failure.js');
 
 describe('InfluxDB Task Failure Notifications', () => {
     beforeEach(() => {
