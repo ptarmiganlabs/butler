@@ -35,13 +35,13 @@ if ($LASTEXITCODE -ne 0) { throw "postject failed with exit code $LASTEXITCODE" 
 # -------------------
 # Sign the executable
 # 1st signing
-& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha1 /v "./${env:DIST_FILE_NAME}.exe"
-if ($LASTEXITCODE -ne 0) { throw "signtool sign (1st pass) failed with exit code $LASTEXITCODE" }
+# & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha1 /v "./${env:DIST_FILE_NAME}.exe"
+# if ($LASTEXITCODE -ne 0) { throw "signtool sign (1st pass) failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # 2nd signing
-& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha256 /v "./${env:DIST_FILE_NAME}.exe"
-if ($LASTEXITCODE -ne 0) { throw "signtool sign (2nd pass) failed with exit code $LASTEXITCODE" }
+# & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha256 /v "./${env:DIST_FILE_NAME}.exe"
+# if ($LASTEXITCODE -ne 0) { throw "signtool sign (2nd pass) failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # Create insider's build zip
