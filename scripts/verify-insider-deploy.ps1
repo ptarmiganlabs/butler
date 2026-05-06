@@ -12,7 +12,7 @@ try {
         Write-Host "Number of files in deployment: $($files.Count)"
 
         # Check for the main executable
-        $executable = Get-ChildItem -Path $deployPath -Name "butler.exe" -Recurse
+        $executable = Get-ChildItem -Path $deployPath -Filter "butler.exe" -Recurse -Name
         if ($executable) {
             Write-Host "[OK] Main executable found: $executable"
         } else {
