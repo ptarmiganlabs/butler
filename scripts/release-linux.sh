@@ -24,6 +24,6 @@ zip -9 -r "./${DIST_FILE_NAME}-${RELEASE_VERSION}-linux.zip" ${DIST_FILE_NAME}
 
 cd src
 zip -9 -u -r "../${DIST_FILE_NAME}-${RELEASE_VERSION}-linux.zip" "./config/email_templates" "./config/slack_templates" "./config/teams_templates" "./config/production_template.yaml" "./config/schedule_template.yaml" "./config/log_appender_xml"
-cd .
+cd ..
 
 ls -la

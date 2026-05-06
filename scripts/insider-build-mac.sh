@@ -24,6 +24,11 @@ npx postject ${DIST_FILE_NAME} NODE_SEA_BLOB ./build/sea-prep.blob --sentinel-fu
 
 security delete-keychain build.keychain || true
 
+# Reset any leftover default/search-list state from a previous failed run on this machine,
+# so the snapshot we take below reflects a clean baseline and not stale build.keychain state.
+security default-keychain -d user -s ~/Library/Keychains/login.keychain-db 2>/dev/null || true
+security list-keychains -d user -s ~/Library/Keychains/login.keychain-db ~/Library/Keychains/System.keychain 2>/dev/null || true
+
 pwd
 ls -la
 

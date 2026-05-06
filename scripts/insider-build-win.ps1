@@ -2,17 +2,21 @@ $ErrorActionPreference = 'Stop'
 
 # Inject git SHA and date into package.json
 $GIT_SHA = (git rev-parse --short HEAD)
+if ($LASTEXITCODE -ne 0) { throw "git rev-parse failed with exit code $LASTEXITCODE" }
 $BUILD_DATE = (Get-Date -Format "yyyyMMdd")
 (Get-Content package.json) -replace '"version": "(.*)"', ('"version": "$1-' + $BUILD_DATE + '-' + $GIT_SHA + '"') | Set-Content package.json
 
 # Create a single JS file using esbuild
 ./node_modules/.bin/esbuild ./src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+if ($LASTEXITCODE -ne 0) { throw "esbuild failed with exit code $LASTEXITCODE" }
 
 # Generate blob to be injected into the binary
 node --experimental-sea-config build-script/sea-config.json
+if ($LASTEXITCODE -ne 0) { throw "sea-config generation failed with exit code $LASTEXITCODE" }
 
 # Get a copy of the Node executable
 node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe')"
+if ($LASTEXITCODE -ne 0) { throw "node copyFileSync failed with exit code $LASTEXITCODE" }
 
 pwd
 dir
@@ -23,6 +27,7 @@ dir
 if ($LASTEXITCODE -ne 0) { throw "signtool remove failed with exit code $LASTEXITCODE" }
 
 npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+if ($LASTEXITCODE -ne 0) { throw "postject failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # Sign the executable

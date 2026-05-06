@@ -2,12 +2,15 @@ $ErrorActionPreference = 'Stop'
 
 # Create a single JS file using esbuild
 ./node_modules/.bin/esbuild src/butler.js --bundle --outfile=./build/build.cjs --format=cjs --platform=node --target=node24 --minify --inject:./src/lib/import-meta-url.js --define:import.meta.url=import_meta_url
+if ($LASTEXITCODE -ne 0) { throw "esbuild failed with exit code $LASTEXITCODE" }
 
 # Generate blob to be injected into the binary
 node --experimental-sea-config build-script/sea-config.json
+if ($LASTEXITCODE -ne 0) { throw "sea-config generation failed with exit code $LASTEXITCODE" }
 
 # Get a copy of the Node executable
 node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe')"
+if ($LASTEXITCODE -ne 0) { throw "node copyFileSync failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # Remove the signature from the executable
@@ -15,6 +18,7 @@ node -e "require('fs').copyFileSync(process.execPath, '${env:DIST_FILE_NAME}.exe
 if ($LASTEXITCODE -ne 0) { throw "signtool remove failed with exit code $LASTEXITCODE" }
 
 npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+if ($LASTEXITCODE -ne 0) { throw "postject failed with exit code $LASTEXITCODE" }
 
 # -------------------
 # Sign the executable
