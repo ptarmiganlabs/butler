@@ -68,19 +68,24 @@ try {
     }
     
     # Debug email parameters
-    Write-Host "Email Parameters:"
-    Write-Host "  SMTP Server: $($emailParams.SmtpServer)"
-    Write-Host "  SMTP Port: $($emailParams.SmtpPort)"
-    Write-Host "  From: $($emailParams.From)"
-    Write-Host "  To: $($emailParams.To)"
-    Write-Host "  Server Name: $($emailParams.ServerName)"
-    Write-Host "  Service Name: $($emailParams.ServiceName)"
-    Write-Host "  Use SSL: $($emailParams.UseSSL)"
-    Write-Host "  Error Entries Count: $($emailParams.ErrorEntries.Count)"
+    $debugLoggingEnabled = $env:ACTIONS_STEP_DEBUG -eq 'true'
+    if ($debugLoggingEnabled) {
+        Write-Host "Email Parameters:"
+        Write-Host "  SMTP Server: $($emailParams.SmtpServer)"
+        Write-Host "  SMTP Port: $($emailParams.SmtpPort)"
+        Write-Host "  From: $($emailParams.From)"
+        Write-Host "  To: $($emailParams.To)"
+        Write-Host "  Server Name: $($emailParams.ServerName)"
+        Write-Host "  Service Name: $($emailParams.ServiceName)"
+        Write-Host "  Use SSL: $($emailParams.UseSSL)"
+        Write-Host "  Error Entries Count: $($emailParams.ErrorEntries.Count)"
+        Write-Host "Email script path: $emailScript"
+        Write-Host "Template path: $($emailParams.TemplatePath)"
+    } else {
+        Write-Host "Detailed email parameter logging is disabled. Set ACTIONS_STEP_DEBUG=true to enable debug output."
+    }
     
     Write-Host "Calling Send-ErrorAlert.ps1..."
-    Write-Host "Email script path: $emailScript"
-    Write-Host "Template path: $($emailParams.TemplatePath)"
     
     # Only capture and persist detailed script output when explicitly debugging.
     $debugOutputEnabled = ($env:ACTIONS_STEP_DEBUG -eq 'true') -or ($env:BUTLER_EMAIL_SCRIPT_DEBUG -eq 'true')
