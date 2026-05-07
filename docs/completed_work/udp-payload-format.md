@@ -641,22 +641,22 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 
 ### Priority2: Important (Implement Soon)
 
-6. **Add monitoring metrics** (`src/udp/udp_handlers.js`)
+ 6. **Add monitoring metrics** (`src/udp/udp_handlers.js`)
    - Track counts: messages received, rejected (size/IP), processed successfully
    - Export metrics to InfluxDB for visibility into UDP server health
    - Effort: Medium
    - Butler SOS reference: `butler-sos/src/lib/udp-queue-manager.js` (dropped message counters)
 
-7. **Consider message authentication** (HMAC signatures)
+### Deferred Items (Not Implemented at This Time)
+
+- UDP rate limiting
+- Queue management
+- Deduplication
+- **Message authentication (HMAC signatures)**
    - Add HMAC-SHA256 signatures to UDP payloads for integrity/authenticity
    - Requires modifying Qlik Sense log appenders to include signatures
    - Breaks backward compatibility with existing deployments
    - Effort: High | Impact: Evaluate carefully
-
-### Deferred Items (Not Implemented at This Time)
-- UDP rate limiting
-- Queue management
-- Deduplication
 
 ### Implementation Priority Summary
 
@@ -668,6 +668,3 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 | ~~4~~ | ~~UUID validation~~ | ~~MEDIUM~~ | ~~Low~~ | ~~Low~~ | ✅ Done (2026-05-07) |
 | ~~5~~ | ~~Input sanitization~~ | ~~MEDIUM~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | 6 | Monitoring metrics | LOW | Medium | Medium | Pending |
-| 7 | Message authentication | LOW | High | High* | Pending |
-
-*Requires breaking change
