@@ -198,10 +198,16 @@
         <script nonce="{{cspNonce}}">
             function getYamlFromHandlebars() {
                 try {
-                    const yamlData = `{{{butlerConfigYaml}}}`;
-                    return yamlData;
+                    const yamlElement = document.querySelector('#YAML code');
+
+                    if (!yamlElement) {
+                        throw new Error('Could not find rendered YAML content in the page.');
+                    }
+
+                    return yamlElement.textContent;
                 } catch (error) {
-                    console.error('There was a problem getting YAML config data from Handlebars template:', error);
+                    console.error('There was a problem getting YAML config data from the rendered page:', error);
+                    return '';
                 }
             }
 
