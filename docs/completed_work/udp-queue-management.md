@@ -59,17 +59,17 @@ classDiagram
         -count: number
         +add(value): void
         +getAverage(): number
-        +getPercentile(p): number
+        +getPercentile95(): number
         +getMax(): number
         +clear(): void
     }
     
     class RateLimiter {
         -maxPerMinute: number
-        -minuteBuckets: Array
+        -windowStart: number
+        -requestCount: number
         +checkLimit(): boolean
         +getCurrentRate(): number
-        +cleanOldBuckets(): void
     }
     
     class PQueue {
