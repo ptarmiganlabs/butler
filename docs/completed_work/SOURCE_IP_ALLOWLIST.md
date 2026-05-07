@@ -42,6 +42,6 @@ Butler:
 ## Notes
 
 - `enableSourceValidation: false` by default (backward compatible)
-- If `allowedSources` is empty and validation is enabled, all sources are rejected
+- If `allowedSources` is empty and validation is enabled, all sources are allowed
 - Hostnames are resolved once at startup (not on each message)
 - IPv6 addresses are not supported (use IPv4 or hostnames that resolve to IPv4)
