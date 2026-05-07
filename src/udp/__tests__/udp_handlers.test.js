@@ -420,4 +420,76 @@ describe('udp_handlers', () => {
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
     });
+
+    // --- Input sanitization tests ---
+
+    test('control characters are removed from message fields', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msgWithControlChars = '/scheduler-reload-failed/;host\t;Task\n;App\r;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message\x01\x02';
+        await events.message(Buffer.from(msgWithControlChars), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify warning was logged about sanitization
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('fields exceeding 500 characters are truncated', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const longField = 'A'.repeat(600);
+        const msg = `/scheduler-reload-failed/;host;${longField};App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message`;
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify warning was logged about sanitization
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('normal messages pass through without sanitization warning', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.logger.warn.mockClear();
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify NO sanitization warning was logged
+        expect(globals.logger.warn).not.toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('sanitizeField utility function works correctly', async () => {
+        const { sanitizeField, sanitizeMessage } = await import('../../lib/udp_sanitizer.js');
+
+        // Test control character removal
+        expect(sanitizeField('hello\x01world')).toBe('helloworld');
+        expect(sanitizeField('tab\there')).toBe('tabhere');
+        expect(sanitizeField('newline\n')).toBe('newline');
+        expect(sanitizeField('carriage\rreturn')).toBe('carriagereturn');
+
+        // Test length truncation
+        expect(sanitizeField('A'.repeat(600))).toHaveLength(500);
+        expect(sanitizeField('A'.repeat(600), 100)).toHaveLength(100);
+        expect(sanitizeField('short')).toBe('short');
+
+        // Test non-string input
+        expect(sanitizeField(12345)).toBe('12345');
+        expect(sanitizeField(null)).toBe('null');
+    });
+
+    test('sanitizeMessage utility function works correctly', async () => {
+        const { sanitizeMessage } = await import('../../lib/udp_sanitizer.js');
+
+        const msg = ['/test/', 'host\t', 'Task\n', 'A'.repeat(600), 'normal'];
+        const sanitized = sanitizeMessage(msg);
+
+        expect(sanitized[0]).toBe('/test/');
+        expect(sanitized[1]).toBe('host');
+        expect(sanitized[2]).toBe('Task');
+        expect(sanitized[3]).toHaveLength(500);
+        expect(sanitized[4]).toBe('normal');
+    });
 });

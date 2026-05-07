@@ -629,18 +629,17 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
    - **Verification:** Lint passed (0 errors), 15/15 UDP handler tests passed
    - **Butler SOS reference:** `butler-sos/src/lib/udp_handlers/log_events/utils/common-utils.js:38`
 
+5. ~~**Add input sanitization** (`src/udp/udp_handlers.js` and all handler files)~~
+   - **Implemented:** 2026-05-07
+   - **Change:** Created `src/lib/udp_sanitizer.js` with `sanitizeField()` and `sanitizeMessage()` functions; integrated into `udp_handlers.js` after message parse
+   - **Files modified:** `udp_sanitizer.js` (new), `udp_handlers.js`, `udp/__tests__/udp_handlers.test.js`
+   - **Effect:** Removes control characters (ASCII 0x00-0x1F, 0x7F) and enforces 500-char max field length
+   - **Verification:** Lint passed (0 errors), 20/20 UDP handler tests passed (5 new sanitization tests)
+   - **Butler SOS reference:** `butler-sos/src/lib/udp-queue-manager.js:172-180`
+
 ---
 
 ### Priority2: Important (Implement Soon)
-
-5. **Add input sanitization** (`src/udp/udp_handlers.js` and all handler files)
-   - Remove control characters from all string fields
-   - Enforce maximum field length (e.g., 500 characters)
-   - Prevents log injection, malformed notifications, and downstream system issues
-   - Effort: Low
-   - Butler SOS reference: `butler-sos/src/lib/udp-queue-manager.js:172-180`
-
-### Priority 3: Enhancements (Future Consideration)
 
 6. **Add monitoring metrics** (`src/udp/udp_handlers.js`)
    - Track counts: messages received, rejected (size/IP), processed successfully
@@ -667,7 +666,7 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 | ~~2~~ | ~~Add payload size limits~~ | ~~HIGH~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | ~~3~~ | ~~Add source IP allowlisting~~ | ~~HIGH~~ | ~~Low~~ | ~~High~~ | ✅ Done (2026-05-07) |
 | ~~4~~ | ~~UUID validation~~ | ~~MEDIUM~~ | ~~Low~~ | ~~Low~~ | ✅ Done (2026-05-07) |
-| 5 | Add input sanitization | MEDIUM | Low | Medium | Pending |
+| ~~5~~ | ~~Input sanitization~~ | ~~MEDIUM~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | 6 | Monitoring metrics | LOW | Medium | Medium | Pending |
 | 7 | Message authentication | LOW | High | High* | Pending |
 
