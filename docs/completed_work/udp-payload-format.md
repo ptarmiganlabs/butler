@@ -428,11 +428,12 @@ if (!appMetadata || Object.keys(appMetadata).length === 0) {
 
 ## Limitations and Restrictions
 
-### 1. No Payload Size Limits
+### 1. Configured Payload Size Limit
 
-- The UDP implementation uses Node.js `dgram` module with no custom size validation
-- Theoretical UDP payload limit: ~65,507 bytes (IPv4), ~65,527 bytes (IPv6)
-- Very large messages could impact memory when splitting into array
+- Butler validates incoming UDP message size against the configured `udpMaxMessageSize` setting
+- The default maximum message size is `65507` bytes
+- Messages larger than `udpMaxMessageSize` are rejected and will not be processed
+- Theoretical UDP payload limit is still approximately 65,507 bytes for IPv4 and 65,527 bytes for IPv6, but Butler enforces the configured limit before parsing the payload
 
 ### 2. Semicolon Delimiter
 
