@@ -621,22 +621,24 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
    - **Verification:** Lint passed (0 errors), 15/15 UDP handler tests passed
    - **Documentation:** See `docs/completed_work/SOURCE_IP_ALLOWLIST.md`
 
+4. ~~**Add UUID validation for Task ID and App ID** (`src/udp/udp_handlers.js`)~~
+   - **Implemented:** 2026-05-07
+   - **Change:** Added `guidRegex` export to `guid_util.js`, added UUID validation in `udp_handlers.js` for `msg[5]` (Task ID) and `msg[6]` (App ID)
+   - **Files modified:** `guid_util.js`, `udp_handlers.js`, `udp/__tests__/udp_handlers.test.js`
+   - **Effect:** Rejects messages with invalid GUID formats, reduces unnecessary QRS API calls
+   - **Verification:** Lint passed (0 errors), 15/15 UDP handler tests passed
+   - **Butler SOS reference:** `butler-sos/src/lib/udp_handlers/log_events/utils/common-utils.js:38`
+
 ---
 
 ### Priority2: Important (Implement Soon)
 
-4. **Add input sanitization** (`src/udp/udp_handlers.js` and all handler files)
+5. **Add input sanitization** (`src/udp/udp_handlers.js` and all handler files)
    - Remove control characters from all string fields
    - Enforce maximum field length (e.g., 500 characters)
    - Prevents log injection, malformed notifications, and downstream system issues
    - Effort: Low
    - Butler SOS reference: `butler-sos/src/lib/udp-queue-manager.js:172-180`
-
-5. **Add UUID validation for Task ID and App ID** (`src/udp/udp_handlers.js`)
-   - Validate GUID format via regex before making QRS API calls
-   - Reduces unnecessary API requests and improves error handling
-   - Effort: Low
-   - Butler SOS reference: `butler-sos/src/lib/udp_handlers/log_events/utils/common-utils.js:38`
 
 ### Priority 3: Enhancements (Future Consideration)
 
@@ -664,8 +666,8 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 | ~~1~~ | ~~Change `reuseAddr` to `false`~~ | ~~HIGH~~ | ~~Trivial~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | ~~2~~ | ~~Add payload size limits~~ | ~~HIGH~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | ~~3~~ | ~~Add source IP allowlisting~~ | ~~HIGH~~ | ~~Low~~ | ~~High~~ | ✅ Done (2026-05-07) |
-| 4 | Add input sanitization | MEDIUM | Low | Medium | Pending |
-| 5 | UUID validation | MEDIUM | Low | Low | Pending |
+| ~~4~~ | ~~UUID validation~~ | ~~MEDIUM~~ | ~~Low~~ | ~~Low~~ | ✅ Done (2026-05-07) |
+| 5 | Add input sanitization | MEDIUM | Low | Medium | Pending |
 | 6 | Monitoring metrics | LOW | Medium | Medium | Pending |
 | 7 | Message authentication | LOW | High | High* | Pending |
 

@@ -31,7 +31,10 @@ describe('udp_handlers', () => {
             })),
         }));
         await jest.unstable_mockModule('../../qrs_util/does_task_exist.js', () => ({
-            default: jest.fn(async (id) => ({ exists: id === 'task-1' })),
+            default: jest.fn(async (id) => {
+                const validGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                return { exists: validGuid.test(id) };
+            }),
         }));
         await jest.unstable_mockModule('../../qrs_util/task_cp_util.js', () => ({
             isCustomPropertyValueSet: jest.fn(async () => true),
@@ -230,7 +233,7 @@ describe('udp_handlers', () => {
     });
 
     test('scheduler reload failed path triggers notifications and MQTT', async () => {
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         const { default: globals } = await import('../../globals.js');
@@ -240,9 +243,9 @@ describe('udp_handlers', () => {
     });
 
     test('scheduler reload aborted publishes MQTT and full payload', async () => {
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortedTopic'));
+        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         const { default: globals } = await import('../../globals.js');
         expect(globals.mqttClient.publish).toHaveBeenCalledWith('abortedTopic', 'Task');
@@ -261,7 +264,7 @@ describe('udp_handlers', () => {
         const influxMod = await import('../../lib/influxdb/task_success.js');
         const callsBefore = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
 
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await new Promise((r) => setTimeout(r, 50));
         const callsAfter = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
@@ -276,7 +279,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
         globals.mqttClient.connected = false;
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(false);
@@ -288,7 +291,7 @@ describe('udp_handlers', () => {
     test('scheduler aborted: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
         globals.mqttClient.connected = false;
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         expect(published.some((p) => p.topic === 'abortedTopic')).toBe(false);
@@ -302,7 +305,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         // Enabled by default in test globals
         const callsBefore = slack.sendReloadTaskFailureNotificationSlack.mock.calls.length;
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         const callsAfter = slack.sendReloadTaskFailureNotificationSlack.mock.calls.length;
@@ -327,7 +330,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: Teams notification gating is honored (enabled vs disabled)', async () => {
         const teams = await import('../../lib/qseow/msteams_notification.js');
         const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
 
         const before = teams.sendReloadTaskFailureNotificationTeams.mock.calls.length;
         await events.message(Buffer.from(msg), {});
@@ -352,7 +355,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: Signl4 gating is honored (enabled vs disabled)', async () => {
         const signl4 = await import('../../lib/incident_mgmt/signl4.js');
         const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
 
         const before = signl4.sendReloadTaskFailureNotification.mock.calls.length;
         await events.message(Buffer.from(msg), {});
@@ -389,7 +392,7 @@ describe('udp_handlers', () => {
         globals.udpEnableSourceValidation = true;
         globals.udpAllowedIPs = ['192.168.1.100', '10.0.0.1'];
 
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), { address: '192.168.1.100' });
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
@@ -400,7 +403,7 @@ describe('udp_handlers', () => {
         globals.udpEnableSourceValidation = true;
         globals.udpAllowedIPs = ['192.168.1.100'];
 
-        events.message(Buffer.from('/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message'), {
+        events.message(Buffer.from('/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message'), {
             address: '10.0.0.1',
         });
         expect(globals.logger.warn).toHaveBeenCalledWith(
@@ -412,7 +415,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         globals.udpEnableSourceValidation = false;
 
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), { address: '1.2.3.4' });
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);

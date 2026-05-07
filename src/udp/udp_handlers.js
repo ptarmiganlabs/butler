@@ -19,6 +19,7 @@ import schedulerFailed from './handlers/scheduler_failed.js';
 import schedulerTaskSuccess from './handlers/scheduler_success.js';
 import distributeTaskCompletion from './handlers/distribute_task_completion.js';
 import { parseAllowedSources, isIpAllowed } from '../lib/udp_ip_validator.js';
+import { verifyGuid } from '../lib/guid_util.js';
 
 /**
  * Set up UDP server handlers for acting on Qlik Sense task events.
@@ -190,6 +191,18 @@ const udpInitTaskErrorServer = async () => {
             globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
 
             const msg = message.toString().split(';');
+
+            // --- UUID VALIDATION FOR TASK ID ---
+            if (msg[5] && !verifyGuid(msg[5])) {
+                globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid Task ID format: ${msg[5]}. Rejecting message.`);
+                return;
+            }
+
+            // --- UUID VALIDATION FOR APP ID (if present) ---
+            if (msg[6] && msg[6] !== '' && !verifyGuid(msg[6])) {
+                globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid App ID format: ${msg[6]}. Rejecting message.`);
+                return;
+            }
 
             if (msg[0].toLowerCase() === '/engine-reload-failed/') {
                 // Engine log appender detecting failed reload, also ones initiated interactively by users
