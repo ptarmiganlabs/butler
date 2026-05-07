@@ -877,7 +877,7 @@ Butler:
         messageQueue:
             maxConcurrent: 10
             maxSize: 200
-            backpressureThreshold: 0.8
+            backpressureThreshold: 80
         rateLimit:
             enable: false
             maxMessagesPerMinute: 600

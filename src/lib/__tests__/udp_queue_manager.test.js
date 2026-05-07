@@ -63,7 +63,7 @@ describe('UdpQueueManager', () => {
         // maxSize is 10, so we can have up to 10 waiting
         // Add 12 tasks: 2 will run immediately, 10 will wait (filling the queue)
         const slowFn = () => new Promise((r) => setTimeout(r, 5000));
-        
+
         // Add 12 tasks - first 2 start running, next 10 wait
         for (let i = 0; i < 12; i++) {
             const result = await queueManager.addToQueue(slowFn);

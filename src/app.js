@@ -46,7 +46,7 @@ async function build(opts = {}) {
     // The REST server is used to provide REST endpoints that can be used by the UI.
     // The reverse proxy server is used to proxy requests to the backend servers.
     // The dockerHealthCheckServer is used to provide a health check endpoint for the Docker container.
-    const restServer = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB body limit to prevent DoS
+    const restServer = Fastify({ logger: true, bodyLimit: 1 * 1024 * 1024 }); // 1 MB body limit to prevent DoS
     const proxyRestServer = Fastify({ logger: true });
     const dockerHealthCheckServer = Fastify({ logger: false });
     const configVisServer = Fastify({ logger: true });

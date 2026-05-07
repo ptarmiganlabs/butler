@@ -3054,7 +3054,7 @@ export const confifgFileSchema = {
                             properties: {
                                 maxConcurrent: { type: 'number', default: 10 },
                                 maxSize: { type: 'number', default: 200 },
-                                backpressureThreshold: { type: 'number', default: 0.8 },
+                                backpressureThreshold: { type: 'number', default: 80 },
                             },
                             required: ['maxConcurrent', 'maxSize', 'backpressureThreshold'],
                             additionalProperties: false,
@@ -3087,7 +3087,17 @@ export const confifgFileSchema = {
                             additionalProperties: false,
                         },
                     },
-                    required: ['enable', 'serverHost', 'portTaskFailure', 'maxMessageSize', 'enableSourceValidation', 'allowedSources', 'messageQueue', 'rateLimit', 'queueMetrics'],
+                    required: [
+                        'enable',
+                        'serverHost',
+                        'portTaskFailure',
+                        'maxMessageSize',
+                        'enableSourceValidation',
+                        'allowedSources',
+                        'messageQueue',
+                        'rateLimit',
+                        'queueMetrics',
+                    ],
                     additionalProperties: false,
                 },
 

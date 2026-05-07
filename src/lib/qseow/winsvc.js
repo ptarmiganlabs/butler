@@ -16,6 +16,13 @@ function isValidHost(host) {
  * Validates a Windows service name to prevent command injection.
  * Service names are passed inside double-quoted shell arguments; a double-quote
  * character would break the quoting and allow arbitrary command execution.
+ *
+ * Rejects names that contain the following shell metacharacters:
+ *   " (double-quote), & (ampersand), | (pipe), ; (semicolon),
+ *   ` (backtick), $ (dollar), ( ) (parentheses), < > (redirects), \r \n (newlines).
+ * Names exceeding 256 characters are also rejected.
+ * All other characters — including Unicode — are accepted.
+ *
  * @param {string} serviceName Service name to validate
  * @returns {boolean} True if valid, false otherwise
  */

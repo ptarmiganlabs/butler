@@ -332,8 +332,10 @@ async function handlerCreateDirQvd(request, reply) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            // Resolve the full path and verify it stays within the QVD folder to prevent path traversal
-            const resolvedDir = upath.normalizeSafe(`${globals.qvdFolder}/${request.body.directory}`);
+            // Resolve the full path and verify it stays within the QVD folder to prevent path traversal.
+            // upath.normalizeSafe removes . and .. segments without issuing a filesystem call, which
+            // is safe here because isDirectoryChildOf operates on normalised token-split strings.
+            const resolvedDir = upath.normalizeSafe(upath.join(globals.qvdFolder, request.body.directory));
             const normalizedQvdFolder = upath.normalizeSafe(globals.qvdFolder);
 
             if (!isDirectoryChildOf(resolvedDir, normalizedQvdFolder)) {
@@ -346,15 +348,14 @@ async function handlerCreateDirQvd(request, reply) {
 
             globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${resolvedDir}`);
 
-            mkdirp(resolvedDir)
-                .then((dir) => globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`))
-
-                .catch((error) => {
-                    globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(error)}`);
-                    reply.send(httpErrors(500, 'Failed to create directory'));
-                });
-
-            reply.code(201).send(request.body);
+            try {
+                const dir = await mkdirp(resolvedDir);
+                globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`);
+                reply.code(201).send(request.body);
+            } catch (mkdirErr) {
+                globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(mkdirErr)}`);
+                reply.send(httpErrors(500, 'Failed to create directory'));
+            }
         }
     } catch (err) {
         globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${request.body.directory}: ${globals.getErrorMessage(err)}`);
