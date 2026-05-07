@@ -206,10 +206,10 @@ describe('udp_handlers', () => {
         udpInitTaskErrorServer = (await import('../udp_handlers.js')).default;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         events = {};
         published.length = 0;
-        udpInitTaskErrorServer();
+        await udpInitTaskErrorServer();
     });
 
     // Helper to wait until a condition is true or timeout
@@ -235,8 +235,33 @@ describe('udp_handlers', () => {
 
     test('engine reload failed with wrong length is warned and ignored', async () => {
         const { default: globals } = await import('../../globals.js');
-        events.message(Buffer.from('/engine-reload-failed/;a;b;c;d;e;f;g'), {}); // only 8 fields
+        await events.message(Buffer.from('/engine-reload-failed/;a;b;c;d;e;f;g'), {}); // only 8 fields
+        await new Promise((r) => setTimeout(r, 50));
         expect(globals.logger.warn).toHaveBeenCalled();
+    });
+
+    test('engine reload failed does not apply scheduler task/app GUID validation indexes', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/engine-reload-failed/;host;550e8400-e29b-41d4-a716-446655440001;appName;userDir;active-user-id;2026-01-01T10:20:30Z;exec123;reload failed';
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 50));
+        const invalidTaskIdWarnings = globals.logger.warn.mock.calls.filter(
+            (call) => typeof call[0] === 'string' && call[0].includes('Invalid Task ID format'),
+        );
+        expect(invalidTaskIdWarnings).toHaveLength(0);
+    });
+
+    test('logs sanitized UDP message content', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg = '/unknown-type/;field1;line1\nline2';
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 100));
+        const udpReceivedLog = globals.logger.verbose.mock.calls.find(
+            (call) => typeof call[0] === 'string' && call[0].startsWith('[QSEOW] UDP HANDLER: UDP message received:'),
+        );
+        expect(udpReceivedLog).toBeTruthy();
+        expect(udpReceivedLog[0]).not.toContain('\n');
     });
 
     test('scheduler reload failed path triggers notifications and MQTT', async () => {

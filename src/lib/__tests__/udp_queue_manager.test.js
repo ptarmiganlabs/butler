@@ -122,4 +122,11 @@ describe('UdpQueueManager', () => {
         expect(rateLimitedQueue.checkRateLimit()).toBe(true);
         expect(rateLimitedQueue.checkRateLimit()).toBe(false);
     });
+
+    test('should not log backpressure continues on first activation', async () => {
+        await queueManager.checkBackpressure(8);
+        const warnMessages = mockLogger.warn.mock.calls.map((call) => call[0]);
+        expect(warnMessages.filter((msg) => msg.includes('Backpressure detected'))).toHaveLength(1);
+        expect(warnMessages.filter((msg) => msg.includes('Backpressure continues'))).toHaveLength(0);
+    });
 });

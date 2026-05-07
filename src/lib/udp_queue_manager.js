@@ -276,9 +276,11 @@ export class UdpQueueManager {
     async checkBackpressure(queueSize) {
         const utilization = queueSize / this.config.messageQueue.maxSize;
         const threshold = this.getBackpressureThreshold();
+        const now = Date.now();
 
         if (utilization >= threshold && !this.backpressureActive) {
             this.backpressureActive = true;
+            this.lastBackpressureWarning = now;
             this.logger.warn(
                 `[UDP Queue] Backpressure detected for ${this.queueType}: Queue utilization ${(utilization * 100).toFixed(1)}% (threshold: ${(threshold * 100).toFixed(1)}%)`,
             );
@@ -291,7 +293,6 @@ export class UdpQueueManager {
         }
 
         // Log warning every 60 seconds if backpressure is active
-        const now = Date.now();
         if (this.backpressureActive && now - this.lastBackpressureWarning > 60000) {
             this.logger.warn(
                 `[UDP Queue] Backpressure continues for ${this.queueType}: Queue size ${queueSize}/${this.config.messageQueue.maxSize}`,

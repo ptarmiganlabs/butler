@@ -348,7 +348,7 @@ const start = async () => {
     // ---------------------------------------------------
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {
-        udpInitTaskErrorServer();
+        await udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
         globals.udpServerTaskResultSocket.bind(globals.udpPortTaskFailure, globals.udpHost);
