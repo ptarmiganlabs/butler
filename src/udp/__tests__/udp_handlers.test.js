@@ -31,7 +31,10 @@ describe('udp_handlers', () => {
             })),
         }));
         await jest.unstable_mockModule('../../qrs_util/does_task_exist.js', () => ({
-            default: jest.fn(async (id) => ({ exists: id === 'task-1' })),
+            default: jest.fn(async (id) => {
+                const validGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                return { exists: validGuid.test(id) };
+            }),
         }));
         await jest.unstable_mockModule('../../qrs_util/task_cp_util.js', () => ({
             isCustomPropertyValueSet: jest.fn(async () => true),
@@ -169,6 +172,12 @@ describe('udp_handlers', () => {
                         'Butler.mqttConfig.taskAbortedFullTopic': 'abortFull',
                         'Butler.mqttConfig.taskFailureSendFull': true,
                         'Butler.mqttConfig.taskAbortedSendFull': true,
+                        'Butler.udpServerConfig.messageQueue.enable': true,
+                        'Butler.udpServerConfig.messageQueue.maxConcurrent': 5,
+                        'Butler.udpServerConfig.messageQueue.maxSize': 1000,
+                        'Butler.udpServerConfig.messageQueue.backpressureThreshold': 0.8,
+                        'Butler.udpServerConfig.rateLimit.enable': false,
+                        'Butler.udpServerConfig.rateLimit.maxMessagesPerMinute': 1000,
                     };
                     return map[k];
                 }),
@@ -181,6 +190,11 @@ describe('udp_handlers', () => {
                 }),
                 address: jest.fn(() => ({ address: '127.0.0.1', port: 9999 })),
             },
+            udpMaxMessageSize: 65507,
+            udpEnableSourceValidation: false,
+            udpAllowedSourcesConfig: [],
+            udpAllowedIPs: [],
+            udpQueueManager: null,
             mqttClient: {
                 connected: true,
                 publish: jest.fn((topic, msg) => published.push({ topic, msg })),
@@ -192,10 +206,10 @@ describe('udp_handlers', () => {
         udpInitTaskErrorServer = (await import('../udp_handlers.js')).default;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         events = {};
         published.length = 0;
-        udpInitTaskErrorServer();
+        await udpInitTaskErrorServer();
     });
 
     // Helper to wait until a condition is true or timeout
@@ -221,12 +235,37 @@ describe('udp_handlers', () => {
 
     test('engine reload failed with wrong length is warned and ignored', async () => {
         const { default: globals } = await import('../../globals.js');
-        events.message(Buffer.from('/engine-reload-failed/;a;b;c;d;e;f;g'), {}); // only 8 fields
+        await events.message(Buffer.from('/engine-reload-failed/;a;b;c;d;e;f;g'), {}); // only 8 fields
+        await new Promise((r) => setTimeout(r, 50));
         expect(globals.logger.warn).toHaveBeenCalled();
     });
 
+    test('engine reload failed does not apply scheduler task/app GUID validation indexes', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/engine-reload-failed/;host;550e8400-e29b-41d4-a716-446655440001;appName;userDir;active-user-id;2026-01-01T10:20:30Z;exec123;reload failed';
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 50));
+        const invalidTaskIdWarnings = globals.logger.warn.mock.calls.filter(
+            (call) => typeof call[0] === 'string' && call[0].includes('Invalid Task ID format'),
+        );
+        expect(invalidTaskIdWarnings).toHaveLength(0);
+    });
+
+    test('logs sanitized UDP message content', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg = '/unknown-type/;field1;line1\nline2';
+        await events.message(Buffer.from(msg), {});
+        await new Promise((r) => setTimeout(r, 100));
+        const udpReceivedLog = globals.logger.verbose.mock.calls.find(
+            (call) => typeof call[0] === 'string' && call[0].startsWith('[QSEOW] UDP HANDLER: UDP message received:'),
+        );
+        expect(udpReceivedLog).toBeTruthy();
+        expect(udpReceivedLog[0]).not.toContain('\n');
+    });
+
     test('scheduler reload failed path triggers notifications and MQTT', async () => {
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         const { default: globals } = await import('../../globals.js');
@@ -236,9 +275,9 @@ describe('udp_handlers', () => {
     });
 
     test('scheduler reload aborted publishes MQTT and full payload', async () => {
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
-        await waitFor(() => published.some((p) => p.topic === 'abortedTopic'));
+        await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         const { default: globals } = await import('../../globals.js');
         expect(globals.mqttClient.publish).toHaveBeenCalledWith('abortedTopic', 'Task');
@@ -247,7 +286,9 @@ describe('udp_handlers', () => {
 
     test('unknown message type logs warning', async () => {
         const { default: globals } = await import('../../globals.js');
-        events.message(Buffer.from('/unknown-type/;a;b;c'), {});
+        await events.message(Buffer.from('/unknown-type/;a;b;c'), {});
+        // Wait for queue to process
+        await new Promise((r) => setTimeout(r, 100));
         expect(globals.logger.warn).toHaveBeenCalledWith('[QSEOW] UDP HANDLER: Unknown UDP message type: "/unknown-type/"');
     });
 
@@ -257,7 +298,7 @@ describe('udp_handlers', () => {
         const influxMod = await import('../../lib/influxdb/task_success.js');
         const callsBefore = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
 
-        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reloadtask-success/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await new Promise((r) => setTimeout(r, 50));
         const callsAfter = influxMod.postReloadTaskSuccessNotificationInfluxDb.mock.calls.length;
@@ -272,7 +313,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
         globals.mqttClient.connected = false;
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(false);
@@ -284,7 +325,7 @@ describe('udp_handlers', () => {
     test('scheduler aborted: MQTT disconnected warns and does not basic-publish', async () => {
         const { default: globals } = await import('../../globals.js');
         globals.mqttClient.connected = false;
-        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-aborted/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'abortFull'));
         expect(published.some((p) => p.topic === 'abortedTopic')).toBe(false);
@@ -298,7 +339,7 @@ describe('udp_handlers', () => {
         const { default: globals } = await import('../../globals.js');
         // Enabled by default in test globals
         const callsBefore = slack.sendReloadTaskFailureNotificationSlack.mock.calls.length;
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
         await events.message(Buffer.from(msg), {});
         await waitFor(() => published.some((p) => p.topic === 'failFull'));
         const callsAfter = slack.sendReloadTaskFailureNotificationSlack.mock.calls.length;
@@ -323,7 +364,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: Teams notification gating is honored (enabled vs disabled)', async () => {
         const teams = await import('../../lib/qseow/msteams_notification.js');
         const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
 
         const before = teams.sendReloadTaskFailureNotificationTeams.mock.calls.length;
         await events.message(Buffer.from(msg), {});
@@ -348,7 +389,7 @@ describe('udp_handlers', () => {
     test('scheduler failed: Signl4 gating is honored (enabled vs disabled)', async () => {
         const signl4 = await import('../../lib/incident_mgmt/signl4.js');
         const { default: globals } = await import('../../globals.js');
-        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
 
         const before = signl4.sendReloadTaskFailureNotification.mock.calls.length;
         await events.message(Buffer.from(msg), {});
@@ -368,5 +409,134 @@ describe('udp_handlers', () => {
         const afterDisabled = signl4.sendReloadTaskFailureNotification.mock.calls.length;
         expect(afterDisabled).toBe(beforeDisabled);
         globals.config.get = originalGet;
+    });
+
+    test('oversized UDP message is rejected and warned', async () => {
+        const { default: globals } = await import('../../globals.js');
+        // Create a buffer exceeding the max message size
+        const oversized = Buffer.alloc(globals.udpMaxMessageSize + 1, 'a');
+        events.message(oversized, {});
+        // Wait a bit for the synchronous size check to log
+        await new Promise((r) => setTimeout(r, 50));
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message size'),
+        );
+    });
+
+    test('UDP message from allowed IP is processed', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedIPs = ['192.168.1.100', '10.0.0.1'];
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), { address: '192.168.1.100' });
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+        expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
+    });
+
+    test('UDP message from disallowed IP is rejected', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedIPs = ['192.168.1.100'];
+
+        events.message(Buffer.from('/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message'), {
+            address: '10.0.0.1',
+        });
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('unauthorized source'),
+        );
+    });
+
+    test('Source validation skipped when disabled', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = false;
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), { address: '1.2.3.4' });
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+        expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
+    });
+
+    test('Source validation is disabled during init when allowlist is empty', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedSourcesConfig = [];
+
+        await udpInitTaskErrorServer();
+
+        expect(globals.udpEnableSourceValidation).toBe(false);
+        expect(globals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('allowedSources is empty'));
+    });
+
+    // --- Input sanitization tests ---
+
+    test('control characters are removed from message fields', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msgWithControlChars = '/scheduler-reload-failed/;host\t;Task\n;App\r;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message\x01\x02';
+        await events.message(Buffer.from(msgWithControlChars), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify warning was logged about sanitization
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('fields exceeding 500 characters are truncated', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const longField = 'A'.repeat(600);
+        const msg = `/scheduler-reload-failed/;host;${longField};App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message`;
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify warning was logged about sanitization
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('normal messages pass through without sanitization warning', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.logger.warn.mockClear();
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        // Verify NO sanitization warning was logged
+        expect(globals.logger.warn).not.toHaveBeenCalledWith(
+            expect.stringContaining('Message sanitized'),
+        );
+    });
+
+    test('sanitizeField utility function works correctly', async () => {
+        const { sanitizeField, sanitizeMessage } = await import('../../lib/udp_sanitizer.js');
+
+        // Test control character removal
+        expect(sanitizeField('hello\x01world')).toBe('helloworld');
+        expect(sanitizeField('tab\there')).toBe('tabhere');
+        expect(sanitizeField('newline\n')).toBe('newline');
+        expect(sanitizeField('carriage\rreturn')).toBe('carriagereturn');
+
+        // Test length truncation
+        expect(sanitizeField('A'.repeat(600))).toHaveLength(500);
+        expect(sanitizeField('A'.repeat(600), 100)).toHaveLength(100);
+        expect(sanitizeField('short')).toBe('short');
+
+        // Test non-string input
+        expect(sanitizeField(12345)).toBe('12345');
+        expect(sanitizeField(null)).toBe('null');
+    });
+
+    test('sanitizeMessage utility function works correctly', async () => {
+        const { sanitizeMessage } = await import('../../lib/udp_sanitizer.js');
+
+        const msg = ['/test/', 'host\t', 'Task\n', 'A'.repeat(600), 'normal'];
+        const sanitized = sanitizeMessage(msg);
+
+        expect(sanitized[0]).toBe('/test/');
+        expect(sanitized[1]).toBe('host');
+        expect(sanitized[2]).toBe('Task');
+        expect(sanitized[3]).toHaveLength(500);
+        expect(sanitized[4]).toBe('normal');
     });
 });

@@ -871,6 +871,22 @@ Butler:
         enable: false
         serverHost: 10.11.12.13
         portTaskFailure: 9998
+        maxMessageSize: 65507
+        enableSourceValidation: false
+        allowedSources: []
+        messageQueue:
+            maxConcurrent: 10
+            maxSize: 200
+            backpressureThreshold: 0.8
+        rateLimit:
+            enable: false
+            maxMessagesPerMinute: 600
+        queueMetrics:
+            influxdb:
+                enable: false
+                writeFrequency: 20000
+                measurementName: butler_udp_queue
+                tags: []
 
     restServerConfig:
         enable: true
