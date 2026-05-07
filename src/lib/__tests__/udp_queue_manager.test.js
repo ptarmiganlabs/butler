@@ -19,7 +19,7 @@ describe('UdpQueueManager', () => {
                 enable: true,
                 maxConcurrent: 2,
                 maxSize: 10,
-                backpressureThreshold: 0.8,
+                backpressureThreshold: 80, // 80% (percentage, 0-100)
             },
             rateLimit: {
                 enable: false,

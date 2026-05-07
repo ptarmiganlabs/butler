@@ -195,8 +195,8 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.maxSize: must be >= 1');
         }
         const bp = config?.messageQueue?.backpressureThreshold;
-        if (typeof bp !== 'number' || Number.isNaN(bp) || bp < 0 || bp > 1) {
-            throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a number between 0 and 1');
+        if (typeof bp !== 'number' || Number.isNaN(bp) || bp < 0 || bp > 100) {
+            throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a number between 0 and 100');
         }
 
         this.config = {
@@ -279,14 +279,14 @@ export class UdpQueueManager {
      */
     async checkBackpressure(queueSize) {
         const utilization = queueSize / this.config.messageQueue.maxSize;
-        const threshold = this.getBackpressureThreshold();
+        const threshold = this.getBackpressureThreshold() / 100; // Convert percentage to fraction
         const now = Date.now();
 
         if (utilization >= threshold && !this.backpressureActive) {
             this.backpressureActive = true;
             this.lastBackpressureWarning = now;
             this.logger.warn(
-                `[UDP Queue] Backpressure detected for ${this.queueType}: Queue utilization ${(utilization * 100).toFixed(1)}% (threshold: ${(threshold * 100).toFixed(1)}%)`,
+                `[UDP Queue] Backpressure detected for ${this.queueType}: Queue utilization ${(utilization * 100).toFixed(1)}% (threshold: ${this.getBackpressureThreshold()}%)`,
             );
         } else if (utilization < threshold * 0.8 && this.backpressureActive) {
             // Clear backpressure when utilization drops below 80% of threshold

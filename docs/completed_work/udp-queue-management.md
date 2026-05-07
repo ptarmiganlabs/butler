@@ -124,7 +124,7 @@ Butler:
     messageQueue:
       maxConcurrent: 5      # Max concurrent processing
       maxSize: 1000          # Max queue size
-      backpressureThreshold: 0.8  # 80% threshold
+        backpressureThreshold: 80  # 80% threshold
     
     # Rate limiting
     rateLimit:
