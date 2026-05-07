@@ -342,7 +342,7 @@ const start = async () => {
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
     globals.udpServerTaskResultSocket = dgram.createSocket({
         type: 'udp4',
-        reuseAddr: true,
+        reuseAddr: false,
     });
 
     // ---------------------------------------------------
