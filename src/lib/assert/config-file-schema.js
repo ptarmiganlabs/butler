@@ -3049,8 +3049,45 @@ export const confifgFileSchema = {
                             type: 'array',
                             items: { type: 'string' },
                         },
+                        messageQueue: {
+                            type: 'object',
+                            properties: {
+                                maxConcurrent: { type: 'number', default: 10 },
+                                maxSize: { type: 'number', default: 200 },
+                                backpressureThreshold: { type: 'number', default: 80 },
+                            },
+                            required: ['maxConcurrent', 'maxSize', 'backpressureThreshold'],
+                            additionalProperties: false,
+                        },
+                        rateLimit: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean', default: false },
+                                maxMessagesPerMinute: { type: 'number', default: 600 },
+                            },
+                            required: ['enable', 'maxMessagesPerMinute'],
+                            additionalProperties: false,
+                        },
+                        queueMetrics: {
+                            type: 'object',
+                            properties: {
+                                influxdb: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean', default: false },
+                                        writeFrequency: { type: 'number', default: 20000 },
+                                        measurementName: { type: 'string', default: 'butler_udp_queue' },
+                                        tags: { type: 'array', items: { type: 'object' } },
+                                    },
+                                    required: ['enable', 'writeFrequency', 'measurementName'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['influxdb'],
+                            additionalProperties: false,
+                        },
                     },
-                    required: ['enable', 'serverHost', 'portTaskFailure', 'maxMessageSize', 'enableSourceValidation', 'allowedSources'],
+                    required: ['enable', 'serverHost', 'portTaskFailure', 'maxMessageSize', 'enableSourceValidation', 'allowedSources', 'messageQueue', 'rateLimit', 'queueMetrics'],
                     additionalProperties: false,
                 },
 

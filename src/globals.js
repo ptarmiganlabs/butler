@@ -509,6 +509,9 @@ Configuration File:
             : [];
         this.udpAllowedIPs = []; // Populated at UDP init (resolved IPs)
 
+        // UDP queue manager instance
+        this.udpQueueManager = null;
+
         // Indicate that we have finished initialising
         this.initialised = true;
 

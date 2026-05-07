@@ -172,6 +172,12 @@ describe('udp_handlers', () => {
                         'Butler.mqttConfig.taskAbortedFullTopic': 'abortFull',
                         'Butler.mqttConfig.taskFailureSendFull': true,
                         'Butler.mqttConfig.taskAbortedSendFull': true,
+                        'Butler.udpServerConfig.messageQueue.enable': true,
+                        'Butler.udpServerConfig.messageQueue.maxConcurrent': 5,
+                        'Butler.udpServerConfig.messageQueue.maxSize': 1000,
+                        'Butler.udpServerConfig.messageQueue.backpressureThreshold': 0.8,
+                        'Butler.udpServerConfig.rateLimit.enable': false,
+                        'Butler.udpServerConfig.rateLimit.maxMessagesPerMinute': 1000,
                     };
                     return map[k];
                 }),
@@ -188,6 +194,7 @@ describe('udp_handlers', () => {
             udpEnableSourceValidation: false,
             udpAllowedSourcesConfig: [],
             udpAllowedIPs: [],
+            udpQueueManager: null,
             mqttClient: {
                 connected: true,
                 publish: jest.fn((topic, msg) => published.push({ topic, msg })),
@@ -255,6 +262,8 @@ describe('udp_handlers', () => {
     test('unknown message type logs warning', async () => {
         const { default: globals } = await import('../../globals.js');
         events.message(Buffer.from('/unknown-type/;a;b;c'), {});
+        // Wait for queue to process
+        await new Promise((r) => setTimeout(r, 100));
         expect(globals.logger.warn).toHaveBeenCalledWith('[QSEOW] UDP HANDLER: Unknown UDP message type: "/unknown-type/"');
     });
 
@@ -382,6 +391,8 @@ describe('udp_handlers', () => {
         // Create a buffer exceeding the max message size
         const oversized = Buffer.alloc(globals.udpMaxMessageSize + 1, 'a');
         events.message(oversized, {});
+        // Wait a bit for the synchronous size check to log
+        await new Promise((r) => setTimeout(r, 50));
         expect(globals.logger.warn).toHaveBeenCalledWith(
             expect.stringContaining('Message size'),
         );
