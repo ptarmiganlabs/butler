@@ -66,7 +66,7 @@ export async function parseAllowedSources(sources) {
  */
 export function isIpAllowed(ip, allowedIPs) {
     if (!allowedIPs || allowedIPs.length === 0) {
-        return true; // No restrictions
+        return false; // No IPs configured = deny all
     }
 
     return allowedIPs.includes(ip);

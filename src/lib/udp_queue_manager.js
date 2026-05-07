@@ -187,6 +187,18 @@ export class UdpQueueManager {
      * @param {string} queueType - Type of queue ('task_results' or other identifier)
      */
     constructor(config, logger, queueType) {
+        // Validate config at construction time to fail fast
+        if (!config?.messageQueue?.maxConcurrent || config.messageQueue.maxConcurrent < 1) {
+            throw new Error('[UDP Queue] Invalid messageQueue.maxConcurrent: must be >= 1');
+        }
+        if (!config?.messageQueue?.maxSize || config.messageQueue.maxSize < 1) {
+            throw new Error('[UDP Queue] Invalid messageQueue.maxSize: must be >= 1');
+        }
+        const bp = config?.messageQueue?.backpressureThreshold;
+        if (typeof bp !== 'number' || Number.isNaN(bp) || bp < 0 || bp > 1) {
+            throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a number between 0 and 1');
+        }
+
         this.config = {
             ...config,
             maxMessageSize: Number.isFinite(config?.maxMessageSize) ? config.maxMessageSize : Number.POSITIVE_INFINITY,
@@ -256,15 +268,7 @@ export class UdpQueueManager {
      * @returns {number} Backpressure threshold as fraction
      */
     getBackpressureThreshold() {
-        const threshold = this.config.messageQueue.backpressureThreshold;
-
-        if (typeof threshold !== 'number' || Number.isNaN(threshold) || threshold < 0 || threshold > 1) {
-            throw new Error(
-                `[UDP Queue] Invalid backpressureThreshold for ${this.queueType}: ${threshold}. Expected a number between 0 and 1.`,
-            );
-        }
-
-        return threshold;
+        return this.config.messageQueue.backpressureThreshold;
     }
 
     /**

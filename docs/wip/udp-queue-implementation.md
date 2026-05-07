@@ -28,8 +28,8 @@ Harden Butler's UDP server by adding input sanitization, UUID validation, and UD
 
 ### Remaining/Optional
 - [ ] Add queue metrics to InfluxDB (optional, disabled by default)
-- [ ] Add message authentication (HMAC) - deferred (breaking change)
-- [ ] Create completed work documentation in `docs/completed_work/udp-queue-management.md`
+- [x] Add message authentication (HMAC) - REMOVED (not needed)
+- [x] Create completed work documentation in `docs/completed_work/udp-queue-management.md`
 
 ## Test Results
 ```
