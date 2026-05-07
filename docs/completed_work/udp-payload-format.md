@@ -448,9 +448,11 @@ if (!appMetadata || Object.keys(appMetadata).length === 0) {
 
 ### 4. No Authentication or Authorization
 
-- UDP messages are accepted from any source (no source validation)
-- No authentication tokens or signatures in the protocol
-- **Security note:** In production, consider network-level controls (firewall rules) to restrict UDP packet sources
+- No authentication tokens or signatures are included in the protocol
+- By default, UDP messages are accepted without source validation
+- If `enableSourceValidation` is enabled, Butler validates the sender source IP against `allowedSources`
+- When source validation is enabled, messages from sources not listed in `allowedSources` are rejected and not processed
+- **Security note:** In production, consider network-level controls (firewall rules) as defense in depth, even when source validation is enabled
 
 ### 5. String Conversion
 
