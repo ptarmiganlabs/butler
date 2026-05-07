@@ -110,9 +110,8 @@ classDiagram
 Butler:
   udpServerConfig:
     enable: true
-    port: 9998
-    serverLabel: task_failure
-    reuseAddr: false  # Security: prevent port hijacking
+    serverHost: 10.11.12.13
+    portTaskFailure: 9998
     
     # Payload size limit (bytes)
     maxMessageSize: 65507
@@ -123,7 +122,6 @@ Butler:
     
     # Message queue settings
     messageQueue:
-      enable: true
       maxConcurrent: 5      # Max concurrent processing
       maxSize: 1000          # Max queue size
       backpressureThreshold: 0.8  # 80% threshold

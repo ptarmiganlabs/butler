@@ -83,20 +83,25 @@ const udpInitTaskErrorServer = async () => {
     });
 
     // Parse and resolve allowed source IPs if source validation is enabled
-    if (globals.udpEnableSourceValidation && globals.udpAllowedSourcesConfig.length > 0) {
-        try {
-            const { allowedIPs, errors } = await parseAllowedSources(globals.udpAllowedSourcesConfig);
-            if (errors.length > 0) {
-                errors.forEach((err) => globals.logger.error(`[QSEOW] UDP INIT: ${err}`));
-                globals.logger.warn('[QSEOW] UDP INIT: Source validation will be disabled due to config errors');
-                globals.udpEnableSourceValidation = false;
-            } else {
-                globals.udpAllowedIPs = allowedIPs;
-                globals.logger.info(`[QSEOW] UDP INIT: Source IP validation enabled, ${allowedIPs.length} IPs loaded`);
-            }
-        } catch (err) {
-            globals.logger.error(`[QSEOW] UDP INIT: Error parsing allowed sources: ${globals.getErrorMessage(err)}`);
+    if (globals.udpEnableSourceValidation) {
+        if (!Array.isArray(globals.udpAllowedSourcesConfig) || globals.udpAllowedSourcesConfig.length === 0) {
+            globals.logger.warn('[QSEOW] UDP INIT: Source validation enabled but allowedSources is empty. Disabling source validation.');
             globals.udpEnableSourceValidation = false;
+        } else {
+            try {
+                const { allowedIPs, errors } = await parseAllowedSources(globals.udpAllowedSourcesConfig);
+                if (errors.length > 0) {
+                    errors.forEach((err) => globals.logger.error(`[QSEOW] UDP INIT: ${err}`));
+                    globals.logger.warn('[QSEOW] UDP INIT: Source validation will be disabled due to config errors');
+                    globals.udpEnableSourceValidation = false;
+                } else {
+                    globals.udpAllowedIPs = allowedIPs;
+                    globals.logger.info(`[QSEOW] UDP INIT: Source IP validation enabled, ${allowedIPs.length} IPs loaded`);
+                }
+            } catch (err) {
+                globals.logger.error(`[QSEOW] UDP INIT: Error parsing allowed sources: ${globals.getErrorMessage(err)}`);
+                globals.udpEnableSourceValidation = false;
+            }
         }
     }
 

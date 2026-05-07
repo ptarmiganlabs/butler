@@ -178,7 +178,7 @@ export class UdpQueueManager {
      * @param {object} config.messageQueue - Queue configuration
      * @param {number} config.messageQueue.maxConcurrent - Maximum concurrent operations
      * @param {number} config.messageQueue.maxSize - Maximum queue size
-     * @param {number} config.messageQueue.backpressureThreshold - Backpressure threshold percentage
+     * @param {number} config.messageQueue.backpressureThreshold - Backpressure threshold fraction (0-1)
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute

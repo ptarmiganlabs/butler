@@ -457,6 +457,17 @@ describe('udp_handlers', () => {
         expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
     });
 
+    test('Source validation is disabled during init when allowlist is empty', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedSourcesConfig = [];
+
+        await udpInitTaskErrorServer();
+
+        expect(globals.udpEnableSourceValidation).toBe(false);
+        expect(globals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('allowedSources is empty'));
+    });
+
     // --- Input sanitization tests ---
 
     test('control characters are removed from message fields', async () => {
