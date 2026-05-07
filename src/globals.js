@@ -498,15 +498,9 @@ Configuration File:
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
         this.udpServerTaskResultSocket = null;
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
-        this.udpMaxMessageSize = this.config.has('Butler.udpServerConfig.maxMessageSize')
-            ? this.config.get('Butler.udpServerConfig.maxMessageSize')
-            : undefined;
-        this.udpEnableSourceValidation = this.config.has('Butler.udpServerConfig.enableSourceValidation')
-            ? this.config.get('Butler.udpServerConfig.enableSourceValidation')
-            : false;
-        this.udpAllowedSourcesConfig = this.config.has('Butler.udpServerConfig.allowedSources')
-            ? this.config.get('Butler.udpServerConfig.allowedSources')
-            : [];
+        this.udpMaxMessageSize = this.config.get('Butler.udpServerConfig.maxMessageSize');
+        this.udpEnableSourceValidation = this.config.get('Butler.udpServerConfig.enableSourceValidation');
+        this.udpAllowedSourcesConfig = this.config.get('Butler.udpServerConfig.allowedSources');
         this.udpAllowedIPs = []; // Populated at UDP init (resolved IPs)
 
         // UDP queue manager instance

@@ -41,11 +41,17 @@ Tests:       27 passed, 27 total
 
 ## Config Changes
 New config options in `Butler.udpServerConfig`:
-- `messageQueue.maxConcurrent` - Max concurrent processing (default: 5)
-- `messageQueue.maxSize` - Max queue size (default: 1000)
-- `messageQueue.backpressureThreshold` - Backpressure threshold as percentage 0-100 (default: 80)
+- `messageQueue.maxConcurrent` - Max concurrent processing (default: 10)
+- `messageQueue.maxSize` - Max queue size (default: 200)
+- `messageQueue.backpressureThreshold` - Backpressure threshold in percent (default: 80)
 - `rateLimit.enable` - Enable/disable rate limiting (default: false)
-- `rateLimit.maxMessagesPerMinute` - Max messages per minute (default: 1000)
+- `rateLimit.maxMessagesPerMinute` - Max messages per minute (default: 600)
+- `maxMessageSize` - Max UDP payload size in bytes (default: 65507)
+- `enableSourceValidation` - Enable source IP allowlist validation (default: false)
+- `allowedSources` - Allowed IPv4 addresses/hostnames for source validation (default: empty list)
+- `queueMetrics.influxdb.enable` - Enable queue metric writes to InfluxDB (default: false)
+- `queueMetrics.influxdb.writeFrequency` - Queue metric write interval in ms (default: 20000)
+- `queueMetrics.influxdb.measurementName` - InfluxDB measurement for queue metrics (default: `butler_udp_queue`)
 
 ## Files Modified/Created
 ### New Files

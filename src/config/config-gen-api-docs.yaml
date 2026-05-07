@@ -875,16 +875,18 @@ Butler:
         enableSourceValidation: false
         allowedSources: []
         messageQueue:
-            enable: true
-            maxSize: 1000
-            overflowStrategy: drop_oldest
+            maxConcurrent: 10
+            maxSize: 200
+            backpressureThreshold: 80
         rateLimit:
             enable: false
-            maxMessagesPerSecond: 100
-            burstSize: 200
+            maxMessagesPerMinute: 600
         queueMetrics:
-            enable: false
-            logIntervalSeconds: 60
+            influxdb:
+                enable: false
+                writeFrequency: 20000
+                measurementName: butler_udp_queue
+                tags: []
 
     restServerConfig:
         enable: true

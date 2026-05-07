@@ -485,6 +485,17 @@ Defined in `Butler.udpServerConfig` (validated by schema in `src/lib/assert/conf
 | `enable` | boolean | Yes | Enable/disable UDP server |
 | `serverHost` | string (hostname format) | Yes | Host/IP to bind UDP server to |
 | `portTaskFailure` | number | Yes | Port to listen on for UDP messages |
+| `maxMessageSize` | number | Yes | Maximum UDP payload size in bytes |
+| `enableSourceValidation` | boolean | Yes | Enable source IP allowlist validation |
+| `allowedSources` | array of strings | Yes | Allowed source IPv4/hostnames used when source validation is enabled |
+| `messageQueue.maxConcurrent` | number | Yes | Max number of concurrent message processors |
+| `messageQueue.maxSize` | number | Yes | Max queue size before incoming messages are dropped |
+| `messageQueue.backpressureThreshold` | number | Yes | Queue utilization threshold (percent) for backpressure warnings |
+| `rateLimit.enable` | boolean | Yes | Enable or disable rate limiting |
+| `rateLimit.maxMessagesPerMinute` | number | Yes | Maximum messages accepted per minute when rate limiting is enabled |
+| `queueMetrics.influxdb.enable` | boolean | Yes | Enable writing queue metrics to InfluxDB |
+| `queueMetrics.influxdb.writeFrequency` | number | Yes | Queue metrics write interval (ms) |
+| `queueMetrics.influxdb.measurementName` | string | Yes | Measurement name for queue metrics in InfluxDB |
 
 ### Example Configuration
 
@@ -494,6 +505,22 @@ Butler:
     enable: true
     serverHost: "0.0.0.0"
     portTaskFailure: 9998
+    maxMessageSize: 65507
+    enableSourceValidation: false
+    allowedSources: []
+    messageQueue:
+      maxConcurrent: 10
+      maxSize: 200
+      backpressureThreshold: 80
+    rateLimit:
+      enable: false
+      maxMessagesPerMinute: 600
+    queueMetrics:
+      influxdb:
+        enable: false
+        writeFrequency: 20000
+        measurementName: butler_udp_queue
+        tags: []
 ```
 
 ---
