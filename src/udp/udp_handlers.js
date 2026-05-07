@@ -19,7 +19,7 @@ import schedulerFailed from './handlers/scheduler_failed.js';
 import schedulerTaskSuccess from './handlers/scheduler_success.js';
 import distributeTaskCompletion from './handlers/distribute_task_completion.js';
 import { parseAllowedSources, isIpAllowed } from '../lib/udp_ip_validator.js';
-import { verifyGuid } from '../lib/guid_util.js';
+import { guidRegex } from '../lib/guid_util.js';
 import { sanitizeMessage } from '../lib/udp_sanitizer.js';
 import { UdpQueueManager } from '../lib/udp_queue_manager.js';
 
@@ -167,11 +167,11 @@ const udpInitTaskErrorServer = async () => {
             }
 
             const validateTaskAndAppId = (taskId, appId) => {
-                if (taskId && !verifyGuid(taskId)) {
+                if (taskId && !guidRegex.test(taskId)) {
                     globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid Task ID format: ${taskId}. Rejecting message.`);
                     return false;
                 }
-                if (appId && appId !== '' && !verifyGuid(appId)) {
+                if (appId && appId !== '' && !guidRegex.test(appId)) {
                     globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid App ID format: ${appId}. Rejecting message.`);
                     return false;
                 }
@@ -194,7 +194,7 @@ const udpInitTaskErrorServer = async () => {
                         return;
                     }
 
-                    if (sanitizedMsg[2] && !verifyGuid(sanitizedMsg[2])) {
+                    if (sanitizedMsg[2] && !guidRegex.test(sanitizedMsg[2])) {
                         globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid App ID format: ${sanitizedMsg[2]}. Rejecting message.`);
                         return;
                     }
