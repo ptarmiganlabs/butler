@@ -251,24 +251,43 @@ export class UdpQueueManager {
     }
 
     /**
+     * Get configured backpressure threshold as a fraction in the range 0-1
+     *
+     * @returns {number} Backpressure threshold as fraction
+     */
+    getBackpressureThreshold() {
+        const threshold = this.config.messageQueue.backpressureThreshold;
+
+        if (typeof threshold !== 'number' || Number.isNaN(threshold) || threshold < 0 || threshold > 1) {
+            throw new Error(
+                `[UDP Queue] Invalid backpressureThreshold for ${this.queueType}: ${threshold}. Expected a number between 0 and 1.`,
+            );
+        }
+
+        return threshold;
+    }
+
+    /**
      * Check backpressure and log warning if threshold exceeded
      *
      * @param {number} queueSize - The current queue size (captured while holding mutex)
      * @returns {Promise<void>}
      */
     async checkBackpressure(queueSize) {
-        const utilizationPercent = (queueSize / this.config.messageQueue.maxSize) * 100;
-        const threshold = this.config.messageQueue.backpressureThreshold;
+        const utilization = queueSize / this.config.messageQueue.maxSize;
+        const threshold = this.getBackpressureThreshold();
 
-        if (utilizationPercent >= threshold && !this.backpressureActive) {
+        if (utilization >= threshold && !this.backpressureActive) {
             this.backpressureActive = true;
             this.logger.warn(
-                `[UDP Queue] Backpressure detected for ${this.queueType}: Queue utilization ${utilizationPercent.toFixed(1)}% (threshold: ${threshold}%)`,
+                `[UDP Queue] Backpressure detected for ${this.queueType}: Queue utilization ${(utilization * 100).toFixed(1)}% (threshold: ${(threshold * 100).toFixed(1)}%)`,
             );
-        } else if (utilizationPercent < threshold * 0.8 && this.backpressureActive) {
+        } else if (utilization < threshold * 0.8 && this.backpressureActive) {
             // Clear backpressure when utilization drops below 80% of threshold
             this.backpressureActive = false;
-            this.logger.info(`[UDP Queue] Backpressure cleared for ${this.queueType}: Queue utilization ${utilizationPercent.toFixed(1)}%`);
+            this.logger.info(
+                `[UDP Queue] Backpressure cleared for ${this.queueType}: Queue utilization ${(utilization * 100).toFixed(1)}%`,
+            );
         }
 
         // Log warning every 60 seconds if backpressure is active
