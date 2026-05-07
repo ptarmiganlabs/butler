@@ -613,17 +613,17 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
    - **Verification:** Lint passed, 12/12 UDP handler tests passed (including new oversized message test)
    - **Butler SOS reference:** `butler-sos/src/lib/udp-queue-manager.js:255-258`
 
+3. ~~**Add source IP allowlisting** (`src/udp/udp_handlers.js`)~~
+   - **Implemented:** 2026-05-07
+   - **Change:** Added `enableSourceValidation` and `allowedSources` config, `udp_ip_validator.js` utility
+   - **Files modified:** `config-file-schema.js`, `globals.js`, `udp_handlers.js`, `udp_ip_validator.js`, `production_template.yaml`, `config-gen-api-docs.yaml`
+   - **Effect:** Rejects UDP messages from unauthorized source IPs/hostnames
+   - **Verification:** Lint passed (0 errors), 15/15 UDP handler tests passed
+   - **Documentation:** See `docs/completed_work/SOURCE_IP_ALLOWLIST.md`
+
 ---
 
-### Priority1: Critical (Implement Immediately)
-
-3. **Add source IP allowlisting** (`src/udp/udp_handlers.js`)
-   - Validate `remote.address` against a configurable allowlist of trusted Qlik Sense server IPs/CIDRs
-   - Critical mitigation since UDP lacks built-in authentication
-   - Effort: Low
-   - Note: Neither Butler nor Butler SOS currently implements this; new security measure
-
-### Priority 2: Important (Implement Soon)
+### Priority2: Important (Implement Soon)
 
 4. **Add input sanitization** (`src/udp/udp_handlers.js` and all handler files)
    - Remove control characters from all string fields
@@ -663,8 +663,8 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 |---|--------|----------|--------|-----------------|--------|
 | ~~1~~ | ~~Change `reuseAddr` to `false`~~ | ~~HIGH~~ | ~~Trivial~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
 | ~~2~~ | ~~Add payload size limits~~ | ~~HIGH~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
-| 3 | Add source IP allowlisting | HIGH | Low | High | Pending |
-| 4 | Input sanitization | MEDIUM | Low | Medium | Pending |
+| ~~3~~ | ~~Add source IP allowlisting~~ | ~~HIGH~~ | ~~Low~~ | ~~High~~ | ✅ Done (2026-05-07) |
+| 4 | Add input sanitization | MEDIUM | Low | Medium | Pending |
 | 5 | UUID validation | MEDIUM | Low | Low | Pending |
 | 6 | Monitoring metrics | LOW | Medium | Medium | Pending |
 | 7 | Message authentication | LOW | High | High* | Pending |

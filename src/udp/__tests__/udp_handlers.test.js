@@ -182,6 +182,9 @@ describe('udp_handlers', () => {
                 address: jest.fn(() => ({ address: '127.0.0.1', port: 9999 })),
             },
             udpMaxMessageSize: 65507,
+            udpEnableSourceValidation: false,
+            udpAllowedSourcesConfig: [],
+            udpAllowedIPs: [],
             mqttClient: {
                 connected: true,
                 publish: jest.fn((topic, msg) => published.push({ topic, msg })),
@@ -379,5 +382,39 @@ describe('udp_handlers', () => {
         expect(globals.logger.warn).toHaveBeenCalledWith(
             expect.stringContaining('Message size'),
         );
+    });
+
+    test('UDP message from allowed IP is processed', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedIPs = ['192.168.1.100', '10.0.0.1'];
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), { address: '192.168.1.100' });
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+        expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
+    });
+
+    test('UDP message from disallowed IP is rejected', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = true;
+        globals.udpAllowedIPs = ['192.168.1.100'];
+
+        events.message(Buffer.from('/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message'), {
+            address: '10.0.0.1',
+        });
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('unauthorized source'),
+        );
+    });
+
+    test('Source validation skipped when disabled', async () => {
+        const { default: globals } = await import('../../globals.js');
+        globals.udpEnableSourceValidation = false;
+
+        const msg = '/scheduler-reload-failed/;host;Task;App;dir/user;task-1;app-1;ts;INFO;exec;Message';
+        await events.message(Buffer.from(msg), { address: '1.2.3.4' });
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+        expect(published.some((p) => p.topic === 'failureTopic')).toBe(true);
     });
 });

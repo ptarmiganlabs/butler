@@ -991,6 +991,8 @@ Butler:
         serverHost: 10.11.12.13 # FQDN or IP (or localhost) of server where Butler is running
         portTaskFailure: 9998
         maxMessageSize: 65507 # Max UDP message size in bytes (default: 65507 = IPv4 max, 65527 = IPv6 max)
+        enableSourceValidation: false # Enable source IP validation for incoming UDP messages
+        allowedSources: [] # List of allowed IPv4 addresses or hostnames (e.g., ["192.168.1.100", "sense-server-01"])
 
     restServerConfig:
         enable: false # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.

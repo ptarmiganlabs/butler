@@ -3044,8 +3044,13 @@ export const confifgFileSchema = {
                         },
                         portTaskFailure: { type: 'number' },
                         maxMessageSize: { type: 'number' },
+                        enableSourceValidation: { type: 'boolean' },
+                        allowedSources: {
+                            type: 'array',
+                            items: { type: 'string' },
+                        },
                     },
-                    required: ['enable', 'serverHost', 'portTaskFailure'],
+                    required: ['enable', 'serverHost', 'portTaskFailure', 'maxMessageSize', 'enableSourceValidation', 'allowedSources'],
                     additionalProperties: false,
                 },
 

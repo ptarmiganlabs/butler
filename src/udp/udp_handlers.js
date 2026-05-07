@@ -18,6 +18,7 @@ import schedulerAborted from './handlers/scheduler_aborted.js';
 import schedulerFailed from './handlers/scheduler_failed.js';
 import schedulerTaskSuccess from './handlers/scheduler_success.js';
 import distributeTaskCompletion from './handlers/distribute_task_completion.js';
+import { parseAllowedSources, isIpAllowed } from '../lib/udp_ip_validator.js';
 
 /**
  * Set up UDP server handlers for acting on Qlik Sense task events.
@@ -27,7 +28,7 @@ import distributeTaskCompletion from './handlers/distribute_task_completion.js';
  * - 'error': UDP server error occurred
  * - 'message': UDP message received from scheduler
  */
-const udpInitTaskErrorServer = () => {
+const udpInitTaskErrorServer = async () => {
     // Handler for UDP server startup event
     // Called when UDP server successfully binds to its port
     globals.udpServerTaskResultSocket.on('listening', (message, remote) => {
@@ -77,6 +78,24 @@ const udpInitTaskErrorServer = () => {
             globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${globals.getErrorMessage(err)}`);
         }
     });
+
+    // Parse and resolve allowed source IPs if source validation is enabled
+    if (globals.udpEnableSourceValidation && globals.udpAllowedSourcesConfig.length > 0) {
+        try {
+            const { allowedIPs, errors } = await parseAllowedSources(globals.udpAllowedSourcesConfig);
+            if (errors.length > 0) {
+                errors.forEach((err) => globals.logger.error(`[QSEOW] UDP INIT: ${err}`));
+                globals.logger.warn('[QSEOW] UDP INIT: Source validation will be disabled due to config errors');
+                globals.udpEnableSourceValidation = false;
+            } else {
+                globals.udpAllowedIPs = allowedIPs;
+                globals.logger.info(`[QSEOW] UDP INIT: Source IP validation enabled, ${allowedIPs.length} IPs loaded`);
+            }
+        } catch (err) {
+            globals.logger.error(`[QSEOW] UDP INIT: Error parsing allowed sources: ${globals.getErrorMessage(err)}`);
+            globals.udpEnableSourceValidation = false;
+        }
+    }
 
     // Main handler for UDP messages relating to failed tasks
     // Called when a UDP message is received from the scheduler
@@ -156,6 +175,16 @@ const udpInitTaskErrorServer = () => {
                     `[QSEOW] UDP HANDLER: Message size (${messageSize} bytes) exceeds maximum allowed (${maxSize} bytes). Rejecting.`,
                 );
                 return;
+            }
+
+            // --- SOURCE IP VALIDATION ---
+            if (globals.udpEnableSourceValidation && remote?.address) {
+                if (!isIpAllowed(remote.address, globals.udpAllowedIPs)) {
+                    globals.logger.warn(
+                        `[QSEOW] UDP HANDLER: Message from unauthorized source ${remote.address}:${remote.port}. Rejecting.`,
+                    );
+                    return;
+                }
             }
 
             globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);

@@ -872,6 +872,8 @@ Butler:
         serverHost: 10.11.12.13
         portTaskFailure: 9998
         maxMessageSize: 65507
+        enableSourceValidation: false
+        allowedSources: []
 
     restServerConfig:
         enable: true
