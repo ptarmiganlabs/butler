@@ -378,15 +378,14 @@ async function handlerCreateDir(request, reply) {
         } else {
             globals.logger.debug(`CREATEDIR: About to create directory ${request.body.directory}`);
 
-            mkdirp(request.body.directory)
-                .then((dir) => globals.logger.verbose(`CREATEDIR: Created directory ${dir}`))
-
-                .catch((error) => {
-                    globals.logger.error(`CREATEDIR: ${globals.getErrorMessage(err)}`);
-                    reply.send(httpErrors(500, 'Failed to create directory'));
-                });
-
-            reply.code(201).send(request.body);
+            try {
+                const dir = await mkdirp(request.body.directory);
+                globals.logger.verbose(`CREATEDIR: Created directory ${dir}`);
+                reply.code(201).send(request.body);
+            } catch (mkdirErr) {
+                globals.logger.error(`CREATEDIR: ${globals.getErrorMessage(mkdirErr)}`);
+                reply.send(httpErrors(500, 'Failed to create directory'));
+            }
         }
     } catch (err) {
         globals.logger.error(`CREATEDIR: Failed creating directory: ${request.body.directory}: ${globals.getErrorMessage(err)}`);
