@@ -3043,6 +3043,7 @@ export const confifgFileSchema = {
                             format: 'hostname',
                         },
                         portTaskFailure: { type: 'number' },
+                        maxMessageSize: { type: 'number' },
                     },
                     required: ['enable', 'serverHost', 'portTaskFailure'],
                     additionalProperties: false,

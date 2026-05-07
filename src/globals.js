@@ -498,6 +498,9 @@ Configuration File:
         this.udpHost = this.config.get('Butler.udpServerConfig.serverHost');
         this.udpServerTaskResultSocket = null;
         this.udpPortTaskFailure = this.config.get('Butler.udpServerConfig.portTaskFailure');
+        this.udpMaxMessageSize = this.config.has('Butler.udpServerConfig.maxMessageSize')
+            ? this.config.get('Butler.udpServerConfig.maxMessageSize')
+            : undefined;
 
         // Indicate that we have finished initialising
         this.initialised = true;

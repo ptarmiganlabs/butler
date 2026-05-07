@@ -181,6 +181,7 @@ describe('udp_handlers', () => {
                 }),
                 address: jest.fn(() => ({ address: '127.0.0.1', port: 9999 })),
             },
+            udpMaxMessageSize: 65507,
             mqttClient: {
                 connected: true,
                 publish: jest.fn((topic, msg) => published.push({ topic, msg })),
@@ -368,5 +369,15 @@ describe('udp_handlers', () => {
         const afterDisabled = signl4.sendReloadTaskFailureNotification.mock.calls.length;
         expect(afterDisabled).toBe(beforeDisabled);
         globals.config.get = originalGet;
+    });
+
+    test('oversized UDP message is rejected and warned', async () => {
+        const { default: globals } = await import('../../globals.js');
+        // Create a buffer exceeding the max message size
+        const oversized = Buffer.alloc(globals.udpMaxMessageSize + 1, 'a');
+        events.message(oversized, {});
+        expect(globals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Message size'),
+        );
     });
 });

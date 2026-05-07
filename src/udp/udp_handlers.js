@@ -148,6 +148,16 @@ const udpInitTaskErrorServer = () => {
         // mag[8]  : Message
 
         try {
+            // --- PAYLOAD SIZE VALIDATION ---
+            const maxSize = globals.udpMaxMessageSize || 65507;
+            const messageSize = Buffer.isBuffer(message) ? message.length : Buffer.byteLength(message);
+            if (messageSize > maxSize) {
+                globals.logger.warn(
+                    `[QSEOW] UDP HANDLER: Message size (${messageSize} bytes) exceeds maximum allowed (${maxSize} bytes). Rejecting.`,
+                );
+                return;
+            }
+
             globals.logger.verbose(`[QSEOW] UDP HANDLER: UDP message received: ${message.toString()}`);
 
             const msg = message.toString().split(';');

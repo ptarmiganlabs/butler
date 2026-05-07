@@ -596,18 +596,26 @@ globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${msg[0]}"`
 
 Based on comparison with Butler SOS's hardened UDP server, the following improvements are recommended. Deferred items (UDP rate limiting, queue management, deduplication) are excluded per current requirements.
 
-### Priority 1: Critical (Implement Immediately)
+### Completed Actions
 
-1. **Change `reuseAddr` to `false`** (`src/butler.js:345`)
-   - Prevents port hijacking by multiple processes
-   - Effort: Trivial
-   - Butler SOS reference: `butler-sos/src/lib/globals/udp-servers.js:24,48`
+1. ~~**Change `reuseAddr` to `false`** (`src/butler.js:345`)~~
+   - **Implemented:** 2026-05-07
+   - **Change:** `reuseAddr: true` → `reuseAddr: false`
+   - **Effect:** Prevents port hijacking by multiple processes
+   - **Verification:** Lint passed, 11/11 UDP handler tests passed
+   - **Butler SOS reference:** `butler-sos/src/lib/globals/udp-servers.js:24,48`
 
-2. **Add payload size limits** (`src/udp/udp_handlers.js`)
-   - Reject messages exceeding a configurable maximum (default: 4096 bytes, upper bound 65507 bytes for IPv4 UDP)
-   - Prevents memory exhaustion from oversized payloads
-   - Effort: Low
-   - Butler SOS reference: `butler-sos/src/lib/udp-queue-manager.js:255-258`
+2. ~~**Add payload size limits** (`src/udp/udp_handlers.js`)~~
+   - **Implemented:** 2026-05-07
+   - **Change:** Added `maxMessageSize` config (no default, required in config)
+   - **Files modified:** `config-file-schema.js`, `globals.js`, `udp_handlers.js`, `production_template.yaml`, `config-gen-api-docs.yaml`
+   - **Effect:** Rejects UDP messages exceeding configured maximum size
+   - **Verification:** Lint passed, 12/12 UDP handler tests passed (including new oversized message test)
+   - **Butler SOS reference:** `butler-sos/src/lib/udp-queue-manager.js:255-258`
+
+---
+
+### Priority1: Critical (Implement Immediately)
 
 3. **Add source IP allowlisting** (`src/udp/udp_handlers.js`)
    - Validate `remote.address` against a configurable allowlist of trusted Qlik Sense server IPs/CIDRs
@@ -651,14 +659,14 @@ Based on comparison with Butler SOS's hardened UDP server, the following improve
 
 ### Implementation Priority Summary
 
-| # | Action | Priority | Effort | Security Impact |
-|---|--------|----------|--------|-----------------|
-| 1 | Change `reuseAddr` to `false` | HIGH | Trivial | Medium |
-| 2 | Add payload size limits | HIGH | Low | Medium |
-| 3 | Source IP allowlisting | HIGH | Low | High |
-| 4 | Input sanitization | MEDIUM | Low | Medium |
-| 5 | UUID validation | MEDIUM | Low | Low |
-| 6 | Monitoring metrics | LOW | Medium | Medium |
-| 7 | Message authentication | LOW | High | High* |
+| # | Action | Priority | Effort | Security Impact | Status |
+|---|--------|----------|--------|-----------------|--------|
+| ~~1~~ | ~~Change `reuseAddr` to `false`~~ | ~~HIGH~~ | ~~Trivial~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
+| ~~2~~ | ~~Add payload size limits~~ | ~~HIGH~~ | ~~Low~~ | ~~Medium~~ | ✅ Done (2026-05-07) |
+| 3 | Add source IP allowlisting | HIGH | Low | High | Pending |
+| 4 | Input sanitization | MEDIUM | Low | Medium | Pending |
+| 5 | UUID validation | MEDIUM | Low | Low | Pending |
+| 6 | Monitoring metrics | LOW | Medium | Medium | Pending |
+| 7 | Message authentication | LOW | High | High* | Pending |
 
 *Requires breaking change
