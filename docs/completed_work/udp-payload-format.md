@@ -4,7 +4,7 @@
 
 Butler exposes a UDP server that receives task event messages from Qlik Sense schedulers via custom log appenders. The UDP server listens on a configurable host and port (defined in `Butler.udpServerConfig.serverHost` and `Butler.udpServerConfig.portTaskFailure`) and processes incoming UDP messages containing task status information.
 
-The UDP server is initialized in `src/butler.js` (lines 342-356) using Node.js `dgram` module with `udp4` socket type and `reuseAddr: true` option.
+The UDP server is initialized in `src/butler.js` (lines 342-356) using Node.js `dgram` module with `udp4` socket type and `reuseAddr: false` option.
 
 ## UDP Message Format
 
