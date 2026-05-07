@@ -16,7 +16,7 @@ Harden Butler's UDP server by adding input sanitization, UUID validation, and UD
 - [x] Add UUID validation for Task ID (`msg[5]`) and App ID (`msg[6]`)
 - [x] Create `src/lib/udp_sanitizer.js` with `sanitizeField()` and `sanitizeMessage()`
 - [x] Add input sanitization (control char removal, 500-char max)
-- [x] Install `p-queue ^8.0.1` and `async-mutex ^0.5.0` npm packages
+- [x] Install `p-queue ^9.2.0` and `async-mutex ^0.5.0` npm packages
 - [x] Create `src/lib/udp_queue_manager.js` with queue management
 - [x] Update `src/lib/assert/config-file-schema.js` with queue config
 - [x] Update `src/globals.js` with `udpQueueManager = null`
