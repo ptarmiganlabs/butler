@@ -177,11 +177,12 @@
 
         <div id="JSONTree" class="tabcontent">
             <h3>JSON tree view</h3>
-            <div id="tree-1"></div>
+            <div id="tree-1" data-butler-config="{{butlerConfigJsonEncoded}}"></div>
             <script nonce="{{cspNonce}}">
                 (function () {
-                    var data = {{{butlerConfigJsonEncoded}}};
-                    document.getElementById('tree-1').setAttribute(
+                    var treeElement = document.getElementById('tree-1');
+                    var data = JSON.parse(treeElement.getAttribute('data-butler-config'));
+                    treeElement.setAttribute(
                         'data-jsontree-js',
                         JSON.stringify({
                             title: { show: false, showTreeControls: true, showCopyButton: true },
