@@ -41,10 +41,9 @@ Tests:       27 passed, 27 total
 
 ## Config Changes
 New config options in `Butler.udpServerConfig`:
-- `messageQueue.enable` - Enable/disable queue (default: false)
 - `messageQueue.maxConcurrent` - Max concurrent processing (default: 5)
 - `messageQueue.maxSize` - Max queue size (default: 1000)
-- `messageQueue.backpressureThreshold` - Backpressure threshold 0-1 (default: 0.8)
+- `messageQueue.backpressureThreshold` - Backpressure threshold as percentage 0-100 (default: 80)
 - `rateLimit.enable` - Enable/disable rate limiting (default: false)
 - `rateLimit.maxMessagesPerMinute` - Max messages per minute (default: 1000)
 
