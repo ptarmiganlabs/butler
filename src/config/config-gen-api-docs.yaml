@@ -874,6 +874,17 @@ Butler:
         maxMessageSize: 65507
         enableSourceValidation: false
         allowedSources: []
+        messageQueue:
+            enable: true
+            maxSize: 1000
+            overflowStrategy: drop_oldest
+        rateLimit:
+            enable: false
+            maxMessagesPerSecond: 100
+            burstSize: 200
+        queueMetrics:
+            enable: false
+            logIntervalSeconds: 60
 
     restServerConfig:
         enable: true
