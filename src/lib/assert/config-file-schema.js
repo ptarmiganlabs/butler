@@ -3043,8 +3043,51 @@ export const confifgFileSchema = {
                             format: 'hostname',
                         },
                         portTaskFailure: { type: 'number' },
+                        maxMessageSize: { type: 'number' },
+                        enableSourceValidation: { type: 'boolean' },
+                        allowedSources: {
+                            type: 'array',
+                            items: { type: 'string' },
+                        },
+                        messageQueue: {
+                            type: 'object',
+                            properties: {
+                                maxConcurrent: { type: 'number', default: 10 },
+                                maxSize: { type: 'number', default: 200 },
+                                backpressureThreshold: { type: 'number', default: 0.8 },
+                            },
+                            required: ['maxConcurrent', 'maxSize', 'backpressureThreshold'],
+                            additionalProperties: false,
+                        },
+                        rateLimit: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean', default: false },
+                                maxMessagesPerMinute: { type: 'number', default: 600 },
+                            },
+                            required: ['enable', 'maxMessagesPerMinute'],
+                            additionalProperties: false,
+                        },
+                        queueMetrics: {
+                            type: 'object',
+                            properties: {
+                                influxdb: {
+                                    type: 'object',
+                                    properties: {
+                                        enable: { type: 'boolean', default: false },
+                                        writeFrequency: { type: 'number', default: 20000 },
+                                        measurementName: { type: 'string', default: 'butler_udp_queue' },
+                                        tags: { type: 'array', items: { type: 'object' } },
+                                    },
+                                    required: ['enable', 'writeFrequency', 'measurementName'],
+                                    additionalProperties: false,
+                                },
+                            },
+                            required: ['influxdb'],
+                            additionalProperties: false,
+                        },
                     },
-                    required: ['enable', 'serverHost', 'portTaskFailure'],
+                    required: ['enable', 'serverHost', 'portTaskFailure', 'maxMessageSize', 'enableSourceValidation', 'allowedSources', 'messageQueue', 'rateLimit', 'queueMetrics'],
                     additionalProperties: false,
                 },
 

@@ -342,13 +342,13 @@ const start = async () => {
     // Prepare to listen on port Y for incoming UDP connections regarding failed tasks
     globals.udpServerTaskResultSocket = dgram.createSocket({
         type: 'udp4',
-        reuseAddr: true,
+        reuseAddr: false,
     });
 
     // ---------------------------------------------------
     // Set up UDP handlers
     if (globals.config.get('Butler.udpServerConfig.enable')) {
-        udpInitTaskErrorServer();
+        await udpInitTaskErrorServer();
 
         // Start UDP server for failed task events
         globals.udpServerTaskResultSocket.bind(globals.udpPortTaskFailure, globals.udpHost);

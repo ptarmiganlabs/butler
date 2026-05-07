@@ -987,9 +987,31 @@ Butler:
                         appReload: qscloud/app/reload
 
     udpServerConfig:
-        enable: false # Should the UDP server responsible for receving task failure/aborted events be started?
+        enable: false # Should the UDP server responsible for receiving task failure/aborted events be started?
         serverHost: 10.11.12.13 # FQDN or IP (or localhost) of server where Butler is running
         portTaskFailure: 9998
+        maxMessageSize: 65507 # Max UDP message size in bytes (default: 65507 = IPv4 max, 65527 = IPv6 max)
+        enableSourceValidation: false # Enable source IP validation for incoming UDP messages
+        allowedSources: [] # List of allowed IPv4 addresses or hostnames (e.g., ["192.168.1.100", "sense-server-01"])
+
+        # Queue settings for handling incoming UDP messages
+        messageQueue:
+            maxConcurrent: 10 # Max concurrent message processing
+            maxSize: 200 # Max queue size before rejecting
+            backpressureThreshold: 0.8 # Log warning when queue reaches this utilization fraction
+
+        # Rate limiting (optional)
+        rateLimit:
+            enable: false # Enable rate limiting to prevent message flooding
+            maxMessagesPerMinute: 600 # Max messages per minute (~10/second)
+
+        # Queue metrics (optional - requires InfluxDB)
+        queueMetrics:
+            influxdb:
+                enable: false # Store queue metrics in InfluxDB
+                writeFrequency: 20000 # Write interval (ms)
+                measurementName: butler_udp_queue
+                tags: [] # Optional tags added to all queue metrics points
 
     restServerConfig:
         enable: false # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.
