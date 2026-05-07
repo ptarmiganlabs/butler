@@ -998,7 +998,7 @@ Butler:
         messageQueue:
             maxConcurrent: 10 # Max concurrent message processing
             maxSize: 200 # Max queue size before rejecting
-            backpressureThreshold: 80 # Log warning at this % utilization
+            backpressureThreshold: 0.8 # Log warning when queue reaches this utilization fraction
 
         # Rate limiting (optional)
         rateLimit:

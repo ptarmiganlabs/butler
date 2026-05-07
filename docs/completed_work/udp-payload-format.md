@@ -490,7 +490,7 @@ Defined in `Butler.udpServerConfig` (validated by schema in `src/lib/assert/conf
 | `allowedSources` | array of strings | Yes | Allowed source IPv4/hostnames used when source validation is enabled |
 | `messageQueue.maxConcurrent` | number | Yes | Max number of concurrent message processors |
 | `messageQueue.maxSize` | number | Yes | Max queue size before incoming messages are dropped |
-| `messageQueue.backpressureThreshold` | number | Yes | Queue utilization threshold (percent) for backpressure warnings |
+| `messageQueue.backpressureThreshold` | number | Yes | Queue utilization threshold (0-1 fraction) for backpressure warnings |
 | `rateLimit.enable` | boolean | Yes | Enable or disable rate limiting |
 | `rateLimit.maxMessagesPerMinute` | number | Yes | Maximum messages accepted per minute when rate limiting is enabled |
 | `queueMetrics.influxdb.enable` | boolean | Yes | Enable writing queue metrics to InfluxDB |
@@ -511,7 +511,7 @@ Butler:
     messageQueue:
       maxConcurrent: 10
       maxSize: 200
-      backpressureThreshold: 80
+      backpressureThreshold: 0.8
     rateLimit:
       enable: false
       maxMessagesPerMinute: 600

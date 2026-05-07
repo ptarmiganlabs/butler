@@ -3054,7 +3054,7 @@ export const confifgFileSchema = {
                             properties: {
                                 maxConcurrent: { type: 'number', default: 10 },
                                 maxSize: { type: 'number', default: 200 },
-                                backpressureThreshold: { type: 'number', default: 80 },
+                                backpressureThreshold: { type: 'number', default: 0.8 },
                             },
                             required: ['maxConcurrent', 'maxSize', 'backpressureThreshold'],
                             additionalProperties: false,
