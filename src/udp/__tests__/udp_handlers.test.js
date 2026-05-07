@@ -286,7 +286,7 @@ describe('udp_handlers', () => {
 
     test('unknown message type logs warning', async () => {
         const { default: globals } = await import('../../globals.js');
-        events.message(Buffer.from('/unknown-type/;a;b;c'), {});
+        await events.message(Buffer.from('/unknown-type/;a;b;c'), {});
         // Wait for queue to process
         await new Promise((r) => setTimeout(r, 100));
         expect(globals.logger.warn).toHaveBeenCalledWith('[QSEOW] UDP HANDLER: Unknown UDP message type: "/unknown-type/"');
