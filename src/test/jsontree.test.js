@@ -105,8 +105,8 @@ describe('JsonTree.js library validation', () => {
             const jsInclude = htmlContent.indexOf('src="jsontree.js"');
             expect(cssInclude).toBeLessThan(jsInclude); // CSS should come before JS
 
-            // Should have the data attribute for jsontree initialization
-            expect(htmlContent).toMatch(/data-jsontree-js\s*=/);
+            // Should have the data attribute for jsontree initialization (set dynamically via script)
+            expect(htmlContent).toMatch(/setAttribute\s*\(\s*['"]data-jsontree-js['"]/);
 
             // Should have required tree container
             expect(htmlContent).toContain('id="tree-1"');
@@ -115,8 +115,8 @@ describe('JsonTree.js library validation', () => {
         test('jsontree configuration in HTML is valid', () => {
             const htmlContent = fs.readFileSync(jsontreeFiles.html, 'utf8');
 
-            // Extract the data-jsontree-js configuration
-            const configMatch = htmlContent.match(/data-jsontree-js\s*=\s*"([^"]+)"/);
+            // Verify the data-jsontree-js attribute is set dynamically via script
+            const configMatch = htmlContent.match(/setAttribute\s*\(\s*['"]data-jsontree-js['"]/);
             expect(configMatch).toBeTruthy();
 
             // Should contain required configuration options
