@@ -113,7 +113,7 @@ Butler:
         enable: false # Master switch for InfluxDB integration. If false, no data will be sent to InfluxDB.
         hostIP: influxdb.mycompany.com # IP or FQDN of Influxdb server
         hostPort: 8086 # Port where Influxdb is listening. Default=8086
-        version: 1 # InfluxDB major version. Supported values are 1, 2 and 3.
+        version: 3 # InfluxDB major version. Supported values are 1, 2 and 3.
         v1Config: # Settings for InfluxDB v1.x only
             auth:
                 enable: false # Does InfluxDB require login?
