@@ -63,7 +63,7 @@ describe('UdpQueueManager', () => {
         // maxSize is 10, so we can have up to 10 waiting
         // Add 12 tasks: 2 will run immediately, 10 will wait (filling the queue)
         const slowFn = () => new Promise((r) => setTimeout(r, 5000));
-        
+
         // Add 12 tasks - first 2 start running, next 10 wait
         for (let i = 0; i < 12; i++) {
             const result = await queueManager.addToQueue(slowFn);
@@ -107,7 +107,7 @@ describe('UdpQueueManager', () => {
                 enable: true,
                 maxConcurrent: 2,
                 maxSize: 100,
-                backpressureThreshold: 0.8,
+                backpressureThreshold: 80, // 80% (percentage, 0-100) — matches udp_queue_manager validation
             },
             rateLimit: {
                 enable: true,

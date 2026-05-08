@@ -577,4 +577,64 @@ describe('winsvc helpers', () => {
             }
         });
     });
+
+    // Service name validation tests
+    describe('service name validation', () => {
+        test('status() accepts valid service names', async () => {
+            const validNames = ['Spooler', 'RunningService', 'wuauserv', 'My_Service-2024', 'Service.Name'];
+
+            for (const name of validNames) {
+                execMock.mockImplementationOnce((cmd, cb) => {
+                    cb(null, `SERVICE_NAME: ${name}\r\n        STATE              : 4  RUNNING`);
+                });
+                await expect(status(logger, name)).resolves.toBeDefined();
+            }
+        });
+
+        test('status() rejects service names containing shell metacharacters', async () => {
+            const injectionNames = [
+                'service"name',
+                'svc&whoami',
+                'svc|type C:\\secret',
+                'svc;calc',
+                'svc`id`',
+                'svc$(cmd)',
+                'svc\necho injected',
+                'svc\rdir',
+                'svc<input',
+                'svc>output',
+            ];
+
+            for (const name of injectionNames) {
+                await expect(status(logger, name)).rejects.toThrow('Service name is invalid');
+                jest.clearAllMocks();
+            }
+        });
+
+        test('details() rejects service names containing shell metacharacters', async () => {
+            const injectionNames = ['svc"inject', 'svc&net user', 'svc|powershell', 'svc;shutdown /s'];
+
+            for (const name of injectionNames) {
+                await expect(details(logger, name)).rejects.toThrow('Service name is invalid');
+                jest.clearAllMocks();
+            }
+        });
+
+        test('exists() rejects service names containing shell metacharacters', async () => {
+            const mod = await import('../winsvc.js');
+            const injectionNames = ['svc"inject', 'svc&whoami', 'svc|id', 'svc;ls'];
+
+            for (const name of injectionNames) {
+                await expect(mod.exists(logger, name)).rejects.toThrow('Service name is invalid');
+                jest.clearAllMocks();
+            }
+        });
+
+        test('null and empty service names are still rejected', async () => {
+            await expect(status(logger, null)).rejects.toThrow('Service name is invalid');
+            await expect(status(logger, '')).rejects.toThrow('Service name is invalid');
+            await expect(details(logger, null)).rejects.toThrow('Service name is invalid');
+            await expect(details(logger, '')).rejects.toThrow('Service name is invalid');
+        });
+    });
 });

@@ -196,7 +196,7 @@ export class UdpQueueManager {
         }
         const bp = config?.messageQueue?.backpressureThreshold;
         if (typeof bp !== 'number' || Number.isNaN(bp) || bp < 0 || bp > 100) {
-            throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a number between 0 and 100');
+            throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
         this.config = {
@@ -279,7 +279,7 @@ export class UdpQueueManager {
      */
     async checkBackpressure(queueSize) {
         const utilization = queueSize / this.config.messageQueue.maxSize;
-        const threshold = this.getBackpressureThreshold() / 100; // Convert percentage to fraction
+        const threshold = this.getBackpressureThreshold() / 100; // Convert percentage (0-100) to fraction (0-1)
         const now = Date.now();
 
         if (utilization >= threshold && !this.backpressureActive) {

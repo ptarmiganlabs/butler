@@ -328,22 +328,34 @@ async function handlerCreateDirQvd(request, reply) {
     try {
         logRESTCall(request);
 
-        // TODO: Add check to make sure the created dir is really a subpath of the QVD folder
         if (request.body.directory === undefined) {
             // Required parameter is missing
             reply.send(httpErrors(400, 'Required parameter missing'));
         } else {
-            globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${globals.qvdFolder}/${request.body.directory}`);
+            // Resolve the full path and verify it stays within the QVD folder to prevent path traversal.
+            // upath.normalizeSafe removes . and .. segments without issuing a filesystem call, which
+            // is safe here because isDirectoryChildOf operates on normalised token-split strings.
+            const resolvedDir = upath.normalizeSafe(upath.join(globals.qvdFolder, request.body.directory));
+            const normalizedQvdFolder = upath.normalizeSafe(globals.qvdFolder);
 
-            mkdirp(`${globals.qvdFolder}/${request.body.directory}`)
-                .then((dir) => globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`))
+            if (!isDirectoryChildOf(resolvedDir, normalizedQvdFolder)) {
+                globals.logger.error(
+                    `CREATEDIRQVD: Path traversal attempt detected. Requested directory "${request.body.directory}" resolves outside QVD folder.`,
+                );
+                reply.send(httpErrors(403, 'Directory must be within the QVD folder'));
+                return;
+            }
 
-                .catch((error) => {
-                    globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(err)}`);
-                    reply.send(httpErrors(500, 'Failed to create directory'));
-                });
+            globals.logger.debug(`CREATEDIRQVD: About to create QVD directory ${resolvedDir}`);
 
-            reply.code(201).send(request.body);
+            try {
+                const dir = await mkdirp(resolvedDir);
+                globals.logger.verbose(`CREATEDIRQVD: Created QVD directory ${dir}`);
+                reply.code(201).send(request.body);
+            } catch (mkdirErr) {
+                globals.logger.error(`CREATEDIRQVD: ${globals.getErrorMessage(mkdirErr)}`);
+                reply.send(httpErrors(500, 'Failed to create directory'));
+            }
         }
     } catch (err) {
         globals.logger.error(`CREATEDIRQVD: Failed creating directory: ${request.body.directory}: ${globals.getErrorMessage(err)}`);
@@ -366,15 +378,14 @@ async function handlerCreateDir(request, reply) {
         } else {
             globals.logger.debug(`CREATEDIR: About to create directory ${request.body.directory}`);
 
-            mkdirp(request.body.directory)
-                .then((dir) => globals.logger.verbose(`CREATEDIR: Created directory ${dir}`))
-
-                .catch((error) => {
-                    globals.logger.error(`CREATEDIR: ${globals.getErrorMessage(err)}`);
-                    reply.send(httpErrors(500, 'Failed to create directory'));
-                });
-
-            reply.code(201).send(request.body);
+            try {
+                const dir = await mkdirp(request.body.directory);
+                globals.logger.verbose(`CREATEDIR: Created directory ${dir}`);
+                reply.code(201).send(request.body);
+            } catch (mkdirErr) {
+                globals.logger.error(`CREATEDIR: ${globals.getErrorMessage(mkdirErr)}`);
+                reply.send(httpErrors(500, 'Failed to create directory'));
+            }
         }
     } catch (err) {
         globals.logger.error(`CREATEDIR: Failed creating directory: ${request.body.directory}: ${globals.getErrorMessage(err)}`);

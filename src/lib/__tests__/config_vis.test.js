@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
+import vm from 'vm';
 
 describe('Config Visualization Static Files', () => {
     const staticPath = path.resolve(process.cwd(), 'static/configvis');
@@ -72,11 +73,9 @@ describe('Config Visualization Static Files', () => {
         const prismJsPath = path.join(staticPath, 'prism.js');
         const content = fs.readFileSync(prismJsPath, 'utf8');
 
-        // Basic syntax validation - should not throw when evaluating
+        // Validate JavaScript syntax using vm.Script (parses without executing)
         expect(() => {
-            // Use eval in a try-catch to check for basic syntax errors
-            // Note: This is for testing purposes only
-            eval('(function() { ' + content + ' })');
+            new vm.Script(content);
         }).not.toThrow();
     });
 });

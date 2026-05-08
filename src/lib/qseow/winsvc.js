@@ -13,6 +13,28 @@ function isValidHost(host) {
 }
 
 /**
+ * Validates a Windows service name to prevent command injection.
+ * Service names are passed inside double-quoted shell arguments; a double-quote
+ * character would break the quoting and allow arbitrary command execution.
+ *
+ * Rejects names that contain the following shell metacharacters:
+ *   " (double-quote), & (ampersand), | (pipe), ; (semicolon),
+ *   ` (backtick), $ (dollar), ( ) (parentheses), < > (redirects), \r \n (newlines).
+ * Names exceeding 256 characters are also rejected.
+ * All other characters — including Unicode — are accepted.
+ *
+ * @param {string} serviceName Service name to validate
+ * @returns {boolean} True if valid, false otherwise
+ */
+function isValidServiceName(serviceName) {
+    if (!serviceName || typeof serviceName !== 'string') return false;
+    // Allow printable ASCII except shell metacharacters that could enable injection:
+    // " & | ; ` $ ( ) < > \r \n
+    const forbidden = /["\r\n&|;`$()<>]/;
+    return !forbidden.test(serviceName) && serviceName.length > 0 && serviceName.length <= 256;
+}
+
+/**
  * Get all names of services installed
  * @param {object} logger Logger object
  * @param {string} host Host from which to get services
@@ -90,7 +112,7 @@ export function exists(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolveExists, rejectExists) => {
         // With invalid service name, reject
-        if (!serviceName) {
+        if (!serviceName || !isValidServiceName(serviceName)) {
             logger.error('[QSEOW] WINSVC EXISTS: Service name is invalid');
 
             rejectExists(new Error('Service name is invalid'));
@@ -245,7 +267,7 @@ export function status(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
-        if (!serviceName) {
+        if (!serviceName || !isValidServiceName(serviceName)) {
             logger.error('[QSEOW] WINSVC STATUS: Service name is invalid');
 
             reject(new Error('Service name is invalid'));
@@ -339,7 +361,7 @@ export function details(logger, serviceName, host = null) {
     // Create promise
     return new Promise((resolve, reject) => {
         // With invalid service name, reject
-        if (!serviceName) {
+        if (!serviceName || !isValidServiceName(serviceName)) {
             logger.error('[QSEOW] WINSVC DETAILS: Service name is invalid');
 
             reject(new Error('Service name is invalid'));
