@@ -18,10 +18,13 @@ import schedulerAborted from './handlers/scheduler_aborted.js';
 import schedulerFailed from './handlers/scheduler_failed.js';
 import schedulerTaskSuccess from './handlers/scheduler_success.js';
 import distributeTaskCompletion from './handlers/distribute_task_completion.js';
-import { parseAllowedSources, isIpAllowed } from '../lib/udp_ip_validator.js';
+import { parseAllowedSources, isIpAllowed, createRejectThrottle } from '../lib/udp_ip_validator.js';
 import { guidRegex } from '../lib/guid_util.js';
 import { sanitizeMessage } from '../lib/udp_sanitizer.js';
 import { UdpQueueManager } from '../lib/udp_queue_manager.js';
+
+// Per-source throttle for reject warnings (avoids log flooding from spamming hosts)
+const rejectThrottle = createRejectThrottle();
 
 /**
  * Set up UDP server handlers for acting on Qlik Sense task events.
@@ -92,11 +95,16 @@ const udpInitTaskErrorServer = async () => {
                 const { allowedIPs, errors } = await parseAllowedSources(globals.udpAllowedSourcesConfig);
                 if (errors.length > 0) {
                     errors.forEach((err) => globals.logger.error(`[QSEOW] UDP INIT: ${err}`));
-                    globals.logger.warn('[QSEOW] UDP INIT: Source validation will be disabled due to config errors');
-                    globals.udpEnableSourceValidation = false;
-                } else {
+                }
+                if (allowedIPs.length > 0) {
                     globals.udpAllowedIPs = allowedIPs;
                     globals.logger.info(`[QSEOW] UDP INIT: Source IP validation enabled, ${allowedIPs.length} IPs loaded`);
+                    if (errors.length > 0) {
+                        globals.logger.warn(`[QSEOW] UDP INIT: ${errors.length} source(s) could not be resolved and were skipped`);
+                    }
+                } else {
+                    globals.logger.warn('[QSEOW] UDP INIT: Source validation will be disabled — no IPs could be resolved');
+                    globals.udpEnableSourceValidation = false;
                 }
             } catch (err) {
                 globals.logger.error(`[QSEOW] UDP INIT: Error parsing allowed sources: ${globals.getErrorMessage(err)}`);
@@ -126,6 +134,14 @@ const udpInitTaskErrorServer = async () => {
     globals.udpServerTaskResultSocket.on('message', async (message, remote) => {
         let sanitizedMessageText = '';
 
+        // --- SOURCE IP VALIDATION (fail-fast: check before any other processing) ---
+        if (remote?.address) {
+            if (!isIpAllowed(remote.address, globals.udpAllowedIPs, globals.udpEnableSourceValidation)) {
+                rejectThrottle.logRejection(remote.address, remote.port, globals.logger, '[QSEOW] UDP HANDLER:');
+                return;
+            }
+        }
+
         // --- PAYLOAD SIZE VALIDATION (using queue manager) ---
         if (!globals.udpQueueManager.validateMessageSize(message)) {
             const messageSize = Buffer.isBuffer(message) ? message.length : Buffer.byteLength(message);
@@ -143,16 +159,6 @@ const udpInitTaskErrorServer = async () => {
         }
 
         try {
-            // --- SOURCE IP VALIDATION ---
-            if (globals.udpEnableSourceValidation && remote?.address) {
-                if (!isIpAllowed(remote.address, globals.udpAllowedIPs)) {
-                    globals.logger.warn(
-                        `[QSEOW] UDP HANDLER: Message from unauthorized source ${remote.address}:${remote.port}. Rejecting.`,
-                    );
-                    return;
-                }
-            }
-
             const msg = message.toString().split(';');
             const originalMsgForCompare = JSON.stringify(msg);
 
