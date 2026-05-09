@@ -109,15 +109,7 @@ describe('lib/smtp_core', () => {
         test('skips invalid email addresses', async () => {
             mockEmailValidator.validate.mockReturnValueOnce(false);
 
-            await sendEmail(
-                'from@example.com',
-                ['invalid-email'],
-                'normal',
-                'Subject',
-                '/path/to/views',
-                'body-template',
-                {},
-            );
+            await sendEmail('from@example.com', ['invalid-email'], 'normal', 'Subject', '/path/to/views', 'body-template', {});
 
             expect(mockLogger.warn).toHaveBeenCalled();
             // createTransport is called before the email validation loop in the actual function
@@ -125,29 +117,15 @@ describe('lib/smtp_core', () => {
         });
 
         test('compiles subject with Handlebars', async () => {
-            await sendEmail(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Hello {{name}}',
-                '/path/to/views',
-                'body-template',
-                { name: 'World' },
-            );
+            await sendEmail('from@example.com', ['to@example.com'], 'normal', 'Hello {{name}}', '/path/to/views', 'body-template', {
+                name: 'World',
+            });
 
             expect(mockHandlebars.compile).toHaveBeenCalledWith('Hello {{name}}');
         });
 
         test('sets up view engine for email body', async () => {
-            await sendEmail(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Subject',
-                '/path/to/views',
-                'body-template',
-                {},
-            );
+            await sendEmail('from@example.com', ['to@example.com'], 'normal', 'Subject', '/path/to/views', 'body-template', {});
 
             expect(mockExpressHandlebar.create).toHaveBeenCalledWith({
                 partialsDir: 'partials/',
@@ -156,15 +134,7 @@ describe('lib/smtp_core', () => {
         });
 
         test('registers eq helper with Handlebars', async () => {
-            await sendEmail(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Subject',
-                '/path/to/views',
-                'body-template',
-                {},
-            );
+            await sendEmail('from@example.com', ['to@example.com'], 'normal', 'Subject', '/path/to/views', 'body-template', {});
 
             expect(mockHandlebars.registerHelper).toHaveBeenCalledWith('eq', expect.any(Function));
         });
@@ -177,15 +147,7 @@ describe('lib/smtp_core', () => {
             };
             mockNodemailer.createTransport.mockReturnValueOnce(mockTransporter);
 
-            await sendEmail(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Subject',
-                '/path/to/views',
-                'body-template',
-                {},
-            );
+            await sendEmail('from@example.com', ['to@example.com'], 'normal', 'Subject', '/path/to/views', 'body-template', {});
 
             expect(mockTransporter.verify).toHaveBeenCalled();
         });
@@ -198,15 +160,7 @@ describe('lib/smtp_core', () => {
             };
             mockNodemailer.createTransport.mockReturnValueOnce(mockTransporter);
 
-            await sendEmail(
-                'from@example.com',
-                ['to@example.com'],
-                'high',
-                'Subject',
-                '/path/to/views',
-                'body-template',
-                {},
-            );
+            await sendEmail('from@example.com', ['to@example.com'], 'high', 'Subject', '/path/to/views', 'body-template', {});
 
             expect(mockTransporter.sendMail).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -225,13 +179,7 @@ describe('lib/smtp_core', () => {
         test('returns 1 when SMTP config is not OK', async () => {
             mockIsSmtpConfigOk.mockReturnValueOnce(false);
 
-            const result = await sendEmailBasic(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Subject',
-                'Body text',
-            );
+            const result = await sendEmailBasic('from@example.com', ['to@example.com'], 'normal', 'Subject', 'Body text');
 
             expect(result).toBe(1);
         });
@@ -245,13 +193,7 @@ describe('lib/smtp_core', () => {
             };
             mockNodemailer.createTransport.mockReturnValueOnce(mockTransporter.createTransport());
 
-            await sendEmailBasic(
-                'from@example.com',
-                ['to@example.com'],
-                'normal',
-                'Subject',
-                'Body text',
-            );
+            await sendEmailBasic('from@example.com', ['to@example.com'], 'normal', 'Subject', 'Body text');
 
             expect(mockEmailValidator.validate).toHaveBeenCalledWith('to@example.com');
         });
@@ -259,13 +201,7 @@ describe('lib/smtp_core', () => {
         test('skips invalid email in basic email', async () => {
             mockEmailValidator.validate.mockReturnValueOnce(false);
 
-            await sendEmailBasic(
-                'from@example.com',
-                ['invalid-email'],
-                'normal',
-                'Subject',
-                'Body',
-            );
+            await sendEmailBasic('from@example.com', ['invalid-email'], 'normal', 'Subject', 'Body');
 
             expect(mockLogger.warn).toHaveBeenCalled();
         });
@@ -277,13 +213,7 @@ describe('lib/smtp_core', () => {
             };
             mockNodemailer.createTransport.mockReturnValueOnce(mockTransporter);
 
-            await sendEmailBasic(
-                'from@example.com',
-                ['to@example.com'],
-                'low',
-                'Test Subject',
-                'Test Body',
-            );
+            await sendEmailBasic('from@example.com', ['to@example.com'], 'low', 'Test Subject', 'Test Body');
 
             expect(mockTransporter.sendMail).toHaveBeenCalledWith(
                 expect.objectContaining({

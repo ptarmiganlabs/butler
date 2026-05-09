@@ -98,6 +98,9 @@ profile-*
 .vscode
 *code-workspace
 
+# Crash dump files
+crash_dumps/
+
 # clinic
 profile*
 *clinic*
