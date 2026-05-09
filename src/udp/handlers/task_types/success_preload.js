@@ -162,7 +162,6 @@ export const handleSuccessPreloadTask = async (msg, taskMetadata) => {
         return true;
     } catch (err) {
         globals.logger.error(`[QSEOW] PRELOAD TASK SUCCESS: Error handling successful preload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] PRELOAD TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

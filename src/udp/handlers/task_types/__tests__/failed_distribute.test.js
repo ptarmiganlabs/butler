@@ -486,7 +486,6 @@ describe('failed_distribute', () => {
             await handleFailedDistributeTask(msg, taskMetadata);
 
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Error handling failed distribute task'));
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace'));
         });
     });
 

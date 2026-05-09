@@ -115,7 +115,6 @@ const schedulerAborted = async (msg) => {
         }
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKABORTED: Error processing task aborted event: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKABORTED: Stack trace: ${err.stack}`);
     }
 };
 

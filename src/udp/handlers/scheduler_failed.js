@@ -114,7 +114,6 @@ const schedulerFailed = async (msg) => {
         }
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error processing task failure event: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
     }
 };
 

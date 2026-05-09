@@ -107,7 +107,6 @@ const distributeTaskCompletion = async (msg) => {
         globals.logger.error(
             `[QSEOW] DISTRIBUTION COMPLETED: Error processing distribution completion event: ${globals.getErrorMessage(err)}`,
         );
-        globals.logger.error(`[QSEOW] DISTRIBUTION COMPLETED: Stack trace: ${err.stack}`);
     }
 };
 

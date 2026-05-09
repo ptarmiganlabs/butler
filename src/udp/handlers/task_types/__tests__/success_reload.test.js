@@ -519,7 +519,6 @@ describe('handleSuccessReloadTask', () => {
 
             expect(result).toBe(false);
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Error handling successful reload task'));
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace'));
         });
 
         test('should handle error when getting task tags', async () => {

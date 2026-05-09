@@ -313,7 +313,6 @@ describe('failed_externalprogram', () => {
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
                 expect.stringContaining('Error handling failed external program task: InfluxDB write failed'),
             );
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace:'));
         });
 
         test('should handle error when getErrorMessage is called', async () => {

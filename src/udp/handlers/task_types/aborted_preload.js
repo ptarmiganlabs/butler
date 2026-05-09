@@ -46,6 +46,5 @@ export const handleAbortedPreloadTask = async (msg, taskMetadata) => {
         );
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKABORTED: Error handling aborted preload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKABORTED: Stack trace: ${err.stack}`);
     }
 };

@@ -79,6 +79,5 @@ export const handleFailedExternalProgramTask = async (msg, taskMetadata) => {
         // - MQTT messages
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed external program task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
     }
 };

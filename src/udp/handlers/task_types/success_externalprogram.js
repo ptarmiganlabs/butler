@@ -172,7 +172,6 @@ export const handleSuccessExternalProgramTask = async (msg, taskMetadata) => {
         globals.logger.error(
             `[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Error handling successful external program task: ${globals.getErrorMessage(err)}`,
         );
-        globals.logger.error(`[QSEOW] EXTERNAL PROGRAM TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

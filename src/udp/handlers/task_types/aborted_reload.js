@@ -348,6 +348,5 @@ export const handleAbortedReloadTask = async (msg, taskMetadata) => {
         }
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKABORTED: Error handling aborted reload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKABORTED: Stack trace: ${err.stack}`);
     }
 };

@@ -119,7 +119,6 @@ const schedulerTaskSuccess = async (msg) => {
         return result;
     } catch (err) {
         globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error processing task success event: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

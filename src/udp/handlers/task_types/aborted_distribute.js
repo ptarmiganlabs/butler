@@ -46,6 +46,5 @@ export const handleAbortedDistributeTask = async (msg, taskMetadata) => {
         );
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKABORTED: Error handling aborted distribute task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKABORTED: Stack trace: ${err.stack}`);
     }
 };
