@@ -317,23 +317,39 @@ describe('writeCrashDump', () => {
     });
 
     test('uses defaults when globals.config is null', async () => {
-        // Point config to null so the crash dump falls back to defaults
-        mockGlobalsDefault.config = null;
+        const originalCwd = process.cwd();
 
-        const err = new Error('No config test');
-        // Should resolve without throwing
-        await expect(writeCrashDump(err, 'uncaughtException')).resolves.toBeUndefined();
+        try {
+            process.chdir(tempDir);
+
+            // Point config to null so the crash dump falls back to defaults
+            mockGlobalsDefault.config = null;
+
+            const err = new Error('No config test');
+            // Should resolve without throwing
+            await expect(writeCrashDump(err, 'uncaughtException')).resolves.toBeUndefined();
+        } finally {
+            process.chdir(originalCwd);
+        }
     });
 
     test('uses defaults when globals is not yet initialized', async () => {
-        mockGlobalsDefault.config = null;
-        mockGlobalsDefault.logger = null;
-        mockGlobalsDefault.appVersion = undefined;
-        mockGlobalsDefault.isSea = undefined;
+        const originalCwd = process.cwd();
 
-        const err = new Error('Early crash test');
-        // Should resolve without throwing
-        await expect(writeCrashDump(err, 'uncaughtException')).resolves.toBeUndefined();
+        try {
+            process.chdir(tempDir);
+
+            mockGlobalsDefault.config = null;
+            mockGlobalsDefault.logger = null;
+            mockGlobalsDefault.appVersion = undefined;
+            mockGlobalsDefault.isSea = undefined;
+
+            const err = new Error('Early crash test');
+            // Should resolve without throwing
+            await expect(writeCrashDump(err, 'uncaughtException')).resolves.toBeUndefined();
+        } finally {
+            process.chdir(originalCwd);
+        }
     });
 
     test('filenames match expected pattern', async () => {
