@@ -377,8 +377,6 @@ describe('distribute_task_completion', () => {
             mockDoesTaskExist.mockRejectedValue(error);
 
             await distributeTaskCompletion(msg);
-
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace'));
         });
     });
 

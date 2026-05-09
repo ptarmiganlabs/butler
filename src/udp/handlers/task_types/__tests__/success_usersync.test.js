@@ -477,7 +477,6 @@ describe('success_usersync', () => {
             expect(mockGlobals.logger.error).toHaveBeenCalledWith(
                 expect.stringContaining('Error handling successful user sync task: Config error'),
             );
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace:'));
         });
 
         test('should handle getTaskTags throwing error', async () => {

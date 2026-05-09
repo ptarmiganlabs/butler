@@ -40,6 +40,7 @@ describe('lib/influxdb/task_failure', () => {
             info: jest.fn(),
             verbose: jest.fn(),
             warn: jest.fn(),
+            debug: jest.fn(),
             silly: jest.fn(),
             error: jest.fn(),
         };
@@ -139,11 +140,14 @@ describe('lib/influxdb/task_failure', () => {
                 executionStopTime: { hour: 10, minute: 31 },
                 scriptLogFull: ['line1', 'line2'],
                 scriptLogTailCount: 2,
+                scriptLogSize: 2,
+                executionDetailsConcatenated: 'Test execution details',
             },
         };
 
         postReloadTaskFailureNotificationInfluxDb(paramsWithScript);
 
+        expect(mockInfluxWritePoints).toHaveBeenCalled();
         const datapoint = mockInfluxWritePoints.mock.calls[0][0];
         expect(datapoint[0].tags.task_executingNodeName).toBe('node1');
         expect(datapoint[0].tags.task_executionStatusNum).toBe(8);

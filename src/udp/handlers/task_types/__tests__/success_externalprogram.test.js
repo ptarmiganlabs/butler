@@ -376,8 +376,6 @@ describe('success_externalprogram', () => {
             mockGetExternalProgramTaskExecutionResults.mockRejectedValue(error);
 
             await handleSuccessExternalProgramTask(msg, taskMetadata);
-
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Stack trace:'));
         });
     });
 

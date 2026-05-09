@@ -164,7 +164,6 @@ export const handleSuccessUserSyncTask = async (msg, taskMetadata) => {
         return true;
     } catch (err) {
         globals.logger.error(`[QSEOW] USER SYNC TASK SUCCESS: Error handling successful user sync task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] USER SYNC TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

@@ -401,6 +401,5 @@ export const handleFailedReloadTask = async (msg, taskMetadata) => {
         }
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed reload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
     }
 };

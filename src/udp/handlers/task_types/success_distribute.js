@@ -170,7 +170,6 @@ export const handleSuccessDistributeTask = async (msg, taskMetadata) => {
         return true;
     } catch (err) {
         globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: Error handling successful distribute task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] DISTRIBUTE TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

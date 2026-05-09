@@ -290,7 +290,6 @@ export const handleSuccessReloadTask = async (msg, taskMetadata) => {
         return true;
     } catch (err) {
         globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Error handling successful reload task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] RELOAD TASK SUCCESS: Stack trace: ${err.stack}`);
         return false;
     }
 };

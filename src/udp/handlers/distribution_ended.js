@@ -115,7 +115,6 @@ const distributionEnded = async (msg) => {
         }
     } catch (err) {
         globals.logger.error(`[QSEOW] DISTRIBUTION ENDED: Error processing distribution completion event: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] DISTRIBUTION ENDED: Stack trace: ${err.stack}`);
     }
 };
 

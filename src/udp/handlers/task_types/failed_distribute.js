@@ -123,6 +123,5 @@ export const handleFailedDistributeTask = async (msg, taskMetadata) => {
         globals.logger.info(`[QSEOW] TASKFAILURE: Distribute task ${msg[2]} (${distributeTaskId}) failed.`);
     } catch (err) {
         globals.logger.error(`[QSEOW] TASKFAILURE: Error handling failed distribute task: ${globals.getErrorMessage(err)}`);
-        globals.logger.error(`[QSEOW] TASKFAILURE: Stack trace: ${err.stack}`);
     }
 };
