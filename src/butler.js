@@ -13,7 +13,6 @@
 
 import dgram from 'dgram';
 import { GLOBALS_INIT_TIMEOUT_MS, GLOBALS_INIT_CHECK_INTERVAL_MS } from './constants.js';
-import { writeCrashDump } from './lib/crash-dump.js';
 
 // Suppress experimental warnings
 // https://stackoverflow.com/questions/55778283/how-to-disable-warnings-when-node-is-launched-via-a-global-shell-script
@@ -372,6 +371,7 @@ start();
 process.on('uncaughtException', async (err) => {
     try {
         console.error('FATAL: Uncaught exception – writing crash dump…');
+        const { writeCrashDump } = await import('./lib/crash-dump.js');
         await writeCrashDump(err, 'uncaughtException');
     } catch {
         // Must not throw
@@ -390,6 +390,7 @@ process.on('unhandledRejection', async (reason) => {
     try {
         const err = reason instanceof Error ? reason : new Error(String(reason));
         console.error('FATAL: Unhandled promise rejection – writing crash dump…');
+        const { writeCrashDump } = await import('./lib/crash-dump.js');
         await writeCrashDump(err, 'unhandledRejection');
     } catch {
         // Must not throw

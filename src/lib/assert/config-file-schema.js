@@ -3851,6 +3851,7 @@ export const confifgFileSchema = {
                 'fileLogging',
                 'logDirectory',
                 'anonTelemetry',
+                'crashFile',
                 'systemInfo',
                 'cert',
                 'configEngine',
