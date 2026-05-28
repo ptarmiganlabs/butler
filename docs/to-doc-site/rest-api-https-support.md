@@ -33,8 +33,8 @@ If `tls.enable` is `false`, Butler keeps serving the public REST API over HTTP e
 ## Validation
 
 - The config file schema now validates `Butler.restServerConfig.tls`.
-- `tls.enable`, `tls.cert`, `tls.key`, and `tls.ca` are part of the schema-validated config structure.
-- `tls.ca` accepts either a filesystem path or `null`.
+- `tls.enable`, `tls.cert`, and `tls.key` are required schema-validated settings.
+- `tls.ca` is optional and accepts either a filesystem path or `null`.
 
 ## Operational notes
 

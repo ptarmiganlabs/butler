@@ -54,6 +54,27 @@ describe('rest_api helpers', () => {
         });
     });
 
+    test('should omit CA from TLS options when CA is null', () => {
+        const config = createMockConfig({
+            Butler: {
+                restServerConfig: {
+                    tls: {
+                        enable: true,
+                        cert: '/cert.pem',
+                        key: '/key.pem',
+                        ca: null,
+                    },
+                },
+            },
+        });
+        const readFileSync = (filePath) => `file:${filePath}`;
+
+        expect(getRestApiTlsOptions(config, readFileSync)).toEqual({
+            cert: 'file:/cert.pem',
+            key: 'file:/key.pem',
+        });
+    });
+
     test('should throw a descriptive error when TLS files cannot be loaded', () => {
         const config = createMockConfig({
             Butler: {

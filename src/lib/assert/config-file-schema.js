@@ -3119,7 +3119,7 @@ export const confifgFileSchema = {
                                 key: { type: 'string' },
                                 ca: { type: ['string', 'null'] },
                             },
-                            required: ['enable', 'cert', 'key', 'ca'],
+                            required: ['enable', 'cert', 'key'],
                             additionalProperties: false,
                         },
                     },

@@ -241,7 +241,7 @@ describe('config-file-schema', () => {
             expect(restServerConfig.properties.tls.properties.key.type).toBe('string');
             expect(restServerConfig.properties.tls.properties.ca.type).toEqual(['string', 'null']);
             expect(restServerConfig.required).toEqual(['enable', 'serverHost', 'serverPort', 'backgroundServerPort', 'tls']);
-            expect(restServerConfig.properties.tls.required).toEqual(['enable', 'cert', 'key', 'ca']);
+            expect(restServerConfig.properties.tls.required).toEqual(['enable', 'cert', 'key']);
             expect(restServerConfig.properties.tls.additionalProperties).toBe(false);
         });
 
@@ -260,7 +260,6 @@ describe('config-file-schema', () => {
                         enable: true,
                         cert: '/tmp/cert.pem',
                         key: '/tmp/key.pem',
-                        ca: null,
                     },
                 }),
             ).toBe(true);
