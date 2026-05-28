@@ -3111,8 +3111,19 @@ export const confifgFileSchema = {
                         },
                         serverPort: { type: 'number' },
                         backgroundServerPort: { type: 'number' },
+                        tls: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean' },
+                                cert: { type: 'string' },
+                                key: { type: 'string' },
+                                ca: { type: ['string', 'null'] },
+                            },
+                            required: ['enable', 'cert', 'key', 'ca'],
+                            additionalProperties: false,
+                        },
                     },
-                    required: ['enable', 'serverHost', 'serverPort', 'backgroundServerPort'],
+                    required: ['enable', 'serverHost', 'serverPort', 'backgroundServerPort', 'tls'],
                     additionalProperties: false,
                 },
 

@@ -229,6 +229,52 @@ describe('config-file-schema', () => {
             expect(heartbeat.additionalProperties).toBe(false);
         });
 
+        test('should have restServerConfig TLS settings with strict structure', () => {
+            const restServerConfig = confifgFileSchema.properties.Butler.properties.restServerConfig;
+
+            expect(restServerConfig).toBeDefined();
+            expect(restServerConfig.type).toBe('object');
+            expect(restServerConfig.properties.tls).toBeDefined();
+            expect(restServerConfig.properties.tls.type).toBe('object');
+            expect(restServerConfig.properties.tls.properties.enable.type).toBe('boolean');
+            expect(restServerConfig.properties.tls.properties.cert.type).toBe('string');
+            expect(restServerConfig.properties.tls.properties.key.type).toBe('string');
+            expect(restServerConfig.properties.tls.properties.ca.type).toEqual(['string', 'null']);
+            expect(restServerConfig.required).toEqual(['enable', 'serverHost', 'serverPort', 'backgroundServerPort', 'tls']);
+            expect(restServerConfig.properties.tls.required).toEqual(['enable', 'cert', 'key', 'ca']);
+            expect(restServerConfig.properties.tls.additionalProperties).toBe(false);
+        });
+
+        test('should validate restServerConfig with optional TLS CA path', () => {
+            const ajv = new Ajv({ allErrors: true, strict: true });
+            addFormats(ajv);
+            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.restServerConfig);
+
+            expect(
+                validate({
+                    enable: true,
+                    serverHost: 'localhost',
+                    serverPort: 8080,
+                    backgroundServerPort: 8081,
+                    tls: {
+                        enable: true,
+                        cert: '/tmp/cert.pem',
+                        key: '/tmp/key.pem',
+                        ca: null,
+                    },
+                }),
+            ).toBe(true);
+
+            expect(
+                validate({
+                    enable: true,
+                    serverHost: 'localhost',
+                    serverPort: 8080,
+                    backgroundServerPort: 8081,
+                }),
+            ).toBe(false);
+        });
+
         test('should have boolean properties for basic flags', () => {
             const butler = confifgFileSchema.properties.Butler.properties;
 
