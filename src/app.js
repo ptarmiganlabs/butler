@@ -49,9 +49,11 @@ async function build(opts = {}) {
     // The dockerHealthCheckServer is used to provide a health check endpoint for the Docker container.
     const restServer = Fastify({ logger: true, bodyLimit: 1 * 1024 * 1024 }); // 1 MB body limit to prevent DoS
     const proxyRestServerOptions = { logger: true };
-    const restApiTlsOptions = getRestApiTlsOptions(globals.config);
-    if (restApiTlsOptions) {
-        proxyRestServerOptions.https = restApiTlsOptions;
+    if (globals.config.get('Butler.restServerConfig.enable') === true) {
+        const restApiTlsOptions = getRestApiTlsOptions(globals.config);
+        if (restApiTlsOptions) {
+            proxyRestServerOptions.https = restApiTlsOptions;
+        }
     }
     const proxyRestServer = Fastify(proxyRestServerOptions);
     const dockerHealthCheckServer = Fastify({ logger: false });
