@@ -26,10 +26,27 @@ export const apiGetSenseAppDump = {
             200: {
                 description: 'App dump successful. App metadata returned as JSON.',
                 type: 'object',
+                properties: {
+                    lineage: {
+                        type: 'object',
+                        description: 'App lineage information returned from Qlik Sense Engine.',
+                        properties: {
+                            qLineage: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                },
+                            },
+                        },
+                    },
+                },
                 examples: [
                     {
                         properties: {},
                         loadScript: '',
+                        lineage: {
+                            qLineage: [],
+                        },
                         sheets: [],
                         stories: [],
                         masterobjects: [],
@@ -100,10 +117,27 @@ export const apiGetAppDump = {
             200: {
                 description: 'App dump successful. App metadata returned as JSON.',
                 type: 'object',
+                properties: {
+                    lineage: {
+                        type: 'object',
+                        description: 'App lineage information returned from Qlik Sense Engine.',
+                        properties: {
+                            qLineage: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                },
+                            },
+                        },
+                    },
+                },
                 examples: [
                     {
                         properties: {},
                         loadScript: '',
+                        lineage: {
+                            qLineage: [],
+                        },
                         sheets: [],
                         stories: [],
                         masterobjects: [],
