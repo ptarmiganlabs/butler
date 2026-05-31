@@ -46,11 +46,13 @@ Each `lineage.qLineage[]` item can include:
 
 Qlik documents these `qDiscriminator` value categories:
 
-- Local file path (`[filename]`), for example `\\192.168.1.124\testdata\tedtalk\ted_main.csv;`
+- Local file path (`[filename]` in the Qlik docs is placeholder notation for any local file path), for example `\\192.168.1.124\testdata\tedtalk\ted_main.csv`
 - `INLINE`
 - `RESIDENT`
 - `AUTOGENERATE`
-- Connector provider name (`Provider`)
+- Connector provider name (`Provider` in the Qlik docs)
 - Web file (`[webfile]`)
 - `STORE`
 - `EXTENSION`
+
+In the API schema source code, the same Windows path example appears with escaped backslashes because it is written as a JSON/JavaScript string literal.

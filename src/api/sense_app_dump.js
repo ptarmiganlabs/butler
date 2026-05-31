@@ -39,11 +39,12 @@ export const apiGetSenseAppDump = {
                                         qDiscriminator: {
                                             type: 'string',
                                             description:
-                                                'Origin of the lineage entry. Qlik documents local file paths ([filename]), INLINE, RESIDENT, AUTOGENERATE, connector provider names (Provider), web files ([webfile]), STORE, and EXTENSION.',
+                                                'Origin of the lineage entry. Qlik uses placeholder notation such as [filename] and [webfile] in its docs to describe local and web file sources, and also documents INLINE, RESIDENT, AUTOGENERATE, connector provider names, STORE, and EXTENSION values. The Windows path example below is escaped for JSON/JavaScript string syntax.',
                                             examples: [
-                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv;',
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv',
                                                 'INLINE',
                                                 'RESIDENT',
+                                                'Provider',
                                                 'STORE',
                                             ],
                                         },
@@ -151,11 +152,12 @@ export const apiGetAppDump = {
                                         qDiscriminator: {
                                             type: 'string',
                                             description:
-                                                'Origin of the lineage entry. Qlik documents local file paths ([filename]), INLINE, RESIDENT, AUTOGENERATE, connector provider names (Provider), web files ([webfile]), STORE, and EXTENSION.',
+                                                'Origin of the lineage entry. Qlik uses placeholder notation such as [filename] and [webfile] in its docs to describe local and web file sources, and also documents INLINE, RESIDENT, AUTOGENERATE, connector provider names, STORE, and EXTENSION values. The Windows path example below is escaped for JSON/JavaScript string syntax.',
                                             examples: [
-                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv;',
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv',
                                                 'INLINE',
                                                 'RESIDENT',
+                                                'Provider',
                                                 'STORE',
                                             ],
                                         },

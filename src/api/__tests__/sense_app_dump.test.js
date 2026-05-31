@@ -13,7 +13,11 @@ describe('API schema: sense_app_dump', () => {
         expect(lineageItem.qDiscriminator.description).toContain('AUTOGENERATE');
         expect(lineageItem.qDiscriminator.description).toContain('STORE');
         expect(lineageItem.qDiscriminator.description).toContain('EXTENSION');
-        expect(lineageItem.qDiscriminator.examples).toContain('\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv;');
+        expect(lineageItem.qDiscriminator.description).toContain('[filename]');
+        expect(lineageItem.qDiscriminator.description).toContain('[webfile]');
+        expect(lineageItem.qDiscriminator.description).toContain('JSON/JavaScript string syntax');
+        expect(lineageItem.qDiscriminator.examples).toContain('\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv');
+        expect(lineageItem.qDiscriminator.examples).toContain('Provider');
         expect(lineageItem.qStatement.description).toContain('LOAD or SELECT');
     });
 });
