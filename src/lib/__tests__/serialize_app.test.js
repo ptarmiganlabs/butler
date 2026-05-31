@@ -12,6 +12,7 @@ describe('lib/serialize_app', () => {
         const lineage = { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] };
         const emptyListSessionObject = { getLayout: jest.fn(async () => ({ qAppObjectList: { qItems: [] } })) };
         const emptyDimensionSessionObject = { getLayout: jest.fn(async () => ({ qDimensionList: { qItems: [] } })) };
+        const emptyMeasureSessionObject = { getLayout: jest.fn(async () => ({ qMeasureList: { qItems: [] } })) };
         const emptyBookmarkSessionObject = { getLayout: jest.fn(async () => ({ qBookmarkList: { qItems: [] } })) };
         const emptyMediaSessionObject = { getLayout: jest.fn(async () => ({ qMediaList: { qItems: [] } })) };
         const emptyFieldSessionObject = { getLayout: jest.fn(async () => ({ qFieldList: { qItems: [] } })) };
@@ -21,6 +22,7 @@ describe('lib/serialize_app', () => {
             createSessionObject: jest.fn(async (definition) => {
                 if (definition.qAppObjectListDef) return emptyListSessionObject;
                 if (definition.qDimensionListDef) return emptyDimensionSessionObject;
+                if (definition.qMeasureListDef) return emptyMeasureSessionObject;
                 if (definition.qBookmarkListDef) return emptyBookmarkSessionObject;
                 if (definition.qMediaListDef) return emptyMediaSessionObject;
                 if (definition.qFieldListDef) return emptyFieldSessionObject;
