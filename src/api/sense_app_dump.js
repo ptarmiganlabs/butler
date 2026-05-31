@@ -35,6 +35,27 @@ export const apiGetSenseAppDump = {
                                 type: 'array',
                                 items: {
                                     type: 'object',
+                                    properties: {
+                                        qDiscriminator: {
+                                            type: 'string',
+                                            description:
+                                                'Origin of the lineage entry. Qlik documents local file paths ([filename]), INLINE, RESIDENT, AUTOGENERATE, connector provider names (Provider), web files ([webfile]), STORE, and EXTENSION.',
+                                            examples: [
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv;',
+                                                'INLINE',
+                                                'RESIDENT',
+                                                'STORE',
+                                            ],
+                                        },
+                                        qStatement: {
+                                            type: 'string',
+                                            description:
+                                                'LOAD or SELECT statement from the app load script associated with this lineage entry.',
+                                            examples: [
+                                                "LOAD * FROM [lib://DataFiles/ted_main.csv] (txt, codepage is 1252, embedded labels, delimiter is ',', msq);",
+                                            ],
+                                        },
+                                    },
                                 },
                             },
                         },
@@ -126,6 +147,27 @@ export const apiGetAppDump = {
                                 type: 'array',
                                 items: {
                                     type: 'object',
+                                    properties: {
+                                        qDiscriminator: {
+                                            type: 'string',
+                                            description:
+                                                'Origin of the lineage entry. Qlik documents local file paths ([filename]), INLINE, RESIDENT, AUTOGENERATE, connector provider names (Provider), web files ([webfile]), STORE, and EXTENSION.',
+                                            examples: [
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv;',
+                                                'INLINE',
+                                                'RESIDENT',
+                                                'STORE',
+                                            ],
+                                        },
+                                        qStatement: {
+                                            type: 'string',
+                                            description:
+                                                'LOAD or SELECT statement from the app load script associated with this lineage entry.',
+                                            examples: [
+                                                "LOAD * FROM [lib://DataFiles/ted_main.csv] (txt, codepage is 1252, embedded labels, delimiter is ',', msq);",
+                                            ],
+                                        },
+                                    },
                                 },
                             },
                         },

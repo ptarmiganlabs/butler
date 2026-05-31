@@ -38,3 +38,19 @@ The existing dump payload is unchanged except for the added `lineage` property:
 ## Lineage source
 
 The `lineage` object is returned directly from the Qlik Sense Engine API `GetLineage` call for the app being dumped. In practice, the `qLineage` array contains lineage entries for statements such as `LOAD` and `STORE`, which can be used for governance, troubleshooting, and understanding app data dependencies.
+
+Each `lineage.qLineage[]` item can include:
+
+- `qDiscriminator`: origin of the lineage entry
+- `qStatement`: related `LOAD` or `SELECT` statement from the app script
+
+Qlik documents these `qDiscriminator` value categories:
+
+- Local file path (`[filename]`), for example `\\192.168.1.124\testdata\tedtalk\ted_main.csv;`
+- `INLINE`
+- `RESIDENT`
+- `AUTOGENERATE`
+- Connector provider name (`Provider`)
+- Web file (`[webfile]`)
+- `STORE`
+- `EXTENSION`
