@@ -3,7 +3,7 @@
  *
  * Writes a crash dump file (JSON and/or plain text) when Butler encounters
  * an unrecoverable error such as an uncaught exception, unhandled promise
- * rejection, or an explicit fatal error.
+ * rejection, or an explicit fatal error logged via logFatal().
  *
  * Key design goals:
  * - Sensitive config data (IPs, passwords, tokens, certificates) is never written

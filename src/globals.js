@@ -30,6 +30,7 @@ import { readFileSync } from 'fs';
 import { Command, Option } from 'commander';
 import 'winston-daily-rotate-file';
 import sea from 'node:sea';
+import { logFatal } from './lib/log-error.js';
 import {
     createInfluxDbClient,
     getInfluxDbHost,
@@ -290,8 +291,8 @@ Configuration File:
             this.options?.newRelicApiKey?.length > 0 ||
             this.options?.newRelicAccountId?.length > 0
         ) {
-            console.log('\n\nIncorrect command line parameters: Number of New Relic account names/IDs/API keys must match. Exiting.');
-            process.exit(1);
+            const err = new Error('Number of New Relic account names/IDs/API keys must match');
+            await logFatal('Incorrect command line parameters', err);
         }
 
         // Are we running as standalone app or not?
@@ -878,8 +879,8 @@ Configuration File:
 
         // Ensure that InfluxDB has been created
         if (this.influx === undefined) {
-            this.logger.error('CONFIG: InfluxDB not initialized! Possible race condition during startup of Butler. Exiting.');
-            process.exit(1);
+            const err = new Error('InfluxDB not initialized. Possible race condition during startup of Butler.');
+            await logFatal('CONFIG', err);
         }
 
         if (enableInfluxdb) {

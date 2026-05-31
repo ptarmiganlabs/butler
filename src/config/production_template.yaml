@@ -34,7 +34,7 @@ Butler:
     # but may still contain sensitive data depending on what the error captured.
     # Treat crash dump files as potentially sensitive and restrict access accordingly.
     crashFile:
-        enable: true # Should crash dump files be created? Default: true
+        enable: false # Should crash dump files be created? Default: true
         crashFileDirectory: ./crash_dumps # Directory where crash files are stored.
                                           # Relative to working directory; absolute paths also supported.
                                           # Use empty string to write to the working directory.

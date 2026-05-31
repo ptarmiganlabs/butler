@@ -382,19 +382,15 @@ process.on('uncaughtException', async (err) => {
 
 /**
  * Handler for unhandled promise rejections.
- * Writes a crash dump and exits with code 1.
+ * Logs the error and continues running — no crash dump, no exit.
  *
  * @param {Error|*} reason - The rejection reason (usually an Error)
  */
 process.on('unhandledRejection', async (reason) => {
     try {
         const err = reason instanceof Error ? reason : new Error(String(reason));
-        console.error('FATAL: Unhandled promise rejection – writing crash dump…');
-        const { writeCrashDump } = await import('./lib/crash-dump.js');
-        await writeCrashDump(err, 'unhandledRejection');
+        globals.logger.error(`Unhandled promise rejection: ${globals.getErrorMessage(err)}`);
     } catch {
         // Must not throw
-    } finally {
-        process.exit(1);
     }
 });
