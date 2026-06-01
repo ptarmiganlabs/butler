@@ -5,6 +5,9 @@ describe('API schema: sense_app_dump', () => {
         ['apiGetSenseAppDump', apiGetSenseAppDump],
         ['apiGetAppDump', apiGetAppDump],
     ])('%s documents lineage discriminator values', (_name, schemaExport) => {
+        expect(schemaExport.schema.response[200].properties.appId.type).toBe('string');
+        expect(schemaExport.schema.response[200].examples[0].appId).toBeDefined();
+
         const lineageItem =
             schemaExport.schema.response[200].properties.lineage.properties.qLineage.items.properties;
 

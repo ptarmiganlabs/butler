@@ -70,6 +70,7 @@ describe('REST: sense_app_dump routes', () => {
         expect(res.statusCode).toBe(200);
         expect(res.headers['content-type']).toMatch(/application\/json/);
         expect(res.json()).toEqual({
+            appId: 'abc123',
             dumped: true,
             via: 'serializeapp',
             lineage: { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] },
@@ -83,6 +84,7 @@ describe('REST: sense_app_dump routes', () => {
         const res = await app.inject({ method: 'GET', url: '/v4/app/xyz789/dump' });
         expect(res.statusCode).toBe(200);
         expect(res.json()).toEqual({
+            appId: 'xyz789',
             dumped: true,
             via: 'serializeapp',
             lineage: { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] },

@@ -27,6 +27,10 @@ export const apiGetSenseAppDump = {
                 description: 'App dump successful. App metadata returned as JSON.',
                 type: 'object',
                 properties: {
+                    appId: {
+                        type: 'string',
+                        description: 'ID of the dumped Qlik Sense app.',
+                    },
                     lineage: {
                         type: 'object',
                         description: 'App lineage information returned from Qlik Sense Engine.',
@@ -64,6 +68,7 @@ export const apiGetSenseAppDump = {
                 },
                 examples: [
                     {
+                        appId: '210832b5-6174-4572-bd19-3e61eda675ef',
                         properties: {},
                         loadScript: '',
                         lineage: {
@@ -140,6 +145,10 @@ export const apiGetAppDump = {
                 description: 'App dump successful. App metadata returned as JSON.',
                 type: 'object',
                 properties: {
+                    appId: {
+                        type: 'string',
+                        description: 'ID of the dumped Qlik Sense app.',
+                    },
                     lineage: {
                         type: 'object',
                         description: 'App lineage information returned from Qlik Sense Engine.',
@@ -177,6 +186,7 @@ export const apiGetAppDump = {
                 },
                 examples: [
                     {
+                        appId: '210832b5-6174-4572-bd19-3e61eda675ef',
                         properties: {},
                         loadScript: '',
                         lineage: {

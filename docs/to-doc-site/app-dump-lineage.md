@@ -11,10 +11,11 @@ Butler now calls the Qlik Sense Engine API `GetLineage` method while serializing
 
 ## Response shape
 
-The existing dump payload is unchanged except for the added `lineage` property:
+The existing dump payload is unchanged except for the added `lineage` property and a root-level `appId`:
 
 ```json
 {
+  "appId": "210832b5-6174-4572-bd19-3e61eda675ef",
   "properties": {},
   "loadScript": "",
   "lineage": {
