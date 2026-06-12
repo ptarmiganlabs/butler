@@ -17,7 +17,7 @@ export function getRestApiTlsOptions(config, readFileSync = fs.readFileSync) {
 
     const certPath = config.get('Butler.restServerConfig.tls.cert');
     const keyPath = config.get('Butler.restServerConfig.tls.key');
-    const caPath = config.get('Butler.restServerConfig.tls.ca');
+    const caPath = config.has('Butler.restServerConfig.tls.ca') ? config.get('Butler.restServerConfig.tls.ca') : undefined;
 
     try {
         const tlsOptions = {
