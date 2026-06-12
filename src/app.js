@@ -40,14 +40,23 @@ import setupAnonUsageReportTimer from './lib/telemetry.js';
 import { configVerifyAllTaskId } from './lib/config_util.js';
 import sendTestEmail from './lib/testemail.js';
 import configObfuscate from './lib/config_obfuscate.js';
+import { getRestApiTlsOptions, getRestApiUrl } from './lib/rest_server_config.js';
 
 async function build(opts = {}) {
+    const proxyRestServerOptions = { logger: true };
+    if (globals.config.get('Butler.restServerConfig.enable') === true) {
+        const restApiTlsOptions = getRestApiTlsOptions(globals.config);
+        if (restApiTlsOptions) {
+            proxyRestServerOptions.https = restApiTlsOptions;
+        }
+    }
+
     // Create two Fastify servers. One server is a REST server and the other is a reverse proxy server.
     // The REST server is used to provide REST endpoints that can be used by the UI.
     // The reverse proxy server is used to proxy requests to the backend servers.
     // The dockerHealthCheckServer is used to provide a health check endpoint for the Docker container.
     const restServer = Fastify({ logger: true, bodyLimit: 1 * 1024 * 1024 }); // 1 MB body limit to prevent DoS
-    const proxyRestServer = Fastify({ logger: true });
+    const proxyRestServer = Fastify(proxyRestServerOptions);
     const dockerHealthCheckServer = Fastify({ logger: false });
     const configVisServer = Fastify({ logger: true });
 
@@ -161,11 +170,7 @@ async function build(opts = {}) {
 
         // Show link to Swagger API docs page, if the API is enabled
         if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
-            globals.logger.info(
-                `REST API documentation available at http://${globals.config.get(
-                    'Butler.restServerConfig.serverHost',
-                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`,
-            );
+            globals.logger.info(`REST API documentation available at ${getRestApiUrl(globals.config)}/documentation`);
             globals.logger.info(
                 '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.',
             );
@@ -221,9 +226,7 @@ async function build(opts = {}) {
                 },
                 servers: [
                     {
-                        url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                            'Butler.restServerConfig.serverPort',
-                        )}`,
+                        url: getRestApiUrl(globals.config),
                     },
                 ],
                 // consumes: ['application/json'],

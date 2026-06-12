@@ -62,6 +62,20 @@ describe('config-file-schema', () => {
         };
     };
 
+    const createMinimalRestServerConfig = (overrides = {}) => ({
+        enable: true,
+        serverHost: 'localhost',
+        serverPort: 8080,
+        backgroundServerPort: 8081,
+        tls: {
+            enable: false,
+            cert: '/tmp/butler-rest-api.crt',
+            key: '/tmp/butler-rest-api.key',
+            ca: null,
+        },
+        ...overrides,
+    });
+
     describe('confifgFileSchema', () => {
         test('should export a valid schema object', () => {
             expect(confifgFileSchema).toBeDefined();
@@ -209,6 +223,51 @@ describe('config-file-schema', () => {
 
             expect(configVis.required).toEqual(['enable']);
             expect(configVis.additionalProperties).toBe(false);
+        });
+
+        test('should have REST server TLS config with optional CA certificate', () => {
+            const restServerConfig = confifgFileSchema.properties.Butler.properties.restServerConfig;
+
+            expect(restServerConfig).toBeDefined();
+            expect(restServerConfig.type).toBe('object');
+            expect(restServerConfig.properties.tls).toBeDefined();
+            expect(restServerConfig.properties.tls.type).toBe('object');
+            expect(restServerConfig.properties.tls.properties.enable.type).toBe('boolean');
+            expect(restServerConfig.properties.tls.properties.cert.type).toBe('string');
+            expect(restServerConfig.properties.tls.properties.key.type).toBe('string');
+            expect(restServerConfig.properties.tls.properties.ca.type).toEqual(['string', 'null']);
+            expect(restServerConfig.properties.tls.required).toEqual(['enable', 'cert', 'key']);
+        });
+
+        test('should validate REST server config when TLS is enabled and CA is omitted', () => {
+            const ajv = new Ajv({ allErrors: true, strict: true });
+            addFormats(ajv);
+            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.restServerConfig);
+
+            expect(
+                validate(
+                    createMinimalRestServerConfig({
+                        tls: {
+                            enable: true,
+                            cert: '/tmp/butler-rest-api.crt',
+                            key: '/tmp/butler-rest-api.key',
+                            ca: null,
+                        },
+                    }),
+                ),
+            ).toBe(true);
+
+            expect(
+                validate(
+                    createMinimalRestServerConfig({
+                        tls: {
+                            enable: true,
+                            key: '/tmp/butler-rest-api.key',
+                            ca: null,
+                        },
+                    }),
+                ),
+            ).toBe(false);
         });
 
         test('should have heartbeat object with URI format for remoteURL', () => {

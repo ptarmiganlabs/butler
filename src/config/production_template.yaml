@@ -1018,6 +1018,11 @@ Butler:
         serverHost: 10.11.12.13 # FQDN or IP (or localhost) of server where Butler is running> # Use 0.0.0.0 to listen on all network interfaces (e.g. when running in Docker!).
         serverPort: 8080 # Port where Butler's REST is available. Any free port on the server where Butler is running can bse used.
         backgroundServerPort: 8081 # Port used internally by Butler's REST API. Any free port on the server where Butler is running can bse used.
+        tls:
+            enable: false # Should Butler expose its public REST API via HTTPS/TLS?
+            cert: /path/to/cert/certfile.pem # PEM encoded certificate presented to REST API clients
+            key: /path/to/cert/keyfile.pem # PEM encoded private key for the REST API certificate
+            ca: null # Optional PEM encoded CA/root certificate bundle sent to clients when needed
 
     # List of directories between which file copying via the REST API can be done.
     # Butler will try to clean up messy paths like this one, which resolves to /Users/goran/butler-test-dir1
