@@ -1,5 +1,71 @@
 # Changelog
 
+## [16.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.3...butler-v16.0.0) (2026-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **influxdb:** add support for InfluxDB v2 and v3
+* **udp:** Implement UDP Queue Management with Rate Limiting and Metrics
+* **udp:** Implement source IP allowlisting and validation for incoming UDP messages
+* **udp:** Implement payload size limits and validation for UDP messages
+
+### Features
+
+* **influxdb:** add support for InfluxDB v2 and v3 ([958b1a3](https://github.com/ptarmiganlabs/butler/commit/958b1a3d58324fd95d793938c95add59d4221ffb))
+* **udp:** Add UUID validation for Task ID and App ID in UDP handlers ([2a890e7](https://github.com/ptarmiganlabs/butler/commit/2a890e71d2a3f296a708a3fb2531e052e5d8672e))
+* **udp:** enhance queue management with validation and error handling ([fcb3522](https://github.com/ptarmiganlabs/butler/commit/fcb3522859696c1ec9c5a2945549cd6143cc81eb))
+* **udp:** Implement input sanitization for UDP messages to remove control characters and enforce field length limits ([ccf5030](https://github.com/ptarmiganlabs/butler/commit/ccf5030029b04be06f4827802fe2b953fc506c7f))
+* **udp:** Implement payload size limits and validation for UDP messages ([9ee8e7f](https://github.com/ptarmiganlabs/butler/commit/9ee8e7fb065163983ffb92adac4e51d6768fa277))
+* **udp:** Implement source IP allowlisting and validation for incoming UDP messages ([3690c09](https://github.com/ptarmiganlabs/butler/commit/3690c091fcec173ca800306822e18f396e4bc801))
+* **udp:** Implement UDP Queue Management with Rate Limiting and Metrics ([b8dc317](https://github.com/ptarmiganlabs/butler/commit/b8dc3175e64ac5c4883e576fbc5a4a917bd73850))
+
+
+### Bug Fixes
+
+* **build:** add native command exit checks, reset keychain baseline, fix zip dir, guard fork SARIF upload ([ca46eaa](https://github.com/ptarmiganlabs/butler/commit/ca46eaafe22b651a29e26f72a083b1f3c0a94a61))
+* **build:** address PR review feedback on build scripts and workflows ([6b4304f](https://github.com/ptarmiganlabs/butler/commit/6b4304f6375cd501278ab20b5924a7fac200c111))
+* **build:** ensure build dir exists, fix permissions, UTC timestamp, verification exit codes, error details ([cc26c98](https://github.com/ptarmiganlabs/butler/commit/cc26c98cea1dd5f11e56f0c270fc86b589f5bed8))
+* **config:** align mandatory udp settings across codebase ([be6f4d4](https://github.com/ptarmiganlabs/butler/commit/be6f4d4575bbdeba8c6f3fd524b0c982003c9b67))
+* **lib:** allow app dumps without lineage support ([e32ec8d](https://github.com/ptarmiganlabs/butler/commit/e32ec8d23d662c42862dd350a07fc6e107af80d2))
+* Make error logging more consistent throughout the app ([b155d37](https://github.com/ptarmiganlabs/butler/commit/b155d37d8f7a802fb909c92f8b8c8fcc0d5a0bce))
+* **scripts:** use -Filter to find butler.exe in verify-insider-deploy.ps1 ([dad2860](https://github.com/ptarmiganlabs/butler/commit/dad286018ff3dcc8792b1cd3a8f148037286d6b8))
+* **security:** Add security headers and Content Security Policy to config visualization server ([31cbc9b](https://github.com/ptarmiganlabs/butler/commit/31cbc9bb146acbf403d4220373a20e1b4d080afb))
+* **security:** Add security headers to enhance protection for the config visualization server ([48372ac](https://github.com/ptarmiganlabs/butler/commit/48372ac95d74dcb3aa080efe46247ab5e19ba0ef))
+* **security:** add service name validation, path traversal guard, body limit, eval replacement, and Dockerfile hardening ([396f99c](https://github.com/ptarmiganlabs/butler/commit/396f99cede979a4fd892cef6d67f2442c1218613))
+* **security:** address reviewer comments, fix backpressureThreshold unit mismatch, improve disk_utils path handling ([bbf1909](https://github.com/ptarmiganlabs/butler/commit/bbf1909f3a368eabeac99189ee391b96f2367908))
+* **security:** address validation review comments for udp_queue_manager backpressureThreshold ([97af030](https://github.com/ptarmiganlabs/butler/commit/97af030410a36727bf16dfa4c617c4bd05d700fb))
+* **security:** fix handlerCreateDir fire-and-forget bug and wrong error variable ([a24a309](https://github.com/ptarmiganlabs/butler/commit/a24a30976560696088814eb2338ad72cb3c8a781))
+* **udp:** address remaining review-thread hardening issues ([feb9ebd](https://github.com/ptarmiganlabs/butler/commit/feb9ebd439c2f977a7e2af0da9b6ac1a6ee70f02))
+* **udp:** align backpressure threshold units with runtime validation ([88e1bab](https://github.com/ptarmiganlabs/butler/commit/88e1bab073bea989e12e00bc0d25692c591a8c2e))
+* **udp:** avoid duplicate GUID validation logs in UDP handler ([da6b21f](https://github.com/ptarmiganlabs/butler/commit/da6b21f10f4f78b9136d32744a7448b582090fb2))
+* **udp:** handle empty source allowlist and align docs/comments ([f891ac2](https://github.com/ptarmiganlabs/butler/commit/f891ac23ff3a1fb86b51a1a43248edf0fa3e6984))
+* **udp:** Make UDP servers more secure ([8896ff5](https://github.com/ptarmiganlabs/butler/commit/8896ff597605aff0374ec3b75e47f3892563b057))
+
+
+### Miscellaneous
+
+* **deps:** remove unused dependencies from package.json ([16b5471](https://github.com/ptarmiganlabs/butler/commit/16b54715cf758ff3860825dd70ed4692b4573ae5))
+* **git:** ignore gitnexus artifacts ([cbb3cd0](https://github.com/ptarmiganlabs/butler/commit/cbb3cd055e81d29b314c12cf861adc760e91f061))
+* merge latest master into security audit branch ([5be2bbb](https://github.com/ptarmiganlabs/butler/commit/5be2bbb162febe0c9f1e108a8111834859445b2f))
+* update dependencies and scripts in package.json ([dd857b3](https://github.com/ptarmiganlabs/butler/commit/dd857b32ddab00db1ace17fe6815e574bf5382e0))
+* update dependencies to latest versions ([741558f](https://github.com/ptarmiganlabs/butler/commit/741558f6d486c971063652ab6506dc9064fabd0e))
+* update GitHub Actions workflows for improved security ([3a9355b](https://github.com/ptarmiganlabs/butler/commit/3a9355ba5ceebd401e7eefcf2db6977af3c56ce5))
+* update Node.js version to 24 across build scripts and configurations ([bf50213](https://github.com/ptarmiganlabs/butler/commit/bf502139bc615837566a1490303989a4af6c2943))
+
+
+### Refactoring
+
+* **build:** Refactor build scripts for insider and release binaries. ([19ab760](https://github.com/ptarmiganlabs/butler/commit/19ab760e978b07b1ef130f81ae78173560c900a7))
+* **build:** replace macOS build script with platform-specific binaries for Linux, macOS, and Windows ([e9ff241](https://github.com/ptarmiganlabs/butler/commit/e9ff241cb06b6ecac5079541d70a31d8a20352ae))
+* **udp:** simplify sanitized message handling in handler ([b101f23](https://github.com/ptarmiganlabs/butler/commit/b101f23358147b9a4436d9c26bee3dacb5f762b0))
+
+
+### Documentation
+
+* clarify lineage discriminator examples ([d056f52](https://github.com/ptarmiganlabs/butler/commit/d056f52b5fe0054e572dbb39803b0542b0219a55))
+* describe lineage discriminator values ([a4d74a1](https://github.com/ptarmiganlabs/butler/commit/a4d74a19e3bac694992f9894cfe9c2c4da4da321))
+
 ## [15.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.2...butler-v15.1.3) (2026-04-25)
 
 
