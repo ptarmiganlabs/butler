@@ -294,6 +294,7 @@ describe('lib/config_obfuscate', () => {
         testConfig.Butler.thirdPartyToolsCredentials.newRelic = null; // Test with null
         testConfig.Butler.webhookNotification.reloadTaskFailure.webhooks = undefined; // Test with undefined
         testConfig.Butler.serviceMonitor.monitor = null; // Test with null
+        delete testConfig.Butler.restServerConfig.tls; // Test with missing optional TLS config
 
         expect(() => configObfuscate(testConfig)).not.toThrow();
     });
