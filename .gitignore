@@ -39,6 +39,7 @@ release/*
 src/release/*
 
 .cache_ggshield
+.gitnexus/
 
 # Logs
 log
