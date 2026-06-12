@@ -98,8 +98,12 @@ async function handlerGetSenseAppDump(request, reply) {
             // Please refer to the Engine API documentation for available methods.
             const app = await global.openDoc(request.params.appId, '', '', '', true);
             const data = await serializeApp(app);
+            const responseBody = {
+                ...data,
+                appId: request.params.appId,
+            };
 
-            reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(data));
+            reply.type('application/json; charset=utf-8').code(200).send(JSON.stringify(responseBody));
 
             // Close connection to Sense server
             try {

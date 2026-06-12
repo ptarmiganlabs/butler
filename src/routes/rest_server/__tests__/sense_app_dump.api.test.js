@@ -13,7 +13,11 @@ describe('REST: sense_app_dump routes', () => {
         await jest.unstable_mockModule('../../../lib/log_rest_call.js', () => ({ logRESTCall: jest.fn() }));
         await jest.unstable_mockModule('fs', () => ({ readFileSync: jest.fn(() => '{}') }));
 
-        mockSerialize = jest.fn(async () => ({ dumped: true, via: 'serializeapp' }));
+        mockSerialize = jest.fn(async () => ({
+            dumped: true,
+            via: 'serializeapp',
+            lineage: { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] },
+        }));
         await jest.unstable_mockModule('../../../lib/serialize_app.js', () => ({ default: mockSerialize }));
 
         mockSession = {
@@ -65,7 +69,12 @@ describe('REST: sense_app_dump routes', () => {
         const res = await app.inject({ method: 'GET', url: '/v4/senseappdump/abc123' });
         expect(res.statusCode).toBe(200);
         expect(res.headers['content-type']).toMatch(/application\/json/);
-        expect(res.json()).toEqual({ dumped: true, via: 'serializeapp' });
+        expect(res.json()).toEqual({
+            appId: 'abc123',
+            dumped: true,
+            via: 'serializeapp',
+            lineage: { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] },
+        });
         expect(mockSerialize).toHaveBeenCalled();
         expect(mockSession.open).toHaveBeenCalled();
         expect(mockSession.close).toHaveBeenCalled();
@@ -74,6 +83,11 @@ describe('REST: sense_app_dump routes', () => {
     test('GET /v4/app/:appId/dump returns serialized app', async () => {
         const res = await app.inject({ method: 'GET', url: '/v4/app/xyz789/dump' });
         expect(res.statusCode).toBe(200);
-        expect(res.json()).toEqual({ dumped: true, via: 'serializeapp' });
+        expect(res.json()).toEqual({
+            appId: 'xyz789',
+            dumped: true,
+            via: 'serializeapp',
+            lineage: { qLineage: [{ qDiscriminator: 'LOAD', qStatement: 'LOAD * INLINE [a];' }] },
+        });
     });
 });

@@ -292,12 +292,18 @@ async function serializeApp(app) {
     };
 
     // Get app properties
-    const properties = await app.getAppProperties();
+const [properties, script, lineage] = await Promise.all([
+    app.getAppProperties(),
+    app.getScript(),
+    typeof app.getLineage === 'function' ? app.getLineage().catch(() => undefined) : undefined,
+]);
     appObj.properties = properties;
 
     // Get load script
-    const script = await app.getScript();
     appObj.loadScript = script;
+    if (lineage !== undefined) {
+        appObj.lineage = lineage;
+    }
 
     // Get generic lists
     const listData = await Promise.all(

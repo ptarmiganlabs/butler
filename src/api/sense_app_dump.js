@@ -25,11 +25,56 @@ export const apiGetSenseAppDump = {
         response: {
             200: {
                 description: 'App dump successful. App metadata returned as JSON.',
-                type: 'object',
+type: 'object',
+additionalProperties: true,
+properties: {
+                    appId: {
+                        type: 'string',
+                        description: 'ID of the dumped Qlik Sense app.',
+                    },
+                    lineage: {
+                        type: 'object',
+                        description: 'App lineage information returned from Qlik Sense Engine.',
+                        properties: {
+                            qLineage: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        qDiscriminator: {
+                                            type: 'string',
+                                            description:
+                                                'Origin of the lineage entry. Qlik uses placeholder notation such as [filename] and [webfile] in its docs to describe local and web file sources, and also documents INLINE, RESIDENT, AUTOGENERATE, connector provider names, STORE, and EXTENSION values. The Windows path example below is escaped for JSON/JavaScript string syntax.',
+                                            examples: [
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv',
+                                                'INLINE',
+                                                'RESIDENT',
+                                                'Provider',
+                                                'STORE',
+                                            ],
+                                        },
+                                        qStatement: {
+                                            type: 'string',
+                                            description:
+                                                'LOAD or SELECT statement from the app load script associated with this lineage entry.',
+                                            examples: [
+                                                "LOAD * FROM [lib://DataFiles/ted_main.csv] (txt, codepage is 1252, embedded labels, delimiter is ',', msq);",
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
                 examples: [
                     {
+                        appId: '210832b5-6174-4572-bd19-3e61eda675ef',
                         properties: {},
                         loadScript: '',
+                        lineage: {
+                            qLineage: [],
+                        },
                         sheets: [],
                         stories: [],
                         masterobjects: [],
@@ -99,11 +144,56 @@ export const apiGetAppDump = {
         response: {
             200: {
                 description: 'App dump successful. App metadata returned as JSON.',
-                type: 'object',
+type: 'object',
+additionalProperties: true,
+properties: {
+                    appId: {
+                        type: 'string',
+                        description: 'ID of the dumped Qlik Sense app.',
+                    },
+                    lineage: {
+                        type: 'object',
+                        description: 'App lineage information returned from Qlik Sense Engine.',
+                        properties: {
+                            qLineage: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        qDiscriminator: {
+                                            type: 'string',
+                                            description:
+                                                'Origin of the lineage entry. Qlik uses placeholder notation such as [filename] and [webfile] in its docs to describe local and web file sources, and also documents INLINE, RESIDENT, AUTOGENERATE, connector provider names, STORE, and EXTENSION values. The Windows path example below is escaped for JSON/JavaScript string syntax.',
+                                            examples: [
+                                                '\\\\192.168.1.124\\testdata\\tedtalk\\ted_main.csv',
+                                                'INLINE',
+                                                'RESIDENT',
+                                                'Provider',
+                                                'STORE',
+                                            ],
+                                        },
+                                        qStatement: {
+                                            type: 'string',
+                                            description:
+                                                'LOAD or SELECT statement from the app load script associated with this lineage entry.',
+                                            examples: [
+                                                "LOAD * FROM [lib://DataFiles/ted_main.csv] (txt, codepage is 1252, embedded labels, delimiter is ',', msq);",
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
                 examples: [
                     {
+                        appId: '210832b5-6174-4572-bd19-3e61eda675ef',
                         properties: {},
                         loadScript: '',
+                        lineage: {
+                            qLineage: [],
+                        },
                         sheets: [],
                         stories: [],
                         masterobjects: [],
