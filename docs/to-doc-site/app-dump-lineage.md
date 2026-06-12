@@ -7,11 +7,11 @@ The REST endpoints below now include Qlik Sense Engine lineage data in their JSO
 
 ## What changed
 
-Butler now calls the Qlik Sense Engine API `GetLineage` method while serializing an app dump. The returned data is added to a new top-level `lineage` object in the app dump payload.
+Butler now calls the Qlik Sense Engine API `GetLineage` method while serializing an app dump. If the connected Engine version supports `GetLineage`, the returned data is added to a new top-level `lineage` object in the app dump payload (otherwise `lineage` is omitted).
 
 ## Response shape
 
-The existing dump payload is unchanged except for the added `lineage` property and a root-level `appId`:
+The existing dump payload is unchanged except for the added (optional) `lineage` property and a root-level `appId`:
 
 ```json
 {
