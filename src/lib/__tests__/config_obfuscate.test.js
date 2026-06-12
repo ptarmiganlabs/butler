@@ -59,7 +59,14 @@ describe('lib/config_obfuscate', () => {
                     qlikSenseCloud: { event: { mqttForward: { broker: { host: 'cloud.com', username: 'user', password: 'pass' } } } },
                 },
                 udpServerConfig: { serverHost: '127.0.0.1' },
-                restServerConfig: { serverHost: '0.0.0.0' },
+                restServerConfig: {
+                    serverHost: '0.0.0.0',
+                    tls: {
+                        cert: '/path/to/cert.pem',
+                        key: '/path/to/key.pem',
+                        ca: null,
+                    },
+                },
                 serviceMonitor: { monitor: [] },
                 qlikSenseCloud: {
                     event: {
@@ -102,6 +109,9 @@ describe('lib/config_obfuscate', () => {
         testConfig.Butler.qlikSenseVersion.versionMonitor.host = 'qlik.example.com';
         testConfig.Butler.configEngine.host = 'engine.example.com';
         testConfig.Butler.configQRS.host = 'qrs.example.com';
+        testConfig.Butler.restServerConfig.tls.cert = '/etc/ssl/certs/butler.pem';
+        testConfig.Butler.restServerConfig.tls.key = '/etc/ssl/private/butler.key';
+        testConfig.Butler.restServerConfig.tls.ca = '/etc/ssl/certs/ca-chain.pem';
 
         const result = configObfuscate(testConfig);
 
@@ -115,6 +125,9 @@ describe('lib/config_obfuscate', () => {
         expect(result.Butler.qlikSenseVersion.versionMonitor.host).toBe('qli**********');
         expect(result.Butler.configEngine.host).toBe('eng**********');
         expect(result.Butler.configQRS.host).toBe('qrs**********');
+        expect(result.Butler.restServerConfig.tls.cert).toBe('**********');
+        expect(result.Butler.restServerConfig.tls.key).toBe('**********');
+        expect(result.Butler.restServerConfig.tls.ca).toBe('**********');
     });
 
     test('obfuscates webhook URLs correctly', () => {
