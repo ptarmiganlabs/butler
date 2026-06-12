@@ -100,4 +100,27 @@ describe('rest_server_config', () => {
             ca: Buffer.from('file:/tmp/root-ca.pem'),
         });
     });
+
+    test('should throw a helpful error when a TLS file cannot be loaded', () => {
+        const config = createMockConfig({
+            Butler: {
+                restServerConfig: {
+                    ...baseConfig.Butler.restServerConfig,
+                    tls: {
+                        ...baseConfig.Butler.restServerConfig.tls,
+                        enable: true,
+                    },
+                },
+            },
+        });
+        const fileSystem = {
+            readFileSync: jest.fn(() => {
+                throw new Error('ENOENT');
+            }),
+        };
+
+        expect(() => getRestApiTlsOptions(config, fileSystem)).toThrow(
+            'Failed to load REST API TLS certificate from "/tmp/server.crt": ENOENT',
+        );
+    });
 });

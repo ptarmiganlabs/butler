@@ -25,7 +25,7 @@ Butler:
 - `tls.enable`: Enables HTTPS for the public Butler REST API.
 - `tls.cert`: Path to a PEM encoded server certificate.
 - `tls.key`: Path to a PEM encoded private key for the certificate.
-- `tls.ca`: Optional path to a PEM encoded CA/root certificate bundle.
+- `tls.ca`: Optional path to a PEM encoded CA/root certificate bundle. This is typically useful when you use a self-signed certificate or need clients to see a custom certificate chain.
 
 ## Runtime behaviour
 

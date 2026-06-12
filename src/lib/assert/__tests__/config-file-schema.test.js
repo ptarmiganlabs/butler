@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 
-import { confifgFileSchema } from '../config-file-schema.js';
+import { confifgFileSchema as configFileSchema } from '../config-file-schema.js';
 
 describe('config-file-schema', () => {
     const createMinimalInfluxDbConfig = (overrides = {}) => {
@@ -76,22 +76,22 @@ describe('config-file-schema', () => {
         ...overrides,
     });
 
-    describe('confifgFileSchema', () => {
+    describe('configFileSchema', () => {
         test('should export a valid schema object', () => {
-            expect(confifgFileSchema).toBeDefined();
-            expect(typeof confifgFileSchema).toBe('object');
-            expect(confifgFileSchema.type).toBe('object');
-            expect(confifgFileSchema.properties).toBeDefined();
+            expect(configFileSchema).toBeDefined();
+            expect(typeof configFileSchema).toBe('object');
+            expect(configFileSchema.type).toBe('object');
+            expect(configFileSchema.properties).toBeDefined();
         });
 
         test('should have Butler as root property', () => {
-            expect(confifgFileSchema.properties.Butler).toBeDefined();
-            expect(confifgFileSchema.properties.Butler.type).toBe('object');
-            expect(confifgFileSchema.properties.Butler.properties).toBeDefined();
+            expect(configFileSchema.properties.Butler).toBeDefined();
+            expect(configFileSchema.properties.Butler.type).toBe('object');
+            expect(configFileSchema.properties.Butler.properties).toBeDefined();
         });
 
         test('should have logLevel with valid enum values', () => {
-            const logLevel = confifgFileSchema.properties.Butler.properties.logLevel;
+            const logLevel = configFileSchema.properties.Butler.properties.logLevel;
 
             expect(logLevel).toBeDefined();
             expect(logLevel.type).toBe('string');
@@ -101,7 +101,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have systemInfo object with required enable property', () => {
-            const systemInfo = confifgFileSchema.properties.Butler.properties.systemInfo;
+            const systemInfo = configFileSchema.properties.Butler.properties.systemInfo;
 
             expect(systemInfo).toBeDefined();
             expect(systemInfo.type).toBe('object');
@@ -112,7 +112,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have versioned InfluxDB config blocks', () => {
-            const influxDb = confifgFileSchema.properties.Butler.properties.influxDb;
+            const influxDb = configFileSchema.properties.Butler.properties.influxDb;
 
             expect(influxDb).toBeDefined();
             expect(influxDb.properties.version.enum).toEqual([1, 2, 3]);
@@ -127,7 +127,7 @@ describe('config-file-schema', () => {
         test('should require v2Config when version is 2 and allow only runtime-required fields', () => {
             const ajv = new Ajv({ allErrors: true, strict: true });
             addFormats(ajv);
-            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.influxDb);
+            const validate = ajv.compile(configFileSchema.properties.Butler.properties.influxDb);
 
             const missingV2Config = createMinimalInfluxDbConfig({
                 version: 2,
@@ -148,7 +148,7 @@ describe('config-file-schema', () => {
         test('should require v3Config when version is 3 and allow only runtime-required fields', () => {
             const ajv = new Ajv({ allErrors: true, strict: true });
             addFormats(ajv);
-            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.influxDb);
+            const validate = ajv.compile(configFileSchema.properties.Butler.properties.influxDb);
 
             const missingV3Config = createMinimalInfluxDbConfig({
                 version: 3,
@@ -168,7 +168,7 @@ describe('config-file-schema', () => {
         test('should require either legacy v1 fields or v1Config when version is omitted or 1', () => {
             const ajv = new Ajv({ allErrors: true, strict: true });
             addFormats(ajv);
-            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.influxDb);
+            const validate = ajv.compile(configFileSchema.properties.Butler.properties.influxDb);
 
             const missingV1Settings = createMinimalInfluxDbConfig();
             expect(validate(missingV1Settings)).toBe(false);
@@ -206,7 +206,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have configVisualisation object with proper structure', () => {
-            const configVis = confifgFileSchema.properties.Butler.properties.configVisualisation;
+            const configVis = configFileSchema.properties.Butler.properties.configVisualisation;
 
             expect(configVis).toBeDefined();
             expect(configVis.type).toBe('object');
@@ -226,7 +226,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have REST server TLS config with optional CA certificate', () => {
-            const restServerConfig = confifgFileSchema.properties.Butler.properties.restServerConfig;
+            const restServerConfig = configFileSchema.properties.Butler.properties.restServerConfig;
 
             expect(restServerConfig).toBeDefined();
             expect(restServerConfig.type).toBe('object');
@@ -242,7 +242,7 @@ describe('config-file-schema', () => {
         test('should validate REST server config when TLS is enabled and CA is omitted', () => {
             const ajv = new Ajv({ allErrors: true, strict: true });
             addFormats(ajv);
-            const validate = ajv.compile(confifgFileSchema.properties.Butler.properties.restServerConfig);
+            const validate = ajv.compile(configFileSchema.properties.Butler.properties.restServerConfig);
 
             expect(
                 validate(
@@ -271,7 +271,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have heartbeat object with URI format for remoteURL', () => {
-            const heartbeat = confifgFileSchema.properties.Butler.properties.heartbeat;
+            const heartbeat = configFileSchema.properties.Butler.properties.heartbeat;
 
             expect(heartbeat).toBeDefined();
             expect(heartbeat.type).toBe('object');
@@ -289,7 +289,7 @@ describe('config-file-schema', () => {
         });
 
         test('should have boolean properties for basic flags', () => {
-            const butler = confifgFileSchema.properties.Butler.properties;
+            const butler = configFileSchema.properties.Butler.properties;
 
             expect(butler.fileLogging).toBeDefined();
             expect(butler.fileLogging.type).toBe('boolean');
@@ -299,18 +299,18 @@ describe('config-file-schema', () => {
         });
 
         test('should have string property for logDirectory', () => {
-            const logDirectory = confifgFileSchema.properties.Butler.properties.logDirectory;
+            const logDirectory = configFileSchema.properties.Butler.properties.logDirectory;
 
             expect(logDirectory).toBeDefined();
             expect(logDirectory.type).toBe('string');
         });
 
         test('should be JSON serializable', () => {
-            expect(() => JSON.stringify(confifgFileSchema)).not.toThrow();
+            expect(() => JSON.stringify(configFileSchema)).not.toThrow();
 
-            const serialized = JSON.stringify(confifgFileSchema);
+            const serialized = JSON.stringify(configFileSchema);
             const deserialized = JSON.parse(serialized);
-            expect(deserialized).toEqual(confifgFileSchema);
+            expect(deserialized).toEqual(configFileSchema);
         });
 
         test('should be a valid JSON Schema structure', () => {
@@ -329,7 +329,7 @@ describe('config-file-schema', () => {
                 }
             };
 
-            expect(() => validateSchemaObject(confifgFileSchema)).not.toThrow();
+            expect(() => validateSchemaObject(configFileSchema)).not.toThrow();
         });
 
         test('should have consistent additionalProperties settings', () => {
@@ -352,7 +352,7 @@ describe('config-file-schema', () => {
                 }
             };
 
-            expect(() => checkAdditionalProperties(confifgFileSchema)).not.toThrow();
+            expect(() => checkAdditionalProperties(configFileSchema)).not.toThrow();
         });
     });
 });

@@ -1,6 +1,22 @@
 import fs from 'fs';
 
 /**
+ * Load a TLS file from disk and wrap file-system errors with config context.
+ *
+ * @param {typeof fs} fileSystem - File system implementation.
+ * @param {string} filePath - Path to TLS file.
+ * @param {string} fileType - Human-readable TLS file type.
+ * @returns {Buffer} TLS file contents.
+ */
+function loadTlsFile(fileSystem, filePath, fileType) {
+    try {
+        return fileSystem.readFileSync(filePath);
+    } catch (error) {
+        throw new Error(`Failed to load REST API TLS ${fileType} from "${filePath}": ${error.message}`, { cause: error });
+    }
+}
+
+/**
  * Check whether TLS is enabled for Butler's public REST API.
  *
  * @param {import('config').IConfig} config - Butler config object.
@@ -46,8 +62,8 @@ export function getRestApiTlsOptions(config, fileSystem = fs) {
     }
 
     const tlsOptions = {
-        cert: fileSystem.readFileSync(config.get('Butler.restServerConfig.tls.cert')),
-        key: fileSystem.readFileSync(config.get('Butler.restServerConfig.tls.key')),
+        cert: loadTlsFile(fileSystem, config.get('Butler.restServerConfig.tls.cert'), 'certificate'),
+        key: loadTlsFile(fileSystem, config.get('Butler.restServerConfig.tls.key'), 'private key'),
     };
 
     const caPath =
@@ -56,7 +72,7 @@ export function getRestApiTlsOptions(config, fileSystem = fs) {
             : null;
 
     if (caPath) {
-        tlsOptions.ca = fileSystem.readFileSync(caPath);
+        tlsOptions.ca = loadTlsFile(fileSystem, caPath, 'CA certificate');
     }
 
     return tlsOptions;
