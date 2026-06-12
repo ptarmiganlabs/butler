@@ -86,9 +86,7 @@ describe('udp/handlers/distribution_ended', () => {
         const result = await distributionEnded(createMockMsg());
 
         expect(result).toBe(false);
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('does not exist in Sense')
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('does not exist in Sense'));
     });
 
     test('returns false when task metadata cannot be retrieved', async () => {
@@ -97,9 +95,7 @@ describe('udp/handlers/distribution_ended', () => {
         const result = await distributionEnded(createMockMsg());
 
         expect(result).toBeUndefined();
-        expect(mockLogger.error).toHaveBeenCalledWith(
-            expect.stringContaining('Could not get task metadata')
-        );
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Could not get task metadata'));
     });
 
     test('returns false when task is not a distribute task (type 3)', async () => {
@@ -108,9 +104,7 @@ describe('udp/handlers/distribution_ended', () => {
         const result = await distributionEnded(createMockMsg());
 
         expect(result).toBe(false);
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('is not a distribute task')
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('is not a distribute task'));
     });
 
     test('calls success handler for status 7 (FinishedSuccess)', async () => {
@@ -169,9 +163,7 @@ describe('udp/handlers/distribution_ended', () => {
         await distributionEnded(createMockMsg());
 
         expect(mockDistributionQueue.add).toHaveBeenCalled();
-        expect(mockLogger.info).toHaveBeenCalledWith(
-            expect.stringContaining('intermediate state')
-        );
+        expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('intermediate state'));
     });
 
     test('logs unknown status', async () => {
@@ -182,9 +174,7 @@ describe('udp/handlers/distribution_ended', () => {
 
         await distributionEnded(createMockMsg());
 
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('Unexpected execution status')
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Unexpected execution status'));
     });
 
     test('handles errors gracefully', async () => {

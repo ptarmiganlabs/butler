@@ -6,6 +6,7 @@
  * - UDP servers for task event handling
  * - Service monitors (Qlik license, version)
  * - Unhandled promise rejection handlers
+ * - Uncaught exception handlers with crash dump support
  *
  * Then delegates to app.js for Fastify server initialization.
  */
@@ -49,7 +50,6 @@ const start = async () => {
             globals.logger.error(`UNHANDLED REJECTION: Stack trace: ${reason.stack}`);
         }
     });
-
     const setupServiceMonitorTimer = (await import('./lib/qseow/service_monitor.js')).default;
     const { setupQlikSenseAccessLicenseMonitor, setupQlikSenseLicenseRelease, setupQlikSenseServerLicenseMonitor } =
         await import('./lib/qseow/qliksense_license.js');
@@ -357,3 +357,40 @@ const start = async () => {
 };
 
 start();
+
+// ---------------------------------------------------------------------------
+// Process-level safety net: catch any error that escapes all try/catch blocks
+// ---------------------------------------------------------------------------
+
+/**
+ * Handler for synchronous uncaught exceptions.
+ * Writes a crash dump and exits with code 1.
+ *
+ * @param {Error} err - The uncaught error
+ */
+process.on('uncaughtException', async (err) => {
+    try {
+        console.error('FATAL: Uncaught exception – writing crash dump…');
+        const { writeCrashDump } = await import('./lib/crash-dump.js');
+        await writeCrashDump(err, 'uncaughtException');
+    } catch {
+        // Must not throw
+    } finally {
+        process.exit(1);
+    }
+});
+
+/**
+ * Handler for unhandled promise rejections.
+ * Logs the error and continues running — no crash dump, no exit.
+ *
+ * @param {Error|*} reason - The rejection reason (usually an Error)
+ */
+process.on('unhandledRejection', async (reason) => {
+    try {
+        const err = reason instanceof Error ? reason : new Error(String(reason));
+        globals.logger.error(`Unhandled promise rejection: ${globals.getErrorMessage(err)}`);
+    } catch {
+        // Must not throw
+    }
+});

@@ -30,6 +30,17 @@ export const confifgFileSchema = {
                 fileLogging: { type: 'boolean' },
                 logDirectory: { type: 'string' },
                 anonTelemetry: { type: 'boolean' },
+                crashFile: {
+                    type: 'object',
+                    properties: {
+                        enable: { type: 'boolean' },
+                        crashFileDirectory: { type: 'string' },
+                        crashFileCreateJson: { type: 'boolean' },
+                        crashFileCreateText: { type: 'boolean' },
+                    },
+                    required: ['enable', 'crashFileDirectory', 'crashFileCreateJson', 'crashFileCreateText'],
+                    additionalProperties: false,
+                },
                 systemInfo: {
                     type: 'object',
                     properties: {
@@ -3840,6 +3851,7 @@ export const confifgFileSchema = {
                 'fileLogging',
                 'logDirectory',
                 'anonTelemetry',
+                'crashFile',
                 'systemInfo',
                 'cert',
                 'configEngine',

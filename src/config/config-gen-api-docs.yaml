@@ -13,6 +13,13 @@ Butler:
         # More info on whata data is collected: https://butler.ptarmiganlabs.com/docs/about/telemetry/
         # Please consider leaving this at true - it really helps future development of Butler!
 
+    # Crash dump configuration
+    crashFile:
+        enable: true # Should crash dump files be created? Default: true
+        crashFileDirectory: ./crash_dumps # Directory where crash files are stored.
+        crashFileCreateJson: true # Should a JSON crash dump file be created? Default: true
+        crashFileCreateText: true # Should a plain-text crash dump file be created? Default: true
+
     # System information gathering
     # Butler collects system information for monitoring and diagnostic purposes.
     # On Windows, this may trigger security alerts in enterprise monitoring tools as it executes various OS commands:
