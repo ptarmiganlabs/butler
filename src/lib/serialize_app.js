@@ -270,7 +270,7 @@ async function getVariables(app) {
  * @returns {Promise<Object>} Promise resolving to serialized app data
  */
 async function serializeApp(app) {
-    if (!app || typeof app.createSessionObject !== 'function' || typeof app.getLineage !== 'function') {
+    if (!app || typeof app.createSessionObject !== 'function') {
         throw new Error('Expects a valid qsocks app connection');
     }
 
@@ -292,12 +292,18 @@ async function serializeApp(app) {
     };
 
     // Get app properties
-    const [properties, script, lineage] = await Promise.all([app.getAppProperties(), app.getScript(), app.getLineage()]);
+    const [properties, script, lineage] = await Promise.all([
+        app.getAppProperties(),
+        app.getScript(),
+        typeof app.getLineage === 'function' ? app.getLineage() : undefined,
+    ]);
     appObj.properties = properties;
 
     // Get load script
     appObj.loadScript = script;
-    appObj.lineage = lineage;
+    if (lineage !== undefined) {
+        appObj.lineage = lineage;
+    }
 
     // Get generic lists
     const listData = await Promise.all(
