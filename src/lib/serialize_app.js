@@ -292,11 +292,11 @@ async function serializeApp(app) {
     };
 
     // Get app properties
-    const [properties, script, lineage] = await Promise.all([
-        app.getAppProperties(),
-        app.getScript(),
-        typeof app.getLineage === 'function' ? app.getLineage() : undefined,
-    ]);
+const [properties, script, lineage] = await Promise.all([
+    app.getAppProperties(),
+    app.getScript(),
+    typeof app.getLineage === 'function' ? app.getLineage().catch(() => undefined) : undefined,
+]);
     appObj.properties = properties;
 
     // Get load script
