@@ -25,8 +25,9 @@ export const apiGetSenseAppDump = {
         response: {
             200: {
                 description: 'App dump successful. App metadata returned as JSON.',
-                type: 'object',
-                properties: {
+type: 'object',
+additionalProperties: true,
+properties: {
                     appId: {
                         type: 'string',
                         description: 'ID of the dumped Qlik Sense app.',
