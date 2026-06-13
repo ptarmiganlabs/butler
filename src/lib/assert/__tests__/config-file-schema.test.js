@@ -284,6 +284,7 @@ describe('config-file-schema', () => {
                     },
                 }),
             ).toBe(false);
+        });
 
         test('should have boolean properties for basic flags', () => {
             const butler = confifgFileSchema.properties.Butler.properties;
