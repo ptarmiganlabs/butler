@@ -271,8 +271,19 @@ describe('config-file-schema', () => {
                     serverPort: 8080,
                     backgroundServerPort: 8081,
                 }),
+            ).toBe(true);
+
+            expect(
+                validate({
+                    enable: true,
+                    serverHost: 'localhost',
+                    serverPort: 8080,
+                    backgroundServerPort: 8081,
+                    tls: {
+                        enable: true,
+                    },
+                }),
             ).toBe(false);
-        });
 
         test('should have boolean properties for basic flags', () => {
             const butler = confifgFileSchema.properties.Butler.properties;
