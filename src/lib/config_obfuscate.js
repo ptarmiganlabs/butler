@@ -159,6 +159,14 @@ function configObfuscate(config) {
         // Obfuscate Butler.restServerConfig.serverHost, keep first 3 chars, mask the rest with *
         obfuscatedConfig.Butler.restServerConfig.serverHost =
             obfuscatedConfig.Butler.restServerConfig.serverHost.substring(0, 3) + '*'.repeat(10);
+        if (obfuscatedConfig.Butler.restServerConfig.tls) {
+            obfuscatedConfig.Butler.restServerConfig.tls.cert = maskValue(obfuscatedConfig.Butler.restServerConfig.tls.cert);
+            obfuscatedConfig.Butler.restServerConfig.tls.key = maskValue(obfuscatedConfig.Butler.restServerConfig.tls.key);
+            obfuscatedConfig.Butler.restServerConfig.tls.ca =
+                obfuscatedConfig.Butler.restServerConfig.tls.ca === null
+                    ? '*'.repeat(10)
+                    : maskValue(obfuscatedConfig.Butler.restServerConfig.tls.ca);
+        }
 
         // Butler.serviceMonitor.monitor is an array
         // Obfuscate host property, keep first 3 chars, mask the rest with *
