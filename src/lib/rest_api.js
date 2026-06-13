@@ -26,13 +26,13 @@ export function getRestApiPublicBaseUrl(config) {
 }
 
 export function getRestApiTlsOptions(config, readFileSync = fs.readFileSync) {
-    if (!isRestApiTlsEnabled(config)) {
+    if (config.get('Butler.restServerConfig.enable') !== true || !isRestApiTlsEnabled(config)) {
         return undefined;
     }
 
     const certPath = config.get('Butler.restServerConfig.tls.cert');
     const keyPath = config.get('Butler.restServerConfig.tls.key');
-    const caPath = config.get('Butler.restServerConfig.tls.ca');
+    const caPath = config.has('Butler.restServerConfig.tls.ca') ? config.get('Butler.restServerConfig.tls.ca') : null;
     const tlsOptions = {
         cert: loadTlsFile(readFileSync, certPath, 'cert'),
         key: loadTlsFile(readFileSync, keyPath, 'key'),
