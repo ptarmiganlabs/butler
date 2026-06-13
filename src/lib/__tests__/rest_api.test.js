@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { getRestApiPublicBaseUrl, getRestApiTlsOptions, isRestApiTlsEnabled } from '../rest_api.js';
 
 const createMockConfig = (configData) => ({
@@ -43,7 +44,7 @@ describe('rest_api helpers', () => {
                 },
             },
         });
-        const readFileSync = (filePath) => `file:${filePath}`;
+        const readFileSync = jest.fn((filePath) => `file:${filePath}`);
 
         expect(isRestApiTlsEnabled(config)).toBe(true);
         expect(getRestApiPublicBaseUrl(config)).toBe('https://butler.example.com:8443');
@@ -52,6 +53,9 @@ describe('rest_api helpers', () => {
             key: 'file:/key.pem',
             ca: 'file:/ca.pem',
         });
+        expect(readFileSync).toHaveBeenNthCalledWith(1, '/cert.pem', 'utf8');
+        expect(readFileSync).toHaveBeenNthCalledWith(2, '/key.pem', 'utf8');
+        expect(readFileSync).toHaveBeenNthCalledWith(3, '/ca.pem', 'utf8');
     });
 
     test('should omit CA from TLS options when CA is null', () => {
@@ -67,15 +71,17 @@ describe('rest_api helpers', () => {
                 },
             },
         });
-        const readFileSync = (filePath) => `file:${filePath}`;
+        const readFileSync = jest.fn((filePath) => `file:${filePath}`);
 
         expect(getRestApiTlsOptions(config, readFileSync)).toEqual({
             cert: 'file:/cert.pem',
             key: 'file:/key.pem',
         });
+        expect(readFileSync).toHaveBeenNthCalledWith(1, '/cert.pem', 'utf8');
+        expect(readFileSync).toHaveBeenNthCalledWith(2, '/key.pem', 'utf8');
     });
 
-    test('should throw a descriptive error when TLS files cannot be loaded', () => {
+    test('should throw a descriptive error with cause when TLS files cannot be loaded', () => {
         const config = createMockConfig({
             Butler: {
                 restServerConfig: {
@@ -88,9 +94,19 @@ describe('rest_api helpers', () => {
                 },
             },
         });
+        const originalError = new Error('ENOENT');
+        let thrownError;
 
-        expect(() => getRestApiTlsOptions(config, () => {
-            throw new Error('ENOENT');
-        })).toThrow('REST API TLS configuration could not be loaded: ENOENT');
+        try {
+            getRestApiTlsOptions(config, () => {
+                throw originalError;
+            });
+        } catch (err) {
+            thrownError = err;
+        }
+
+        expect(thrownError).toBeInstanceOf(Error);
+        expect(thrownError.message).toBe('REST API TLS cert file could not be loaded (/missing-cert.pem): ENOENT');
+        expect(thrownError.cause).toBe(originalError);
     });
 });
