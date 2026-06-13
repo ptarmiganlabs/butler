@@ -3119,11 +3119,40 @@ export const confifgFileSchema = {
                                 key: { type: 'string' },
                                 ca: { type: ['string', 'null'] },
                             },
-                            required: ['enable', 'cert', 'key'],
+                            required: ['enable'],
                             additionalProperties: false,
                         },
                     },
-                    required: ['enable', 'serverHost', 'serverPort', 'backgroundServerPort', 'tls'],
+                    required: ['enable', 'serverHost', 'serverPort', 'backgroundServerPort'],
+                    allOf: [
+                        {
+                            if: {
+                                properties: {
+                                    tls: {
+                                        type: 'object',
+                                        properties: {
+                                            enable: { const: true },
+                                        },
+                                        required: ['enable'],
+                                    },
+                                },
+                                required: ['tls'],
+                            },
+                            then: {
+                                properties: {
+                                    tls: {
+                                        type: 'object',
+                                        properties: {
+                                            enable: { type: 'boolean' },
+                                            cert: { type: 'string' },
+                                            key: { type: 'string' },
+                                        },
+                                        required: ['enable', 'cert', 'key'],
+                                    },
+                                },
+                            },
+                        },
+                    ],
                     additionalProperties: false,
                 },
 
