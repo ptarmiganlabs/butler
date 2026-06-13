@@ -240,8 +240,8 @@ describe('config-file-schema', () => {
             expect(restServerConfig.properties.tls.properties.cert.type).toBe('string');
             expect(restServerConfig.properties.tls.properties.key.type).toBe('string');
             expect(restServerConfig.properties.tls.properties.ca.type).toEqual(['string', 'null']);
-            expect(restServerConfig.required).toEqual(['enable', 'serverHost', 'serverPort', 'backgroundServerPort', 'tls']);
-            expect(restServerConfig.properties.tls.required).toEqual(['enable', 'cert', 'key']);
+            expect(restServerConfig.required).toEqual(['enable', 'serverHost', 'serverPort', 'backgroundServerPort']);
+            expect(restServerConfig.properties.tls.required).toEqual(['enable']);
             expect(restServerConfig.properties.tls.additionalProperties).toBe(false);
         });
 
