@@ -130,13 +130,13 @@ describe('lib/config_obfuscate', () => {
         expect(result.Butler.restServerConfig.tls.ca).toBe('**********');
     });
 
-    test('preserves null rest api tls ca values during obfuscation', () => {
+    test('obfuscates null rest api tls ca values during obfuscation', () => {
         const testConfig = createBaseConfig();
         testConfig.Butler.restServerConfig.tls.ca = null;
 
         const result = configObfuscate(testConfig);
 
-        expect(result.Butler.restServerConfig.tls.ca).toBeNull();
+        expect(result.Butler.restServerConfig.tls.ca).toBe('**********');
     });
 
     test('obfuscates webhook URLs correctly', () => {
