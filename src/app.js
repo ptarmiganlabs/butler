@@ -40,6 +40,7 @@ import setupAnonUsageReportTimer from './lib/telemetry.js';
 import { configVerifyAllTaskId } from './lib/config_util.js';
 import sendTestEmail from './lib/testemail.js';
 import configObfuscate from './lib/config_obfuscate.js';
+import { getRestApiPublicBaseUrl, getRestApiTlsOptions } from './lib/rest_api.js';
 
 async function build(opts = {}) {
     // Create two Fastify servers. One server is a REST server and the other is a reverse proxy server.
@@ -47,7 +48,12 @@ async function build(opts = {}) {
     // The reverse proxy server is used to proxy requests to the backend servers.
     // The dockerHealthCheckServer is used to provide a health check endpoint for the Docker container.
     const restServer = Fastify({ logger: true, bodyLimit: 1 * 1024 * 1024 }); // 1 MB body limit to prevent DoS
-    const proxyRestServer = Fastify({ logger: true });
+    const proxyRestServerOptions = { logger: true };
+    const restApiTlsOptions = getRestApiTlsOptions(globals.config);
+    if (restApiTlsOptions) {
+        proxyRestServerOptions.https = restApiTlsOptions;
+    }
+    const proxyRestServer = Fastify(proxyRestServerOptions);
     const dockerHealthCheckServer = Fastify({ logger: false });
     const configVisServer = Fastify({ logger: true });
 
@@ -161,11 +167,7 @@ async function build(opts = {}) {
 
         // Show link to Swagger API docs page, if the API is enabled
         if (globals.config.has('Butler.restServerConfig.enable') && globals.config.get('Butler.restServerConfig.enable') === true) {
-            globals.logger.info(
-                `REST API documentation available at http://${globals.config.get(
-                    'Butler.restServerConfig.serverHost',
-                )}:${globals.config.get('Butler.restServerConfig.serverPort')}/documentation`,
-            );
+            globals.logger.info(`REST API documentation available at ${getRestApiPublicBaseUrl(globals.config)}/documentation`);
             globals.logger.info(
                 '--> Note regarding API docs: If the line above mentions 0.0.0.0, this is the same as ANY server IP address.',
             );
@@ -221,9 +223,7 @@ async function build(opts = {}) {
                 },
                 servers: [
                     {
-                        url: `http://${globals.config.get('Butler.restServerConfig.serverHost')}:${globals.config.get(
-                            'Butler.restServerConfig.serverPort',
-                        )}`,
+                        url: getRestApiPublicBaseUrl(globals.config),
                     },
                 ],
                 // consumes: ['application/json'],

@@ -449,6 +449,13 @@ describe('assert_config_file', () => {
                         enable: true,
                         serverHost: 'localhost',
                         serverPort: 8080,
+                        backgroundServerPort: 8081,
+                        tls: {
+                            enable: false,
+                            cert: '/path/to/cert.pem',
+                            key: '/path/to/key.pem',
+                            ca: null,
+                        },
                     },
                 },
             };
