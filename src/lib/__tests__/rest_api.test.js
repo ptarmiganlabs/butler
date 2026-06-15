@@ -33,6 +33,7 @@ describe('rest_api helpers', () => {
         const config = createMockConfig({
             Butler: {
                 restServerConfig: {
+                    enable: true,
                     serverHost: 'butler.example.com',
                     serverPort: 8443,
                     tls: {
@@ -62,6 +63,7 @@ describe('rest_api helpers', () => {
         const config = createMockConfig({
             Butler: {
                 restServerConfig: {
+                    enable: true,
                     tls: {
                         enable: true,
                         cert: '/cert.pem',
@@ -85,6 +87,7 @@ describe('rest_api helpers', () => {
         const config = createMockConfig({
             Butler: {
                 restServerConfig: {
+                    enable: true,
                     tls: {
                         enable: true,
                         cert: '/missing-cert.pem',
