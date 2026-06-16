@@ -364,6 +364,19 @@ Configuration File:
             ),
         });
 
+        // Verify config file structure before reading any config values
+        // This ensures missing properties show clean validation errors instead of ugly stack dumps
+        if (!this.options.skipConfigVerification) {
+            const { configFileStructureAssert } = await import('./lib/assert/assert_config_file.js');
+            const valid = await configFileStructureAssert();
+            if (!valid) {
+                this.logger.error('GLOBALS: Config file structure is incorrect. Exiting.');
+                process.exit(1);
+            } else {
+                this.logger.info('GLOBALS: Config file structure is correct - all good.');
+            }
+        }
+
         // Function to get current logging level
         this.getLoggingLevel = () => this.logTransports.find((transport) => transport.name === 'console').level;
 

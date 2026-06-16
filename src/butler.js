@@ -63,7 +63,6 @@ const start = async () => {
 
     const {
         configFileEmailAssert,
-        configFileStructureAssert,
         configFileNewRelicAssert,
         configFileInfluxDbAssert,
         configFileQsAssert,
@@ -75,14 +74,6 @@ const start = async () => {
 
     // Verify correct structure of config file
     if (!settingsObj.options.skipConfigVerification) {
-        resAssert = await configFileStructureAssert();
-        if (resAssert === false) {
-            globals.logger.error('MAIN: Config file structure is incorrect. Exiting.');
-            process.exit(1);
-        } else {
-            globals.logger.info('MAIN: Config file structure is correct - all good.');
-        }
-
         // Verify application-specific settings and relationships
         resAssert = await configFileAppAssert(globals.config, globals.logger);
         if (resAssert === false) {

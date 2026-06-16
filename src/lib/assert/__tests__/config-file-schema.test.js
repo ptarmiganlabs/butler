@@ -352,5 +352,69 @@ describe('config-file-schema', () => {
 
             expect(() => checkAdditionalProperties(confifgFileSchema)).not.toThrow();
         });
+
+        test('should validate hostnames with underscores', () => {
+            const ajv = new Ajv({ allErrors: true, strict: true });
+            addFormats(ajv);
+
+            // Override built-in hostname format to allow underscores
+            ajv.addFormat('hostname', {
+                type: 'string',
+                validate: (data) => {
+                    if (!data || data.length === 0 || data.length > 253) return false;
+                    const labelPattern = /^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/;
+                    const labels = data.split('.');
+                    return labels.every((label) => label.length > 0 && label.length <= 63 && labelPattern.test(label));
+                },
+            });
+
+            const schema = {
+                type: 'object',
+                properties: {
+                    host: { type: 'string', format: 'hostname' },
+                },
+                required: ['host'],
+            };
+
+            const validate = ajv.compile(schema);
+
+            // Valid hostnames with underscores
+            expect(validate({ host: 'abc_123' })).toBe(true);
+            expect(validate({ host: 'server_01' })).toBe(true);
+            expect(validate({ host: 'my_server' })).toBe(true);
+            expect(validate({ host: 'server_01.example.com' })).toBe(true);
+            expect(validate({ host: 'my-server_01.test.local' })).toBe(true);
+            expect(validate({ host: 'a_b_c_d' })).toBe(true);
+
+            // Valid hostnames with hyphens (should still work)
+            expect(validate({ host: 'abc-123' })).toBe(true);
+            expect(validate({ host: 'server-01' })).toBe(true);
+            expect(validate({ host: 'my-server.example.com' })).toBe(true);
+
+            // Valid simple hostnames
+            expect(validate({ host: 'localhost' })).toBe(true);
+            expect(validate({ host: 'server' })).toBe(true);
+            expect(validate({ host: 'example.com' })).toBe(true);
+
+            // Invalid hostnames - leading/trailing special characters
+            expect(validate({ host: '-server' })).toBe(false);
+            expect(validate({ host: 'server-' })).toBe(false);
+            expect(validate({ host: '_server' })).toBe(false);
+            expect(validate({ host: 'server_' })).toBe(false);
+            expect(validate({ host: '.server' })).toBe(false);
+            expect(validate({ host: 'server.' })).toBe(false);
+
+            // Invalid hostnames - empty labels
+            expect(validate({ host: 'server..com' })).toBe(false);
+            expect(validate({ host: '' })).toBe(false);
+
+            // Invalid hostnames - label too long (> 63 chars)
+            const longLabel = 'a'.repeat(64);
+            expect(validate({ host: longLabel })).toBe(false);
+
+            // Invalid hostnames - total length too long (> 253 chars)
+            const longHostname = 'a'.repeat(63) + '.' + 'b'.repeat(63) + '.' + 'c'.repeat(63) + '.' + 'd'.repeat(63);
+            expect(validate({ host: longHostname })).toBe(false);
+        });
     });
 });
