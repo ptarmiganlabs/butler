@@ -196,6 +196,8 @@ jobs:
               uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
               with:
                   allowUpdates: true
+                  omitBodyDuringUpdate: true
+                  omitNameDuringUpdate: true
                   artifactContentType: raw
                   # artifactContentType: application/zip
                   draft: true
