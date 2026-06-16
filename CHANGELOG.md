@@ -1,5 +1,13 @@
 # Changelog
 
+## [16.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.0...butler-v16.0.1) (2026-06-16)
+
+
+### Miscellaneous
+
+* Revert back to auto-version numbering ([394a2b2](https://github.com/ptarmiganlabs/butler/commit/394a2b20b3098fb97f07a8260b90ca9a7b2b7aef))
+* update dependencies to latest versions ([ec1ec1d](https://github.com/ptarmiganlabs/butler/commit/ec1ec1d3c0996f6d3a0400f3da6a9eb2fb0debd1))
+
 ## [16.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.3...butler-v16.0.0) (2026-06-16)
 
 
