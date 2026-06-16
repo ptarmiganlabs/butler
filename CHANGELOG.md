@@ -1,5 +1,63 @@
 # Changelog
 
+## [16.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.3...butler-v16.0.0) (2026-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **influxdb:** add support for InfluxDB v2 and v3
+* **udp:** Implement UDP Queue Management with Rate Limiting and Metrics
+
+### Features
+
+* add optional tls for rest api ([be97c8f](https://github.com/ptarmiganlabs/butler/commit/be97c8fc2c6533379b16b7404bd2e7253f8b3a5e))
+* **influxdb:** add support for InfluxDB v2 and v3 ([958b1a3](https://github.com/ptarmiganlabs/butler/commit/958b1a3d58324fd95d793938c95add59d4221ffb))
+* **udp:** Add UUID validation for Task ID and App ID in UDP handlers ([2a890e7](https://github.com/ptarmiganlabs/butler/commit/2a890e71d2a3f296a708a3fb2531e052e5d8672e))
+* **udp:** enhance queue management with validation and error handling ([fcb3522](https://github.com/ptarmiganlabs/butler/commit/fcb3522859696c1ec9c5a2945549cd6143cc81eb))
+* **udp:** Implement input sanitization for UDP messages to remove control characters and enforce field length limits ([ccf5030](https://github.com/ptarmiganlabs/butler/commit/ccf5030029b04be06f4827802fe2b953fc506c7f))
+* **udp:** Implement UDP Queue Management with Rate Limiting and Metrics ([b8dc317](https://github.com/ptarmiganlabs/butler/commit/b8dc3175e64ac5c4883e576fbc5a4a917bd73850))
+
+
+### Bug Fixes
+
+* **api:** improve rest api tls file loading diagnostics ([2910948](https://github.com/ptarmiganlabs/butler/commit/2910948f0de6d6e7f972bdb83028e73fd03eb6ac))
+* avoid loading rest tls files when api disabled ([cb1b195](https://github.com/ptarmiganlabs/butler/commit/cb1b19513c1e6a8ed6c0f3e90d27f7cf91dcb372))
+* **config:** align mandatory udp settings across codebase ([be6f4d4](https://github.com/ptarmiganlabs/butler/commit/be6f4d4575bbdeba8c6f3fd524b0c982003c9b67))
+* **config:** guard optional rest tls obfuscation ([783292a](https://github.com/ptarmiganlabs/butler/commit/783292aea7ed5204d7e9acb565f7fae56ebe4658))
+* **config:** make REST TLS requirements conditional ([f887de4](https://github.com/ptarmiganlabs/butler/commit/f887de4543698fea7da6dc8010c8f8e4449313fc))
+* **config:** obfuscate null rest api tls ca values ([6fba64c](https://github.com/ptarmiganlabs/butler/commit/6fba64c31ee159b9a4140db04fb8737cf330124e))
+* **config:** obfuscate rest api tls paths ([7b8c7e4](https://github.com/ptarmiganlabs/butler/commit/7b8c7e454ef6fcd63b0eec679324c0241a884fb8))
+* **lib:** allow app dumps without lineage support ([e32ec8d](https://github.com/ptarmiganlabs/butler/commit/e32ec8d23d662c42862dd350a07fc6e107af80d2))
+* Make error logging more consistent throughout the app ([b155d37](https://github.com/ptarmiganlabs/butler/commit/b155d37d8f7a802fb909c92f8b8c8fcc0d5a0bce))
+* refine optional rest api ca config ([66bc9fa](https://github.com/ptarmiganlabs/butler/commit/66bc9facafc7479aea061d6353f653692d9b6cd1))
+* refine release version (REMOVE) ([77b7a4b](https://github.com/ptarmiganlabs/butler/commit/77b7a4bbb057eca95428f12bd985cd2b143ee253))
+* **security:** address reviewer comments, fix backpressureThreshold unit mismatch, improve disk_utils path handling ([bbf1909](https://github.com/ptarmiganlabs/butler/commit/bbf1909f3a368eabeac99189ee391b96f2367908))
+* **security:** address validation review comments for udp_queue_manager backpressureThreshold ([97af030](https://github.com/ptarmiganlabs/butler/commit/97af030410a36727bf16dfa4c617c4bd05d700fb))
+* **security:** fix handlerCreateDir fire-and-forget bug and wrong error variable ([a24a309](https://github.com/ptarmiganlabs/butler/commit/a24a30976560696088814eb2338ad72cb3c8a781))
+* **tests:** enable TLS configuration in rest API tests ([edbe4f5](https://github.com/ptarmiganlabs/butler/commit/edbe4f55773d5bdc66e5376b536e4474c636a8f3))
+* **udp:** address remaining review-thread hardening issues ([feb9ebd](https://github.com/ptarmiganlabs/butler/commit/feb9ebd439c2f977a7e2af0da9b6ac1a6ee70f02))
+* **udp:** align backpressure threshold units with runtime validation ([88e1bab](https://github.com/ptarmiganlabs/butler/commit/88e1bab073bea989e12e00bc0d25692c591a8c2e))
+* **udp:** avoid duplicate GUID validation logs in UDP handler ([da6b21f](https://github.com/ptarmiganlabs/butler/commit/da6b21f10f4f78b9136d32744a7448b582090fb2))
+* **udp:** handle empty source allowlist and align docs/comments ([f891ac2](https://github.com/ptarmiganlabs/butler/commit/f891ac23ff3a1fb86b51a1a43248edf0fa3e6984))
+
+
+### Miscellaneous
+
+* **git:** ignore gitnexus artifacts ([cbb3cd0](https://github.com/ptarmiganlabs/butler/commit/cbb3cd055e81d29b314c12cf861adc760e91f061))
+* merge latest master into security audit branch ([5be2bbb](https://github.com/ptarmiganlabs/butler/commit/5be2bbb162febe0c9f1e108a8111834859445b2f))
+* update dependencies and scripts in package.json ([dd857b3](https://github.com/ptarmiganlabs/butler/commit/dd857b32ddab00db1ace17fe6815e574bf5382e0))
+
+
+### Refactoring
+
+* **udp:** simplify sanitized message handling in handler ([b101f23](https://github.com/ptarmiganlabs/butler/commit/b101f23358147b9a4436d9c26bee3dacb5f762b0))
+
+
+### Documentation
+
+* clarify lineage discriminator examples ([d056f52](https://github.com/ptarmiganlabs/butler/commit/d056f52b5fe0054e572dbb39803b0542b0219a55))
+* describe lineage discriminator values ([a4d74a1](https://github.com/ptarmiganlabs/butler/commit/a4d74a19e3bac694992f9894cfe9c2c4da4da321))
+
 ## [15.1.3](https://github.com/ptarmiganlabs/butler/compare/butler-v15.1.2...butler-v15.1.3) (2026-04-25)
 
 
