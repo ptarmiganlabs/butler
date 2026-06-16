@@ -765,6 +765,21 @@ export async function configFileStructureAssert() {
         // Add formats to ajv instance
         ajvFormats.default(ajv);
 
+        // Override built-in hostname format to allow underscores
+        // RFC 1123 doesn't allow underscores, but they're commonly used in practice
+        // (Windows, Docker, Kubernetes, etc.)
+        ajv.addFormat('hostname', {
+            type: 'string',
+            validate: (data) => {
+                if (!data || data.length === 0 || data.length > 253) return false;
+                // Each label: starts/ends with alphanumeric, can contain hyphens/underscores in middle
+                // Labels separated by dots
+                const labelPattern = /^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/;
+                const labels = data.split('.');
+                return labels.every((label) => label.length > 0 && label.length <= 63 && labelPattern.test(label));
+            },
+        });
+
         // Load the YAML schema file, identified by globals.configFileExpanded, from file
         const fileContent = await fs.readFile(globals.configFileExpanded, 'utf8');
 

@@ -6,6 +6,7 @@ const mockAjvCompile = jest.fn(() => mockValidate);
 jest.unstable_mockModule('ajv', () => ({
     default: jest.fn(() => ({
         compile: mockAjvCompile,
+        addFormat: jest.fn(),
     })),
 }));
 
