@@ -1,5 +1,23 @@
 # Changelog
 
+## [16.0.2](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.1...butler-v16.0.2) (2026-06-16)
+
+
+### Bug Fixes
+
+* allow underscores in hostnames in config file ([df74abc](https://github.com/ptarmiganlabs/butler/commit/df74abca9573b79ab4d5ccdddf80335f173122d6))
+* update Docker base image from bullseye-slim to bookworm-slim ([d552cbb](https://github.com/ptarmiganlabs/butler/commit/d552cbbfa5768a073515b2a4a5a5f9eddf9216af))
+
+
+### Miscellaneous
+
+* update telemetry configuration in production template ([75ffe48](https://github.com/ptarmiganlabs/butler/commit/75ffe48ab78f6dd9eceba5277c4251d1ebd86841))
+
+
+### Refactoring
+
+* improve config file structure validation and error handling ([b7a46fd](https://github.com/ptarmiganlabs/butler/commit/b7a46fddb6e367cbb7caef90903b957e08b13588))
+
 ## [16.0.1](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.0...butler-v16.0.1) (2026-06-16)
 
 
