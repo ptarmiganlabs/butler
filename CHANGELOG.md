@@ -1,5 +1,14 @@
 # Changelog
 
+## [16.0.3](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.2...butler-v16.0.3) (2026-06-16)
+
+
+### Bug Fixes
+
+* fix broken Docker image builds ([1d5e2c8](https://github.com/ptarmiganlabs/butler/commit/1d5e2c824352f8f5bfecc978de434d6dbbf836d4))
+* increase commit search depth to improve changelog generation ([e25ecf0](https://github.com/ptarmiganlabs/butler/commit/e25ecf0c6d3d5a4b10aa19d4ef31d917f071e403))
+* only verify email recipient custom property existence if that feature is enabled in config file ([b101ba3](https://github.com/ptarmiganlabs/butler/commit/b101ba396291707f99060736503fa827cea804ac))
+
 ## [16.0.2](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.1...butler-v16.0.2) (2026-06-16)
 
 
