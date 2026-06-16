@@ -5,7 +5,7 @@
     "prerelease": false,
     "draft": true,
     "release-search-depth": 10,
-    "commit-search-depth": 200,
+    "commit-search-depth": 100,
     "changelog-sections": [
         {
             "type": "feat",
