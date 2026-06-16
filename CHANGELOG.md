@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.0.4](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.3...butler-v16.0.4) (2026-06-16)
+
+
+### Bug Fixes
+
+* **ci:** Fix broken release notes generation ([914db29](https://github.com/ptarmiganlabs/butler/commit/914db2983ab49224d6efbd2b356873608424542f))
+
 ## [16.0.3](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.2...butler-v16.0.3) (2026-06-16)
 
 
