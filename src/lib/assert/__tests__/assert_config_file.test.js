@@ -1,5 +1,24 @@
 import { jest } from '@jest/globals';
 
+// Mock ajv to control validation results
+const mockValidate = jest.fn();
+const mockAjvCompile = jest.fn(() => mockValidate);
+jest.unstable_mockModule('ajv', () => ({
+    default: jest.fn(() => ({
+        compile: mockAjvCompile,
+    })),
+}));
+
+// Mock ajv-keywords
+jest.unstable_mockModule('ajv-keywords', () => ({
+    default: jest.fn(),
+}));
+
+// Mock ajv-formats
+jest.unstable_mockModule('ajv-formats', () => ({
+    default: jest.fn(),
+}));
+
 // Mock external dependencies
 jest.unstable_mockModule('../../qrs_client.js', () => ({
     default: jest.fn(),
@@ -461,6 +480,7 @@ describe('assert_config_file', () => {
             };
 
             fsMock.readFile.mockResolvedValue(JSON.stringify(validConfig));
+            mockValidate.mockResolvedValue(true);
 
             const result = await assertConfigModule.configFileStructureAssert();
 

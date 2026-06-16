@@ -811,7 +811,7 @@ export async function configFileStructureAssert() {
                 globals.logger.error('---');
             }
 
-            process.exit(1);
+            return false;
         }
 
         // ------------------------------
