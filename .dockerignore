@@ -27,7 +27,6 @@ CHANGELOG.md
 Dockerfile
 docker-compose.yaml
 docker-compose.yml
-package-lock.json
 README.md
 
 docker-compose.yml
@@ -36,7 +35,6 @@ img
 scriptlog
 log
 node_modules
-package-lock.json
 renovate.json
 release
 release-macos
