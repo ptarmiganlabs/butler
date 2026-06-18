@@ -27,8 +27,8 @@ process.emit = function (name, data, ...args) {
     // console.log(`Args: ${args}`);
 
     // Suppress DEP0169 (url.parse deprecation from influx package)
-    if (name === `warning` && typeof data === `object` && data.code === `DEP0169`) {
-        return false;
+    if (name === 'warning' && data && typeof data === 'object' && data.code === 'DEP0169') {
+        return true;
     }
 
     // Suppress ExperimentalWarning for Fetch API
