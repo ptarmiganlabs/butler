@@ -13,7 +13,7 @@
 import dgram from 'dgram';
 import { GLOBALS_INIT_TIMEOUT_MS, GLOBALS_INIT_CHECK_INTERVAL_MS } from './constants.js';
 
-// Suppress experimental warnings
+// Suppress specific Node.js warnings
 // https://stackoverflow.com/questions/55778283/how-to-disable-warnings-when-node-is-launched-via-a-global-shell-script
 const originalEmit = process.emit;
 process.emit = function (name, data, ...args) {
@@ -26,6 +26,12 @@ process.emit = function (name, data, ...args) {
     // }
     // console.log(`Args: ${args}`);
 
+    // Suppress DEP0169 (url.parse deprecation from influx package)
+    if (name === `warning` && typeof data === `object` && data.code === `DEP0169`) {
+        return false;
+    }
+
+    // Suppress ExperimentalWarning for Fetch API
     if (name === `warning` && typeof data === `object` && data.name === `ExperimentalWarning` && data.message.includes(`Fetch API`)) {
         return false;
     }
