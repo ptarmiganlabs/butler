@@ -32,8 +32,15 @@ process.emit = function (name, data, ...args) {
     }
 
     // Suppress ExperimentalWarning for Fetch API
-    if (name === `warning` && typeof data === `object` && data.name === `ExperimentalWarning` && data.message.includes(`Fetch API`)) {
-        return false;
+    if (
+        name === 'warning' &&
+        data &&
+        typeof data === 'object' &&
+        data.name === 'ExperimentalWarning' &&
+        typeof data.message === 'string' &&
+        data.message.includes('Fetch API')
+    ) {
+        return true;
     }
     return originalEmit.apply(process, arguments);
 };
