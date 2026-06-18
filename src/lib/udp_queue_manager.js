@@ -11,6 +11,109 @@ import PQueue from 'p-queue';
 import { Mutex } from 'async-mutex';
 
 /**
+ * Time-based cache for deduplication
+ * Stores keys with timestamps and automatically expires old entries
+ */
+class DeduplicationCache {
+    /**
+     * Create a deduplication cache
+     *
+     * @param {number} ttlMs - Time-to-live in milliseconds for entries
+     */
+    constructor(ttlMs) {
+        this.cache = new Map();
+        this.ttlMs = ttlMs;
+        this.cleanupInterval = null;
+    }
+
+    /**
+     * Start periodic cleanup of expired entries
+     */
+    startCleanup() {
+        if (this.cleanupInterval) return;
+        this.cleanupInterval = setInterval(() => this.cleanup(), Math.min(this.ttlMs / 2, 60000));
+    }
+
+    /**
+     * Stop periodic cleanup
+     */
+    stopCleanup() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
+    }
+
+    /**
+     * Remove expired entries from the cache
+     */
+    cleanup() {
+        const now = Date.now();
+        for (const [key, timestamp] of this.cache.entries()) {
+            if (now - timestamp > this.ttlMs) {
+                this.cache.delete(key);
+            }
+        }
+    }
+
+    /**
+     * Check if a key exists and is not expired
+     *
+     * @param {string} key - Key to check
+     * @returns {boolean} True if key exists and is not expired
+     */
+    has(key) {
+        const timestamp = this.cache.get(key);
+        if (timestamp === undefined) return false;
+        if (Date.now() - timestamp > this.ttlMs) {
+            this.cache.delete(key);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Add or update a key with current timestamp
+     *
+     * @param {string} key - Key to add
+     */
+    set(key) {
+        this.cache.set(key, Date.now());
+    }
+
+    /**
+     * Check if key exists, and if not, add it and return false (meaning "not a duplicate")
+     * If key exists, return true (meaning "is a duplicate")
+     *
+     * @param {string} key - Key to check
+     * @returns {boolean} True if key was already present (duplicate), false if new
+     */
+    checkAndSet(key) {
+        if (this.has(key)) {
+            return true;
+        }
+        this.set(key);
+        return false;
+    }
+
+    /**
+     * Get the number of entries in the cache
+     *
+     * @returns {number} Number of entries
+     */
+    get size() {
+        return this.cache.size;
+    }
+
+    /**
+     * Clear all entries from the cache
+     */
+    clear() {
+        this.cache.clear();
+    }
+}
+
+/**
  * Circular buffer for tracking processing times
  */
 class CircularBuffer {
@@ -239,6 +342,13 @@ export class UdpQueueManager {
         // Drop tracking for logging
         this.droppedSinceLastLog = 0;
         this.lastDropLog = Date.now();
+
+        // Deduplication cache for executionIds (10 minute TTL)
+        this.deduplicationCache = new DeduplicationCache(10 * 60 * 1000);
+        this.deduplicationCache.startCleanup();
+
+        // Track deduplication metrics
+        this.metrics.messagesDroppedDuplicate = 0;
     }
 
     /**
@@ -260,6 +370,27 @@ export class UdpQueueManager {
     checkRateLimit() {
         if (!this.rateLimiter) return true;
         return this.rateLimiter.checkLimit();
+    }
+
+    /**
+     * Check if a message with this executionId has already been processed.
+     * If not a duplicate, marks the executionId as seen.
+     *
+     * @param {string} executionId - The execution ID to check (from UDP message field 9)
+     * @returns {boolean} True if this is a duplicate (should be skipped), false if new
+     */
+    checkDuplicate(executionId) {
+        if (!executionId || executionId === '') return false;
+        return this.deduplicationCache.checkAndSet(executionId);
+    }
+
+    /**
+     * Get the current size of the deduplication cache
+     *
+     * @returns {number} Number of entries in the deduplication cache
+     */
+    getDeduplicationCacheSize() {
+        return this.deduplicationCache.size;
     }
 
     /**
@@ -420,6 +551,24 @@ export class UdpQueueManager {
     }
 
     /**
+     * Handle message drop due to duplicate detection
+     *
+     * @returns {Promise<void>}
+     */
+    async handleDuplicateDrop() {
+        const release = await this.metricsMutex.acquire();
+        try {
+            this.metrics.messagesReceived++;
+            this.metrics.messagesDroppedTotal++;
+            this.metrics.messagesDroppedDuplicate++;
+            this.droppedSinceLastLog++;
+        } finally {
+            release();
+        }
+        this.logDroppedMessages();
+    }
+
+    /**
      * Get current metrics
      *
      * @returns {Promise<object>} Current metrics
@@ -440,6 +589,8 @@ export class UdpQueueManager {
                 messagesDroppedRateLimit: this.metrics.messagesDroppedRateLimit,
                 messagesDroppedQueueFull: this.metrics.messagesDroppedQueueFull,
                 messagesDroppedSize: this.metrics.messagesDroppedSize,
+                messagesDroppedDuplicate: this.metrics.messagesDroppedDuplicate,
+                deduplicationCacheSize: this.deduplicationCache.size,
                 processingTimeAvgMs: this.processingTimeBuffer.getAverage() || 0,
                 processingTimeP95Ms: this.processingTimeBuffer.getPercentile95() || 0,
                 processingTimeMaxMs: this.processingTimeBuffer.getMax() || 0,
@@ -467,9 +618,19 @@ export class UdpQueueManager {
             this.metrics.messagesDroppedRateLimit = 0;
             this.metrics.messagesDroppedQueueFull = 0;
             this.metrics.messagesDroppedSize = 0;
+            this.metrics.messagesDroppedDuplicate = 0;
             this.processingTimeBuffer.clear();
         } finally {
             release();
         }
+    }
+
+    /**
+     * Clean up resources (stop intervals, clear caches)
+     * Should be called when the queue manager is no longer needed
+     */
+    destroy() {
+        this.deduplicationCache.stopCleanup();
+        this.deduplicationCache.clear();
     }
 }

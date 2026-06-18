@@ -153,11 +153,12 @@ export async function sendDistributeTaskFailureNotificationEmail(distributeParam
             .consume(`${distributeParams.taskId}|${recipientEmailAddress}`, 1)
             .then(async (rateLimiterRes) => {
                 try {
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limit check passed for ${recipientEmailAddress}, task "${distributeParams.taskName}". Remaining points: ${rateLimiterRes.remainingPoints}`,
+                    );
+
                     globals.logger.info(
                         `[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Sending distribution task failed notification email to ${recipientEmailAddress}, for task "${distributeParams.taskName}"`,
-                    );
-                    globals.logger.verbose(
-                        `[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -180,9 +181,9 @@ export async function sendDistributeTaskFailureNotificationEmail(distributeParam
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limiting failed. Not sending distribute notification email for task "${distributeParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limit exceeded. Not sending distribute notification email for task "${distributeParams.taskName}" to "${recipientEmailAddress}". Wait before sending another email to this recipient for this task.`,
                 );
-                globals.logger.debug(`[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL DISTRIBUTE TASK FAILED ALERT: Rate limiter details: ${JSON.stringify(err, null, 2)}`);
             });
     }
 }

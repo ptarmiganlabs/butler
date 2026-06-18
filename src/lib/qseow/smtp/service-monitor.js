@@ -60,11 +60,12 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
             .consume(`${serviceParams.host}|${serviceParams.serviceName}|${recipientEmailAddress}`, 1)
             .then(async (rateLimiterRes) => {
                 try {
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL SERVICE MONITOR: Rate limit check passed for ${recipientEmailAddress}, service "${serviceParams.serviceName}" on host "${serviceParams.host}". Remaining points: ${rateLimiterRes.remainingPoints}`,
+                    );
+
                     globals.logger.info(
                         `[QSEOW] EMAIL SERVICE MONITOR: Sending Windows service monitoring notification email to "${recipientEmailAddress}". Host: "${serviceParams.host}", service: "${serviceParams.serviceName}"`,
-                    );
-                    globals.logger.debug(
-                        `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -99,9 +100,9 @@ export async function sendServiceMonitorNotificationEmail(serviceParams) {
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `[QSEOW] EMAIL SERVICE MONITOR: Rate limiting failed. Not sending reload notification email for service service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL SERVICE MONITOR: Rate limit exceeded. Not sending notification email for service "${serviceParams.serviceName}" on host "${serviceParams.host}" to "${recipientEmailAddress}". Wait before sending another email to this recipient for this service.`,
                 );
-                globals.logger.debug(`[QSEOW] EMAIL SERVICE MONITOR: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL SERVICE MONITOR: Rate limiter details: ${JSON.stringify(err, null, 2)}`);
             });
     }
 }

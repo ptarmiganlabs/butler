@@ -150,11 +150,12 @@ export async function sendPreloadTaskFailureNotificationEmail(preloadParams) {
             .consume(`${preloadParams.taskId}|${recipientEmailAddress}`, 1)
             .then(async (rateLimiterRes) => {
                 try {
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limit check passed for ${recipientEmailAddress}, task "${preloadParams.taskName}". Remaining points: ${rateLimiterRes.remainingPoints}`,
+                    );
+
                     globals.logger.info(
                         `[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Sending preload task failed notification email to ${recipientEmailAddress}, for task "${preloadParams.taskName}"`,
-                    );
-                    globals.logger.verbose(
-                        `[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -177,9 +178,9 @@ export async function sendPreloadTaskFailureNotificationEmail(preloadParams) {
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limiting failed. Not sending preload notification email for task "${preloadParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limit exceeded. Not sending preload notification email for task "${preloadParams.taskName}" to "${recipientEmailAddress}". Wait before sending another email to this recipient for this task.`,
                 );
-                globals.logger.debug(`[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL PRELOAD TASK FAILED ALERT: Rate limiter details: ${JSON.stringify(err, null, 2)}`);
             });
     }
 }

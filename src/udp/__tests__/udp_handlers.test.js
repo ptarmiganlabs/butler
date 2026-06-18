@@ -4,6 +4,7 @@ describe('udp_handlers', () => {
     let udpInitTaskErrorServer;
     let events; // event handlers registry
     let published;
+    let mockGlobals;
 
     beforeAll(async () => {
         published = [];
@@ -136,7 +137,7 @@ describe('udp_handlers', () => {
         }));
 
         events = {};
-        const mockGlobals = {
+        mockGlobals = {
             config: {
                 has: jest.fn(() => true),
                 get: jest.fn((k) => {
@@ -210,6 +211,13 @@ describe('udp_handlers', () => {
         events = {};
         published.length = 0;
         await udpInitTaskErrorServer();
+    });
+
+    afterEach(async () => {
+        // Clean up UDP queue manager after each test to stop intervals
+        if (mockGlobals && mockGlobals.udpQueueManager) {
+            mockGlobals.udpQueueManager.destroy();
+        }
     });
 
     // Helper to wait until a condition is true or timeout
@@ -545,5 +553,12 @@ describe('udp_handlers', () => {
         expect(sanitized[2]).toBe('Task');
         expect(sanitized[3]).toHaveLength(500);
         expect(sanitized[4]).toBe('normal');
+    });
+
+    afterAll(async () => {
+        // Clean up UDP queue manager to stop intervals
+        if (mockGlobals && mockGlobals.udpQueueManager) {
+            mockGlobals.udpQueueManager.destroy();
+        }
     });
 });

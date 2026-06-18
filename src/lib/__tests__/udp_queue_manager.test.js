@@ -34,6 +34,8 @@ describe('UdpQueueManager', () => {
     afterEach(async () => {
         // Clear any pending tasks in the queue
         await queueManager.queue.clear();
+        // Clean up resources (stop intervals, clear caches)
+        queueManager.destroy();
     });
 
     test('should validate message size', () => {
@@ -121,6 +123,9 @@ describe('UdpQueueManager', () => {
         expect(rateLimitedQueue.checkRateLimit()).toBe(true);
         expect(rateLimitedQueue.checkRateLimit()).toBe(true);
         expect(rateLimitedQueue.checkRateLimit()).toBe(false);
+
+        // Clean up
+        rateLimitedQueue.destroy();
     });
 
     test('should not log backpressure continues on first activation', async () => {

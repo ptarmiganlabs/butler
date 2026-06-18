@@ -189,6 +189,18 @@ const udpInitTaskErrorServer = async () => {
                 return true;
             };
 
+            // --- DUPLICATE MESSAGE CHECK ---
+            // Check if this executionId has already been processed (prevents duplicate notifications)
+            // executionId is in msg[9] for scheduler messages
+            const executionId = sanitizedMsg[9];
+            if (executionId && globals.udpQueueManager.checkDuplicate(executionId)) {
+                globals.logger.verbose(
+                    `[QSEOW] UDP HANDLER: Duplicate message detected (executionId=${executionId}). Skipping processing.`,
+                );
+                await globals.udpQueueManager.handleDuplicateDrop();
+                return;
+            }
+
             // --- ADD TO QUEUE FOR PROCESSING ---
             const processed = await globals.udpQueueManager.addToQueue(async () => {
                 if (messageType === '/engine-reload-failed/') {

@@ -297,11 +297,12 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             .consume(`${reloadParams.taskId}|${recipientEmailAddress}`, 1)
             .then(async (rateLimiterRes) => {
                 try {
+                    globals.logger.debug(
+                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limit check passed for ${recipientEmailAddress}, task "${reloadParams.taskName}". Remaining points: ${rateLimiterRes.remainingPoints}`,
+                    );
+
                     globals.logger.info(
                         `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Sending reload task aborted notification email ${recipientEmailAddress}, for task "${reloadParams.taskName}"`,
-                    );
-                    globals.logger.debug(
-                        `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(rateLimiterRes, null, 2)}"`,
                     );
 
                     // Only send email if there is at least one recipient
@@ -324,9 +325,9 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
             })
             .catch((err) => {
                 globals.logger.warn(
-                    `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting failed. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}"`,
+                    `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limit exceeded. Not sending reload notification email for task "${reloadParams.taskName}" to "${recipientEmailAddress}". Wait before sending another email to this recipient for this task.`,
                 );
-                globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiting details "${JSON.stringify(err, null, 2)}"`);
+                globals.logger.debug(`[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Rate limiter details: ${JSON.stringify(err, null, 2)}`);
             });
     }
 }
