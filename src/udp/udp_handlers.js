@@ -63,7 +63,7 @@ const udpInitTaskErrorServer = async () => {
 
     // Handler for UDP error event
     // Called when an error occurs with the UDP server
-    globals.udpServerTaskResultSocket.on('error', (err) => {
+    globals.udpServerTaskResultSocket.on('error', () => {
         try {
             const address = globals.udpServerTaskResultSocket.address();
             globals.logger.error(`[QSEOW] TASKFAILURE: UDP server error on ${address.address}:${address.port}`);
@@ -80,8 +80,8 @@ const udpInitTaskErrorServer = async () => {
                     );
                 }
             }
-        } catch (err) {
-            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${globals.getErrorMessage(err)}`);
+        } catch (handlerError) {
+            globals.logger.error(`[QSEOW] TASKFAILURE: Error in UDP error handler: ${globals.getErrorMessage(handlerError)}`);
         }
     });
 
@@ -189,20 +189,10 @@ const udpInitTaskErrorServer = async () => {
                 return true;
             };
 
-            // --- DUPLICATE MESSAGE CHECK ---
-            // Check if this executionId has already been processed (prevents duplicate notifications)
+            // --- ADD TO QUEUE FOR PROCESSING ---
             // executionId is in msg[9] for scheduler messages
             const executionId = sanitizedMsg[9];
-            if (executionId && globals.udpQueueManager.checkDuplicate(executionId)) {
-                globals.logger.verbose(
-                    `[QSEOW] UDP HANDLER: Duplicate message detected (executionId=${executionId}). Skipping processing.`,
-                );
-                await globals.udpQueueManager.handleDuplicateDrop();
-                return;
-            }
-
-            // --- ADD TO QUEUE FOR PROCESSING ---
-            const processed = await globals.udpQueueManager.addToQueue(async () => {
+            const queueOutcome = await globals.udpQueueManager.enqueueDeduplicated(executionId, async () => {
                 if (messageType === '/engine-reload-failed/') {
                     // Engine log appender detecting failed reload, also ones initiated interactively by users
 
@@ -214,17 +204,18 @@ const udpInitTaskErrorServer = async () => {
                         );
                         globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Incoming log message was:\n${sanitizedMessageText}`);
                         globals.logger.warn(`[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Aborting processing of this message.`);
-                        return;
+                        return false;
                     }
 
                     if (sanitizedMsg[2] && !guidRegex.test(sanitizedMsg[2])) {
                         globals.logger.warn(`[QSEOW] UDP HANDLER: Invalid App ID format: ${sanitizedMsg[2]}. Rejecting message.`);
-                        return;
+                        return false;
                     }
 
                     globals.logger.verbose(
                         `[QSEOW] UDP HANDLER ENGINE RELOAD FAILED: Received reload failed UDP message from engine: Host=${sanitizedMsg[1]}, AppID=${sanitizedMsg[2]}, User directory=${sanitizedMsg[4]}, User=${sanitizedMsg[5]}`,
                     );
+                    return true;
                 } else if (messageType === '/scheduler-distribute/') {
                     // Scheduler log appender detecting distribute task event (success, failed)
 
@@ -236,15 +227,16 @@ const udpInitTaskErrorServer = async () => {
                         );
                         globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Incoming log message was:\n${sanitizedMessageText}`);
                         globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Aborting processing of this message.`);
-                        return;
+                        return false;
                     }
-                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return;
+                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return false;
 
                     globals.logger.verbose(
                         `[QSEOW] UDP HANDLER SCHEDULER DISTRIBUTE: Received distribute task UDP message from scheduler: Host=${sanitizedMsg[1]}, TaskName=${sanitizedMsg[2]}, AppName=${sanitizedMsg[3]}, User=${sanitizedMsg[4]}, TaskID=${sanitizedMsg[5]}, AppID=${sanitizedMsg[6]}, ExecutionID=${sanitizedMsg[9]}, Message=${sanitizedMsg[10]}`,
                     );
 
                     await distributeTaskCompletion(sanitizedMsg);
+                    return true;
                 } else if (
                     messageType === '/scheduler-reload-failed/' ||
                     messageType === '/scheduler-task-failed/' ||
@@ -262,11 +254,12 @@ const udpInitTaskErrorServer = async () => {
                             `[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Incoming log message was:\n${sanitizedMessageText}`,
                         );
                         globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD FAILED: Aborting processing of this message.`);
-                        return;
+                        return false;
                     }
-                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return;
+                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return false;
 
                     await schedulerFailed(sanitizedMsg);
+                    return true;
                 } else if (messageType === '/scheduler-reload-aborted/' || messageType === '/scheduler-task-aborted/') {
                     // Scheduler log appender detecting aborted tasks
 
@@ -280,11 +273,12 @@ const udpInitTaskErrorServer = async () => {
                             `[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Incoming log message was:\n${sanitizedMessageText}`,
                         );
                         globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER RELOAD ABORTED: Aborting processing of this message.`);
-                        return;
+                        return false;
                     }
-                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return;
+                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return false;
 
                     await schedulerAborted(sanitizedMsg);
+                    return true;
                 } else if (messageType === '/scheduler-reloadtask-success/' || messageType === '/scheduler-task-success/') {
                     // Scheduler log appender detecting successful tasks
                     // Support both legacy /scheduler-reloadtask-success/ and new generic /scheduler-task-success/ message types
@@ -299,16 +293,25 @@ const udpInitTaskErrorServer = async () => {
                             `[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Incoming log message was:\n${sanitizedMessageText}`,
                         );
                         globals.logger.warn(`[QSEOW] UDP HANDLER SCHEDULER TASK SUCCESS: Aborting processing of this message.`);
-                        return;
+                        return false;
                     }
-                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return;
+                    if (!validateTaskAndAppId(sanitizedMsg[5], sanitizedMsg[6])) return false;
                     await schedulerTaskSuccess(sanitizedMsg);
+                    return true;
                 } else {
                     globals.logger.warn(`[QSEOW] UDP HANDLER: Unknown UDP message type: "${sanitizedMsg[0]}"`);
+                    return false;
                 }
             });
 
-            if (!processed) {
+            if (queueOutcome === 'duplicate') {
+                globals.logger.verbose(
+                    `[QSEOW] UDP HANDLER: Duplicate message detected (executionId=${executionId}). Skipping processing.`,
+                );
+                return;
+            }
+
+            if (queueOutcome === 'queue_full') {
                 // Message was dropped (queue full)
                 return;
             }

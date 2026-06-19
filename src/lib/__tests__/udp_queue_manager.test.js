@@ -134,4 +134,75 @@ describe('UdpQueueManager', () => {
         expect(warnMessages.filter((msg) => msg.includes('Backpressure detected'))).toHaveLength(1);
         expect(warnMessages.filter((msg) => msg.includes('Backpressure continues'))).toHaveLength(0);
     });
+
+    test('should drop a duplicate while the first executionId is still in flight', async () => {
+        let releaseProcessing;
+        const firstQueued = await queueManager.enqueueDeduplicated(
+            'exec-in-flight',
+            () =>
+                new Promise((resolve) => {
+                    releaseProcessing = () => resolve(true);
+                }),
+        );
+
+        const duplicateQueued = await queueManager.enqueueDeduplicated('exec-in-flight', () => Promise.resolve(true));
+
+        expect(firstQueued).toBe('queued');
+        expect(duplicateQueued).toBe('duplicate');
+
+        releaseProcessing();
+        await new Promise((r) => setTimeout(r, 50));
+
+        const metrics = await queueManager.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(1);
+        expect(queueManager.checkDuplicate('exec-in-flight')).toBe(true);
+    });
+
+    test('should release executionId when queue admission fails', async () => {
+        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+
+        for (let i = 0; i < 12; i++) {
+            const result = await queueManager.addToQueue(slowFn);
+            expect(result).toBe(true);
+        }
+
+        await new Promise((r) => setTimeout(r, 100));
+
+        const queued = await queueManager.enqueueDeduplicated('exec-queue-full', () => Promise.resolve(true));
+        expect(queued).toBe('queue_full');
+        expect(queueManager.checkDuplicate('exec-queue-full')).toBe(false);
+    });
+
+    test('should release executionId when queued processing returns false', async () => {
+        const queued = await queueManager.enqueueDeduplicated('exec-return-false', () => Promise.resolve(false));
+        expect(queued).toBe('queued');
+
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(queueManager.checkDuplicate('exec-return-false')).toBe(false);
+        const metrics = await queueManager.getMetrics();
+        expect(metrics.messagesFailed).toBe(1);
+    });
+
+    test('should release executionId when queued processing throws', async () => {
+        const queued = await queueManager.enqueueDeduplicated('exec-throw', () => Promise.reject(new Error('boom')));
+        expect(queued).toBe('queued');
+
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(queueManager.checkDuplicate('exec-throw')).toBe(false);
+        const metrics = await queueManager.getMetrics();
+        expect(metrics.messagesFailed).toBe(1);
+    });
+
+    test('should retain executionId after successful processing', async () => {
+        const queued = await queueManager.enqueueDeduplicated('exec-success', () => Promise.resolve(true));
+        expect(queued).toBe('queued');
+
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(queueManager.checkDuplicate('exec-success')).toBe(true);
+        const metrics = await queueManager.getMetrics();
+        expect(metrics.messagesProcessed).toBe(1);
+    });
 });

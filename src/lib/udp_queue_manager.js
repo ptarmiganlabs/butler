@@ -32,6 +32,7 @@ class DeduplicationCache {
     startCleanup() {
         if (this.cleanupInterval) return;
         this.cleanupInterval = setInterval(() => this.cleanup(), Math.min(this.ttlMs / 2, 60000));
+        this.cleanupInterval.unref?.();
     }
 
     /**
@@ -49,8 +50,8 @@ class DeduplicationCache {
      */
     cleanup() {
         const now = Date.now();
-        for (const [key, timestamp] of this.cache.entries()) {
-            if (now - timestamp > this.ttlMs) {
+        for (const [key, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.ttlMs) {
                 this.cache.delete(key);
             }
         }
@@ -63,9 +64,9 @@ class DeduplicationCache {
      * @returns {boolean} True if key exists and is not expired
      */
     has(key) {
-        const timestamp = this.cache.get(key);
-        if (timestamp === undefined) return false;
-        if (Date.now() - timestamp > this.ttlMs) {
+        const entry = this.cache.get(key);
+        if (entry === undefined) return false;
+        if (Date.now() - entry.timestamp > this.ttlMs) {
             this.cache.delete(key);
             return false;
         }
@@ -78,22 +79,47 @@ class DeduplicationCache {
      * @param {string} key - Key to add
      */
     set(key) {
-        this.cache.set(key, Date.now());
+        this.cache.set(key, {
+            state: 'processed',
+            timestamp: Date.now(),
+        });
     }
 
     /**
-     * Check if key exists, and if not, add it and return false (meaning "not a duplicate")
-     * If key exists, return true (meaning "is a duplicate")
+     * Reserve a key while it is queued or processing.
      *
-     * @param {string} key - Key to check
-     * @returns {boolean} True if key was already present (duplicate), false if new
+     * @param {string} key - Key to reserve
+     * @returns {boolean} True if the key was reserved, false if already tracked
      */
-    checkAndSet(key) {
+    reserve(key) {
         if (this.has(key)) {
-            return true;
+            return false;
         }
+        this.cache.set(key, {
+            state: 'reserved',
+            timestamp: Date.now(),
+        });
+        return true;
+    }
+
+    /**
+     * Mark a key as successfully processed.
+     *
+     * @param {string} key - Key to mark as processed
+     * @returns {void}
+     */
+    markProcessed(key) {
         this.set(key);
-        return false;
+    }
+
+    /**
+     * Release a tracked key so it can be retried.
+     *
+     * @param {string} key - Key to release
+     * @returns {void}
+     */
+    release(key) {
+        this.cache.delete(key);
     }
 
     /**
@@ -373,15 +399,47 @@ export class UdpQueueManager {
     }
 
     /**
-     * Check if a message with this executionId has already been processed.
-     * If not a duplicate, marks the executionId as seen.
+     * Check if a message with this executionId is already tracked.
      *
      * @param {string} executionId - The execution ID to check (from UDP message field 9)
      * @returns {boolean} True if this is a duplicate (should be skipped), false if new
      */
     checkDuplicate(executionId) {
         if (!executionId || executionId === '') return false;
-        return this.deduplicationCache.checkAndSet(executionId);
+        return this.deduplicationCache.has(executionId);
+    }
+
+    /**
+     * Reserve an executionId for a queued message.
+     *
+     * @param {string} executionId - The execution ID to reserve
+     * @returns {boolean} True if reservation succeeded, false if already tracked
+     */
+    reserveExecutionId(executionId) {
+        if (!executionId || executionId === '') return false;
+        return this.deduplicationCache.reserve(executionId);
+    }
+
+    /**
+     * Mark an executionId as successfully processed.
+     *
+     * @param {string} executionId - The execution ID to mark as processed
+     * @returns {void}
+     */
+    markExecutionIdProcessed(executionId) {
+        if (!executionId || executionId === '') return;
+        this.deduplicationCache.markProcessed(executionId);
+    }
+
+    /**
+     * Release an executionId reservation so the message can be retried.
+     *
+     * @param {string} executionId - The execution ID to release
+     * @returns {void}
+     */
+    releaseExecutionId(executionId) {
+        if (!executionId || executionId === '') return;
+        this.deduplicationCache.release(executionId);
     }
 
     /**
@@ -453,10 +511,11 @@ export class UdpQueueManager {
     /**
      * Add message to queue for processing
      *
-     * @param {() => Promise<void>} processFunction - Async function that processes the message
+     * @param {() => Promise<boolean|void>} processFunction - Async function that processes the message
+     * @param {{ onFailure?: () => Promise<void>|void, onSuccess?: () => Promise<void>|void }} [options] - Optional lifecycle hooks for queue processing
      * @returns {Promise<boolean>} True if message was queued, false if dropped
      */
-    async addToQueue(processFunction) {
+    async addToQueue(processFunction, options = {}) {
         let queueSize;
         const release = await this.metricsMutex.acquire();
         try {
@@ -487,23 +546,50 @@ export class UdpQueueManager {
             .add(async () => {
                 const startTime = Date.now();
                 try {
-                    await processFunction();
-
+                    const processResult = await processFunction();
+                    const wasSuccessful = processResult !== false;
                     const processingTime = Date.now() - startTime;
-                    const release2 = await this.metricsMutex.acquire();
-                    try {
-                        this.metrics.messagesProcessed++;
-                        this.processingTimeBuffer.add(processingTime);
-                    } finally {
-                        release2();
+
+                    if (wasSuccessful) {
+                        const releaseMetricsSuccess = await this.metricsMutex.acquire();
+                        try {
+                            this.metrics.messagesProcessed++;
+                            this.processingTimeBuffer.add(processingTime);
+                        } finally {
+                            releaseMetricsSuccess();
+                        }
+
+                        if (options.onSuccess) {
+                            await options.onSuccess();
+                        }
+
+                        return true;
                     }
-                } catch (error) {
-                    const release2 = await this.metricsMutex.acquire();
+
+                    const releaseMetricsFailure = await this.metricsMutex.acquire();
                     try {
                         this.metrics.messagesFailed++;
                     } finally {
-                        release2();
+                        releaseMetricsFailure();
                     }
+
+                    if (options.onFailure) {
+                        await options.onFailure();
+                    }
+
+                    return false;
+                } catch (error) {
+                    const releaseMetricsError = await this.metricsMutex.acquire();
+                    try {
+                        this.metrics.messagesFailed++;
+                    } finally {
+                        releaseMetricsError();
+                    }
+
+                    if (options.onFailure) {
+                        await options.onFailure();
+                    }
+
                     throw error;
                 }
             })
@@ -512,6 +598,41 @@ export class UdpQueueManager {
             });
 
         return true;
+    }
+
+    /**
+     * Add a message to the queue with retry-safe deduplication semantics.
+     *
+     * @param {string|undefined} executionId - Execution ID used for deduplication
+     * @param {() => Promise<boolean|void>} processFunction - Async function that processes the message
+     * @returns {Promise<'queued'|'duplicate'|'queue_full'>} Queueing outcome
+     */
+    async enqueueDeduplicated(executionId, processFunction) {
+        if (!executionId || executionId === '') {
+            const queuedWithoutDedup = await this.addToQueue(processFunction);
+            return queuedWithoutDedup ? 'queued' : 'queue_full';
+        }
+
+        if (!this.reserveExecutionId(executionId)) {
+            await this.handleDuplicateDrop();
+            return 'duplicate';
+        }
+
+        const queued = await this.addToQueue(processFunction, {
+            onSuccess: async () => {
+                this.markExecutionIdProcessed(executionId);
+            },
+            onFailure: async () => {
+                this.releaseExecutionId(executionId);
+            },
+        });
+
+        if (!queued) {
+            this.releaseExecutionId(executionId);
+            return 'queue_full';
+        }
+
+        return 'queued';
     }
 
     /**

@@ -283,6 +283,48 @@ describe('udp_handlers', () => {
         expect(published.some((p) => p.topic === 'failFull')).toBe(true);
     });
 
+    test('duplicate scheduler failure message is processed only once', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-dedupe;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await events.message(Buffer.from(msg), {});
+
+        await waitFor(() => published.filter((p) => p.topic === 'failFull').length === 1);
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+        expect(globals.logger.verbose).toHaveBeenCalledWith(
+            '[QSEOW] UDP HANDLER: Duplicate message detected (executionId=exec-dedupe). Skipping processing.',
+        );
+
+        const metrics = await globals.udpQueueManager.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(1);
+    });
+
+    test('executionId is released after unsuccessful processing so a resend can succeed', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const invalidMsg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;not-a-guid;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-retry;Message';
+        const validMsg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-retry;Message';
+
+        await events.message(Buffer.from(invalidMsg), {});
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(globals.udpQueueManager.checkDuplicate('exec-retry')).toBe(false);
+        expect(published).toHaveLength(0);
+
+        await events.message(Buffer.from(validMsg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+        expect(globals.udpQueueManager.checkDuplicate('exec-retry')).toBe(true);
+    });
+
     test('scheduler reload aborted publishes MQTT and full payload', async () => {
         const msg =
             '/scheduler-reload-aborted/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec;Message';
