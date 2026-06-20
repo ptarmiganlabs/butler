@@ -1026,7 +1026,7 @@ describe('qseow/qliksense_license', () => {
             await new Promise((r) => setImmediate(r));
 
             expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license-release.*code: ECONNABORTED.*timeout: 30000ms/),
+                expect.stringMatching(/endpoint: license\/professionalaccesstype\/full.*code: ECONNABORTED.*timeout: 30000ms/),
             );
         });
     });
