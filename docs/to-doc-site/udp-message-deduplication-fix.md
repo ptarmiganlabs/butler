@@ -156,7 +156,7 @@ There is currently no dedicated log line for TTL expiry. Expiry is handled silen
 
 The deduplication TTL is configurable with `Butler.udpServerConfig.deduplication.ttlMinutes`.
 
-If you do not set that key, Butler defaults to `10` minutes.
+Because Butler validates config strictly at startup, you must set that key explicitly in the config file.
 
 The TTL is used only when `Butler.udpServerConfig.deduplication.enable` is `true`.
 
@@ -303,7 +303,7 @@ There is currently no dedicated log line for TTL expiry. Expiry is handled silen
 
 The deduplication TTL is configurable with `Butler.udpServerConfig.deduplication.ttlMinutes`.
 
-If you do not set that key, Butler defaults to `10` minutes.
+Because Butler validates config strictly at startup, you must set that key explicitly in the config file.
 
 This means:
 
