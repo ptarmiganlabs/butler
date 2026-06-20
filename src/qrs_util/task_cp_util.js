@@ -15,8 +15,8 @@ import globals from '../globals.js';
 export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
     const localLogger = logger !== undefined ? logger : globals.logger;
     let qrsConfig;
-    const customPropertyName = cpName.replaceAll("'", "''");
-    const customPropertyValue = cpValue.replaceAll("'", "''");
+    const customPropertyName = String(cpName).replaceAll("'", "''");
+    const customPropertyValue = String(cpValue).replaceAll("'", "''");
     const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${customPropertyName}' and customProperties.value eq '${customPropertyValue}'`;
 
     localLogger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
