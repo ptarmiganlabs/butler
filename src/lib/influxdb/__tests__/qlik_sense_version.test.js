@@ -41,14 +41,10 @@ describe('lib/influxdb/qlik_sense_version', () => {
             config: {
                 get: jest.fn((key) => {
                     if (key === 'Butler.influxDb.tag.static') {
-                        return [
-                            { name: 'env', value: 'production' },
-                        ];
+                        return [{ name: 'env', value: 'production' }];
                     }
                     if (key === 'Butler.qlikSenseVersion.versionMonitor.destination.influxDb.tag.static') {
-                        return [
-                            { name: 'monitor', value: 'version' },
-                        ];
+                        return [{ name: 'monitor', value: 'version' }];
                     }
                     return null;
                 }),
@@ -114,9 +110,7 @@ describe('lib/influxdb/qlik_sense_version', () => {
     test('logs verbose message on send', async () => {
         await postQlikSenseVersionToInfluxDB(mockVersion);
 
-        expect(mockLogger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('Sent Qlik Sense version to InfluxDB')
-        );
+        expect(mockLogger.verbose).toHaveBeenCalledWith(expect.stringContaining('Sent Qlik Sense version to InfluxDB'));
     });
 
     test('logs silly message with datapoint', async () => {

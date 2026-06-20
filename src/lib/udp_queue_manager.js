@@ -311,8 +311,9 @@ export class UdpQueueManager {
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute
-     * @param {boolean} [config.deduplicationEnable] - Enable executionId-based deduplication (optional, defaults to true)
-     * @param {number} [config.deduplicationTtlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
+     * @param {object} [config.deduplication] - Deduplication configuration (optional)
+     * @param {boolean} [config.deduplication.enable] - Enable executionId-based deduplication (optional, defaults to true)
+     * @param {number} [config.deduplication.ttlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
      * @param {number} [config.maxMessageSize] - Maximum message size in bytes (optional)
      * @param {object} logger - Logger instance
      * @param {string} queueType - Type of queue ('task_results' or other identifier)
@@ -330,9 +331,8 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
-        const deduplicationEnable = typeof config?.deduplicationEnable === 'boolean' ? config.deduplicationEnable : true;
-        const deduplicationTtlMinutes =
-            typeof config?.deduplicationTtlMinutes === 'number' && config.deduplicationTtlMinutes > 0 ? config.deduplicationTtlMinutes : 10;
+        const deduplicationEnable = config.deduplication.enable;
+        const deduplicationTtlMinutes = config.deduplication.ttlMinutes;
 
         this.config = {
             ...config,
@@ -375,7 +375,12 @@ export class UdpQueueManager {
         this.lastBackpressureWarning = 0;
 
         // Drop tracking for logging
-        this.droppedSinceLastLog = 0;
+        this.droppedSinceLastLog = {
+            queueFull: 0,
+            rateLimit: 0,
+            size: 0,
+            duplicate: 0,
+        };
         this.lastDropLog = Date.now();
 
         this.deduplicationCache = this.deduplicationEnable ? new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000) : null;
@@ -510,9 +515,20 @@ export class UdpQueueManager {
      */
     logDroppedMessages() {
         const now = Date.now();
-        if (this.droppedSinceLastLog > 0 && now - this.lastDropLog > 60000) {
-            this.logger.warn(`[UDP Queue] Dropped ${this.droppedSinceLastLog} messages for ${this.queueType} in the last minute`);
-            this.droppedSinceLastLog = 0;
+        const totalDrops = Object.values(this.droppedSinceLastLog).reduce((sum, val) => sum + val, 0);
+
+        if (totalDrops > 0 && now - this.lastDropLog > 60000) {
+            const reasons = Object.entries(this.droppedSinceLastLog)
+                .filter(([, count]) => count > 0)
+                .map(([reason, count]) => `${reason}: ${count}`)
+                .join(', ');
+
+            this.logger.warn(`[UDP Queue] Dropped ${totalDrops} messages for ${this.queueType} in the last minute (${reasons})`);
+
+            // Reset counters
+            Object.keys(this.droppedSinceLastLog).forEach((key) => {
+                this.droppedSinceLastLog[key] = 0;
+            });
             this.lastDropLog = now;
         }
     }
@@ -526,25 +542,26 @@ export class UdpQueueManager {
      */
     async addToQueue(processFunction, options = {}) {
         let queueSize;
+        let isQueueFull = false;
         const release = await this.metricsMutex.acquire();
         try {
-            this.metrics.messagesReceived++;
-
             // Check if queue is full
             if (this.queue.size >= this.config.messageQueue.maxSize) {
-                this.metrics.messagesDroppedTotal++;
-                this.metrics.messagesDroppedQueueFull++;
-                this.droppedSinceLastLog++;
-                this.logDroppedMessages();
-                return false;
+                isQueueFull = true;
+            } else {
+                this.metrics.messagesReceived++;
+                this.metrics.messagesQueued++;
+
+                // Capture queue size while holding mutex to avoid race condition
+                queueSize = this.queue.size;
             }
-
-            this.metrics.messagesQueued++;
-
-            // Capture queue size while holding mutex to avoid race condition
-            queueSize = this.queue.size;
         } finally {
             release();
+        }
+
+        if (isQueueFull) {
+            await this.handleQueueFullDrop();
+            return false;
         }
 
         // Check backpressure with captured queue size
@@ -650,6 +667,24 @@ export class UdpQueueManager {
     }
 
     /**
+     * Handle message drop due to queue being full
+     *
+     * @returns {Promise<void>}
+     */
+    async handleQueueFullDrop() {
+        const release = await this.metricsMutex.acquire();
+        try {
+            this.metrics.messagesReceived++;
+            this.metrics.messagesDroppedTotal++;
+            this.metrics.messagesDroppedQueueFull++;
+            this.droppedSinceLastLog.queueFull++;
+        } finally {
+            release();
+        }
+        this.logDroppedMessages();
+    }
+
+    /**
      * Handle message drop due to rate limiting
      *
      * @returns {Promise<void>}
@@ -660,7 +695,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedRateLimit++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.rateLimit++;
         } finally {
             release();
         }
@@ -678,7 +713,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedSize++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.size++;
         } finally {
             release();
         }
@@ -696,7 +731,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedDuplicate++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.duplicate++;
         } finally {
             release();
         }

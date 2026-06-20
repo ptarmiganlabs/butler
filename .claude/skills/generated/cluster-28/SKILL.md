@@ -23,22 +23,22 @@ description: "Skill for the Cluster_28 area of butler. 8 symbols across 1 files.
 
 Start here when exploring this area:
 
-- **`onFailure`** (Function) — `src/lib/udp_queue_manager.js:638`
-- **`releaseExecutionId`** (Method) — `src/lib/udp_queue_manager.js:448`
-- **`getBackpressureThreshold`** (Method) — `src/lib/udp_queue_manager.js:467`
-- **`checkBackpressure`** (Method) — `src/lib/udp_queue_manager.js:477`
-- **`addToQueue`** (Method) — `src/lib/udp_queue_manager.js:526`
+- **`onFailure`** (Function) — `src/lib/udp_queue_manager.js:659`
+- **`releaseExecutionId`** (Method) — `src/lib/udp_queue_manager.js:456`
+- **`getBackpressureThreshold`** (Method) — `src/lib/udp_queue_manager.js:475`
+- **`checkBackpressure`** (Method) — `src/lib/udp_queue_manager.js:485`
+- **`addToQueue`** (Method) — `src/lib/udp_queue_manager.js:545`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `onFailure` | Function | `src/lib/udp_queue_manager.js` | 638 |
-| `releaseExecutionId` | Method | `src/lib/udp_queue_manager.js` | 448 |
-| `getBackpressureThreshold` | Method | `src/lib/udp_queue_manager.js` | 467 |
-| `checkBackpressure` | Method | `src/lib/udp_queue_manager.js` | 477 |
-| `addToQueue` | Method | `src/lib/udp_queue_manager.js` | 526 |
-| `enqueueDeduplicated` | Method | `src/lib/udp_queue_manager.js` | 618 |
+| `onFailure` | Function | `src/lib/udp_queue_manager.js` | 659 |
+| `releaseExecutionId` | Method | `src/lib/udp_queue_manager.js` | 456 |
+| `getBackpressureThreshold` | Method | `src/lib/udp_queue_manager.js` | 475 |
+| `checkBackpressure` | Method | `src/lib/udp_queue_manager.js` | 485 |
+| `addToQueue` | Method | `src/lib/udp_queue_manager.js` | 545 |
+| `enqueueDeduplicated` | Method | `src/lib/udp_queue_manager.js` | 639 |
 | `release` | Method | `src/lib/udp_queue_manager.js` | 120 |
 | `add` | Method | `src/lib/udp_queue_manager.js` | 162 |
 
@@ -47,6 +47,7 @@ Start here when exploring this area:
 | Flow | Type | Steps |
 |------|------|-------|
 | `EnqueueDeduplicated → Set` | cross_community | 6 |
+| `EnqueueDeduplicated → LogDroppedMessages` | cross_community | 4 |
 | `EnqueueDeduplicated → GetBackpressureThreshold` | intra_community | 4 |
 | `EnqueueDeduplicated → Has` | cross_community | 4 |
 

@@ -25,6 +25,10 @@ describe('UdpQueueManager', () => {
                 enable: false,
                 maxMessagesPerMinute: 100,
             },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
+            },
             maxMessageSize: 65507,
         };
 
@@ -61,28 +65,46 @@ describe('UdpQueueManager', () => {
     });
 
     test('should drop message when queue is full', async () => {
-        // p-queue's size property tracks waiting tasks (not running)
-        // maxSize is 10, so we can have up to 10 waiting
-        // Add 12 tasks: 2 will run immediately, 10 will wait (filling the queue)
-        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+        let releaseBlockingTask;
+        const blockingFn = () =>
+            new Promise((resolve) => {
+                releaseBlockingTask = () => resolve(true);
+            });
 
-        // Add 12 tasks - first 2 start running, next 10 wait
-        for (let i = 0; i < 12; i++) {
-            const result = await queueManager.addToQueue(slowFn);
-            expect(result).toBe(true); // First 12 should succeed
-        }
+        const smallQueueConfig = {
+            messageQueue: {
+                enable: true,
+                maxConcurrent: 1,
+                maxSize: 1,
+                backpressureThreshold: 80,
+            },
+            rateLimit: {
+                enable: false,
+                maxMessagesPerMinute: 100,
+            },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
+            },
+            maxMessageSize: 65507,
+        };
+        const smallQueue = new UdpQueueManager(smallQueueConfig, mockLogger, 'small_queue');
 
-        // Wait a bit for queue to update
-        await new Promise((r) => setTimeout(r, 100));
+        const firstResult = await smallQueue.addToQueue(blockingFn);
+        expect(firstResult).toBe(true);
 
-        // Now queue should be full (10 waiting, 2 running)
-        // Try to add one more - should be dropped since waiting count >= maxSize
-        const result = await queueManager.addToQueue(() => Promise.resolve());
-        expect(result).toBe(false);
+        const secondResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(secondResult).toBe(true);
 
-        // Check metrics
-        const metrics = await queueManager.getMetrics();
+        const thirdResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(thirdResult).toBe(false);
+
+        const metrics = await smallQueue.getMetrics();
         expect(metrics.messagesDroppedQueueFull).toBe(1);
+
+        releaseBlockingTask();
+        await smallQueue.queue.clear();
+        smallQueue.destroy();
     });
 
     test('should get metrics', async () => {
@@ -114,6 +136,10 @@ describe('UdpQueueManager', () => {
             rateLimit: {
                 enable: true,
                 maxMessagesPerMinute: 2,
+            },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
             },
             maxMessageSize: 65507,
         };
@@ -159,18 +185,44 @@ describe('UdpQueueManager', () => {
     });
 
     test('should release executionId when queue admission fails', async () => {
-        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+        let releaseBlockingTask;
+        const blockingFn = () =>
+            new Promise((resolve) => {
+                releaseBlockingTask = () => resolve(true);
+            });
 
-        for (let i = 0; i < 12; i++) {
-            const result = await queueManager.addToQueue(slowFn);
-            expect(result).toBe(true);
-        }
+        const smallQueueConfig = {
+            messageQueue: {
+                enable: true,
+                maxConcurrent: 1,
+                maxSize: 1,
+                backpressureThreshold: 80,
+            },
+            rateLimit: {
+                enable: false,
+                maxMessagesPerMinute: 100,
+            },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
+            },
+            maxMessageSize: 65507,
+        };
+        const smallQueue = new UdpQueueManager(smallQueueConfig, mockLogger, 'small_queue_dedup');
 
-        await new Promise((r) => setTimeout(r, 100));
+        const firstResult = await smallQueue.addToQueue(blockingFn);
+        expect(firstResult).toBe(true);
 
-        const queued = await queueManager.enqueueDeduplicated('exec-queue-full', () => Promise.resolve(true));
+        const secondResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(secondResult).toBe(true);
+
+        const queued = await smallQueue.enqueueDeduplicated('exec-queue-full', () => Promise.resolve(true));
         expect(queued).toBe('queue_full');
-        expect(queueManager.checkDuplicate('exec-queue-full')).toBe(false);
+        expect(smallQueue.checkDuplicate('exec-queue-full')).toBe(false);
+
+        releaseBlockingTask();
+        await smallQueue.queue.clear();
+        smallQueue.destroy();
     });
 
     test('should release executionId when queued processing returns false', async () => {
@@ -219,7 +271,10 @@ describe('UdpQueueManager', () => {
                     enable: false,
                     maxMessagesPerMinute: 100,
                 },
-                deduplicationTtlMinutes: 0.0001,
+                deduplication: {
+                    enable: true,
+                    ttlMinutes: 0.0001,
+                },
                 maxMessageSize: 65507,
             },
             mockLogger,
@@ -252,8 +307,10 @@ describe('UdpQueueManager', () => {
                     enable: false,
                     maxMessagesPerMinute: 100,
                 },
-                deduplicationEnable: false,
-                deduplicationTtlMinutes: 10,
+                deduplication: {
+                    enable: false,
+                    ttlMinutes: 10,
+                },
                 maxMessageSize: 65507,
             },
             mockLogger,
@@ -276,5 +333,116 @@ describe('UdpQueueManager', () => {
         expect(metrics.messagesProcessed).toBe(2);
 
         dedupDisabledQueue.destroy();
+    });
+
+    test('should include drop reason breakdown in warning log', async () => {
+        // Trigger 2 duplicate drops
+        await queueManager.handleDuplicateDrop();
+        await queueManager.handleDuplicateDrop();
+
+        // Trigger 1 size drop
+        await queueManager.handleSizeDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with breakdown
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('Dropped 3 messages');
+        expect(dropLog[0]).toContain('duplicate: 2');
+        expect(dropLog[0]).toContain('size: 1');
+    });
+
+    test('should only include non-zero drop reasons in warning log', async () => {
+        // Trigger only 1 duplicate drop
+        await queueManager.handleDuplicateDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with only duplicate reason
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('duplicate: 1');
+        expect(dropLog[0]).not.toContain('queueFull');
+        expect(dropLog[0]).not.toContain('rateLimit');
+        expect(dropLog[0]).not.toContain('size');
+    });
+
+    test('should reset drop counters after logging', async () => {
+        // Trigger some drops
+        await queueManager.handleDuplicateDrop();
+        await queueManager.handleSizeDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called once
+        const warnCalls1 = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls1).toHaveLength(1);
+
+        // Reset time and call again
+        queueManager.lastDropLog = 0;
+        queueManager.logDroppedMessages();
+
+        // Verify warn was NOT called again (counters were reset)
+        const warnCalls2 = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls2).toHaveLength(1);
+    });
+
+    test('should not log when no messages were dropped', async () => {
+        // Don't trigger any drops
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was NOT called
+        const warnCalls = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls).toHaveLength(0);
+    });
+
+    test('should track all four drop reasons correctly', async () => {
+        // Trigger rate limit drop
+        await queueManager.handleRateLimitDrop();
+
+        // Trigger size drop
+        await queueManager.handleSizeDrop();
+
+        // Trigger duplicate drop
+        await queueManager.handleDuplicateDrop();
+
+        // Trigger queue full drop directly
+        await queueManager.handleQueueFullDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with all four reasons
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('Dropped 4 messages');
+        expect(dropLog[0]).toContain('queueFull: 1');
+        expect(dropLog[0]).toContain('rateLimit: 1');
+        expect(dropLog[0]).toContain('size: 1');
+        expect(dropLog[0]).toContain('duplicate: 1');
     });
 });

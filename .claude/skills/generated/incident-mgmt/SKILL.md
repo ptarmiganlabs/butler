@@ -32,7 +32,7 @@ Start here when exploring this area:
 
 - **`configVerifyAllTaskId`** (Function) — `src/lib/config_util.js:12`
 - **`callQlikSenseServerLicenseWebhook`** (Function) — `src/lib/qseow/webhook_notification.js:950`
-- **`checkDuplicate`** (Method) — `src/lib/udp_queue_manager.js:414`
+- **`checkDuplicate`** (Method) — `src/lib/udp_queue_manager.js:422`
 
 ## Key Symbols
 
@@ -40,7 +40,7 @@ Start here when exploring this area:
 |--------|------|------|------|
 | `configVerifyAllTaskId` | Function | `src/lib/config_util.js` | 12 |
 | `callQlikSenseServerLicenseWebhook` | Function | `src/lib/qseow/webhook_notification.js` | 950 |
-| `checkDuplicate` | Method | `src/lib/udp_queue_manager.js` | 414 |
+| `checkDuplicate` | Method | `src/lib/udp_queue_manager.js` | 422 |
 | `getReloadFailedEventConfig` | Function | `src/lib/incident_mgmt/new_relic.js` | 83 |
 | `getReloadFailedLogConfig` | Function | `src/lib/incident_mgmt/new_relic.js` | 164 |
 | `getReloadAbortedEventConfig` | Function | `src/lib/incident_mgmt/new_relic.js` | 242 |

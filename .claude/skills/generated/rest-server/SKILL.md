@@ -1,11 +1,11 @@
 ---
 name: rest-server
-description: "Skill for the Rest_server area of butler. 50 symbols across 17 files."
+description: "Skill for the Rest_server area of butler. 48 symbols across 17 files."
 ---
 
 # Rest_server
 
-50 symbols | 17 files | Cohesion: 70%
+48 symbols | 17 files | Cohesion: 70%
 
 ## When to Use
 
@@ -23,8 +23,8 @@ description: "Skill for the Rest_server area of butler. 50 symbols across 17 fil
 | `src/routes/rest_server/key_value_store.js` | handlerPostKeyValueInNamespace, handlerGetKeyValueInNamespace, handlerKeyExists, handlerDeleteKeyValueInNamespace, handlerGetKeyList |
 | `src/lib/key_value_store.js` | addKeyValuePair, getNamespace, getValue, deleteKeyValuePair |
 | `src/routes/rest_server/disk_utils.js` | handlerFileCopy, handlerFileMove, handlerFileDelete, handlerCreateDirQvd |
-| `src/globals.js` | getEngineHttpHeaders, initHostInfo, isRunningInDocker |
 | `src/routes/rest_server/scheduler.js` | handlerPUTSchedulesStop, handlerGETSchedules, handlerDELETESchedules |
+| `src/globals.js` | getEngineHttpHeaders |
 | `src/lib/qseow/winsvc.js` | all |
 | `src/routes/rest_server/sense_app.js` | handlerPutAppReload |
 
@@ -82,7 +82,7 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Qseow | 15 calls |
+| Qseow | 14 calls |
 | Incident_mgmt | 7 calls |
 | Qrs_util | 4 calls |
 

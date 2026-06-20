@@ -82,11 +82,11 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Qseow | 19 calls |
+| Qseow | 21 calls |
 | Incident_mgmt | 7 calls |
 | Smtp | 4 calls |
-| Rest_server | 3 calls |
 | Qrs_util | 3 calls |
+| Rest_server | 1 calls |
 | Configvis | 1 calls |
 
 ## How to Explore

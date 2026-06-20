@@ -3068,8 +3068,15 @@ export const confifgFileSchema = {
                             required: ['enable', 'maxMessagesPerMinute'],
                             additionalProperties: false,
                         },
-                        deduplicationEnable: { type: 'boolean', default: true },
-                        deduplicationTtlMinutes: { type: 'number', default: 10 },
+                        deduplication: {
+                            type: 'object',
+                            properties: {
+                                enable: { type: 'boolean', default: true },
+                                ttlMinutes: { type: 'number', default: 10 },
+                            },
+                            required: ['enable', 'ttlMinutes'],
+                            additionalProperties: false,
+                        },
                         queueMetrics: {
                             type: 'object',
                             properties: {
@@ -3098,6 +3105,7 @@ export const confifgFileSchema = {
                         'allowedSources',
                         'messageQueue',
                         'rateLimit',
+                        'deduplication',
                         'queueMetrics',
                     ],
                     additionalProperties: false,

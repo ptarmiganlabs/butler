@@ -185,9 +185,7 @@ export async function sendDistributeTaskSuccessNotificationEmail(distributeParam
                 globals.logger.warn(
                     `[QSEOW] EMAIL DISTRIBUTE TASK SUCCESS ALERT: Rate limit exceeded. Not sending distribute notification email for task "${distributeParams.taskName}" to "${recipientEmailAddress}". Wait before sending another email to this recipient for this task.`,
                 );
-                globals.logger.debug(
-                    `[QSEOW] EMAIL DISTRIBUTE TASK SUCCESS ALERT: Rate limiter details: ${JSON.stringify(err, null, 2)}`,
-                );
+                globals.logger.debug(`[QSEOW] EMAIL DISTRIBUTE TASK SUCCESS ALERT: Rate limiter details: ${JSON.stringify(err, null, 2)}`);
             });
     }
 }

@@ -1,11 +1,11 @@
 ---
 name: qseow
-description: "Skill for the Qseow area of butler. 63 symbols across 33 files."
+description: "Skill for the Qseow area of butler. 65 symbols across 33 files."
 ---
 
 # Qseow
 
-63 symbols | 33 files | Cohesion: 46%
+65 symbols | 33 files | Cohesion: 45%
 
 ## When to Use
 
@@ -20,13 +20,13 @@ description: "Skill for the Qseow area of butler. 63 symbols across 33 files."
 | `src/lib/qseow/webhook_notification.js` | getOutgoingWebhookReloadFailedNotificationConfigOk, getOutgoingWebhookReloadAbortedNotificationConfigOk, getOutgoingWebhookServiceMonitorConfig, sendOutgoingWebhook, sendOutgoingWebhookServiceMonitor (+3) |
 | `src/lib/qseow/winsvc.js` | isValidHost, isValidServiceName, exists, statusAll, status (+1) |
 | `src/lib/incident_mgmt/signl4.js` | getReloadFailedEventConfig, getReloadAbortedEventConfig, sendSignl4, sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification |
-| `src/lib/qseow/service_monitor.js` | verifyServicesExist, setupServiceMonitorTimer, serviceMonitorMqttSend1, serviceMonitorMqttSend2, checkServiceStatus |
+| `src/lib/qseow/service_monitor.js` | serviceMonitorMqttSend1, serviceMonitorMqttSend2, checkServiceStatus, verifyServicesExist, setupServiceMonitorTimer |
+| `src/globals.js` | getErrorMessage, initHostInfo, isRunningInDocker |
 | `src/lib/influxdb/task_failure.js` | postExternalProgramTaskFailureNotificationInfluxDb, postDistributeTaskFailureNotificationInfluxDb, postUserSyncTaskFailureNotificationInfluxDb |
 | `src/lib/qseow/slack_notification.js` | getSlackServiceMonitorNotificationConfig, sendSlack, sendServiceMonitorNotificationSlack |
 | `src/lib/heartbeat.js` | callRemoteURL, setupHeartbeatTimer |
 | `src/lib/key_value_store.js` | getNamespaceList, deleteNamespace |
 | `src/lib/post_to_new_relic.js` | postFailedReloadEventToNewRelic, postAbortedReloadEventToNewRelic |
-| `src/lib/telemetry.js` | callRemoteURL, setupAnonUsageReportTimer |
 
 ## Entry Points
 

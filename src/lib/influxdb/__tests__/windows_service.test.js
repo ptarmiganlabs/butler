@@ -41,9 +41,7 @@ describe('lib/influxdb/windows_service', () => {
             config: {
                 get: jest.fn((key) => {
                     if (key === 'Butler.influxDb.tag.static') {
-                        return [
-                            { name: 'env', value: 'production' },
-                        ];
+                        return [{ name: 'env', value: 'production' }];
                     }
                     return null;
                 }),
@@ -148,7 +146,7 @@ describe('lib/influxdb/windows_service', () => {
         postWindowsServiceStatusToInfluxDB(mockServiceStatus);
 
         expect(mockLogger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('WINDOWS SERVICE STATUS: Sent Windows service status data to InfluxDB')
+            expect.stringContaining('WINDOWS SERVICE STATUS: Sent Windows service status data to InfluxDB'),
         );
     });
 

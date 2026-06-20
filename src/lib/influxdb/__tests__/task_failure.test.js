@@ -119,9 +119,7 @@ describe('lib/influxdb/task_failure', () => {
         const paramsNoScript = { ...mockReloadParams, scriptLog: null };
         postReloadTaskFailureNotificationInfluxDb(paramsNoScript);
 
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('Script log data is not available')
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log data is not available'));
 
         const datapoint = mockInfluxWritePoints.mock.calls[0][0];
         expect(datapoint[0].tags.task_executingNodeName).toBe('unknown');
@@ -158,7 +156,7 @@ describe('lib/influxdb/task_failure', () => {
         postReloadTaskFailureNotificationInfluxDb(mockReloadParams);
 
         expect(mockLogger.verbose).toHaveBeenCalledWith(
-            expect.stringContaining('RELOAD TASK FAILED: Sent reload task notification to InfluxDB')
+            expect.stringContaining('RELOAD TASK FAILED: Sent reload task notification to InfluxDB'),
         );
     });
 
