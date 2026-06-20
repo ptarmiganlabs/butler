@@ -39,11 +39,12 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         if (err.config.method) parts.push(`method: ${err.config.method.toUpperCase()}`);
         if (err.config.timeout) parts.push(`timeout: ${err.config.timeout}ms`);
         if (err.config.baseURL) parts.push(`baseURL: ${err.config.baseURL}`);
+        if (err.config.url) parts.push(`url: ${err.config.url}`);
     }
 
     // Response context (if server responded)
     if (err.response) {
-        if (err.response.status) parts.push(`status: ${err.response.status}`);
+        if (err.response.status != null) parts.push(`status: ${err.response.status}`);
         if (err.response.statusText) parts.push(`statusText: ${err.response.statusText}`);
     }
 
@@ -84,6 +85,17 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
     });
 
     return parts.join(', ');
+}
+
+/**
+ * Get QRS configuration for error context.
+ * @returns {Object} QRS configuration with hostname and portNumber
+ */
+function getQrsErrorConfig() {
+    return {
+        hostname: globals.config.get('Butler.configQRS.host'),
+        portNumber: globals.config.get('Butler.configQRS.port'),
+    };
 }
 
 // Function to check Qlik Sense server license status
@@ -278,11 +290,7 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
             }
         }
     } catch (err) {
-        const qrsConfig = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-        };
-        const errorContext = formatQrsErrorWithContext(err, 'license', qrsConfig);
+        const errorContext = formatQrsErrorWithContext(err, 'license', getQrsErrorConfig());
         logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: Request failed - ${errorContext}`);
     }
 }
@@ -333,11 +341,7 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
             await postQlikSenseLicenseStatusToInfluxDB(result1.body);
         }
     } catch (err) {
-        const qrsConfig = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-        };
-        const errorContext = formatQrsErrorWithContext(err, 'license/accesstypeoverview', qrsConfig);
+        const errorContext = formatQrsErrorWithContext(err, 'license/accesstypeoverview', getQrsErrorConfig());
         logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: Request failed - ${errorContext}`);
     }
 }
@@ -974,11 +978,11 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 
         return true;
     } catch (err) {
-        const qrsConfig = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-        };
-        const errorContext = formatQrsErrorWithContext(err, 'license-release', qrsConfig);
+        const errorContext = formatQrsErrorWithContext(
+            err,
+            err?.config?.url ?? 'license/professionalaccesstype|analyzeraccesstype',
+            getQrsErrorConfig(),
+        );
         logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: Request failed - ${errorContext}`);
         return false;
     }
@@ -1003,11 +1007,7 @@ export async function setupQlikSenseAccessLicenseMonitor(config, logger) {
             checkQlikSenseAccessLicenseStatus(config, logger, true);
         }
     } catch (err) {
-        if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
-        } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
-        }
+        logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR INIT: ${globals.getErrorMessage(err)}`);
     }
 }
 
@@ -1030,11 +1030,7 @@ export async function setupQlikSenseLicenseRelease(config, logger) {
             checkQlikSenseLicenseRelease(config, logger);
         }
     } catch (err) {
-        if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${globals.getErrorMessage(err)}`);
-        } else {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${globals.getErrorMessage(err)}`);
-        }
+        logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE INIT: ${globals.getErrorMessage(err)}`);
     }
 }
 

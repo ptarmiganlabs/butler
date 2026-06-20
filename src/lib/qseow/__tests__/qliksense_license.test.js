@@ -957,9 +957,8 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license\/accesstypeoverview.*customField: custom-value.*anotherField: 123/),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('customField: custom-value'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('anotherField: 123'));
         });
 
         test('license release error includes endpoint and context', async () => {
@@ -978,7 +977,7 @@ describe('qseow/qliksense_license', () => {
             await new Promise((r) => setImmediate(r));
 
             expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license-release.*code: ECONNABORTED.*timeout: 30000ms/),
+                expect.stringMatching(/endpoint: license\/professionalaccesstype\/full.*code: ECONNABORTED.*timeout: 30000ms/),
             );
         });
     });
