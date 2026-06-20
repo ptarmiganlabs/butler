@@ -131,11 +131,11 @@ When available, Butler now logs the following kinds of context.
 - `status`: HTTP status code returned by QRS
 - `statusText`: HTTP status text when available
 - short body summaries such as:
-	- `body.message`
-	- `body.error`
-	- `body.details`
-	- `body.code`
-	- `bodyLength` for arrays
+  - `body.message`
+  - `body.error`
+  - `body.details`
+  - `body.code`
+  - `bodyLength` for arrays
 
 ### Network details
 
