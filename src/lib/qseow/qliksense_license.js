@@ -103,6 +103,7 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         }
     });
 
+    if (!globals.isSea && err.stack) parts.push(`stack: ${err.stack}`);
     return parts.join(', ');
 }
 
