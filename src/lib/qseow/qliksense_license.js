@@ -25,6 +25,11 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
     if (qrsConfig?.hostname) parts.push(`host: ${qrsConfig.hostname}`);
     if (qrsConfig?.portNumber) parts.push(`port: ${qrsConfig.portNumber}`);
 
+    if (!err || typeof err !== 'object') {
+        if (err !== undefined) parts.push(`message: ${String(err)}`);
+        return parts.join(', ');
+    }
+
     // Error properties (generic extraction)
     if (err.code) parts.push(`code: ${err.code}`);
     if (err.message) parts.push(`message: ${err.message}`);
