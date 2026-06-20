@@ -123,7 +123,7 @@ describe('qseow/qliksense_license', () => {
                 webhookNotification: { enable: true },
 
                 // QRS cert/host
-                configQRS: { host: 'qs-host' },
+                configQRS: { host: 'qs-host', port: 4242 },
 
                 // Server license monitor
                 qlikSenseLicense: {
@@ -821,5 +821,203 @@ describe('qseow/qliksense_license', () => {
 
         // Should handle null data gracefully
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIKSENSE LICENSE MONITOR'));
+    });
+
+    describe('Enhanced error context', () => {
+        // Helper to reduce boilerplate in error context tests
+        async function setupMockAndRunTest(error) {
+            jest.resetModules();
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(error);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            return { mod, configObj };
+        }
+
+        test('timeout error includes endpoint, host, port, code, and timeout', async () => {
+            const timeoutError = new Error('timeout of 30000ms exceeded');
+            timeoutError.code = 'ECONNABORTED';
+            timeoutError.config = {
+                method: 'get',
+                timeout: 30000,
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(timeoutError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('host: qs-host'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('port: 4242'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('timeout: 30000ms'));
+        });
+
+        test('connection reset error includes endpoint, code, errno, and syscall', async () => {
+            const connResetError = new Error('read ECONNRESET');
+            connResetError.code = 'ECONNRESET';
+            connResetError.errno = -104;
+            connResetError.syscall = 'read';
+            connResetError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(connResetError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNRESET'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('errno: -104'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('syscall: read'));
+        });
+
+        test('connection refused error includes endpoint, code, errno, syscall, and address', async () => {
+            const connRefusedError = new Error('connect ECONNREFUSED 127.0.0.1:4242');
+            connRefusedError.code = 'ECONNREFUSED';
+            connRefusedError.errno = -61;
+            connRefusedError.syscall = 'connect';
+            connRefusedError.address = '127.0.0.1';
+            connRefusedError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(connRefusedError);
+            await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNREFUSED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('errno: -61'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('syscall: connect'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('address: 127.0.0.1'));
+        });
+
+        test('HTTP error response includes endpoint, status, and statusText', async () => {
+            const httpError = new Error('Request failed with status code 500');
+            httpError.response = {
+                status: 500,
+                statusText: 'Internal Server Error',
+            };
+            httpError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(httpError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('statusText: Internal Server Error'));
+        });
+
+        test('generic error includes endpoint and message', async () => {
+            const genericError = new Error('Something went wrong');
+            genericError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(genericError);
+            await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('message: Something went wrong'));
+        });
+
+        test('error with unknown properties includes those properties', async () => {
+            const customError = new Error('Custom error');
+            customError.customField = 'custom-value';
+            customError.anotherField = 123;
+            customError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(customError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('customField: custom-value'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('anotherField: 123'));
+        });
+
+        test('license release error includes endpoint and context', async () => {
+            const releaseError = new Error('timeout of 30000ms exceeded');
+            releaseError.code = 'ECONNABORTED';
+            releaseError.config = {
+                method: 'get',
+                timeout: 30000,
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/professionalaccesstype/full',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(releaseError);
+            await mod.setupQlikSenseLicenseRelease(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            // Endpoint now shows the logical operation name (consistent with other error handlers)
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('endpoint: license/professionalaccesstype|analyzeraccesstype'),
+            );
+            // The actual failing URL is shown separately
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('url: license/professionalaccesstype/full'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('timeout: 30000ms'));
+        });
+
+        test('sensitive properties are filtered from error logs', async () => {
+            const sensitiveError = new Error('Auth failed');
+            sensitiveError.authorization = 'Bearer secret-token';
+            sensitiveError.token = 'my-secret-token';
+            sensitiveError.password = 'super-secret-password';
+            sensitiveError.apiKey = 'api-key-12345';
+            sensitiveError.safeField = 'safe-value';
+            sensitiveError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(sensitiveError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            // Check all logger calls for safe field and absence of sensitive data
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('safeField: safe-value'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('authorization:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('token:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('my-secret-token'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('password:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('super-secret-password'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('apiKey:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('api-key-12345'));
+        });
     });
 });
