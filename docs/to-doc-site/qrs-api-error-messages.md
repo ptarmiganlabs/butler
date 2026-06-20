@@ -69,7 +69,7 @@ The error formatter extracts and displays the following information when availab
 - `method`: HTTP method (GET, POST, PUT, DELETE)
 - `timeout`: Request timeout in milliseconds
 - `baseURL`: Base URL of the QRS API
-- `url`: Full URL of the request
+- `url`: Request URL from Axios, typically a path relative to `baseURL`
 
 ### Response Context (if server responded)
 - `status`: HTTP status code (e.g., 500, 404)
