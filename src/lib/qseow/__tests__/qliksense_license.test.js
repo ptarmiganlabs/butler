@@ -854,11 +854,11 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(
-                    /endpoint: license\/accesstypeoverview.*host: qs-host.*port: 4242.*code: ECONNABORTED.*timeout: 30000ms/,
-                ),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('host: qs-host'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('port: 4242'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('timeout: 30000ms'));
         });
 
         test('connection reset error includes endpoint, code, errno, and syscall', async () => {
@@ -877,9 +877,10 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license\/accesstypeoverview.*code: ECONNRESET.*errno: -104.*syscall: read/),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNRESET'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('errno: -104'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('syscall: read'));
         });
 
         test('connection refused error includes endpoint, code, errno, syscall, and address', async () => {
@@ -899,9 +900,11 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license.*code: ECONNREFUSED.*errno: -61.*syscall: connect.*address: 127\.0\.0\.1/),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNREFUSED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('errno: -61'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('syscall: connect'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('address: 127.0.0.1'));
         });
 
         test('HTTP error response includes endpoint, status, and statusText', async () => {
@@ -921,9 +924,9 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license\/accesstypeoverview.*status: 500.*statusText: Internal Server Error/),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/accesstypeoverview'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('statusText: Internal Server Error'));
         });
 
         test('generic error includes endpoint and message', async () => {
@@ -939,7 +942,8 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(expect.stringMatching(/endpoint: license.*message: Something went wrong/));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('message: Something went wrong'));
         });
 
         test('error with unknown properties includes those properties', async () => {
@@ -976,9 +980,39 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(
-                expect.stringMatching(/endpoint: license\/professionalaccesstype\/full.*code: ECONNABORTED.*timeout: 30000ms/),
-            );
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/professionalaccesstype/full'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('timeout: 30000ms'));
+        });
+
+        test('sensitive properties are filtered from error logs', async () => {
+            const sensitiveError = new Error('Auth failed');
+            sensitiveError.authorization = 'Bearer secret-token';
+            sensitiveError.token = 'my-secret-token';
+            sensitiveError.password = 'super-secret-password';
+            sensitiveError.apiKey = 'api-key-12345';
+            sensitiveError.safeField = 'safe-value';
+            sensitiveError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const { mod, configObj } = await setupMockAndRunTest(sensitiveError);
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            const msg = logger.error.mock.calls[0][0];
+            expect(msg).toContain('safeField: safe-value');
+            expect(msg).not.toContain('authorization:');
+            expect(msg).not.toContain('Bearer secret-token');
+            expect(msg).not.toContain('token:');
+            expect(msg).not.toContain('my-secret-token');
+            expect(msg).not.toContain('password:');
+            expect(msg).not.toContain('super-secret-password');
+            expect(msg).not.toContain('apiKey:');
+            expect(msg).not.toContain('api-key-12345');
         });
     });
 });

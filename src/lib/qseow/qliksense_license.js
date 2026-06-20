@@ -39,7 +39,7 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         if (err.config.method) parts.push(`method: ${err.config.method.toUpperCase()}`);
         if (err.config.timeout) parts.push(`timeout: ${err.config.timeout}ms`);
         if (err.config.baseURL) parts.push(`baseURL: ${err.config.baseURL}`);
-        if (err.config.url) parts.push(`url: ${err.config.url}`);
+        if (err.config.url && err.config.url !== endpoint) parts.push(`url: ${err.config.url}`);
     }
 
     // Response context (if server responded)
@@ -70,8 +70,25 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         'isAxiosError',
         'toJSON',
     ]);
+    const sensitiveKeys = new Set([
+        'authorization',
+        'auth',
+        'token',
+        'password',
+        'cookie',
+        'secret',
+        'apikey',
+        'api_key',
+        'key',
+        'accesstoken',
+        'access_token',
+        'refreshtoken',
+        'refresh_token',
+        'privatekey',
+        'private_key',
+    ]);
     Object.keys(err).forEach((key) => {
-        if (!knownKeys.has(key) && err[key] !== undefined && err[key] !== null) {
+        if (!knownKeys.has(key) && !sensitiveKeys.has(key.toLowerCase()) && err[key] !== undefined && err[key] !== null) {
             let value = err[key];
             if (typeof value === 'object') {
                 try {
@@ -88,13 +105,33 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
 }
 
 /**
+ * Build full QRS configuration object for QrsClient.
+ * @returns {Object} Full QRS configuration with hostname, portNumber, certificates, and headers
+ */
+function buildQrsConfig() {
+    return {
+        hostname: globals.config.get('Butler.configQRS.host'),
+        portNumber: globals.config.get('Butler.configQRS.port'),
+        certificates: {
+            certFile: globals.configQRS.certPaths.certPath,
+            keyFile: globals.configQRS.certPaths.keyPath,
+        },
+        headers: {
+            ...globals.getQRSHttpHeaders(),
+            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        },
+    };
+}
+
+/**
  * Get QRS configuration for error context.
  * @returns {Object} QRS configuration with hostname and portNumber
  */
 function getQrsErrorConfig() {
+    const fullConfig = buildQrsConfig();
     return {
-        hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: globals.config.get('Butler.configQRS.port'),
+        hostname: fullConfig.hostname,
+        portNumber: fullConfig.portNumber,
     };
 }
 
@@ -106,19 +143,7 @@ function getQrsErrorConfig() {
  */
 async function checkQlikSenseServerLicenseStatus(config, logger) {
     try {
-        // Set up Sense repository service configuration
-        const configQRS = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-            certificates: {
-                certFile: globals.configQRS.certPaths.certPath,
-                keyFile: globals.configQRS.certPaths.keyPath,
-            },
-            headers: {
-                ...globals.getQRSHttpHeaders(),
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
-        };
+        const configQRS = buildQrsConfig();
 
         const qrsInstance = new QrsClient(configQRS);
 
@@ -303,19 +328,7 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
  */
 async function checkQlikSenseAccessLicenseStatus(config, logger) {
     try {
-        // Set up Sense repository service configuration
-        const configQRS = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-            certificates: {
-                certFile: globals.configQRS.certPaths.certPath,
-                keyFile: globals.configQRS.certPaths.keyPath,
-            },
-            headers: {
-                ...globals.getQRSHttpHeaders(),
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
-        };
+        const configQRS = buildQrsConfig();
 
         const qrsInstance = new QrsClient(configQRS);
 
@@ -938,19 +951,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
  */
 async function checkQlikSenseLicenseRelease(config, logger) {
     try {
-        // Set up Sense repository service configuration
-        const configQRS = {
-            hostname: globals.config.get('Butler.configQRS.host'),
-            portNumber: globals.config.get('Butler.configQRS.port'),
-            certificates: {
-                certFile: globals.configQRS.certPaths.certPath,
-                keyFile: globals.configQRS.certPaths.keyPath,
-            },
-            headers: {
-                ...globals.getQRSHttpHeaders(),
-                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
-            },
-        };
+        const configQRS = buildQrsConfig();
 
         const qrsInstance = new QrsClient(configQRS);
 
