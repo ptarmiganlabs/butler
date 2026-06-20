@@ -1,5 +1,50 @@
 # Changelog
 
+## [17.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.4...butler-v17.0.0) (2026-06-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **udp:** Add de-dupllication timeout setting to config file
+
+### Features
+
+* Enhance QRS API error handling with detailed context in error messages ([a5af939](https://github.com/ptarmiganlabs/butler/commit/a5af939939dd921d4e46963eedc6564d77863e60))
+* Improve error handling when calling QRS API ([b424f2a](https://github.com/ptarmiganlabs/butler/commit/b424f2a53b0292262fdb9cba18405b3a62d22343))
+* **qrs-api:** Enhance error handling and logging in QRS utility functions ([9dee5c0](https://github.com/ptarmiganlabs/butler/commit/9dee5c04451bc33d441aeea376ffe32fbe6a8f7e))
+* **udp-queue:** implement handling for queue full drops and refactor related tests ([61c1dda](https://github.com/ptarmiganlabs/butler/commit/61c1dda9d3dcbba9f8a01ce2fe8f24a0620304d2))
+* **udp-queue:** log deduplication settings at UDP server startup ([6276e89](https://github.com/ptarmiganlabs/butler/commit/6276e89ed1882a3d5138a43dfa2cbfbeb4d1aaa2))
+* **udp:** Add de-dupllication timeout setting to config file ([97c1f58](https://github.com/ptarmiganlabs/butler/commit/97c1f5898a5cc993ac60e920217b69df10367d44))
+* **udp:** Better duplicate and queue handling for incoming UDP messages from Sense ([7c4df53](https://github.com/ptarmiganlabs/butler/commit/7c4df5337f6b6f76b37bf017b1f84e30fdf781fc))
+* **udp:** Enhance UDP drop logging to include breakdown of drop reasons and reset counters after logging ([f7b965e](https://github.com/ptarmiganlabs/butler/commit/f7b965e03a76caa5b636c5aad8b1e941277c69dc))
+* **udp:** implement message deduplication and improve logging for email notifications ([815a3f4](https://github.com/ptarmiganlabs/butler/commit/815a3f415b6a74959d988451e73c6b25350c0f91))
+
+
+### Bug Fixes
+
+* Fix various linting and style issues in the codebase ([ade6a79](https://github.com/ptarmiganlabs/butler/commit/ade6a79df40efcd636798cb1738afdd428ee1bae))
+* **lib:** address review feedback in QRS logging ([71929a8](https://github.com/ptarmiganlabs/butler/commit/71929a852ea50fd024431eac54166ed738761314))
+* **qrs-util:** address review feedback ([2f85015](https://github.com/ptarmiganlabs/butler/commit/2f85015b0e3bc165bc91b2c52dee226f177a0736))
+* **qrs-util:** escape custom property filter quotes ([e58e28c](https://github.com/ptarmiganlabs/butler/commit/e58e28cdb0aab67ea98faf29bf4e944b97552c9e))
+* **qrs-util:** preserve filter value coercion ([90c8d2b](https://github.com/ptarmiganlabs/butler/commit/90c8d2b2e5440faaaac5225059411cdfe37bc6d0))
+* **qseow:** address remaining qrs error review feedback ([b183bc3](https://github.com/ptarmiganlabs/butler/commit/b183bc381042fa1e3a4becb23a29bb83acf7903b))
+* **qseow:** address security and test isolation issues in error handling ([cbfc042](https://github.com/ptarmiganlabs/butler/commit/cbfc04285689304e541cd9a74620f37553e06d33))
+* **qseow:** simplify qrs error config lookup ([2d8a05a](https://github.com/ptarmiganlabs/butler/commit/2d8a05aeeda3e30d1019eebcbe2d6a9e29d71927))
+* **startup:** supress obsolete messages during Butler startup ([9ade010](https://github.com/ptarmiganlabs/butler/commit/9ade010488f5d5df2b3fd2763d7fd16a8cd7a9cf))
+* **udp-queue:** correct messageReceived metric increment logic in queue handling ([6fd521d](https://github.com/ptarmiganlabs/butler/commit/6fd521d3e1c32f139c8497447c52dcec93588b22))
+* **udp:** enhance error logging with additional context and streamline QRS config retrieval ([ef621af](https://github.com/ptarmiganlabs/butler/commit/ef621af372e0b1324f93caa7534b80058b3326a1))
+
+
+### Miscellaneous
+
+* **repo:** remove unrelated generated files ([c978d3c](https://github.com/ptarmiganlabs/butler/commit/c978d3cb3175335aee2d92efd4f020263da3a9c4))
+* Update dependencies for nodemailer, posthog-node, @types/node, and eslint-plugin-jsdoc ([a3d141e](https://github.com/ptarmiganlabs/butler/commit/a3d141e1da64b384ff559f4af6135b1b95cab226))
+
+
+### Documentation
+
+* **config:** clarify required UDP deduplication TTL setting ([67b3c91](https://github.com/ptarmiganlabs/butler/commit/67b3c91fb43b27a727ee0ca78045c54ae2f876e7))
+
 ## [16.0.4](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.3...butler-v16.0.4) (2026-06-16)
 
 
