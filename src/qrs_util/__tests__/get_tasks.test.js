@@ -46,6 +46,14 @@ describe('qrs_util/get_tasks', () => {
         );
     });
 
+    test('escapes single quotes in customProperty filter', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ customProperty: { name: "team's", value: "prod's" } });
+        expect(mockQrs.Get).toHaveBeenCalledWith(
+            "task/full?filter=(customProperties.definition.name eq 'team''s') and (customProperties.value eq 'prod''s')",
+        );
+    });
+
     test('returns [] when no tasks match', async () => {
         mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
         const res = await getTasks({ tag: 'none' });

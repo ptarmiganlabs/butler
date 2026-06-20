@@ -69,7 +69,9 @@ const getTasks = async (filter) => {
 
             // Handle custom properties filter - search for tasks with a specific custom property
             if (filter.customProperty) {
-                endpoint = `task/full?filter=(customProperties.definition.name eq '${filter.customProperty.name}') and (customProperties.value eq '${filter.customProperty.value}')`;
+                const customPropertyName = filter.customProperty.name.replaceAll("'", "''");
+                const customPropertyValue = filter.customProperty.value.replaceAll("'", "''");
+                endpoint = `task/full?filter=(customProperties.definition.name eq '${customPropertyName}') and (customProperties.value eq '${customPropertyValue}')`;
                 globals.logger.debug(`GETTASKS 2: ${endpoint}`);
 
                 // Query QRS API for tasks with the specified custom property name and value
