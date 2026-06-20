@@ -177,6 +177,8 @@ describe('udp_handlers', () => {
                         'Butler.udpServerConfig.messageQueue.maxConcurrent': 5,
                         'Butler.udpServerConfig.messageQueue.maxSize': 1000,
                         'Butler.udpServerConfig.messageQueue.backpressureThreshold': 0.8,
+                        'Butler.udpServerConfig.deduplicationEnable': true,
+                        'Butler.udpServerConfig.deduplicationTtlMinutes': 10,
                         'Butler.udpServerConfig.rateLimit.enable': false,
                         'Butler.udpServerConfig.rateLimit.maxMessagesPerMinute': 1000,
                     };
@@ -320,6 +322,44 @@ describe('udp_handlers', () => {
         );
         expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
         expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+    });
+
+    test('duplicate scheduler failure messages are both processed when deduplication is disabled', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const originalGet = globals.config.get;
+
+        globals.config.get = jest.fn((key) => {
+            if (key === 'Butler.udpServerConfig.deduplicationEnable') return false;
+            return originalGet(key);
+        });
+
+        globals.udpQueueManager?.destroy();
+        events = {};
+        published.length = 0;
+        globals.logger.verbose.mockClear();
+
+        await udpInitTaskErrorServer();
+
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-disabled;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.filter((p) => p.topic === 'failFull').length === 2);
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(2);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(2);
+        expect(
+            globals.logger.verbose.mock.calls.filter(
+                (call) => typeof call[0] === 'string' && call[0].includes('Duplicate message detected'),
+            ),
+        ).toHaveLength(0);
+
+        const metrics = await globals.udpQueueManager.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(0);
+        expect(metrics.deduplicationCacheSize).toBe(0);
+
+        globals.config.get = originalGet;
     });
 
     test('executionId is released after unsuccessful processing so a resend can succeed', async () => {

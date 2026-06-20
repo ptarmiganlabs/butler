@@ -329,6 +329,7 @@ const udpInitTaskErrorServer = async () => {
             enable: globals.config.get('Butler.udpServerConfig.rateLimit.enable'),
             maxMessagesPerMinute: globals.config.get('Butler.udpServerConfig.rateLimit.maxMessagesPerMinute'),
         },
+        deduplicationEnable: globals.config.get('Butler.udpServerConfig.deduplicationEnable'),
         deduplicationTtlMinutes: globals.config.get('Butler.udpServerConfig.deduplicationTtlMinutes'),
         maxMessageSize: globals.udpMaxMessageSize,
     };

@@ -238,4 +238,43 @@ describe('UdpQueueManager', () => {
 
         shortTtlQueue.destroy();
     });
+
+    test('should bypass deduplication completely when disabled', async () => {
+        const dedupDisabledQueue = new UdpQueueManager(
+            {
+                messageQueue: {
+                    enable: true,
+                    maxConcurrent: 1,
+                    maxSize: 10,
+                    backpressureThreshold: 80,
+                },
+                rateLimit: {
+                    enable: false,
+                    maxMessagesPerMinute: 100,
+                },
+                deduplicationEnable: false,
+                deduplicationTtlMinutes: 10,
+                maxMessageSize: 65507,
+            },
+            mockLogger,
+            'dedup_disabled_queue',
+        );
+
+        const firstQueued = await dedupDisabledQueue.enqueueDeduplicated('exec-disabled', () => Promise.resolve(true));
+        const secondQueued = await dedupDisabledQueue.enqueueDeduplicated('exec-disabled', () => Promise.resolve(true));
+
+        expect(firstQueued).toBe('queued');
+        expect(secondQueued).toBe('queued');
+
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(dedupDisabledQueue.checkDuplicate('exec-disabled')).toBe(false);
+
+        const metrics = await dedupDisabledQueue.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(0);
+        expect(metrics.deduplicationCacheSize).toBe(0);
+        expect(metrics.messagesProcessed).toBe(2);
+
+        dedupDisabledQueue.destroy();
+    });
 });

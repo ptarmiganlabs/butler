@@ -311,6 +311,7 @@ export class UdpQueueManager {
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute
+     * @param {boolean} [config.deduplicationEnable] - Enable executionId-based deduplication (optional, defaults to true)
      * @param {number} [config.deduplicationTtlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
      * @param {number} [config.maxMessageSize] - Maximum message size in bytes (optional)
      * @param {object} logger - Logger instance
@@ -329,16 +330,19 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
+        const deduplicationEnable = typeof config?.deduplicationEnable === 'boolean' ? config.deduplicationEnable : true;
         const deduplicationTtlMinutes =
             typeof config?.deduplicationTtlMinutes === 'number' && config.deduplicationTtlMinutes > 0 ? config.deduplicationTtlMinutes : 10;
 
         this.config = {
             ...config,
+            deduplicationEnable,
             deduplicationTtlMinutes,
             maxMessageSize: Number.isFinite(config?.maxMessageSize) ? config.maxMessageSize : Number.POSITIVE_INFINITY,
         };
         this.logger = logger;
         this.queueType = queueType;
+        this.deduplicationEnable = deduplicationEnable;
 
         // Initialize message queue
         this.queue = new PQueue({
@@ -374,8 +378,8 @@ export class UdpQueueManager {
         this.droppedSinceLastLog = 0;
         this.lastDropLog = Date.now();
 
-        this.deduplicationCache = new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000);
-        this.deduplicationCache.startCleanup();
+        this.deduplicationCache = this.deduplicationEnable ? new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000) : null;
+        this.deduplicationCache?.startCleanup();
 
         // Track deduplication metrics
         this.metrics.messagesDroppedDuplicate = 0;
@@ -409,7 +413,7 @@ export class UdpQueueManager {
      * @returns {boolean} True if this is a duplicate (should be skipped), false if new
      */
     checkDuplicate(executionId) {
-        if (!executionId || executionId === '') return false;
+        if (!this.deduplicationEnable || !executionId || executionId === '') return false;
         return this.deduplicationCache.has(executionId);
     }
 
@@ -421,6 +425,7 @@ export class UdpQueueManager {
      */
     reserveExecutionId(executionId) {
         if (!executionId || executionId === '') return false;
+        if (!this.deduplicationEnable) return true;
         return this.deduplicationCache.reserve(executionId);
     }
 
@@ -431,7 +436,7 @@ export class UdpQueueManager {
      * @returns {void}
      */
     markExecutionIdProcessed(executionId) {
-        if (!executionId || executionId === '') return;
+        if (!this.deduplicationEnable || !executionId || executionId === '') return;
         this.deduplicationCache.markProcessed(executionId);
     }
 
@@ -442,7 +447,7 @@ export class UdpQueueManager {
      * @returns {void}
      */
     releaseExecutionId(executionId) {
-        if (!executionId || executionId === '') return;
+        if (!this.deduplicationEnable || !executionId || executionId === '') return;
         this.deduplicationCache.release(executionId);
     }
 
@@ -452,7 +457,7 @@ export class UdpQueueManager {
      * @returns {number} Number of entries in the deduplication cache
      */
     getDeduplicationCacheSize() {
-        return this.deduplicationCache.size;
+        return this.deduplicationCache?.size ?? 0;
     }
 
     /**
@@ -612,6 +617,11 @@ export class UdpQueueManager {
      * @returns {Promise<'queued'|'duplicate'|'queue_full'>} Queueing outcome
      */
     async enqueueDeduplicated(executionId, processFunction) {
+        if (!this.deduplicationEnable) {
+            const queuedWithoutDedup = await this.addToQueue(processFunction);
+            return queuedWithoutDedup ? 'queued' : 'queue_full';
+        }
+
         if (!executionId || executionId === '') {
             const queuedWithoutDedup = await this.addToQueue(processFunction);
             return queuedWithoutDedup ? 'queued' : 'queue_full';
@@ -715,7 +725,7 @@ export class UdpQueueManager {
                 messagesDroppedQueueFull: this.metrics.messagesDroppedQueueFull,
                 messagesDroppedSize: this.metrics.messagesDroppedSize,
                 messagesDroppedDuplicate: this.metrics.messagesDroppedDuplicate,
-                deduplicationCacheSize: this.deduplicationCache.size,
+                deduplicationCacheSize: this.getDeduplicationCacheSize(),
                 processingTimeAvgMs: this.processingTimeBuffer.getAverage() || 0,
                 processingTimeP95Ms: this.processingTimeBuffer.getPercentile95() || 0,
                 processingTimeMaxMs: this.processingTimeBuffer.getMax() || 0,
@@ -755,7 +765,7 @@ export class UdpQueueManager {
      * Should be called when the queue manager is no longer needed
      */
     destroy() {
-        this.deduplicationCache.stopCleanup();
-        this.deduplicationCache.clear();
+        this.deduplicationCache?.stopCleanup();
+        this.deduplicationCache?.clear();
     }
 }
