@@ -331,11 +331,8 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
-        const deduplicationEnable = typeof config?.deduplication?.enable === 'boolean' ? config.deduplication.enable : true;
-        const deduplicationTtlMinutes =
-            typeof config?.deduplication?.ttlMinutes === 'number' && config.deduplication.ttlMinutes > 0
-                ? config.deduplication.ttlMinutes
-                : 10;
+        const deduplicationEnable = config.deduplication.enable;
+        const deduplicationTtlMinutes = config.deduplication.ttlMinutes;
 
         this.config = {
             ...config,

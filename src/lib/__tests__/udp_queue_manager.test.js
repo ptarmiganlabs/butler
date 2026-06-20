@@ -25,6 +25,10 @@ describe('UdpQueueManager', () => {
                 enable: false,
                 maxMessagesPerMinute: 100,
             },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
+            },
             maxMessageSize: 65507,
         };
 
@@ -78,6 +82,10 @@ describe('UdpQueueManager', () => {
                 enable: false,
                 maxMessagesPerMinute: 100,
             },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
+            },
             maxMessageSize: 65507,
         };
         const smallQueue = new UdpQueueManager(smallQueueConfig, mockLogger, 'small_queue');
@@ -128,6 +136,10 @@ describe('UdpQueueManager', () => {
             rateLimit: {
                 enable: true,
                 maxMessagesPerMinute: 2,
+            },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
             },
             maxMessageSize: 65507,
         };
@@ -189,6 +201,10 @@ describe('UdpQueueManager', () => {
             rateLimit: {
                 enable: false,
                 maxMessagesPerMinute: 100,
+            },
+            deduplication: {
+                enable: true,
+                ttlMinutes: 10,
             },
             maxMessageSize: 65507,
         };
@@ -256,6 +272,7 @@ describe('UdpQueueManager', () => {
                     maxMessagesPerMinute: 100,
                 },
                 deduplication: {
+                    enable: true,
                     ttlMinutes: 0.0001,
                 },
                 maxMessageSize: 65507,
