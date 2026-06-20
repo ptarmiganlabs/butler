@@ -338,6 +338,16 @@ const udpInitTaskErrorServer = async () => {
 
     globals.udpQueueManager = new UdpQueueManager(queueConfig, globals.logger, 'task_results');
 
+    // Log deduplication settings at startup
+    const deduplicationEnabled = globals.config.get('Butler.udpServerConfig.deduplication.enable');
+    const deduplicationTtlMinutes = globals.config.get('Butler.udpServerConfig.deduplication.ttlMinutes');
+
+    if (deduplicationEnabled) {
+        globals.logger.info(`[QSEOW] UDP INIT: Deduplication enabled (TTL: ${deduplicationTtlMinutes} minutes)`);
+    } else {
+        globals.logger.info('[QSEOW] UDP INIT: Deduplication disabled');
+    }
+
     // Main handler for UDP messages relating to failed tasks
     // Called when a UDP message is received from the scheduler
     globals.udpServerTaskResultSocket.on('message', async (message, remote) => {
