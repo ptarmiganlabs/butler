@@ -47,6 +47,13 @@ describe('qrs_util/get_app_owner', () => {
         expect(res).toBe(false);
     });
 
+    test('returns false when step 1 returns non-200 response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getAppOwner('app1');
+        expect(res).toBe(false);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
+
     test('returns false when step 2 fails', async () => {
         mockQrs.Get.mockResolvedValueOnce({
             statusCode: 200,
@@ -54,5 +61,19 @@ describe('qrs_util/get_app_owner', () => {
         }).mockRejectedValueOnce(new Error('step2'));
         const res = await getAppOwner('app1');
         expect(res).toBe(false);
+    });
+
+    test('returns false when step 2 returns non-200 response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({
+            statusCode: 200,
+            body: { owner: { id: 'u1', userDirectory: 'D', userId: 'jdoe', name: 'John' } },
+        }).mockResolvedValueOnce({
+            statusCode: 500,
+            body: { message: 'Internal Server Error' },
+        });
+
+        const res = await getAppOwner('app1');
+        expect(res).toBe(false);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     });
 });

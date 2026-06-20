@@ -42,6 +42,12 @@ describe('getUserSyncTaskExecutionResults', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
+        const originalMockResolvedValue = mockQrsClient.Get.mockResolvedValue.bind(mockQrsClient.Get);
+        const originalMockResolvedValueOnce = mockQrsClient.Get.mockResolvedValueOnce.bind(mockQrsClient.Get);
+
+        mockQrsClient.Get.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+        mockQrsClient.Get.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
+
         // Setup default config mock
         mockGlobals.config.get.mockImplementation((key) => {
             const config = {
@@ -313,6 +319,7 @@ describe('getUserSyncTaskExecutionResults', () => {
         test('should handle invalid response structure', async () => {
             const userSyncTaskId = 'task-invalid';
             const mockResponse = {
+                statusCode: 200,
                 body: {
                     // Missing operational property
                     name: 'Invalid Task',
@@ -325,6 +332,17 @@ describe('getUserSyncTaskExecutionResults', () => {
 
             expect(result).toBe(false);
             expect(mockGlobals.logger.error).toHaveBeenCalled();
+        });
+
+        test('should return false on unexpected HTTP status response', async () => {
+            const userSyncTaskId = 'task-http-error';
+
+            mockQrsClient.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+
+            const result = await getUserSyncTaskExecutionResults(userSyncTaskId);
+
+            expect(result).toBe(false);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
         });
     });
 

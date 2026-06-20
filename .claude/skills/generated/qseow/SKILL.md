@@ -1,11 +1,11 @@
 ---
 name: qseow
-description: "Skill for the Qseow area of butler. 65 symbols across 33 files."
+description: "Skill for the Qseow area of butler. 80 symbols across 37 files."
 ---
 
 # Qseow
 
-65 symbols | 33 files | Cohesion: 45%
+80 symbols | 37 files | Cohesion: 53%
 
 ## When to Use
 
@@ -18,15 +18,15 @@ description: "Skill for the Qseow area of butler. 65 symbols across 33 files."
 | File | Symbols |
 |------|---------|
 | `src/lib/qseow/webhook_notification.js` | getOutgoingWebhookReloadFailedNotificationConfigOk, getOutgoingWebhookReloadAbortedNotificationConfigOk, getOutgoingWebhookServiceMonitorConfig, sendOutgoingWebhook, sendOutgoingWebhookServiceMonitor (+3) |
+| `src/lib/qseow/slack_notification.js` | getSlackReloadFailedNotificationConfigOk, getSlackServiceMonitorNotificationConfig, sendSlack, sendReloadTaskFailureNotificationSlack, escapeForJson (+1) |
 | `src/lib/qseow/winsvc.js` | isValidHost, isValidServiceName, exists, statusAll, status (+1) |
 | `src/lib/incident_mgmt/signl4.js` | getReloadFailedEventConfig, getReloadAbortedEventConfig, sendSignl4, sendReloadTaskFailureNotification, sendReloadTaskAbortedNotification |
-| `src/lib/qseow/service_monitor.js` | serviceMonitorMqttSend1, serviceMonitorMqttSend2, checkServiceStatus, verifyServicesExist, setupServiceMonitorTimer |
+| `src/lib/qrs_error.js` | appendRequestContext, appendResponseBodySummary, hasExpectedHttpStatus, formatHttpResultWithContext, formatHttpErrorWithContext |
+| `src/lib/qseow/service_monitor.js` | verifyServicesExist, setupServiceMonitorTimer, serviceMonitorMqttSend1, serviceMonitorMqttSend2, checkServiceStatus |
+| `src/lib/influxdb/task_failure.js` | postReloadTaskFailureNotificationInfluxDb, postExternalProgramTaskFailureNotificationInfluxDb, postDistributeTaskFailureNotificationInfluxDb, postUserSyncTaskFailureNotificationInfluxDb |
 | `src/globals.js` | getErrorMessage, initHostInfo, isRunningInDocker |
-| `src/lib/influxdb/task_failure.js` | postExternalProgramTaskFailureNotificationInfluxDb, postDistributeTaskFailureNotificationInfluxDb, postUserSyncTaskFailureNotificationInfluxDb |
-| `src/lib/qseow/slack_notification.js` | getSlackServiceMonitorNotificationConfig, sendSlack, sendServiceMonitorNotificationSlack |
+| `src/lib/qseow/qliksense_version.js` | getVersionMonitorRequestContext, checkQlikSenseVersion, setupQlikSenseVersionMonitor |
 | `src/lib/heartbeat.js` | callRemoteURL, setupHeartbeatTimer |
-| `src/lib/key_value_store.js` | getNamespaceList, deleteNamespace |
-| `src/lib/post_to_new_relic.js` | postFailedReloadEventToNewRelic, postAbortedReloadEventToNewRelic |
 
 ## Entry Points
 
@@ -36,7 +36,7 @@ Start here when exploring this area:
 - **`verifyGuid`** (Function) — `src/lib/guid_util.js:19`
 - **`sendReloadTaskFailureNotification`** (Function) — `src/lib/incident_mgmt/signl4.js:154`
 - **`sendReloadTaskAbortedNotification`** (Function) — `src/lib/incident_mgmt/signl4.js:191`
-- **`postQlikSenseVersionToInfluxDB`** (Function) — `src/lib/influxdb/qlik_sense_version.js:22`
+- **`postReloadTaskFailureNotificationInfluxDb`** (Function) — `src/lib/influxdb/task_failure.js:27`
 
 ## Key Symbols
 
@@ -46,7 +46,7 @@ Start here when exploring this area:
 | `verifyGuid` | Function | `src/lib/guid_util.js` | 19 |
 | `sendReloadTaskFailureNotification` | Function | `src/lib/incident_mgmt/signl4.js` | 154 |
 | `sendReloadTaskAbortedNotification` | Function | `src/lib/incident_mgmt/signl4.js` | 191 |
-| `postQlikSenseVersionToInfluxDB` | Function | `src/lib/influxdb/qlik_sense_version.js` | 22 |
+| `postReloadTaskFailureNotificationInfluxDb` | Function | `src/lib/influxdb/task_failure.js` | 27 |
 | `postExternalProgramTaskFailureNotificationInfluxDb` | Function | `src/lib/influxdb/task_failure.js` | 231 |
 | `postDistributeTaskFailureNotificationInfluxDb` | Function | `src/lib/influxdb/task_failure.js` | 346 |
 | `postUserSyncTaskFailureNotificationInfluxDb` | Function | `src/lib/influxdb/task_failure.js` | 582 |
@@ -54,14 +54,14 @@ Start here when exploring this area:
 | `deleteNamespace` | Function | `src/lib/key_value_store.js` | 32 |
 | `postFailedReloadEventToNewRelic` | Function | `src/lib/post_to_new_relic.js` | 168 |
 | `postAbortedReloadEventToNewRelic` | Function | `src/lib/post_to_new_relic.js` | 182 |
+| `sendServiceMonitorNotificationTeams` | Function | `src/lib/qseow/msteams_notification.js` | 866 |
+| `failedTaskStoreLogOnDisk` | Function | `src/lib/qseow/scriptlog.js` | 467 |
+| `sendReloadTaskFailureNotificationSlack` | Function | `src/lib/qseow/slack_notification.js` | 441 |
+| `escapeForJson` | Function | `src/lib/qseow/slack_notification.js` | 579 |
 | `sendServiceMonitorNotificationSlack` | Function | `src/lib/qseow/slack_notification.js` | 858 |
 | `sendReloadTaskFailureNotificationWebhook` | Function | `src/lib/qseow/webhook_notification.js` | 819 |
 | `sendReloadTaskAbortedNotificationWebhook` | Function | `src/lib/qseow/webhook_notification.js` | 857 |
 | `sendServiceMonitorWebhook` | Function | `src/lib/qseow/webhook_notification.js` | 895 |
-| `getSchedulesStatus` | Function | `src/lib/scheduler.js` | 182 |
-| `setupAnonUsageReportTimer` | Function | `src/lib/telemetry.js` | 532 |
-| `handleAbortedDistributeTask` | Function | `src/udp/handlers/task_types/aborted_distribute.js` | 35 |
-| `handleAbortedExternalProgramTask` | Function | `src/udp/handlers/task_types/aborted_externalprogram.js` | 34 |
 
 ## Execution Flows
 
@@ -74,18 +74,20 @@ Start here when exploring this area:
 | `HandlerGetSenseAppDump → IsValidHost` | cross_community | 5 |
 | `CheckServiceStatus → Has` | cross_community | 5 |
 | `CheckServiceStatus → GetErrorMessage` | cross_community | 5 |
+| `CheckQlikSenseVersion → AddLegacyFieldsToPoint` | cross_community | 5 |
 | `Start → GetErrorMessage` | cross_community | 5 |
-| `ProcessSanitizedUdpMessage → GetErrorMessage` | cross_community | 5 |
-| `HandleFailedPreloadTask → GetErrorMessage` | cross_community | 4 |
+| `HandleFailedReloadTask → GetQRSHttpHeaders` | cross_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Incident_mgmt | 10 calls |
-| Influxdb | 5 calls |
-| Smtp | 4 calls |
+| Incident_mgmt | 15 calls |
+| Smtp | 9 calls |
+| Influxdb | 6 calls |
 | Rest_server | 3 calls |
+| Qrs_util | 3 calls |
+| Api | 1 calls |
 | Assert | 1 calls |
 
 ## How to Explore

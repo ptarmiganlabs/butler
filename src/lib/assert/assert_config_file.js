@@ -2,6 +2,7 @@ import QrsClient from '../qrs_client.js';
 import { load } from 'js-yaml';
 import fs from 'fs/promises';
 import { default as Ajv } from 'ajv';
+import { formatQrsResultWithContext, hasExpectedQrsStatus } from '../qrs_error.js';
 
 import { getReloadTasksCustomProperties } from '../../qrs_util/task_cp_util.js';
 import { confifgFileSchema } from './config-file-schema.js';
@@ -314,22 +315,27 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     ) {
         // Get custom property values
         try {
+            const endpoint = `custompropertydefinition/full?filter=name eq '${config.get(
+                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
+            )}'`;
             logger.debug(
                 `ASSERT CONFIG NEW RELIC 1: Custom property name: ${config.get(
                     'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                 )}`,
             );
-            logger.debug(
-                `ASSERT CONFIG NEW RELIC 1: custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                )}`,
-            );
+            logger.debug(`ASSERT CONFIG NEW RELIC 1: ${endpoint}`);
 
-            const result1 = await qrsInstance.Get(
-                `custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                )}'`,
-            );
+            const result1 = await qrsInstance.Get(endpoint);
+
+            if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body)) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Unexpected QRS response: ${formatQrsResultWithContext(result1, endpoint, cfg, {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    })}`,
+                );
+                return false;
+            } else
 
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
@@ -407,22 +413,26 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     ) {
         // Get custom property values
         try {
+            const endpoint = `custompropertydefinition/full?filter=name eq '${config.get(
+                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
+            )}'`;
             logger.debug(
                 `ASSERT CONFIG NEW RELIC 1: Custom property name: ${config.get(
                     'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                 )}`,
             );
-            logger.debug(
-                `ASSERT CONFIG NEW RELIC 1: custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                )}`,
-            );
+            logger.debug(`ASSERT CONFIG NEW RELIC 1: ${endpoint}`);
 
-            const result1 = await qrsInstance.Get(
-                `custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                )}'`,
-            );
+            const result1 = await qrsInstance.Get(endpoint);
+            if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body)) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Unexpected QRS response: ${formatQrsResultWithContext(result1, endpoint, cfg, {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    })}`,
+                );
+                return false;
+            } else
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..
@@ -497,22 +507,26 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     ) {
         // Get custom property values
         try {
+            const endpoint = `custompropertydefinition/full?filter=name eq '${config.get(
+                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
+            )}'`;
             logger.debug(
                 `ASSERT CONFIG NEW RELIC 1: Custom property name: ${config.get(
                     'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
                 )}`,
             );
-            logger.debug(
-                `ASSERT CONFIG NEW RELIC 1: custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                )}`,
-            );
+            logger.debug(`ASSERT CONFIG NEW RELIC 1: ${endpoint}`);
 
-            const result1 = await qrsInstance.Get(
-                `custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                )}'`,
-            );
+            const result1 = await qrsInstance.Get(endpoint);
+            if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body)) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Unexpected QRS response: ${formatQrsResultWithContext(result1, endpoint, cfg, {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    })}`,
+                );
+                return false;
+            } else
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..
@@ -589,22 +603,26 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     ) {
         // Get custom property values
         try {
+            const endpoint = `custompropertydefinition/full?filter=name eq '${config.get(
+                'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
+            )}'`;
             logger.debug(
                 `ASSERT CONFIG NEW RELIC 1: Custom property name: ${config.get(
                     'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
                 )}`,
             );
-            logger.debug(
-                `ASSERT CONFIG NEW RELIC 1: custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                )}`,
-            );
+            logger.debug(`ASSERT CONFIG NEW RELIC 1: ${endpoint}`);
 
-            const result1 = await qrsInstance.Get(
-                `custompropertydefinition/full?filter=name eq '${config.get(
-                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                )}'`,
-            );
+            const result1 = await qrsInstance.Get(endpoint);
+            if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body)) {
+                logger.error(
+                    `ASSERT CONFIG NEW RELIC: Unexpected QRS response: ${formatQrsResultWithContext(result1, endpoint, cfg, {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    })}`,
+                );
+                return false;
+            } else
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..

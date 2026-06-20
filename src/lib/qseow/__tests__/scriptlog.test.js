@@ -63,6 +63,12 @@ beforeEach(() => {
     jest.clearAllMocks();
     fsWrites.mkdir.length = 0;
     fsWrites.write.length = 0;
+
+    const originalMockResolvedValue = qrsGetMock.mockResolvedValue.bind(qrsGetMock);
+    const originalMockResolvedValueOnce = qrsGetMock.mockResolvedValueOnce.bind(qrsGetMock);
+
+    qrsGetMock.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+    qrsGetMock.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
 });
 
 function makeResult1(overrides = {}) {
@@ -489,6 +495,22 @@ test('getScriptLog falls back to new API when deprecated API fails', async () =>
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Deprecated API failed'));
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
     expect(logger.debug).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: Successfully retrieved script log using new API');
+});
+
+test('getScriptLog falls back when deprecated reference lookup returns non-200 response', async () => {
+    qrsGetMock
+        .mockResolvedValueOnce(makeResult1())
+        .mockResolvedValueOnce({ statusCode: 500, body: { message: 'Reference lookup failed' } })
+        .mockResolvedValueOnce({ body: { value: 'file-uuid-new' } })
+        .mockResolvedValueOnce({ statusCode: 200, body: 'line1\r\nline2' });
+
+    const res = await scriptlog.getScriptLog('task-1', 1, 1, 1, 50, 0);
+
+    expect(res).not.toBe(false);
+    expect(res.scriptLogFull).toEqual(['line1', 'line2']);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Unexpected reference response - endpoint: reloadtask/task-1/scriptlog?fileReferenceId=ref-1'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
 });
 
 test('getScriptLog fails when both deprecated and new API fail', async () => {

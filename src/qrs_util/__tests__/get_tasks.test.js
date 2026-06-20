@@ -52,6 +52,13 @@ describe('qrs_util/get_tasks', () => {
         expect(res).toEqual([]);
     });
 
+    test('returns [] and logs on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getTasks({ tag: 'err' });
+        expect(res).toEqual([]);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
+
     test('returns false on QRS error', async () => {
         mockQrs.Get.mockRejectedValueOnce(new Error('Get failed'));
         const res = await getTasks({ tag: 'err' });

@@ -39,4 +39,11 @@ describe('qrs_util/app_tag_util.getAppTags', () => {
         const res = await getAppTags('err');
         expect(res).toEqual([]);
     });
+
+    test('returns [] on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getAppTags('err');
+        expect(res).toEqual([]);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
 });

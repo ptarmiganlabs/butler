@@ -4,7 +4,24 @@ import https from 'https';
 
 import globals from '../../globals.js';
 import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
+import { formatHttpErrorWithContext, formatHttpResultWithContext, hasExpectedHttpStatus } from '../qrs_error.js';
 import { postQlikSenseVersionToInfluxDB } from '../influxdb/qlik_sense_version.js';
+
+/**
+ * Build common request context for Qlik Sense version monitor logging.
+ * @returns {Object} Request context with host, port, base URL, and timeout.
+ */
+function getVersionMonitorRequestContext() {
+    const hostname = globals.config.get('Butler.qlikSenseVersion.versionMonitor.host');
+    const portNumber = 9032;
+
+    return {
+        hostname,
+        portNumber,
+        baseURL: `https://${hostname}:${portNumber}`,
+        timeout: HTTP_TIMEOUT_SHORT_MS,
+    };
+}
 
 /**
  * Checks the Qlik Sense version.
@@ -12,6 +29,9 @@ import { postQlikSenseVersionToInfluxDB } from '../influxdb/qlik_sense_version.j
  * @param {Object} logger - The logger object.
  */
 async function checkQlikSenseVersion(config, logger) {
+    const endpoint = '/v1/systeminfo';
+    const requestContext = getVersionMonitorRequestContext();
+
     try {
         // Set up Sense call to systeminfo endpoint using Axios
         const httpsAgent = new https.Agent({
@@ -21,9 +41,9 @@ async function checkQlikSenseVersion(config, logger) {
         });
 
         const axiosConfig = {
-            url: `/v1/systeminfo`,
+            url: endpoint,
             method: 'get',
-            baseURL: `https://${globals.config.get('Butler.qlikSenseVersion.versionMonitor.host')}:9032`,
+            baseURL: requestContext.baseURL,
             timeout: HTTP_TIMEOUT_SHORT_MS,
             responseType: 'json',
             httpsAgent,
@@ -32,8 +52,15 @@ async function checkQlikSenseVersion(config, logger) {
         const result = await axios(axiosConfig);
 
         // Is status code 200 or body is empty?
-        if (result.status !== 200 || !result.data) {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: HTTP status code ${result.status}, "${result.statusText}"`);
+        if (!hasExpectedHttpStatus(result) || !result.data) {
+            logger.error(
+                `[QSEOW] QLIKSENSE VERSION MONITOR: Unexpected HTTP response: ${formatHttpResultWithContext(
+                    result,
+                    endpoint,
+                    requestContext,
+                    { method: 'GET', expectedStatusCodes: [200] },
+                )}`,
+            );
             return;
         }
 
@@ -56,11 +83,9 @@ async function checkQlikSenseVersion(config, logger) {
             await postQlikSenseVersionToInfluxDB(result.data);
         }
     } catch (err) {
-        if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${globals.getErrorMessage(err)}`);
-        } else {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${globals.getErrorMessage(err)}`);
-        }
+        logger.error(
+            `[QSEOW] QLIKSENSE VERSION MONITOR: ${formatHttpErrorWithContext(err, endpoint, requestContext, { method: 'GET' })}`,
+        );
     }
 }
 
@@ -82,10 +107,10 @@ export async function setupQlikSenseVersionMonitor(config, logger) {
             checkQlikSenseVersion(config, logger, true);
         }
     } catch (err) {
-        if (globals.isSea) {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${globals.getErrorMessage(err)}`);
-        } else {
-            logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${globals.getErrorMessage(err)}`);
-        }
+        logger.error(
+            `[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${formatHttpErrorWithContext(err, '/v1/systeminfo', getVersionMonitorRequestContext(), {
+                method: 'GET',
+            })}`,
+        );
     }
 }

@@ -100,6 +100,12 @@ describe('qrs_util/distribute_task_execution_results', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockQrsGet.mockReset();
+
+        const originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
+        const originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
+
+        mockQrsGet.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+        mockQrsGet.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
     });
 
     test('returns task execution details for successful execution', async () => {
@@ -154,6 +160,15 @@ describe('qrs_util/distribute_task_execution_results', () => {
 
         expect(result).toBe(false);
         expect(mockLogger.error).toHaveBeenCalled();
+    });
+
+    test('returns false on unexpected HTTP status response', async () => {
+        mockQrsGet.mockResolvedValue({ statusCode: 500, body: { message: 'Internal Server Error' } });
+
+        const result = await getDistributeTaskExecutionResults(mockTaskId);
+
+        expect(result).toBe(false);
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     });
 
     test('handles invalid task status gracefully', async () => {

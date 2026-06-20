@@ -356,6 +356,7 @@ describe('lib/incident_mgmt/new_relic', () => {
             // Mock QRS response
             const mockQrsInstance = {
                 Get: jest.fn().mockResolvedValue({
+                    statusCode: 200,
                     body: [
                         {
                             customProperties: [
@@ -407,6 +408,50 @@ describe('lib/incident_mgmt/new_relic', () => {
             expect(mockGlobals.logger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Rate limiting check passed for failed task event'),
             );
+        });
+
+        test('should log unexpected QRS response when custom property lookup returns non-200', async () => {
+            const mockQrsInstance = {
+                Get: jest.fn().mockResolvedValue({
+                    statusCode: 500,
+                    body: { message: 'Internal Server Error' },
+                }),
+            };
+            mockQrsInteract.mockReturnValue(mockQrsInstance);
+
+            mockGlobals.config.has.mockImplementation((key) => {
+                return (
+                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.enable' ||
+                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable' ||
+                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName' ||
+                    key === 'Butler.configQRS.host' ||
+                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event' ||
+                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable' ||
+                    key === 'Butler.incidentTool.newRelic.url.event'
+                );
+            });
+
+            mockGlobals.config.get.mockImplementation((key) => {
+                const configMap = {
+                    'Butler.configQRS.host': 'test-host',
+                    'Butler.incidentTool.newRelic.url.event': 'https://insights-collector.newrelic.com/v1/accounts/',
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.enable': false,
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable': true,
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName':
+                        'NewRelicAccount',
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.header': null,
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.sharedSettings.attribute.static': null,
+                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.attribute.static': null,
+                };
+                return configMap[key];
+            });
+
+            await sendReloadTaskFailureEvent({ qs_taskId: 'task123', qs_taskName: 'Test Task', qs_taskTags: [], qs_appTags: [] });
+            await Promise.resolve();
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected QRS response'));
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
         });
 
         test('should handle rate limiting setup', async () => {

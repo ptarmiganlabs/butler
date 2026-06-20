@@ -1,11 +1,11 @@
 ---
 name: api
-description: "Skill for the Api area of butler. 8 symbols across 4 files."
+description: "Skill for the Api area of butler. 6 symbols across 3 files."
 ---
 
 # Api
 
-8 symbols | 4 files | Cohesion: 52%
+6 symbols | 3 files | Cohesion: 50%
 
 ## When to Use
 
@@ -18,7 +18,6 @@ description: "Skill for the Api area of butler. 8 symbols across 4 files."
 | File | Symbols |
 |------|---------|
 | `src/lib/qscloud/api/app.js` | getQlikSenseCloudAppInfo, getQlikSenseCloudAppMetadata, getQlikSenseCloudAppItems |
-| `src/lib/mqtt_handlers.js` | mqttInitHandlers, readCert |
 | `src/lib/qscloud/api/appreloadinfo.js` | getQlikSenseCloudAppReloadScriptLog, getQlikSenseCloudAppReloadInfo |
 | `src/lib/qscloud/mqtt_event_app_reload_finished.js` | handleQlikSenseCloudAppReloadFinished |
 
@@ -42,27 +41,19 @@ Start here when exploring this area:
 | `getQlikSenseCloudAppReloadScriptLog` | Function | `src/lib/qscloud/api/appreloadinfo.js` | 13 |
 | `getQlikSenseCloudAppReloadInfo` | Function | `src/lib/qscloud/api/appreloadinfo.js` | 86 |
 | `handleQlikSenseCloudAppReloadFinished` | Function | `src/lib/qscloud/mqtt_event_app_reload_finished.js` | 31 |
-| `mqttInitHandlers` | Function | `src/lib/mqtt_handlers.js` | 17 |
-| `readCert` | Function | `src/lib/mqtt_handlers.js` | 52 |
 
 ## Execution Flows
 
 | Flow | Type | Steps |
 |------|------|-------|
 | `HandleQlikSenseCloudAppReloadFinished → GetErrorMessage` | cross_community | 3 |
-| `MqttInitHandlers → GetErrorMessage` | cross_community | 3 |
-| `MqttInitHandlers → GetQRSHttpHeaders` | cross_community | 3 |
-| `MqttInitHandlers → QrsClient` | cross_community | 3 |
-| `MqttInitHandlers → Post` | cross_community | 3 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Qseow | 8 calls |
+| Qseow | 6 calls |
 | Qscloud | 3 calls |
-| Smtp | 1 calls |
-| Qrs_util | 1 calls |
 
 ## How to Explore
 

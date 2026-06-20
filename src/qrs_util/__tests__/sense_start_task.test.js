@@ -30,6 +30,8 @@ describe('qrs_util/sense_start_task', () => {
     test('returns false on non-204', async () => {
         mockQrs.Post.mockResolvedValueOnce({ statusCode: 500, body: { error: 'x' } });
         await expect(startTask('abc')).resolves.toBe(false);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('expectedStatus: 204'));
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     });
 
     test('returns false on thrown error', async () => {

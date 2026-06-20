@@ -2,224 +2,285 @@
 
 ## What Changed
 
-Butler now provides detailed context in error messages when QRS (Qlik Sense Repository Service) API calls fail. Error messages include the endpoint, host, port, error code, and other relevant debugging information to help operators quickly identify and troubleshoot issues.
+Butler now uses a shared structured error-handling pattern for QRS (Qlik Sense Repository Service) API calls.
 
-## Before and After
+This is a broader change than the first version of this enhancement. It now affects not only license monitoring, but also many other Butler features that call QRS.
 
-### Before
+The new behavior does two things:
 
-Error messages lacked critical debugging context:
+1. It adds much more context to QRS-related error messages.
+2. It validates QRS responses before Butler tries to use returned data.
 
-```
-[QSEOW] QLIKSENSE LICENSE MONITOR: AxiosError: timeout of 30000ms exceeded
-```
+That means operators now get clearer troubleshooting information, and Butler is less likely to produce confusing follow-on errors when QRS returns an unexpected response.
 
-```
-[QSEOW] QLIKSENSE LICENSE MONITOR: Error: read ECONNRESET
-```
+## Why It Matters
 
-### After
+Previously, Butler often logged only a short Axios or JavaScript error message when a QRS call failed. In some cases Butler reached QRS successfully, but QRS returned a non-200 response or an unexpected payload shape. That could lead to a second, less helpful error later in the same operation.
 
-Error messages now include comprehensive context:
+With the new implementation, Butler logs the original failure with more context and stops the affected operation more cleanly.
+
+## Two Types of Failures You Will Now See
+
+### 1. Request failed
+
+This means Butler could not complete the request at all, or Axios threw an error while making the request.
+
+Examples include:
+
+- timeouts
+- TLS or certificate problems
+- DNS errors
+- refused connections
+- reset connections
+- network interruptions
+
+Example:
 
 ```
 [QSEOW] QLIKSENSE LICENSE MONITOR: Request failed - endpoint: license/accesstypeoverview, host: qs-server.example.com, port: 4242, code: ECONNABORTED, message: timeout of 30000ms exceeded, method: GET, timeout: 30000ms, baseURL: https://qs-server.example.com:4242/qrs/
 ```
 
+### 2. Unexpected QRS response
+
+This means Butler did reach QRS, but the response was not what the operation expected.
+
+Examples include:
+
+- non-200 HTTP responses from QRS
+- non-204 responses where Butler expected `204 No Content`
+- missing or malformed response bodies
+- missing fields in the QRS payload
+
+Example:
+
 ```
-[QSEOW] QLIKSENSE LICENSE MONITOR: Request failed - endpoint: license/accesstypeoverview, host: qs-server.example.com, port: 4242, code: ECONNRESET, message: read ECONNRESET, errno: -104, syscall: read, method: GET, baseURL: https://qs-server.example.com:4242/qrs/
+[QSEOW] GET SCRIPT LOG (DEPRECATED API): Unexpected reference response - endpoint: reloadtask/12345678-1234-1234-1234-123456789abc/scriptlog?fileReferenceId=abcdef12-3456-7890-abcd-ef1234567890, host: qs-server.example.com, port: 4242, method: GET, expectedStatus: 200, status: 500, body.message: Internal Server Error
 ```
 
-## Affected Operations
+Another example:
 
-This enhancement applies to all Qlik Sense license monitoring and management operations:
+```
+STARTTASK: Error while starting Sense task: endpoint: task/12345678-1234-1234-1234-123456789abc/start, host: qs-server.example.com, port: 4242, method: POST, expectedStatus: 204, status: 409, body.message: Conflict
+```
 
-- **Server license monitoring**: Checks Qlik Sense server license status and expiration
-- **Access license monitoring**: Monitors access license usage (professional and analyzer)
-- **License release**: Releases unused professional and analyzer licenses
+## Where This Applies
 
-## Error Types Handled
+This enhancement now applies to a much broader set of Butler features that use QRS.
 
-The enhanced error messages work with all error types, including but not limited to:
+### License-related QRS operations
 
-| Error Type | Example Code | What You'll See |
-|------------|-------------|-----------------|
-| **Timeout** | `ECONNABORTED` | endpoint, host, port, code, timeout, message |
-| **Connection reset** | `ECONNRESET` | endpoint, host, port, code, errno, syscall |
-| **Connection refused** | `ECONNREFUSED` | endpoint, host, port, code, errno, syscall, address |
-| **DNS errors** | `ENOTFOUND` | endpoint, host, port, code, hostname |
-| **SSL/TLS errors** | Various | endpoint, host, port, code, message |
-| **HTTP errors** | N/A | endpoint, host, port, status, statusText |
-| **Network errors** | Various | endpoint, host, port, code, message |
+- server license monitoring
+- access license monitoring
+- license release for professional licenses
+- license release for analyzer licenses
 
-## Error Context Fields
+### Task execution lookups
 
-The error formatter extracts and displays the following information when available:
+- reload task execution results
+- preload task execution results
+- distribute task execution results
+- external program task execution results
+- user sync task execution results
 
-### Request Context
-- `endpoint`: The QRS API endpoint that was called (e.g., `license/accesstypeoverview`)
+### Script log retrieval
+
+- reload task script log retrieval using the older QRS script log endpoint
+- reload task script log retrieval using the newer QRS script log endpoint
+- fallback between the two methods when needed
+
+### Metadata and lookup helpers
+
+- task existence checks
+- task listing
+- task start requests
+- app metadata lookups
+- task metadata lookups
+- app tag lookups
+- task tag lookups
+- app owner lookups
+- reload task custom property lookups
+- available reload-task custom property definition lookups
+
+### Configuration and routing helpers
+
+- QRS-backed New Relic configuration validation
+- QRS lookups used when mapping reload task custom properties to New Relic destinations
+
+## What Butler Now Logs
+
+When available, Butler now logs the following kinds of context.
+
+### Request context
+
+- `endpoint`: The QRS endpoint that Butler called
 - `host`: The Qlik Sense server hostname or IP address
-- `port`: The QRS port number (typically 4242)
+- `port`: The QRS port number, usually `4242`
+- `method`: HTTP method such as `GET`, `POST`, or `DELETE`
+- `expectedStatus`: Expected HTTP status code(s) for that operation
 
-### Error Properties
-- `code`: Error code (e.g., `ECONNABORTED`, `ECONNRESET`, `ECONNREFUSED`)
-- `message`: Error message from the underlying library
+### Transport and Axios context
 
-### Axios-Specific Properties
-- `method`: HTTP method (GET, POST, PUT, DELETE)
+- `code`: Error code such as `ECONNABORTED`, `ECONNRESET`, or `ECONNREFUSED`
+- `message`: Error message returned by Axios or Node.js
 - `timeout`: Request timeout in milliseconds
-- `baseURL`: Base URL of the QRS API
-- `url`: Request URL from Axios, typically a path relative to `baseURL`
+- `baseURL`: Base QRS URL
+- `url`: Request URL if Axios provides it separately
 
-### Response Context (if server responded)
-- `status`: HTTP status code (e.g., 500, 404)
-- `statusText`: HTTP status text (e.g., "Internal Server Error")
+### Response context
 
-### Network Error Properties
-- `errno`: System error number
-- `syscall`: System call that failed (e.g., `read`, `connect`)
-- `hostname`: Hostname from DNS resolution
-- `address`: IP address that was being connected to
+- `status`: HTTP status code returned by QRS
+- `statusText`: HTTP status text when available
+- short body summaries such as:
+	- `body.message`
+	- `body.error`
+	- `body.details`
+	- `body.code`
+	- `bodyLength` for arrays
 
-### Future-Proof Design
-The error formatter automatically includes any additional error properties that may be present, ensuring compatibility with new error types and libraries.
+### Network details
+
+- `errno`
+- `syscall`
+- `hostname`
+- `address`
+
+## Sensitive Data Handling
+
+The new formatter avoids logging common sensitive fields.
+
+Examples of redacted field types:
+
+- authorization headers
+- tokens
+- passwords
+- cookies
+- secrets
+- API keys
+- private keys
+
+This means the logs are more useful without exposing the most common credential values.
+
+## Operational Impact
+
+No configuration changes are required.
+
+This is a backward-compatible operational improvement. Butler behavior should remain the same from an alerting and workflow point of view, with two important improvements:
+
+1. Logs are more useful when QRS requests fail.
+2. Some helper functions now fail more gracefully when QRS returns invalid or unexpected responses.
 
 ## Troubleshooting Guide
 
-When you see these enhanced error messages, here's what to check:
+### If you see `Request failed - ...`
 
-### Timeout Errors (ECONNABORTED)
+Start by checking connectivity between Butler and Qlik Sense.
 
-**Symptoms:**
+Typical causes:
+
+- QRS service is down or restarting
+- incorrect `Butler.configQRS.host` or `Butler.configQRS.port`
+- firewall or proxy interference
+- certificate or TLS trust issues
+- DNS problems
+- temporary overload on the Qlik Sense server
+
+### If you see `Unexpected QRS response - ...`
+
+Start by assuming Butler did reach QRS, but QRS rejected the request or returned something Butler could not use.
+
+Typical causes:
+
+- wrong or stale object ID
+- QRS-side internal error
+- permission or certificate identity problem
+- endpoint behavior changed between Qlik Sense versions
+- Butler expected a list or object that QRS did not return
+
+### Common patterns
+
+#### Timeout
+
+Example:
+
 ```
 code: ECONNABORTED, message: timeout of 30000ms exceeded
 ```
 
-**Possible Causes:**
-- Qlik Sense server is under heavy load
-- Network latency between Butler and Qlik Sense
-- QRS service is slow to respond
+What to check:
 
-**Actions:**
-- Check Qlik Sense server performance and resource usage
-- Verify network connectivity and latency
-- Consider increasing timeout in configuration if needed
+- Qlik Sense server load
+- latency between Butler and Qlik Sense
+- whether the timeout is too short for the operation
 
-### Connection Reset (ECONNRESET)
+#### Connection refused
 
-**Symptoms:**
+Example:
+
 ```
-code: ECONNRESET, errno: -104, syscall: read
+code: ECONNREFUSED, errno: -61, syscall: connect
 ```
 
-**Possible Causes:**
-- Qlik Sense server restarted during the request
-- Network interruption or firewall terminating connections
-- Proxy or load balancer closing idle connections
+What to check:
 
-**Actions:**
-- Check Qlik Sense server logs for restarts or crashes
-- Verify network stability
-- Check firewall and proxy configurations
+- QRS service availability
+- host and port settings
+- firewall rules
 
-### Connection Refused (ECONNREFUSED)
+#### DNS resolution failure
 
-**Symptoms:**
-```
-code: ECONNREFUSED, errno: -61, syscall: connect, address: 127.0.0.1
-```
+Example:
 
-**Possible Causes:**
-- Qlik Sense Repository Service is not running
-- Incorrect host or port in configuration
-- Firewall blocking the connection
-
-**Actions:**
-- Verify Qlik Sense Repository Service is running
-- Check `Butler.configQRS.host` and `Butler.configQRS.port` in configuration
-- Verify firewall rules allow connections to the QRS port
-
-### DNS Errors (ENOTFOUND)
-
-**Symptoms:**
 ```
 code: ENOTFOUND, hostname: qs-server.example.com
 ```
 
-**Possible Causes:**
-- Hostname misspelled in configuration
-- DNS resolution issues
-- DNS server unavailable
+What to check:
 
-**Actions:**
-- Verify hostname spelling in `Butler.configQRS.host`
-- Test DNS resolution: `nslookup qs-server.example.com`
-- Use IP address instead of hostname as a workaround
+- spelling of `Butler.configQRS.host`
+- DNS resolution from the Butler host
+- whether an IP address should be used temporarily for testing
 
-### HTTP Errors (4xx, 5xx)
+#### HTTP error from QRS
 
-**Symptoms:**
+Example:
+
 ```
-status: 500, statusText: Internal Server Error
+expectedStatus: 200, status: 500, body.message: Internal Server Error
 ```
 
-**Possible Causes:**
-- QRS API returned an error
-- Authentication or authorization issues
-- Invalid request parameters
+What to check:
 
-**Actions:**
-- Check Qlik Sense server logs for detailed error information
-- Verify QRS certificates are valid and not expired
-- Check Butler logs for the full request details
+- Qlik Sense Repository Service logs
+- object IDs used in the request
+- certificate validity and trust
+- changes in endpoint behavior after an upgrade
 
-## Configuration
+## Related Non-QRS Change
 
-No configuration changes are required. The enhanced error messages are automatic and transparent.
+The same structured HTTP error pattern is now also used by the Qlik Sense version monitor.
+
+That monitor calls `/v1/systeminfo` on port `9032`, which is not a QRS endpoint. Even so, operators will now see a similar structured error format there too.
+
+This means Butler now has:
+
+- structured QRS error messages for QRS-based operations
+- a matching structured HTTP pattern for the version monitor
 
 ## Benefits
 
-1. **Faster troubleshooting**: Immediately see which endpoint and host failed
-2. **Better debugging**: Error codes and properties help identify root cause
-3. **Future-proof**: Works with any error type, including new ones
-4. **No action needed**: Enhancement is transparent to operators
-5. **Comprehensive**: Captures all available context from the error object
+1. Faster troubleshooting because the failing endpoint is visible immediately.
+2. Better distinction between network failures and QRS response failures.
+3. Fewer misleading follow-on errors when QRS returns an unexpected payload.
+4. Better safety through redaction of common sensitive fields.
+5. Consistent error-message structure across a large part of Butler's QSEoW integration.
 
-## Technical Details
+## Compatibility Notes
 
-### Implementation
+This change is compatible with existing Butler configuration.
 
-The error formatting is handled by a helper function `formatQrsErrorWithContext()` that:
+If you have external log parsers, alerts, or dashboards that depend on exact log text after the prefix, they may need updates. The log prefixes are mostly unchanged, but the message body is now richer and may contain:
 
-1. Extracts request context (endpoint, host, port)
-2. Extracts error properties (code, message)
-3. Extracts Axios-specific properties (method, timeout, baseURL)
-4. Extracts response context (status, statusText)
-5. Extracts network error properties (errno, syscall, hostname, address)
-6. Includes any additional enumerable properties for future compatibility
-
-### Design Principles
-
-- **Generic**: Works with any error type, not just known ones
-- **Future-proof**: Automatically includes new error properties
-- **Comprehensive**: Captures all available context
-- **Maintainable**: Single helper function, easy to update
-- **Debuggable**: Provides maximum context for troubleshooting
-
-## Migration Notes
-
-This change is backward compatible. Existing log parsing and monitoring tools should continue to work, though they may need updates to take advantage of the additional context.
-
-### Log Pattern Changes
-
-**Old pattern:**
-```
-[QSEOW] QLIKSENSE LICENSE MONITOR: <error message>
-```
-
-**New pattern:**
-```
-[QSEOW] QLIKSENSE LICENSE MONITOR: Request failed - <context details>
-```
-
-The prefix `[QSEOW] QLIKSENSE LICENSE MONITOR:` remains the same for compatibility with existing log filters.
+- `Request failed - ...`
+- `Unexpected QRS response - ...`
+- `expectedStatus: ...`
+- structured response body summaries

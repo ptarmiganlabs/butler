@@ -70,13 +70,13 @@ Start here when exploring this area:
 | `HandlerGetSenseAppDump → IsValidHost` | cross_community | 5 |
 | `O → Type` | cross_community | 5 |
 | `UdpInitTaskErrorServer → IsValidHost` | cross_community | 4 |
+| `HandlerPutAppReload → AppendRequestContext` | cross_community | 4 |
+| `HandlerPutAppReload → AppendResponseBodySummary` | cross_community | 4 |
 | `HandlerPutStartTask → Has` | cross_community | 3 |
 | `HandlerPUTSchedulesStart → SaveSchedulesToDisk` | cross_community | 3 |
 | `HandlerPUTSchedulesStop → SaveSchedulesToDisk` | intra_community | 3 |
 | `HandlerPUTSchedulesStop → GetErrorMessage` | cross_community | 3 |
 | `HandlerPutAppReload → GetQRSHttpHeaders` | cross_community | 3 |
-| `HandlerPutAppReload → QrsClient` | cross_community | 3 |
-| `HandlerPutAppReload → Post` | cross_community | 3 |
 
 ## Connected Areas
 

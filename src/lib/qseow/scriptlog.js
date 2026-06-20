@@ -22,6 +22,7 @@ import https from 'https';
 import path from 'path';
 import fs from 'fs';
 import globals from '../../globals.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../qrs_error.js';
 import { getReloadTaskExecutionResults } from '../../qrs_util/reload_task_execution_results.js';
 import { MAX_RETRY_ATTEMPTS, RETRY_DELAY_MS, DOWNLOAD_DELAY_MS } from '../../constants.js';
 
@@ -56,15 +57,29 @@ function delay(milliseconds) {
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
 async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qrsInstance, downloadDelayMs = DOWNLOAD_DELAY_MS) {
+    let currentEndpoint = `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`;
+
     try {
-        globals.logger.debug(
-            `[QSEOW] GET SCRIPT LOG (DEPRECATED API): reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`,
-        );
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): ${currentEndpoint}`);
 
         // Step 1: Get script log file reference using deprecated API
-        const endpoint = `reloadtask/${reloadTaskId}/scriptlog?fileReferenceId=${fileReferenceId}`;
-        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Calling QRS endpoint: GET /qrs/${endpoint}`);
-        const result2 = await qrsInstance.Get(endpoint);
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Calling QRS endpoint: GET /qrs/${currentEndpoint}`);
+        const result2 = await qrsInstance.Get(currentEndpoint);
+
+        if (!hasExpectedQrsStatus(result2) || !result2.body?.value) {
+            globals.logger.warn(
+                `[QSEOW] GET SCRIPT LOG (DEPRECATED API): Unexpected reference response - ${formatQrsResultWithContext(
+                    result2,
+                    currentEndpoint,
+                    qrsInstance?.config,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         // Wait before downloading the script log to avoid 404 errors
         if (downloadDelayMs > 0) {
@@ -72,19 +87,30 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
         }
 
         // Step 2: Download the script log file
-        const endpoint3 = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
-        const result3 = await qrsInstance.Get(endpoint3);
+        currentEndpoint = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
+        const result3 = await qrsInstance.Get(currentEndpoint);
 
         // If result3.statusCode is 200, the script log is available in result3.body with \r\n line endings
         // If result3.statusCode is 404, the script log is not available
 
-        if (result3.statusCode !== 200) {
-            result3.body = false;
+        if (!hasExpectedQrsStatus(result3) || typeof result3.body !== 'string') {
+            globals.logger.warn(
+                `[QSEOW] GET SCRIPT LOG (DEPRECATED API): Unexpected download response - ${formatQrsResultWithContext(
+                    result3,
+                    currentEndpoint,
+                    qrsInstance?.config,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
         }
 
         return result3.body;
     } catch (err) {
-        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${globals.getErrorMessage(err)}`);
+        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (DEPRECATED API): Failed - ${formatQrsErrorWithContext(err, currentEndpoint, qrsInstance?.config)}`);
         return false;
     }
 }
@@ -99,15 +125,29 @@ async function getScriptLogWithFileReferenceId(reloadTaskId, fileReferenceId, qr
  * @returns {Promise<string|boolean>} - Returns script log text or false on error.
  */
 async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId, qrsInstance, downloadDelayMs = DOWNLOAD_DELAY_MS) {
+    let currentEndpoint = `reloadtask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`;
+
     try {
-        globals.logger.debug(
-            `[QSEOW] GET SCRIPT LOG (NEW API): ReloadTask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`,
-        );
+        globals.logger.debug(`[QSEOW] GET SCRIPT LOG (NEW API): ${currentEndpoint}`);
 
         // Step 1: Get script log file reference using new API
-        const endpoint = `reloadtask/${reloadTaskId}/scriptlogfile?executionResultId=${executionResultId}`;
-        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Calling QRS endpoint: GET /qrs/${endpoint}`);
-        const result2 = await qrsInstance.Get(endpoint);
+        globals.logger.verbose(`[QSEOW] GET SCRIPT LOG (NEW API): Calling QRS endpoint: GET /qrs/${currentEndpoint}`);
+        const result2 = await qrsInstance.Get(currentEndpoint);
+
+        if (!hasExpectedQrsStatus(result2) || !result2.body?.value) {
+            globals.logger.warn(
+                `[QSEOW] GET SCRIPT LOG (NEW API): Unexpected reference response - ${formatQrsResultWithContext(
+                    result2,
+                    currentEndpoint,
+                    qrsInstance?.config,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         // Wait before downloading the script log to avoid 404 errors
         if (downloadDelayMs > 0) {
@@ -115,19 +155,30 @@ async function getScriptLogWithExecutionResultId(reloadTaskId, executionResultId
         }
 
         // Step 2: Download the script log file
-        const endpoint3 = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
-        const result3 = await qrsInstance.Get(endpoint3);
+        currentEndpoint = `download/reloadtask/${result2.body.value}/scriptlog.txt`;
+        const result3 = await qrsInstance.Get(currentEndpoint);
 
         // If result3.statusCode is 200, the script log is available in result3.body with \r\n line endings
         // If result3.statusCode is 404, the script log is not available
 
-        if (result3.statusCode !== 200) {
-            result3.body = false;
+        if (!hasExpectedQrsStatus(result3) || typeof result3.body !== 'string') {
+            globals.logger.warn(
+                `[QSEOW] GET SCRIPT LOG (NEW API): Unexpected download response - ${formatQrsResultWithContext(
+                    result3,
+                    currentEndpoint,
+                    qrsInstance?.config,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
         }
 
         return result3.body;
     } catch (err) {
-        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${globals.getErrorMessage(err)}`);
+        globals.logger.warn(`[QSEOW] GET SCRIPT LOG (NEW API): Failed - ${formatQrsErrorWithContext(err, currentEndpoint, qrsInstance?.config)}`);
         return false;
     }
 }

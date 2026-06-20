@@ -51,6 +51,13 @@ describe('qrs_util/task_cp_util', () => {
             expect(mockGlobals.logger.error).toHaveBeenCalled();
         });
 
+        test('returns false on unexpected non-200 QRS response', async () => {
+            mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+            const res = await isCustomPropertyValueSet('t1', 'MyCP', 'v1');
+            expect(res).toBe(false);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+        });
+
         test('uses provided logger and handles outer error', async () => {
             // Force outer try/catch by throwing before QRS init
             mockGlobals.getQRSHttpHeaders.mockImplementation(() => {
@@ -95,6 +102,13 @@ describe('qrs_util/task_cp_util', () => {
             expect(mockGlobals.logger.error).toHaveBeenCalled();
         });
 
+        test('returns [] on unexpected non-200 QRS response', async () => {
+            mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+            const res = await getTaskCustomPropertyValues('t1', 'MyCP');
+            expect(res).toEqual([]);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+        });
+
         test('returns false on outer error', async () => {
             mockGlobals.getQRSHttpHeaders.mockImplementation(() => {
                 throw new Error('headers fail');
@@ -128,6 +142,13 @@ describe('qrs_util/task_cp_util', () => {
             const res = await getReloadTasksCustomProperties(config, configQRS, logger);
             expect(res).toEqual([]);
             expect(logger.error).toHaveBeenCalled();
+        });
+
+        test('returns [] on unexpected non-200 QRS response', async () => {
+            mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+            const res = await getReloadTasksCustomProperties(config, configQRS, logger);
+            expect(res).toEqual([]);
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
         });
 
         test('returns false on outer error', async () => {

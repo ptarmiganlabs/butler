@@ -43,7 +43,7 @@ description: "Skill for the Handlers area of butler. 6 symbols across 1 files."
 | `DistributeTaskCompletion → StopPolling` | cross_community | 5 |
 | `DistributeTaskCompletion → IsFinalState` | cross_community | 5 |
 | `CheckQueue → Get` | cross_community | 3 |
-| `CheckQueue → GetErrorMessage` | cross_community | 3 |
+| `CheckQueue → HasExpectedQrsStatus` | cross_community | 3 |
 
 ## Connected Areas
 

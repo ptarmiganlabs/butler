@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import QrsClient from '../qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../qrs_error.js';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 import { HTTP_TIMEOUT_SHORT_MS } from '../../constants.js';
@@ -26,6 +27,44 @@ function getQRSConfig() {
     };
 
     return cfg;
+}
+
+/**
+ * Append destination account names from a reload task custom property.
+ * @param {Object} qrsInstance - QRS client instance.
+ * @param {Object} cfg - QRS configuration.
+ * @param {string} taskId - Reload task ID.
+ * @param {string} customPropertyName - Custom property name to inspect.
+ * @param {string[]} destinationAccounts - Array to receive matching account names.
+ * @param {string} logPrefix - Prefix for log messages.
+ *
+ * @returns {Promise<void>}
+ */
+async function appendAccountsFromTaskCustomProperty(qrsInstance, cfg, taskId, customPropertyName, destinationAccounts, logPrefix) {
+    const endpoint = `task/full?filter=id eq ${taskId}`;
+
+    try {
+        const result1 = await qrsInstance.Get(endpoint);
+
+        if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body) || !Array.isArray(result1.body[0]?.customProperties)) {
+            globals.logger.error(
+                `${logPrefix}: Unexpected QRS response: ${formatQrsResultWithContext(result1, endpoint, cfg, {
+                    method: 'GET',
+                    expectedStatusCodes: [200],
+                })}`,
+            );
+            return;
+        }
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const cp of result1.body[0].customProperties) {
+            if (cp.definition.name === customPropertyName) {
+                destinationAccounts.push(cp.value);
+            }
+        }
+    } catch (err) {
+        globals.logger.error(`${logPrefix}: ${formatQrsErrorWithContext(err, endpoint, cfg)}`);
+    }
 }
 
 let rateLimiterFailedReloadsEvent;
@@ -718,23 +757,16 @@ export async function sendReloadTaskFailureEvent(reloadParams) {
                     )
                 ) {
                     // Get values of custom property
-                    try {
-                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const cp of result1.body[0].customProperties) {
-                            if (
-                                cp.definition.name ===
-                                globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                                )
-                            ) {
-                                tmpDestNewRelicAccounts.push(cp.value);
-                            }
-                        }
-                    } catch (err) {
-                        globals.logger.error(`SCRIPTLOG: ${globals.getErrorMessage(err)}`);
-                    }
+                    await appendAccountsFromTaskCustomProperty(
+                        qrsInstance,
+                        cfg,
+                        reloadParams.qs_taskId,
+                        globals.config.get(
+                            'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName',
+                        ),
+                        tmpDestNewRelicAccounts,
+                        '[QSEOW] Get value of reload task custom property',
+                    );
                 }
 
                 if (
@@ -860,23 +892,16 @@ export async function sendReloadTaskFailureLog(reloadParams) {
                     )
                 ) {
                     // Get values of custom property
-                    try {
-                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const cp of result1.body[0].customProperties) {
-                            if (
-                                cp.definition.name ===
-                                globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                                )
-                            ) {
-                                tmpDestNewRelicAccounts.push(cp.value);
-                            }
-                        }
-                    } catch (err) {
-                        globals.logger.error(`[QSEOW] Get value of reload task custom property: ${globals.getErrorMessage(err)}`);
-                    }
+                    await appendAccountsFromTaskCustomProperty(
+                        qrsInstance,
+                        cfg,
+                        reloadParams.qs_taskId,
+                        globals.config.get(
+                            'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
+                        ),
+                        tmpDestNewRelicAccounts,
+                        '[QSEOW] Get value of reload task custom property',
+                    );
                 }
 
                 if (
@@ -1004,23 +1029,16 @@ export function sendReloadTaskAbortedEvent(reloadParams) {
                     )
                 ) {
                     // Get values of custom property
-                    try {
-                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const cp of result1.body[0].customProperties) {
-                            if (
-                                cp.definition.name ===
-                                globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
-                                )
-                            ) {
-                                tmpDestNewRelicAccounts.push(cp.value);
-                            }
-                        }
-                    } catch (err) {
-                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${globals.getErrorMessage(err)}`);
-                    }
+                    await appendAccountsFromTaskCustomProperty(
+                        qrsInstance,
+                        cfg,
+                        reloadParams.qs_taskId,
+                        globals.config.get(
+                            'Butler.incidentTool.newRelic.reloadTaskAborted.destination.event.sendToAccount.byCustomProperty.customPropertyName',
+                        ),
+                        tmpDestNewRelicAccounts,
+                        '[QSEOW] Get custom property for reload task',
+                    );
                 }
 
                 if (
@@ -1148,23 +1166,16 @@ export function sendReloadTaskAbortedLog(reloadParams) {
                     )
                 ) {
                     // Get values of custom property
-                    try {
-                        const result1 = await qrsInstance.Get(`task/full?filter=id eq ${reloadParams.qs_taskId}`);
-
-                        // eslint-disable-next-line no-restricted-syntax
-                        for (const cp of result1.body[0].customProperties) {
-                            if (
-                                cp.definition.name ===
-                                globals.config.get(
-                                    'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-                                )
-                            ) {
-                                tmpDestNewRelicAccounts.push(cp.value);
-                            }
-                        }
-                    } catch (err) {
-                        globals.logger.error(`[QSEOW] Get custom property for reload task: ${globals.getErrorMessage(err)}`);
-                    }
+                    await appendAccountsFromTaskCustomProperty(
+                        qrsInstance,
+                        cfg,
+                        reloadParams.qs_taskId,
+                        globals.config.get(
+                            'Butler.incidentTool.newRelic.reloadTaskAborted.destination.log.sendToAccount.byCustomProperty.customPropertyName',
+                        ),
+                        tmpDestNewRelicAccounts,
+                        '[QSEOW] Get custom property for reload task',
+                    );
                 }
 
                 if (
