@@ -215,9 +215,7 @@ describe('udp_handlers', () => {
 
     afterEach(async () => {
         // Clean up UDP queue manager after each test to stop intervals
-        if (mockGlobals && mockGlobals.udpQueueManager) {
-            mockGlobals.udpQueueManager.destroy();
-        }
+        mockGlobals?.udpQueueManager?.destroy();
     });
 
     // Helper to wait until a condition is true or timeout
@@ -299,9 +297,29 @@ describe('udp_handlers', () => {
         expect(globals.logger.verbose).toHaveBeenCalledWith(
             '[QSEOW] UDP HANDLER: Duplicate message detected (executionId=exec-dedupe). Skipping processing.',
         );
+        expect(
+            globals.logger.verbose.mock.calls.filter(
+                (call) => typeof call[0] === 'string' && call[0].startsWith('[QSEOW] UDP HANDLER: UDP message received:'),
+            ),
+        ).toHaveLength(1);
 
         const metrics = await globals.udpQueueManager.getMetrics();
         expect(metrics.messagesDroppedDuplicate).toBe(1);
+    });
+
+    test('scheduler message without executionId logs that deduplication was skipped', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        expect(globals.logger.debug).toHaveBeenCalledWith(
+            '[QSEOW] UDP HANDLER: Scheduler message type /scheduler-reload-failed/ has no executionId. Skipping deduplication for this message.',
+        );
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
     });
 
     test('executionId is released after unsuccessful processing so a resend can succeed', async () => {
@@ -597,10 +615,4 @@ describe('udp_handlers', () => {
         expect(sanitized[4]).toBe('normal');
     });
 
-    afterAll(async () => {
-        // Clean up UDP queue manager to stop intervals
-        if (mockGlobals && mockGlobals.udpQueueManager) {
-            mockGlobals.udpQueueManager.destroy();
-        }
-    });
 });

@@ -3068,6 +3068,7 @@ export const confifgFileSchema = {
                             required: ['enable', 'maxMessagesPerMinute'],
                             additionalProperties: false,
                         },
+                        deduplicationTtlMinutes: { type: 'number', default: 10 },
                         queueMetrics: {
                             type: 'object',
                             properties: {

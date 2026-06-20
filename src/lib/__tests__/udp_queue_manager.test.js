@@ -205,4 +205,37 @@ describe('UdpQueueManager', () => {
         const metrics = await queueManager.getMetrics();
         expect(metrics.messagesProcessed).toBe(1);
     });
+
+    test('should expire processed executionIds based on the configured TTL', async () => {
+        const shortTtlQueue = new UdpQueueManager(
+            {
+                messageQueue: {
+                    enable: true,
+                    maxConcurrent: 1,
+                    maxSize: 10,
+                    backpressureThreshold: 80,
+                },
+                rateLimit: {
+                    enable: false,
+                    maxMessagesPerMinute: 100,
+                },
+                deduplicationTtlMinutes: 0.0001,
+                maxMessageSize: 65507,
+            },
+            mockLogger,
+            'short_ttl_queue',
+        );
+
+        const queued = await shortTtlQueue.enqueueDeduplicated('exec-short-ttl', () => Promise.resolve(true));
+        expect(queued).toBe('queued');
+
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(shortTtlQueue.checkDuplicate('exec-short-ttl')).toBe(false);
+
+        const requeued = await shortTtlQueue.enqueueDeduplicated('exec-short-ttl', () => Promise.resolve(true));
+        expect(requeued).toBe('queued');
+
+        shortTtlQueue.destroy();
+    });
 });

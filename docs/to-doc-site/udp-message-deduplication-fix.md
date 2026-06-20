@@ -7,9 +7,10 @@ Butler now treats UDP deduplication as a queue lifecycle problem rather than a p
 The important behavior change is this:
 
 1. A message is no longer considered permanently handled just because Butler saw its `executionId`.
-2. An `executionId` is reserved only while a message is queued or in flight.
+2. An `executionId` is reserved during the deduplicated enqueue attempt and, if queue admission succeeds, while the message is queued or in flight.
 3. The reservation is released if queue admission fails or if queued processing ends unsuccessfully.
 4. The `executionId` is retained only after successful message handling.
+5. Scheduler duplicates are now dropped before Butler spends CPU sanitizing the full payload.
 
 This avoids the earlier failure mode where a queue-full drop or processing failure could poison an `executionId` and cause legitimate retries to be skipped.
 
@@ -38,30 +39,33 @@ flowchart TD
     B -- No --> B1[Drop message<br/>handleSizeDrop]
     B -- Yes --> C{Rate limit allows processing?}
     C -- No --> C1[Drop message<br/>handleRateLimitDrop]
-    C -- Yes --> D[Sanitize and parse message]
-    D --> E{ExecutionId present?}
+    C -- Yes --> D[Parse raw message and sanitize only routing fields]
+    D --> E{Scheduler message with executionId support?}
     E -- No --> F[Use normal queue path]
-    E -- Yes --> G{ExecutionId already tracked?}
-    G -- Yes, reserved --> G1[Drop as duplicate<br/>messagesDroppedDuplicate++]
-    G -- Yes, processed and unexpired --> G2[Drop as duplicate<br/>messagesDroppedDuplicate++]
-    G -- No --> H[Reserve executionId]
-    H --> I{Queue admission succeeds?}
-    I -- No --> I1[Release reservation<br/>drop as queue full]
-    I -- Yes --> J[Run queued handler]
-    F --> K{Queue admission succeeds?}
-    K -- No --> K1[Drop as queue full]
-    K -- Yes --> L[Run queued handler]
-    J --> M{Handler result}
-    L --> N{Handler result}
-    M -- Success --> M1[Mark executionId processed<br/>retain until TTL expiry]
-    M -- Returns false --> M2[Release reservation<br/>allow retry]
-    M -- Throws --> M3[Release reservation<br/>allow retry]
-    N -- Success --> N1[No cache action]
-    N -- Returns false --> N2[No cache action]
-    N -- Throws --> N3[No cache action]
-    M1 --> O{Same executionId arrives before TTL expiry?}
-    O -- Yes --> O1[Drop as duplicate]
-    O -- No, after TTL expiry --> O2[Treat as new message]
+    E -- Yes --> G{ExecutionId present?}
+    G -- No --> G0[Log debug: dedup skipped]
+    G0 --> F
+    G -- Yes --> H{ExecutionId already tracked?}
+    H -- Yes, reserved --> H1[Drop as duplicate<br/>messagesDroppedDuplicate++]
+    H -- Yes, processed and unexpired --> H2[Drop as duplicate<br/>messagesDroppedDuplicate++]
+    H -- No --> I[Reserve executionId]
+    I --> J{Queue admission succeeds?}
+    J -- No --> J1[Release reservation<br/>drop as queue full]
+    J -- Yes --> K[Sanitize full payload and run queued handler]
+    F --> L{Queue admission succeeds?}
+    L -- No --> L1[Drop as queue full]
+    L -- Yes --> M[Sanitize full payload and run queued handler]
+    K --> N{Handler result}
+    M --> O{Handler result}
+    N -- Success --> N1[Mark executionId processed<br/>retain until TTL expiry]
+    N -- Returns false --> N2[Release reservation<br/>allow retry]
+    N -- Throws --> N3[Release reservation<br/>allow retry]
+    O -- Success --> O1[No cache action]
+    O -- Returns false --> O2[No cache action]
+    O -- Throws --> O3[No cache action]
+    N1 --> P{Same executionId arrives before TTL expiry?}
+    P -- Yes --> P1[Drop as duplicate]
+    P -- No, after TTL expiry --> P2[Treat as new message]
 ```
 
 ## Outcome Table
@@ -71,6 +75,7 @@ The table below maps each queue and deduplication branch to operator-visible beh
 | Scenario | ExecutionId present | Dedup state before check | Queue admission result | Processing result | Cache action | Metrics updated | Expected log signal | Retry allowed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Message has no executionId and queue admission fails | No | Not applicable | Rejected because queue is full | Not run | None | `messagesReceived`, `messagesDroppedTotal`, `messagesDroppedQueueFull` | Periodic queue drop warning from the UDP queue manager | Yes. A later resend is treated as a fresh message. |
+| Scheduler message that should have an executionId arrives without one | No | Not applicable | Follows normal queue admission path | Follows normal success or failure path | None | No special dedup metric. Subsequent queue metrics depend on the run outcome. | Debug log that deduplication was skipped because the scheduler message had no executionId | Yes. Without an executionId, Butler cannot deduplicate the message. |
 | Message has no executionId, is queued, and processing succeeds | No | Not applicable | Accepted | Success | None | `messagesReceived`, `messagesQueued`, `messagesProcessed` | Normal handler logs for the message type | Yes. There is no dedup cache entry for this message. |
 | Message has no executionId, is queued, and processing returns `false` or throws | No | Not applicable | Accepted | Unsuccessful | None | `messagesReceived`, `messagesQueued`, `messagesFailed` | Validation warning, unknown-type warning, or queue error log depending on failure mode | Yes. There is no dedup cache entry to block a resend. |
 | Message has an executionId that is already reserved by an in-flight message | Yes | Reserved | Not attempted | Not run | Keep existing reservation | `messagesReceived`, `messagesDroppedTotal`, `messagesDroppedDuplicate` | Verbose duplicate log in the UDP handler | Not for that duplicate copy. A later resend can succeed if the in-flight message later releases the reservation. |
@@ -111,6 +116,7 @@ These metrics are the primary signals for operators monitoring this behavior:
 The most useful logs are:
 
 - `[QSEOW] UDP HANDLER: Duplicate message detected ...` for duplicate suppression.
+- `[QSEOW] UDP HANDLER: Scheduler message type ... has no executionId. Skipping deduplication for this message.` when Butler receives a scheduler-family message that cannot be deduplicated safely.
 - handler validation warnings such as invalid field counts or invalid GUIDs for unsuccessful but non-exceptional processing.
 - `[UDP Queue] Error processing message ...` when queued work throws.
 - periodic queue drop warnings when queue-full conditions persist.
@@ -119,11 +125,13 @@ There is currently no dedicated log line for TTL expiry. Expiry is handled silen
 
 ## TTL Behavior
 
-The current implementation uses a fixed 10-minute TTL for processed execution IDs.
+The deduplication TTL is configurable with `Butler.udpServerConfig.deduplicationTtlMinutes`.
+
+If you do not set that key, Butler defaults to `10` minutes.
 
 This means:
 
-1. A successfully handled scheduler message suppresses duplicates for up to 10 minutes.
+1. A successfully handled scheduler message suppresses duplicates for the configured TTL window.
 2. An executionId does not stay blocked forever.
 3. Once the TTL expires, the next message with that executionId is evaluated as a new message.
 

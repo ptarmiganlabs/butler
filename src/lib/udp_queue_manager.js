@@ -311,6 +311,7 @@ export class UdpQueueManager {
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute
+     * @param {number} [config.deduplicationTtlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
      * @param {number} [config.maxMessageSize] - Maximum message size in bytes (optional)
      * @param {object} logger - Logger instance
      * @param {string} queueType - Type of queue ('task_results' or other identifier)
@@ -328,8 +329,12 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
+        const deduplicationTtlMinutes =
+            typeof config?.deduplicationTtlMinutes === 'number' && config.deduplicationTtlMinutes > 0 ? config.deduplicationTtlMinutes : 10;
+
         this.config = {
             ...config,
+            deduplicationTtlMinutes,
             maxMessageSize: Number.isFinite(config?.maxMessageSize) ? config.maxMessageSize : Number.POSITIVE_INFINITY,
         };
         this.logger = logger;
@@ -369,8 +374,7 @@ export class UdpQueueManager {
         this.droppedSinceLastLog = 0;
         this.lastDropLog = Date.now();
 
-        // Deduplication cache for executionIds (10 minute TTL)
-        this.deduplicationCache = new DeduplicationCache(10 * 60 * 1000);
+        this.deduplicationCache = new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000);
         this.deduplicationCache.startCleanup();
 
         // Track deduplication metrics
