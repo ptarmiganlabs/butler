@@ -23,13 +23,13 @@ description: "Skill for the Cluster_25 area of butler. 6 symbols across 1 files.
 
 Start here when exploring this area:
 
-- **`constructor`** (Method) — `src/lib/udp_queue_manager.js:319`
+- **`constructor`** (Method) — `src/lib/udp_queue_manager.js:320`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `constructor` | Method | `src/lib/udp_queue_manager.js` | 319 |
+| `constructor` | Method | `src/lib/udp_queue_manager.js` | 320 |
 | `DeduplicationCache` | Class | `src/lib/udp_queue_manager.js` | 16 |
 | `CircularBuffer` | Class | `src/lib/udp_queue_manager.js` | 144 |
 | `RateLimiter` | Class | `src/lib/udp_queue_manager.js` | 239 |

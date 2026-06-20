@@ -281,4 +281,120 @@ describe('UdpQueueManager', () => {
 
         dedupDisabledQueue.destroy();
     });
+
+    test('should include drop reason breakdown in warning log', async () => {
+        // Trigger 2 duplicate drops
+        await queueManager.handleDuplicateDrop();
+        await queueManager.handleDuplicateDrop();
+
+        // Trigger 1 size drop
+        await queueManager.handleSizeDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with breakdown
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('Dropped 3 messages');
+        expect(dropLog[0]).toContain('duplicate: 2');
+        expect(dropLog[0]).toContain('size: 1');
+    });
+
+    test('should only include non-zero drop reasons in warning log', async () => {
+        // Trigger only 1 duplicate drop
+        await queueManager.handleDuplicateDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with only duplicate reason
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('duplicate: 1');
+        expect(dropLog[0]).not.toContain('queueFull');
+        expect(dropLog[0]).not.toContain('rateLimit');
+        expect(dropLog[0]).not.toContain('size');
+    });
+
+    test('should reset drop counters after logging', async () => {
+        // Trigger some drops
+        await queueManager.handleDuplicateDrop();
+        await queueManager.handleSizeDrop();
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called once
+        const warnCalls1 = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls1).toHaveLength(1);
+
+        // Reset time and call again
+        queueManager.lastDropLog = 0;
+        queueManager.logDroppedMessages();
+
+        // Verify warn was NOT called again (counters were reset)
+        const warnCalls2 = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls2).toHaveLength(1);
+    });
+
+    test('should not log when no messages were dropped', async () => {
+        // Don't trigger any drops
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was NOT called
+        const warnCalls = mockLogger.warn.mock.calls.filter((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(warnCalls).toHaveLength(0);
+    });
+
+    test('should track all four drop reasons correctly', async () => {
+        // Trigger rate limit drop
+        await queueManager.handleRateLimitDrop();
+
+        // Trigger size drop
+        await queueManager.handleSizeDrop();
+
+        // Trigger duplicate drop
+        await queueManager.handleDuplicateDrop();
+
+        // Trigger queue full drop by filling the queue
+        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+        for (let i = 0; i < 12; i++) {
+            await queueManager.addToQueue(slowFn);
+        }
+        await new Promise((r) => setTimeout(r, 100));
+        await queueManager.addToQueue(() => Promise.resolve());
+
+        // Force the time check to pass
+        queueManager.lastDropLog = 0;
+
+        // Call logDroppedMessages
+        queueManager.logDroppedMessages();
+
+        // Verify warn was called with all four reasons
+        const warnCalls = mockLogger.warn.mock.calls;
+        const dropLog = warnCalls.find((call) => call[0].includes('Dropped') && call[0].includes('messages'));
+        expect(dropLog).toBeTruthy();
+        expect(dropLog[0]).toContain('Dropped 4 messages');
+        expect(dropLog[0]).toContain('queueFull: 1');
+        expect(dropLog[0]).toContain('rateLimit: 1');
+        expect(dropLog[0]).toContain('size: 1');
+        expect(dropLog[0]).toContain('duplicate: 1');
+    });
 });

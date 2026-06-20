@@ -23,19 +23,19 @@ description: "Skill for the Cluster_30 area of butler. 4 symbols across 1 files.
 
 Start here when exploring this area:
 
-- **`logDroppedMessages`** (Method) — `src/lib/udp_queue_manager.js:510`
-- **`handleRateLimitDrop`** (Method) — `src/lib/udp_queue_manager.js:656`
-- **`handleSizeDrop`** (Method) — `src/lib/udp_queue_manager.js:674`
-- **`handleDuplicateDrop`** (Method) — `src/lib/udp_queue_manager.js:692`
+- **`logDroppedMessages`** (Method) — `src/lib/udp_queue_manager.js:518`
+- **`handleRateLimitDrop`** (Method) — `src/lib/udp_queue_manager.js:675`
+- **`handleSizeDrop`** (Method) — `src/lib/udp_queue_manager.js:693`
+- **`handleDuplicateDrop`** (Method) — `src/lib/udp_queue_manager.js:711`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `logDroppedMessages` | Method | `src/lib/udp_queue_manager.js` | 510 |
-| `handleRateLimitDrop` | Method | `src/lib/udp_queue_manager.js` | 656 |
-| `handleSizeDrop` | Method | `src/lib/udp_queue_manager.js` | 674 |
-| `handleDuplicateDrop` | Method | `src/lib/udp_queue_manager.js` | 692 |
+| `logDroppedMessages` | Method | `src/lib/udp_queue_manager.js` | 518 |
+| `handleRateLimitDrop` | Method | `src/lib/udp_queue_manager.js` | 675 |
+| `handleSizeDrop` | Method | `src/lib/udp_queue_manager.js` | 693 |
+| `handleDuplicateDrop` | Method | `src/lib/udp_queue_manager.js` | 711 |
 
 ## How to Explore
 

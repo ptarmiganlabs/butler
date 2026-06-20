@@ -43,8 +43,8 @@ Start here when exploring this area:
 | `sanitizeField` | Function | `src/lib/udp_sanitizer.js` | 20 |
 | `sanitizeMessage` | Function | `src/lib/udp_sanitizer.js` | 39 |
 | `logRejection` | Method | `src/lib/udp_ip_validator.js` | 124 |
-| `validateMessageSize` | Method | `src/lib/udp_queue_manager.js` | 393 |
-| `checkRateLimit` | Method | `src/lib/udp_queue_manager.js` | 403 |
+| `validateMessageSize` | Method | `src/lib/udp_queue_manager.js` | 401 |
+| `checkRateLimit` | Method | `src/lib/udp_queue_manager.js` | 411 |
 | `resolveHostname` | Function | `src/lib/udp_ip_validator.js` | 27 |
 | `getMessageEnvelope` | Function | `src/udp/udp_handlers.js` | 64 |
 | `udpInitTaskErrorServer` | Function | `src/udp/udp_handlers.js` | 241 |

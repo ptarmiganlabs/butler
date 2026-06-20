@@ -378,7 +378,12 @@ export class UdpQueueManager {
         this.lastBackpressureWarning = 0;
 
         // Drop tracking for logging
-        this.droppedSinceLastLog = 0;
+        this.droppedSinceLastLog = {
+            queueFull: 0,
+            rateLimit: 0,
+            size: 0,
+            duplicate: 0,
+        };
         this.lastDropLog = Date.now();
 
         this.deduplicationCache = this.deduplicationEnable ? new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000) : null;
@@ -513,9 +518,20 @@ export class UdpQueueManager {
      */
     logDroppedMessages() {
         const now = Date.now();
-        if (this.droppedSinceLastLog > 0 && now - this.lastDropLog > 60000) {
-            this.logger.warn(`[UDP Queue] Dropped ${this.droppedSinceLastLog} messages for ${this.queueType} in the last minute`);
-            this.droppedSinceLastLog = 0;
+        const totalDrops = Object.values(this.droppedSinceLastLog).reduce((sum, val) => sum + val, 0);
+
+        if (totalDrops > 0 && now - this.lastDropLog > 60000) {
+            const reasons = Object.entries(this.droppedSinceLastLog)
+                .filter(([, count]) => count > 0)
+                .map(([reason, count]) => `${reason}: ${count}`)
+                .join(', ');
+
+            this.logger.warn(`[UDP Queue] Dropped ${totalDrops} messages for ${this.queueType} in the last minute (${reasons})`);
+
+            // Reset counters
+            Object.keys(this.droppedSinceLastLog).forEach((key) => {
+                this.droppedSinceLastLog[key] = 0;
+            });
             this.lastDropLog = now;
         }
     }
@@ -537,7 +553,7 @@ export class UdpQueueManager {
             if (this.queue.size >= this.config.messageQueue.maxSize) {
                 this.metrics.messagesDroppedTotal++;
                 this.metrics.messagesDroppedQueueFull++;
-                this.droppedSinceLastLog++;
+                this.droppedSinceLastLog.queueFull++;
                 this.logDroppedMessages();
                 return false;
             }
@@ -663,7 +679,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedRateLimit++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.rateLimit++;
         } finally {
             release();
         }
@@ -681,7 +697,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedSize++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.size++;
         } finally {
             release();
         }
@@ -699,7 +715,7 @@ export class UdpQueueManager {
             this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedDuplicate++;
-            this.droppedSinceLastLog++;
+            this.droppedSinceLastLog.duplicate++;
         } finally {
             release();
         }
