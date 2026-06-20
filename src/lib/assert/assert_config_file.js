@@ -335,8 +335,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     })}`,
                 );
                 return false;
-            } else
-
+            }
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..
@@ -432,7 +431,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     })}`,
                 );
                 return false;
-            } else
+            }
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..
@@ -526,7 +525,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     })}`,
                 );
                 return false;
-            } else
+            }
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..
@@ -622,7 +621,7 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
                     })}`,
                 );
                 return false;
-            } else
+            }
             // The choice values of the custom property should match the values in Butler.thirdPartyToolsCredentials.newRelic
 
             // If the custom property doesn't exist that's a problem..

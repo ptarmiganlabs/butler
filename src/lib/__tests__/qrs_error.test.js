@@ -83,6 +83,21 @@ describe('qrs_error helpers', () => {
         expect(result).toContain('body.code: 42');
     });
 
+    test('formatQrsResultWithContext truncates long string bodies', () => {
+        const longBody = 'x'.repeat(250);
+        const result = formatQrsResultWithContext(
+            { statusCode: 502, body: longBody },
+            'reloadtask/123',
+            { hostname: 'qs-host', portNumber: 4242 },
+            { method: 'GET', expectedStatusCodes: [200] },
+        );
+
+        expect(result).toContain('status: 502');
+        expect(result).toContain('bodyLength: 250');
+        expect(result).toContain(`bodyPreview: ${'x'.repeat(200)}...`);
+        expect(result).not.toContain(`body: ${longBody}`);
+    });
+
     test('hasExpectedHttpStatus validates accepted status codes', () => {
         expect(hasExpectedHttpStatus({ status: 200 })).toBe(true);
         expect(hasExpectedHttpStatus({ status: 202 }, [200, 202])).toBe(true);

@@ -34,6 +34,8 @@ const SENSITIVE_KEYS = new Set([
     'private_key',
 ]);
 
+const MAX_LOG_STRING_BODY_LENGTH = 200;
+
 /**
  * Append common QRS request context to a list of log message parts.
  * @param {string[]} parts - Output parts for the log message.
@@ -69,7 +71,18 @@ function appendResponseBodySummary(parts, body) {
         return;
     }
 
-    if (typeof body === 'string' || typeof body === 'number' || typeof body === 'boolean') {
+    if (typeof body === 'string') {
+        if (body.length > MAX_LOG_STRING_BODY_LENGTH) {
+            parts.push(`bodyLength: ${body.length}`);
+            parts.push(`bodyPreview: ${body.slice(0, MAX_LOG_STRING_BODY_LENGTH)}...`);
+            return;
+        }
+
+        parts.push(`body: ${body}`);
+        return;
+    }
+
+    if (typeof body === 'number' || typeof body === 'boolean') {
         parts.push(`body: ${body}`);
         return;
     }

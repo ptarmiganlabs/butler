@@ -348,7 +348,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                 const res = await qrsInstance.Get(userEndpoint);
                 if (!hasExpectedQrsStatus(res) || !res.body) {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\${license.user.userId}. ${formatQrsResultWithContext(
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsResultWithContext(
                             res,
                             userEndpoint,
                             qrsInstance.config,
@@ -366,7 +366,7 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
                     );
                 }
                 return false;
@@ -661,7 +661,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                 const res = await qrsInstance.Get(userEndpoint);
                 if (!hasExpectedQrsStatus(res) || !res.body) {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\${license.user.userId}. ${formatQrsResultWithContext(
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsResultWithContext(
                             res,
                             userEndpoint,
                             qrsInstance.config,
@@ -679,7 +679,7 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
                     );
                 }
                 return false;
@@ -939,11 +939,7 @@ async function checkQlikSenseLicenseRelease(config, logger) {
         return true;
     } catch (err) {
         // This catch block handles errors from either professional or analyzer license release operations
-        const errorContext = formatQrsErrorWithContext(
-            err,
-            'license/professionalaccesstype|analyzeraccesstype',
-            getQrsErrorConfig(),
-        );
+        const errorContext = formatQrsErrorWithContext(err, 'license/professionalaccesstype|analyzeraccesstype', getQrsErrorConfig());
         logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: Request failed - ${errorContext}`);
         return false;
     }
