@@ -881,6 +881,8 @@ Butler:
         rateLimit:
             enable: false
             maxMessagesPerMinute: 600
+        deduplicationEnable: true
+        deduplicationTtlMinutes: 10
         queueMetrics:
             influxdb:
                 enable: false

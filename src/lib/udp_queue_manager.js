@@ -11,6 +11,135 @@ import PQueue from 'p-queue';
 import { Mutex } from 'async-mutex';
 
 /**
+ * Time-based cache for deduplication
+ * Stores keys with timestamps and automatically expires old entries
+ */
+class DeduplicationCache {
+    /**
+     * Create a deduplication cache
+     *
+     * @param {number} ttlMs - Time-to-live in milliseconds for entries
+     */
+    constructor(ttlMs) {
+        this.cache = new Map();
+        this.ttlMs = ttlMs;
+        this.cleanupInterval = null;
+    }
+
+    /**
+     * Start periodic cleanup of expired entries
+     */
+    startCleanup() {
+        if (this.cleanupInterval) return;
+        this.cleanupInterval = setInterval(() => this.cleanup(), Math.min(this.ttlMs / 2, 60000));
+        this.cleanupInterval.unref?.();
+    }
+
+    /**
+     * Stop periodic cleanup
+     */
+    stopCleanup() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
+    }
+
+    /**
+     * Remove expired entries from the cache
+     */
+    cleanup() {
+        const now = Date.now();
+        for (const [key, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.ttlMs) {
+                this.cache.delete(key);
+            }
+        }
+    }
+
+    /**
+     * Check if a key exists and is not expired
+     *
+     * @param {string} key - Key to check
+     * @returns {boolean} True if key exists and is not expired
+     */
+    has(key) {
+        const entry = this.cache.get(key);
+        if (entry === undefined) return false;
+        if (Date.now() - entry.timestamp > this.ttlMs) {
+            this.cache.delete(key);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Add or update a key with current timestamp
+     *
+     * @param {string} key - Key to add
+     */
+    set(key) {
+        this.cache.set(key, {
+            state: 'processed',
+            timestamp: Date.now(),
+        });
+    }
+
+    /**
+     * Reserve a key while it is queued or processing.
+     *
+     * @param {string} key - Key to reserve
+     * @returns {boolean} True if the key was reserved, false if already tracked
+     */
+    reserve(key) {
+        if (this.has(key)) {
+            return false;
+        }
+        this.cache.set(key, {
+            state: 'reserved',
+            timestamp: Date.now(),
+        });
+        return true;
+    }
+
+    /**
+     * Mark a key as successfully processed.
+     *
+     * @param {string} key - Key to mark as processed
+     * @returns {void}
+     */
+    markProcessed(key) {
+        this.set(key);
+    }
+
+    /**
+     * Release a tracked key so it can be retried.
+     *
+     * @param {string} key - Key to release
+     * @returns {void}
+     */
+    release(key) {
+        this.cache.delete(key);
+    }
+
+    /**
+     * Get the number of entries in the cache
+     *
+     * @returns {number} Number of entries
+     */
+    get size() {
+        return this.cache.size;
+    }
+
+    /**
+     * Clear all entries from the cache
+     */
+    clear() {
+        this.cache.clear();
+    }
+}
+
+/**
  * Circular buffer for tracking processing times
  */
 class CircularBuffer {
@@ -182,6 +311,8 @@ export class UdpQueueManager {
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute
+     * @param {boolean} [config.deduplicationEnable] - Enable executionId-based deduplication (optional, defaults to true)
+     * @param {number} [config.deduplicationTtlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
      * @param {number} [config.maxMessageSize] - Maximum message size in bytes (optional)
      * @param {object} logger - Logger instance
      * @param {string} queueType - Type of queue ('task_results' or other identifier)
@@ -199,12 +330,19 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
+        const deduplicationEnable = typeof config?.deduplicationEnable === 'boolean' ? config.deduplicationEnable : true;
+        const deduplicationTtlMinutes =
+            typeof config?.deduplicationTtlMinutes === 'number' && config.deduplicationTtlMinutes > 0 ? config.deduplicationTtlMinutes : 10;
+
         this.config = {
             ...config,
+            deduplicationEnable,
+            deduplicationTtlMinutes,
             maxMessageSize: Number.isFinite(config?.maxMessageSize) ? config.maxMessageSize : Number.POSITIVE_INFINITY,
         };
         this.logger = logger;
         this.queueType = queueType;
+        this.deduplicationEnable = deduplicationEnable;
 
         // Initialize message queue
         this.queue = new PQueue({
@@ -239,6 +377,12 @@ export class UdpQueueManager {
         // Drop tracking for logging
         this.droppedSinceLastLog = 0;
         this.lastDropLog = Date.now();
+
+        this.deduplicationCache = this.deduplicationEnable ? new DeduplicationCache(this.config.deduplicationTtlMinutes * 60 * 1000) : null;
+        this.deduplicationCache?.startCleanup();
+
+        // Track deduplication metrics
+        this.metrics.messagesDroppedDuplicate = 0;
     }
 
     /**
@@ -260,6 +404,60 @@ export class UdpQueueManager {
     checkRateLimit() {
         if (!this.rateLimiter) return true;
         return this.rateLimiter.checkLimit();
+    }
+
+    /**
+     * Check if a message with this executionId is already tracked.
+     *
+     * @param {string} executionId - The execution ID to check (from UDP message field 9)
+     * @returns {boolean} True if this is a duplicate (should be skipped), false if new
+     */
+    checkDuplicate(executionId) {
+        if (!this.deduplicationEnable || !executionId || executionId === '') return false;
+        return this.deduplicationCache.has(executionId);
+    }
+
+    /**
+     * Reserve an executionId for a queued message.
+     *
+     * @param {string} executionId - The execution ID to reserve
+     * @returns {boolean} True if reservation succeeded, false if already tracked
+     */
+    reserveExecutionId(executionId) {
+        if (!executionId || executionId === '') return false;
+        if (!this.deduplicationEnable) return true;
+        return this.deduplicationCache.reserve(executionId);
+    }
+
+    /**
+     * Mark an executionId as successfully processed.
+     *
+     * @param {string} executionId - The execution ID to mark as processed
+     * @returns {void}
+     */
+    markExecutionIdProcessed(executionId) {
+        if (!this.deduplicationEnable || !executionId || executionId === '') return;
+        this.deduplicationCache.markProcessed(executionId);
+    }
+
+    /**
+     * Release an executionId reservation so the message can be retried.
+     *
+     * @param {string} executionId - The execution ID to release
+     * @returns {void}
+     */
+    releaseExecutionId(executionId) {
+        if (!this.deduplicationEnable || !executionId || executionId === '') return;
+        this.deduplicationCache.release(executionId);
+    }
+
+    /**
+     * Get the current size of the deduplication cache
+     *
+     * @returns {number} Number of entries in the deduplication cache
+     */
+    getDeduplicationCacheSize() {
+        return this.deduplicationCache?.size ?? 0;
     }
 
     /**
@@ -322,10 +520,11 @@ export class UdpQueueManager {
     /**
      * Add message to queue for processing
      *
-     * @param {() => Promise<void>} processFunction - Async function that processes the message
+     * @param {() => Promise<boolean|void>} processFunction - Async function that processes the message
+     * @param {{ onFailure?: () => Promise<void>|void, onSuccess?: () => Promise<void>|void }} [options] - Optional lifecycle hooks for queue processing
      * @returns {Promise<boolean>} True if message was queued, false if dropped
      */
-    async addToQueue(processFunction) {
+    async addToQueue(processFunction, options = {}) {
         let queueSize;
         const release = await this.metricsMutex.acquire();
         try {
@@ -356,23 +555,50 @@ export class UdpQueueManager {
             .add(async () => {
                 const startTime = Date.now();
                 try {
-                    await processFunction();
-
+                    const processResult = await processFunction();
+                    const wasSuccessful = processResult !== false;
                     const processingTime = Date.now() - startTime;
-                    const release2 = await this.metricsMutex.acquire();
-                    try {
-                        this.metrics.messagesProcessed++;
-                        this.processingTimeBuffer.add(processingTime);
-                    } finally {
-                        release2();
+
+                    if (wasSuccessful) {
+                        const releaseMetricsSuccess = await this.metricsMutex.acquire();
+                        try {
+                            this.metrics.messagesProcessed++;
+                            this.processingTimeBuffer.add(processingTime);
+                        } finally {
+                            releaseMetricsSuccess();
+                        }
+
+                        if (options.onSuccess) {
+                            await options.onSuccess();
+                        }
+
+                        return true;
                     }
-                } catch (error) {
-                    const release2 = await this.metricsMutex.acquire();
+
+                    const releaseMetricsFailure = await this.metricsMutex.acquire();
                     try {
                         this.metrics.messagesFailed++;
                     } finally {
-                        release2();
+                        releaseMetricsFailure();
                     }
+
+                    if (options.onFailure) {
+                        await options.onFailure();
+                    }
+
+                    return false;
+                } catch (error) {
+                    const releaseMetricsError = await this.metricsMutex.acquire();
+                    try {
+                        this.metrics.messagesFailed++;
+                    } finally {
+                        releaseMetricsError();
+                    }
+
+                    if (options.onFailure) {
+                        await options.onFailure();
+                    }
+
                     throw error;
                 }
             })
@@ -381,6 +607,46 @@ export class UdpQueueManager {
             });
 
         return true;
+    }
+
+    /**
+     * Add a message to the queue with retry-safe deduplication semantics.
+     *
+     * @param {string|undefined} executionId - Execution ID used for deduplication
+     * @param {() => Promise<boolean|void>} processFunction - Async function that processes the message
+     * @returns {Promise<'queued'|'duplicate'|'queue_full'>} Queueing outcome
+     */
+    async enqueueDeduplicated(executionId, processFunction) {
+        if (!this.deduplicationEnable) {
+            const queuedWithoutDedup = await this.addToQueue(processFunction);
+            return queuedWithoutDedup ? 'queued' : 'queue_full';
+        }
+
+        if (!executionId || executionId === '') {
+            const queuedWithoutDedup = await this.addToQueue(processFunction);
+            return queuedWithoutDedup ? 'queued' : 'queue_full';
+        }
+
+        if (!this.reserveExecutionId(executionId)) {
+            await this.handleDuplicateDrop();
+            return 'duplicate';
+        }
+
+        const queued = await this.addToQueue(processFunction, {
+            onSuccess: async () => {
+                this.markExecutionIdProcessed(executionId);
+            },
+            onFailure: async () => {
+                this.releaseExecutionId(executionId);
+            },
+        });
+
+        if (!queued) {
+            this.releaseExecutionId(executionId);
+            return 'queue_full';
+        }
+
+        return 'queued';
     }
 
     /**
@@ -420,6 +686,24 @@ export class UdpQueueManager {
     }
 
     /**
+     * Handle message drop due to duplicate detection
+     *
+     * @returns {Promise<void>}
+     */
+    async handleDuplicateDrop() {
+        const release = await this.metricsMutex.acquire();
+        try {
+            this.metrics.messagesReceived++;
+            this.metrics.messagesDroppedTotal++;
+            this.metrics.messagesDroppedDuplicate++;
+            this.droppedSinceLastLog++;
+        } finally {
+            release();
+        }
+        this.logDroppedMessages();
+    }
+
+    /**
      * Get current metrics
      *
      * @returns {Promise<object>} Current metrics
@@ -440,6 +724,8 @@ export class UdpQueueManager {
                 messagesDroppedRateLimit: this.metrics.messagesDroppedRateLimit,
                 messagesDroppedQueueFull: this.metrics.messagesDroppedQueueFull,
                 messagesDroppedSize: this.metrics.messagesDroppedSize,
+                messagesDroppedDuplicate: this.metrics.messagesDroppedDuplicate,
+                deduplicationCacheSize: this.getDeduplicationCacheSize(),
                 processingTimeAvgMs: this.processingTimeBuffer.getAverage() || 0,
                 processingTimeP95Ms: this.processingTimeBuffer.getPercentile95() || 0,
                 processingTimeMaxMs: this.processingTimeBuffer.getMax() || 0,
@@ -467,9 +753,19 @@ export class UdpQueueManager {
             this.metrics.messagesDroppedRateLimit = 0;
             this.metrics.messagesDroppedQueueFull = 0;
             this.metrics.messagesDroppedSize = 0;
+            this.metrics.messagesDroppedDuplicate = 0;
             this.processingTimeBuffer.clear();
         } finally {
             release();
         }
+    }
+
+    /**
+     * Clean up resources (stop intervals, clear caches)
+     * Should be called when the queue manager is no longer needed
+     */
+    destroy() {
+        this.deduplicationCache?.stopCleanup();
+        this.deduplicationCache?.clear();
     }
 }

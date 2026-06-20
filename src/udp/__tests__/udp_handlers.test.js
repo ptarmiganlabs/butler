@@ -4,6 +4,7 @@ describe('udp_handlers', () => {
     let udpInitTaskErrorServer;
     let events; // event handlers registry
     let published;
+    let mockGlobals;
 
     beforeAll(async () => {
         published = [];
@@ -136,7 +137,7 @@ describe('udp_handlers', () => {
         }));
 
         events = {};
-        const mockGlobals = {
+        mockGlobals = {
             config: {
                 has: jest.fn(() => true),
                 get: jest.fn((k) => {
@@ -176,6 +177,8 @@ describe('udp_handlers', () => {
                         'Butler.udpServerConfig.messageQueue.maxConcurrent': 5,
                         'Butler.udpServerConfig.messageQueue.maxSize': 1000,
                         'Butler.udpServerConfig.messageQueue.backpressureThreshold': 0.8,
+                        'Butler.udpServerConfig.deduplicationEnable': true,
+                        'Butler.udpServerConfig.deduplicationTtlMinutes': 10,
                         'Butler.udpServerConfig.rateLimit.enable': false,
                         'Butler.udpServerConfig.rateLimit.maxMessagesPerMinute': 1000,
                     };
@@ -210,6 +213,11 @@ describe('udp_handlers', () => {
         events = {};
         published.length = 0;
         await udpInitTaskErrorServer();
+    });
+
+    afterEach(async () => {
+        // Clean up UDP queue manager after each test to stop intervals
+        mockGlobals?.udpQueueManager?.destroy();
     });
 
     // Helper to wait until a condition is true or timeout
@@ -273,6 +281,106 @@ describe('udp_handlers', () => {
         expect(globals.mqttClient.publish).toHaveBeenCalledWith('failureTopic', 'Task');
         // full payload publish
         expect(published.some((p) => p.topic === 'failFull')).toBe(true);
+    });
+
+    test('duplicate scheduler failure message is processed only once', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-dedupe;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await events.message(Buffer.from(msg), {});
+
+        await waitFor(() => published.filter((p) => p.topic === 'failFull').length === 1);
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+        expect(globals.logger.verbose).toHaveBeenCalledWith(
+            '[QSEOW] UDP HANDLER: Duplicate message detected (executionId=exec-dedupe). Skipping processing.',
+        );
+        expect(
+            globals.logger.verbose.mock.calls.filter(
+                (call) => typeof call[0] === 'string' && call[0].startsWith('[QSEOW] UDP HANDLER: UDP message received:'),
+            ),
+        ).toHaveLength(1);
+
+        const metrics = await globals.udpQueueManager.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(1);
+    });
+
+    test('scheduler message without executionId logs that deduplication was skipped', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        expect(globals.logger.debug).toHaveBeenCalledWith(
+            '[QSEOW] UDP HANDLER: Scheduler message type /scheduler-reload-failed/ has no executionId. Skipping deduplication for this message.',
+        );
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+    });
+
+    test('duplicate scheduler failure messages are both processed when deduplication is disabled', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const originalGet = globals.config.get;
+
+        globals.config.get = jest.fn((key) => {
+            if (key === 'Butler.udpServerConfig.deduplicationEnable') return false;
+            return originalGet(key);
+        });
+
+        globals.udpQueueManager?.destroy();
+        events = {};
+        published.length = 0;
+        globals.logger.verbose.mockClear();
+
+        await udpInitTaskErrorServer();
+
+        const msg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-disabled;Message';
+
+        await events.message(Buffer.from(msg), {});
+        await events.message(Buffer.from(msg), {});
+        await waitFor(() => published.filter((p) => p.topic === 'failFull').length === 2);
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(2);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(2);
+        expect(
+            globals.logger.verbose.mock.calls.filter(
+                (call) => typeof call[0] === 'string' && call[0].includes('Duplicate message detected'),
+            ),
+        ).toHaveLength(0);
+
+        const metrics = await globals.udpQueueManager.getMetrics();
+        expect(metrics.messagesDroppedDuplicate).toBe(0);
+        expect(metrics.deduplicationCacheSize).toBe(0);
+
+        globals.config.get = originalGet;
+    });
+
+    test('executionId is released after unsuccessful processing so a resend can succeed', async () => {
+        const { default: globals } = await import('../../globals.js');
+        const invalidMsg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;not-a-guid;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-retry;Message';
+        const validMsg =
+            '/scheduler-reload-failed/;host;Task;App;dir/user;550e8400-e29b-41d4-a716-446655440000;550e8400-e29b-41d4-a716-446655440001;ts;INFO;exec-retry;Message';
+
+        await events.message(Buffer.from(invalidMsg), {});
+        await new Promise((r) => setTimeout(r, 50));
+
+        expect(globals.udpQueueManager.checkDuplicate('exec-retry')).toBe(false);
+        expect(published).toHaveLength(0);
+
+        await events.message(Buffer.from(validMsg), {});
+        await waitFor(() => published.some((p) => p.topic === 'failFull'));
+
+        expect(published.filter((p) => p.topic === 'failFull')).toHaveLength(1);
+        expect(published.filter((p) => p.topic === 'failureTopic')).toHaveLength(1);
+        expect(globals.udpQueueManager.checkDuplicate('exec-retry')).toBe(true);
     });
 
     test('scheduler reload aborted publishes MQTT and full payload', async () => {
@@ -546,4 +654,5 @@ describe('udp_handlers', () => {
         expect(sanitized[3]).toHaveLength(500);
         expect(sanitized[4]).toBe('normal');
     });
+
 });
