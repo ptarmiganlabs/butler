@@ -548,12 +548,11 @@ export class UdpQueueManager {
         let isQueueFull = false;
         const release = await this.metricsMutex.acquire();
         try {
-            this.metrics.messagesReceived++;
-
             // Check if queue is full
             if (this.queue.size >= this.config.messageQueue.maxSize) {
                 isQueueFull = true;
             } else {
+                this.metrics.messagesReceived++;
                 this.metrics.messagesQueued++;
 
                 // Capture queue size while holding mutex to avoid race condition
@@ -678,6 +677,7 @@ export class UdpQueueManager {
     async handleQueueFullDrop() {
         const release = await this.metricsMutex.acquire();
         try {
+            this.metrics.messagesReceived++;
             this.metrics.messagesDroppedTotal++;
             this.metrics.messagesDroppedQueueFull++;
             this.droppedSinceLastLog.queueFull++;
