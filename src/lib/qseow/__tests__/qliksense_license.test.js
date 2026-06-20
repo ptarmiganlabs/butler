@@ -123,7 +123,7 @@ describe('qseow/qliksense_license', () => {
                 webhookNotification: { enable: true },
 
                 // QRS cert/host
-                configQRS: { host: 'qs-host' },
+                configQRS: { host: 'qs-host', port: 4242 },
 
                 // Server license monitor
                 qlikSenseLicense: {
@@ -821,5 +821,213 @@ describe('qseow/qliksense_license', () => {
 
         // Should handle null data gracefully
         expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('QLIKSENSE LICENSE MONITOR'));
+    });
+
+    describe('Enhanced error context', () => {
+        test('timeout error includes endpoint, host, port, code, and timeout', async () => {
+            const timeoutError = new Error('timeout of 30000ms exceeded');
+            timeoutError.code = 'ECONNABORTED';
+            timeoutError.config = {
+                method: 'get',
+                timeout: 30000,
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(timeoutError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(
+                    /endpoint: license\/accesstypeoverview.*host: qs-host.*port: 4242.*code: ECONNABORTED.*timeout: 30000ms/,
+                ),
+            );
+        });
+
+        test('connection reset error includes endpoint, code, errno, and syscall', async () => {
+            const connResetError = new Error('read ECONNRESET');
+            connResetError.code = 'ECONNRESET';
+            connResetError.errno = -104;
+            connResetError.syscall = 'read';
+            connResetError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(connResetError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(/endpoint: license\/accesstypeoverview.*code: ECONNRESET.*errno: -104.*syscall: read/),
+            );
+        });
+
+        test('connection refused error includes endpoint, code, errno, syscall, and address', async () => {
+            const connRefusedError = new Error('connect ECONNREFUSED 127.0.0.1:4242');
+            connRefusedError.code = 'ECONNREFUSED';
+            connRefusedError.errno = -61;
+            connRefusedError.syscall = 'connect';
+            connRefusedError.address = '127.0.0.1';
+            connRefusedError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(connRefusedError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(/endpoint: license.*code: ECONNREFUSED.*errno: -61.*syscall: connect.*address: 127\.0\.0\.1/),
+            );
+        });
+
+        test('HTTP error response includes endpoint, status, and statusText', async () => {
+            const httpError = new Error('Request failed with status code 500');
+            httpError.response = {
+                status: 500,
+                statusText: 'Internal Server Error',
+            };
+            httpError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(httpError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(/endpoint: license\/accesstypeoverview.*status: 500.*statusText: Internal Server Error/),
+            );
+        });
+
+        test('generic error includes endpoint and message', async () => {
+            const genericError = new Error('Something went wrong');
+            genericError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(genericError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(expect.stringMatching(/endpoint: license.*message: Something went wrong/));
+        });
+
+        test('error with unknown properties includes those properties', async () => {
+            const customError = new Error('Custom error');
+            customError.customField = 'custom-value';
+            customError.anotherField = 123;
+            customError.config = {
+                method: 'get',
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/accesstypeoverview',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(customError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(/endpoint: license\/accesstypeoverview.*customField: custom-value.*anotherField: 123/),
+            );
+        });
+
+        test('license release error includes endpoint and context', async () => {
+            const releaseError = new Error('timeout of 30000ms exceeded');
+            releaseError.code = 'ECONNABORTED';
+            releaseError.config = {
+                method: 'get',
+                timeout: 30000,
+                baseURL: 'https://qs-host:4242/qrs/',
+                url: 'license/professionalaccesstype/full',
+            };
+
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(releaseError);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            await mod.setupQlikSenseLicenseRelease(configObj, logger);
+            await Promise.resolve();
+            await new Promise((r) => setImmediate(r));
+
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringMatching(/endpoint: license-release.*code: ECONNABORTED.*timeout: 30000ms/),
+            );
+        });
     });
 });
