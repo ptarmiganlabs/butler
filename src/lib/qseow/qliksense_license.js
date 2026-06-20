@@ -131,10 +131,10 @@ function buildQrsConfig() {
  * @returns {Object} QRS configuration with hostname and portNumber
  */
 function getQrsErrorConfig() {
-    return {
-        hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: globals.config.get('Butler.configQRS.port'),
-    };
+    const hostname = globals.config?.has?.('Butler.configQRS.host') ? globals.config.get('Butler.configQRS.host') : undefined;
+    const portNumber = globals.config?.has?.('Butler.configQRS.port') ? globals.config.get('Butler.configQRS.port') : undefined;
+
+    return { hostname, portNumber };
 }
 
 // Function to check Qlik Sense server license status
