@@ -50,11 +50,11 @@ function mqttInitHandlers() {
                 // - Butler.mqttConfig.azureEventGrid.clientKeyFile
 
                 // Helper function to read the contents of the certificate files:
-                const readCert = (filename) => {
+                const readCert = (certFilename) => {
                     try {
-                        return fs.readFileSync(filename);
+                        return fs.readFileSync(certFilename);
                     } catch (err) {
-                        logger.error(`MQTT INIT HANDLERS: Error reading certificate file ${filename}: ${globals.getErrorMessage(err)}`);
+                        logger.error(`MQTT INIT HANDLERS: Error reading certificate file ${certFilename}: ${globals.getErrorMessage(err)}`);
                         throw err;
                     }
                 };
@@ -255,7 +255,7 @@ function mqttInitHandlers() {
                             logger.debug(`MQTT QS CLOUD EVENT IN: ${messageStr}`);
 
                             // Handle app reload finished event
-                            const appReloadResult = await handleQlikSenseCloudAppReloadFinished(messageObj);
+                            await handleQlikSenseCloudAppReloadFinished(messageObj);
                         }
                     } catch (err) {
                         logger.error(`MQTT QS CLOUD MESSAGE: Error=${globals.getErrorMessage(err)}`);
