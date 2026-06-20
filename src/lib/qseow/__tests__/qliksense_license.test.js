@@ -824,6 +824,21 @@ describe('qseow/qliksense_license', () => {
     });
 
     describe('Enhanced error context', () => {
+        // Helper to reduce boilerplate in error context tests
+        async function setupMockAndRunTest(error) {
+            const qrsInstance = makeQrs();
+            qrsInstance.Get = jest.fn().mockRejectedValue(error);
+            jest.unstable_mockModule('../../qrs_client.js', () => ({
+                default: function QrsClient() {
+                    return qrsInstance;
+                },
+            }));
+
+            const mod = await import('../qliksense_license.js');
+            const configObj = { get: (p) => getByPath(cfg, p) };
+            return { mod, configObj };
+        }
+
         test('timeout error includes endpoint, host, port, code, and timeout', async () => {
             const timeoutError = new Error('timeout of 30000ms exceeded');
             timeoutError.code = 'ECONNABORTED';
@@ -834,16 +849,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license/accesstypeoverview',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(timeoutError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(timeoutError);
             await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -866,16 +872,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license/accesstypeoverview',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(connResetError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(connResetError);
             await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -897,16 +894,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(connRefusedError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(connRefusedError);
             await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -928,16 +916,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license/accesstypeoverview',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(httpError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(httpError);
             await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -955,16 +934,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(genericError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(genericError);
             await mod.setupQlikSenseServerLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -982,16 +952,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license/accesstypeoverview',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(customError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(customError);
             await mod.setupQlikSenseAccessLicenseMonitor(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
@@ -1011,16 +972,7 @@ describe('qseow/qliksense_license', () => {
                 url: 'license/professionalaccesstype/full',
             };
 
-            const qrsInstance = makeQrs();
-            qrsInstance.Get = jest.fn().mockRejectedValue(releaseError);
-            jest.unstable_mockModule('../../qrs_client.js', () => ({
-                default: function QrsClient() {
-                    return qrsInstance;
-                },
-            }));
-
-            const mod = await import('../qliksense_license.js');
-            const configObj = { get: (p) => getByPath(cfg, p) };
+            const { mod, configObj } = await setupMockAndRunTest(releaseError);
             await mod.setupQlikSenseLicenseRelease(configObj, logger);
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));

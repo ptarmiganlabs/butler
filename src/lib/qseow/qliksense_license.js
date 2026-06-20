@@ -39,7 +39,6 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         if (err.config.method) parts.push(`method: ${err.config.method.toUpperCase()}`);
         if (err.config.timeout) parts.push(`timeout: ${err.config.timeout}ms`);
         if (err.config.baseURL) parts.push(`baseURL: ${err.config.baseURL}`);
-        if (err.config.url) parts.push(`url: ${err.config.url}`);
     }
 
     // Response context (if server responded)
@@ -94,21 +93,19 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
  * @param {Object} logger - The logger object.
  */
 async function checkQlikSenseServerLicenseStatus(config, logger) {
-    // Set up Sense repository service configuration
-    const configQRS = {
-        hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: globals.config.get('Butler.configQRS.port'),
-        certificates: {
-            certFile: globals.configQRS.certPaths.certPath,
-            keyFile: globals.configQRS.certPaths.keyPath,
-        },
-    };
-
     try {
-        // Merge YAML-configured headers with hardcoded headers
-        configQRS.headers = {
-            ...globals.getQRSHttpHeaders(),
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        // Set up Sense repository service configuration
+        const configQRS = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            certificates: {
+                certFile: globals.configQRS.certPaths.certPath,
+                keyFile: globals.configQRS.certPaths.keyPath,
+            },
+            headers: {
+                ...globals.getQRSHttpHeaders(),
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            },
         };
 
         const qrsInstance = new QrsClient(configQRS);
@@ -281,7 +278,11 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
             }
         }
     } catch (err) {
-        const errorContext = formatQrsErrorWithContext(err, 'license', configQRS);
+        const qrsConfig = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+        };
+        const errorContext = formatQrsErrorWithContext(err, 'license', qrsConfig);
         logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: Request failed - ${errorContext}`);
     }
 }
@@ -293,21 +294,19 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
  * @param {Object} logger - The logger object.
  */
 async function checkQlikSenseAccessLicenseStatus(config, logger) {
-    // Set up Sense repository service configuration
-    const configQRS = {
-        hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: globals.config.get('Butler.configQRS.port'),
-        certificates: {
-            certFile: globals.configQRS.certPaths.certPath,
-            keyFile: globals.configQRS.certPaths.keyPath,
-        },
-    };
-
     try {
-        // Merge YAML-configured headers with hardcoded headers
-        configQRS.headers = {
-            ...globals.getQRSHttpHeaders(),
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        // Set up Sense repository service configuration
+        const configQRS = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            certificates: {
+                certFile: globals.configQRS.certPaths.certPath,
+                keyFile: globals.configQRS.certPaths.keyPath,
+            },
+            headers: {
+                ...globals.getQRSHttpHeaders(),
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            },
         };
 
         const qrsInstance = new QrsClient(configQRS);
@@ -334,7 +333,11 @@ async function checkQlikSenseAccessLicenseStatus(config, logger) {
             await postQlikSenseLicenseStatusToInfluxDB(result1.body);
         }
     } catch (err) {
-        const errorContext = formatQrsErrorWithContext(err, 'license/accesstypeoverview', configQRS);
+        const qrsConfig = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+        };
+        const errorContext = formatQrsErrorWithContext(err, 'license/accesstypeoverview', qrsConfig);
         logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: Request failed - ${errorContext}`);
     }
 }
@@ -930,21 +933,19 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
  * @returns {boolean} - Returns true if licenses are successfully checked and released, false otherwise.
  */
 async function checkQlikSenseLicenseRelease(config, logger) {
-    // Set up Sense repository service configuration
-    const configQRS = {
-        hostname: globals.config.get('Butler.configQRS.host'),
-        portNumber: globals.config.get('Butler.configQRS.port'),
-        certificates: {
-            certFile: globals.configQRS.certPaths.certPath,
-            keyFile: globals.configQRS.certPaths.keyPath,
-        },
-    };
-
     try {
-        // Merge YAML-configured headers with hardcoded headers
-        configQRS.headers = {
-            ...globals.getQRSHttpHeaders(),
-            'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+        // Set up Sense repository service configuration
+        const configQRS = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+            certificates: {
+                certFile: globals.configQRS.certPaths.certPath,
+                keyFile: globals.configQRS.certPaths.keyPath,
+            },
+            headers: {
+                ...globals.getQRSHttpHeaders(),
+                'X-Qlik-User': 'UserDirectory=Internal; UserId=sa_repository',
+            },
         };
 
         const qrsInstance = new QrsClient(configQRS);
@@ -973,7 +974,11 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 
         return true;
     } catch (err) {
-        const errorContext = formatQrsErrorWithContext(err, 'license-release', configQRS);
+        const qrsConfig = {
+            hostname: globals.config.get('Butler.configQRS.host'),
+            portNumber: globals.config.get('Butler.configQRS.port'),
+        };
+        const errorContext = formatQrsErrorWithContext(err, 'license-release', qrsConfig);
         logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: Request failed - ${errorContext}`);
         return false;
     }
