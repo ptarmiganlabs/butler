@@ -37,6 +37,12 @@ describe('qrs_util/get_tasks', () => {
         expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=tags.name eq 'nightly'");
     });
 
+    test('escapes single quotes in tag filter', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ tag: "night's" });
+        expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=tags.name eq 'night''s'");
+    });
+
     test('returns tasks for customProperty filter', async () => {
         mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [{ id: 't3', name: 'C' }] });
         const res = await getTasks({ customProperty: { name: 'env', value: 'prod' } });

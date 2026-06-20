@@ -15,7 +15,9 @@ import globals from '../globals.js';
 export async function isCustomPropertyValueSet(taskId, cpName, cpValue, logger) {
     const localLogger = logger !== undefined ? logger : globals.logger;
     let qrsConfig;
-    const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}' and customProperties.value eq '${cpValue}'`;
+    const customPropertyName = cpName.replaceAll("'", "''");
+    const customPropertyValue = cpValue.replaceAll("'", "''");
+    const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${customPropertyName}' and customProperties.value eq '${customPropertyValue}'`;
 
     localLogger.debug(`Checking if value "${cpValue}" is set for custom property "${cpName}"`);
 
@@ -80,7 +82,8 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
     globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
     let qrsConfig;
-    const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${cpName}'`;
+    const customPropertyName = cpName.replaceAll("'", "''");
+    const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${customPropertyName}'`;
 
     try {
         // Get http headers from Butler config file

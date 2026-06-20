@@ -52,6 +52,7 @@ describe('qrs_util/get_app_owner', () => {
         const res = await getAppOwner('app1');
         expect(res).toBe(false);
         expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+        expect(mockGlobals.logger.error).toHaveBeenCalledTimes(1);
     });
 
     test('returns false when step 2 fails', async () => {

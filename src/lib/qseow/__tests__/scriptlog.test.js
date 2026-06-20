@@ -2,6 +2,8 @@ import { jest } from '@jest/globals';
 
 // Mocks for QRS, axios, https, luxon formatting is not critical here.
 const qrsGetMock = jest.fn();
+const originalMockResolvedValue = qrsGetMock.mockResolvedValue.bind(qrsGetMock);
+const originalMockResolvedValueOnce = qrsGetMock.mockResolvedValueOnce.bind(qrsGetMock);
 class QrsClientMock {
     constructor() {}
     Get(path) {
@@ -63,9 +65,6 @@ beforeEach(() => {
     jest.clearAllMocks();
     fsWrites.mkdir.length = 0;
     fsWrites.write.length = 0;
-
-    const originalMockResolvedValue = qrsGetMock.mockResolvedValue.bind(qrsGetMock);
-    const originalMockResolvedValueOnce = qrsGetMock.mockResolvedValueOnce.bind(qrsGetMock);
 
     qrsGetMock.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
     qrsGetMock.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
@@ -508,7 +507,9 @@ test('getScriptLog falls back when deprecated reference lookup returns non-200 r
 
     expect(res).not.toBe(false);
     expect(res.scriptLogFull).toEqual(['line1', 'line2']);
-    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Unexpected reference response - endpoint: reloadtask/task-1/scriptlog?fileReferenceId=ref-1'));
+    expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Unexpected reference response - endpoint: reloadtask/task-1/scriptlog?fileReferenceId=ref-1'),
+    );
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Trying new API as fallback'));
 });

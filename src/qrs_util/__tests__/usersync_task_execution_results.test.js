@@ -30,6 +30,8 @@ jest.unstable_mockModule('../../globals.js', () => ({
 const mockQrsClient = {
     Get: jest.fn(),
 };
+const originalMockResolvedValue = mockQrsClient.Get.mockResolvedValue.bind(mockQrsClient.Get);
+const originalMockResolvedValueOnce = mockQrsClient.Get.mockResolvedValueOnce.bind(mockQrsClient.Get);
 
 jest.unstable_mockModule('../../lib/qrs_client.js', () => ({
     default: jest.fn(() => mockQrsClient),
@@ -41,9 +43,6 @@ const QrsClient = (await import('../../lib/qrs_client.js')).default;
 describe('getUserSyncTaskExecutionResults', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-
-        const originalMockResolvedValue = mockQrsClient.Get.mockResolvedValue.bind(mockQrsClient.Get);
-        const originalMockResolvedValueOnce = mockQrsClient.Get.mockResolvedValueOnce.bind(mockQrsClient.Get);
 
         mockQrsClient.Get.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
         mockQrsClient.Get.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });

@@ -40,7 +40,8 @@ const getTasks = async (filter) => {
         try {
             // Handle tag filter - search for tasks with a specific tag
             if (filter.tag) {
-                endpoint = `task/full?filter=tags.name eq '${filter.tag}'`;
+                const tagName = filter.tag.replaceAll("'", "''");
+                endpoint = `task/full?filter=tags.name eq '${tagName}'`;
                 globals.logger.debug(`GETTASKS 1: ${endpoint}`);
 
                 // Query QRS API for tasks with the specified tag

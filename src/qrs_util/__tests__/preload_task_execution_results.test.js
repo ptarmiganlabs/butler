@@ -3,6 +3,8 @@ import { jest } from '@jest/globals';
 describe('qrs_util/preload_task_execution_results', () => {
     let getPreloadTaskExecutionResults;
     let mockQrsGet;
+    let originalMockResolvedValue;
+    let originalMockResolvedValueOnce;
     let mockLogger;
 
     const mockTaskId = '223e4567-e89b-12d3-a456-426614174001';
@@ -37,6 +39,8 @@ describe('qrs_util/preload_task_execution_results', () => {
 
     beforeAll(async () => {
         mockQrsGet = jest.fn();
+        originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
+        originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
 
         const mockQrsClient = jest.fn(() => ({
             Get: mockQrsGet,
@@ -84,9 +88,6 @@ describe('qrs_util/preload_task_execution_results', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockQrsGet.mockReset();
-
-        const originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
-        const originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
 
         mockQrsGet.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
         mockQrsGet.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });

@@ -3,6 +3,8 @@ import { jest } from '@jest/globals';
 describe('qrs_util/distribute_task_execution_results', () => {
     let getDistributeTaskExecutionResults;
     let mockQrsGet;
+    let originalMockResolvedValue;
+    let originalMockResolvedValueOnce;
     let mockLogger;
 
     const mockTaskStatusLookup = {
@@ -53,6 +55,8 @@ describe('qrs_util/distribute_task_execution_results', () => {
 
     beforeAll(async () => {
         mockQrsGet = jest.fn();
+        originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
+        originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
 
         const mockQrsClient = jest.fn(() => ({
             Get: mockQrsGet,
@@ -100,9 +104,6 @@ describe('qrs_util/distribute_task_execution_results', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockQrsGet.mockReset();
-
-        const originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
-        const originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
 
         mockQrsGet.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
         mockQrsGet.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });

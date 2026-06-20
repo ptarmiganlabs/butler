@@ -29,38 +29,32 @@ const getAppOwner = async (appId) => {
         const qrsInstance = new QrsClient(qrsConfig);
 
         // Step 1: Get app owner's userdirectory and userid
-        let appOwner = null;
-        try {
-            globals.logger.debug(`APPOWNER 1: ${appEndpoint}`);
-            const result = await qrsInstance.Get(appEndpoint);
-            globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app ID ${appId}`);
+        globals.logger.debug(`APPOWNER 1: ${appEndpoint}`);
+        const result = await qrsInstance.Get(appEndpoint);
+        globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app ID ${appId}`);
 
-            if (!hasExpectedQrsStatus(result) || !result.body?.owner) {
-                globals.logger.error(
-                    `APPOWNER: Unexpected app owner response: ${formatQrsResultWithContext(result, appEndpoint, qrsConfig, {
-                        method: 'GET',
-                        expectedStatusCodes: [200],
-                    })}`,
-                );
-                throw new Error('Error while getting app owner');
-            }
-
-            appOwner = result.body.owner;
-        } catch (err) {
-            globals.logger.error(`APPOWNER: Error while getting app owner: ${formatQrsErrorWithContext(err, appEndpoint, qrsConfig)}`);
-            throw new Error('Error while getting app owner');
+        if (!hasExpectedQrsStatus(result) || !result.body?.owner) {
+            globals.logger.error(
+                `APPOWNER: Unexpected app owner response: ${formatQrsResultWithContext(result, appEndpoint, qrsConfig, {
+                    method: 'GET',
+                    expectedStatusCodes: [200],
+                })}`,
+            );
+            return false;
         }
+
+        const appOwner = result.body.owner;
 
         // Step 2: Get additional info about the user identified in step 1
         const userEndpoint = `user/${appOwner.id}`;
         try {
             globals.logger.debug(`APPOWNER 2: ${userEndpoint}`);
-            const result = await qrsInstance.Get(userEndpoint);
-            globals.logger.debug(`APPOWNER: Got response: ${result.statusCode} for app owner ${appOwner.id}`);
+            const userResult = await qrsInstance.Get(userEndpoint);
+            globals.logger.debug(`APPOWNER: Got response: ${userResult.statusCode} for app owner ${appOwner.id}`);
 
-            if (!hasExpectedQrsStatus(result) || !Array.isArray(result.body?.attributes)) {
+            if (!hasExpectedQrsStatus(userResult) || !Array.isArray(userResult.body?.attributes)) {
                 globals.logger.error(
-                    `APPOWNER: Unexpected user details response: ${formatQrsResultWithContext(result, userEndpoint, qrsConfig, {
+                    `APPOWNER: Unexpected user details response: ${formatQrsResultWithContext(userResult, userEndpoint, qrsConfig, {
                         method: 'GET',
                         expectedStatusCodes: [200],
                     })}`,
@@ -69,7 +63,7 @@ const getAppOwner = async (appId) => {
             }
 
             // Find email attribute
-            const emailAttributes = result.body.attributes.filter((attribute) => attribute.attributeType.toLowerCase() === 'email');
+            const emailAttributes = userResult.body.attributes.filter((attribute) => attribute.attributeType.toLowerCase() === 'email');
             const resultAttributes = emailAttributes.map((attribute) => attribute.attributeValue);
 
             // if (resultAttributes.length > 0) {

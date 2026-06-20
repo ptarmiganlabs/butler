@@ -44,6 +44,14 @@ describe('qrs_util/task_cp_util', () => {
             expect(res).toBe(false);
         });
 
+        test('escapes single quotes in CP name and value', async () => {
+            mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+            await isCustomPropertyValueSet('t1', "My'CP", "v'1");
+            expect(mockQrs.Get).toHaveBeenCalledWith(
+                "task/full?filter=id eq t1 and customProperties.definition.name eq 'My''CP' and customProperties.value eq 'v''1'",
+            );
+        });
+
         test('returns false when inner Get throws', async () => {
             mockQrs.Get.mockRejectedValueOnce(new Error('qrs err'));
             const res = await isCustomPropertyValueSet('t1', 'MyCP', 'v1');
@@ -93,6 +101,12 @@ describe('qrs_util/task_cp_util', () => {
             mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
             const res = await getTaskCustomPropertyValues('t1', 'MyCP');
             expect(res).toEqual([]);
+        });
+
+        test('escapes single quotes in CP name', async () => {
+            mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+            await getTaskCustomPropertyValues('t1', "My'CP");
+            expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=id eq t1 and customProperties.definition.name eq 'My''CP'");
         });
 
         test('returns [] when inner Get throws', async () => {
