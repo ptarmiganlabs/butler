@@ -82,7 +82,7 @@ export async function getTaskCustomPropertyValues(taskId, cpName) {
     globals.logger.debug(`GETTASKCPVALUE: Retrieving all values for custom property "${cpName}" of reload task ${taskId}`);
 
     let qrsConfig;
-    const customPropertyName = cpName.replaceAll("'", "''");
+    const customPropertyName = String(cpName).replaceAll("'", "''");
     const endpoint = `task/full?filter=id eq ${taskId} and customProperties.definition.name eq '${customPropertyName}'`;
 
     try {
