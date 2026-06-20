@@ -50,10 +50,31 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
     if (err.address) parts.push(`address: ${err.address}`);
 
     // Any other enumerable properties (future-proof)
-    const knownKeys = new Set(['code', 'message', 'config', 'response', 'errno', 'syscall', 'hostname', 'address', 'stack', 'name']);
+    const knownKeys = new Set([
+        'code',
+        'message',
+        'config',
+        'response',
+        'request',
+        'errno',
+        'syscall',
+        'hostname',
+        'address',
+        'stack',
+        'name',
+        'isAxiosError',
+        'toJSON',
+    ]);
     Object.keys(err).forEach((key) => {
         if (!knownKeys.has(key) && err[key] !== undefined && err[key] !== null) {
-            const value = typeof err[key] === 'object' ? JSON.stringify(err[key]) : err[key];
+            let value = err[key];
+            if (typeof value === 'object') {
+                try {
+                    value = JSON.stringify(value);
+                } catch {
+                    value = '[unserializable]';
+                }
+            }
             parts.push(`${key}: ${value}`);
         }
     });
