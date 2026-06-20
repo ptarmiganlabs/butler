@@ -412,9 +412,10 @@ export const configFileNewRelicAssert = async (config, configQRS, logger) => {
     ) {
         // Get custom property values
         try {
-            const endpoint = `custompropertydefinition/full?filter=name eq '${config.get(
-                'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
-            )}'`;
+            const customPropertyName = String(
+                config.get('Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName'),
+            ).replaceAll("'", "''");
+            const endpoint = `custompropertydefinition/full?filter=name eq '${customPropertyName}'`;
             logger.debug(
                 `ASSERT CONFIG NEW RELIC 1: Custom property name: ${config.get(
                     'Butler.incidentTool.newRelic.reloadTaskFailure.destination.log.sendToAccount.byCustomProperty.customPropertyName',
