@@ -128,10 +128,9 @@ function buildQrsConfig() {
  * @returns {Object} QRS configuration with hostname and portNumber
  */
 function getQrsErrorConfig() {
-    const fullConfig = buildQrsConfig();
     return {
-        hostname: fullConfig.hostname,
-        portNumber: fullConfig.portNumber,
+        hostname: globals.config.get('Butler.configQRS.host'),
+        portNumber: globals.config.get('Butler.configQRS.port'),
     };
 }
 
