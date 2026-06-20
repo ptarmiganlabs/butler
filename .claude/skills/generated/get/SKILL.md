@@ -24,14 +24,14 @@ description: "Skill for the Get area of butler. 7 symbols across 1 files."
 Start here when exploring this area:
 
 - **`getDeduplicationCacheSize`** (Method) — `src/lib/udp_queue_manager.js:466`
-- **`getMetrics`** (Method) — `src/lib/udp_queue_manager.js:729`
+- **`getMetrics`** (Method) — `src/lib/udp_queue_manager.js:748`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `getDeduplicationCacheSize` | Method | `src/lib/udp_queue_manager.js` | 466 |
-| `getMetrics` | Method | `src/lib/udp_queue_manager.js` | 729 |
+| `getMetrics` | Method | `src/lib/udp_queue_manager.js` | 748 |
 | `getValues` | Method | `src/lib/udp_queue_manager.js` | 175 |
 | `getPercentile95` | Method | `src/lib/udp_queue_manager.js` | 191 |
 | `getAverage` | Method | `src/lib/udp_queue_manager.js` | 204 |
