@@ -311,8 +311,9 @@ export class UdpQueueManager {
      * @param {object} config.rateLimit - Rate limit configuration
      * @param {boolean} config.rateLimit.enable - Enable rate limiting
      * @param {number} config.rateLimit.maxMessagesPerMinute - Max messages per minute
-     * @param {boolean} [config.deduplicationEnable] - Enable executionId-based deduplication (optional, defaults to true)
-     * @param {number} [config.deduplicationTtlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
+     * @param {object} [config.deduplication] - Deduplication configuration (optional)
+     * @param {boolean} [config.deduplication.enable] - Enable executionId-based deduplication (optional, defaults to true)
+     * @param {number} [config.deduplication.ttlMinutes] - Deduplication TTL in minutes (optional, defaults to 10)
      * @param {number} [config.maxMessageSize] - Maximum message size in bytes (optional)
      * @param {object} logger - Logger instance
      * @param {string} queueType - Type of queue ('task_results' or other identifier)
@@ -330,9 +331,11 @@ export class UdpQueueManager {
             throw new Error('[UDP Queue] Invalid messageQueue.backpressureThreshold: must be a percentage value between 0 and 100');
         }
 
-        const deduplicationEnable = typeof config?.deduplicationEnable === 'boolean' ? config.deduplicationEnable : true;
+        const deduplicationEnable = typeof config?.deduplication?.enable === 'boolean' ? config.deduplication.enable : true;
         const deduplicationTtlMinutes =
-            typeof config?.deduplicationTtlMinutes === 'number' && config.deduplicationTtlMinutes > 0 ? config.deduplicationTtlMinutes : 10;
+            typeof config?.deduplication?.ttlMinutes === 'number' && config.deduplication.ttlMinutes > 0
+                ? config.deduplication.ttlMinutes
+                : 10;
 
         this.config = {
             ...config,

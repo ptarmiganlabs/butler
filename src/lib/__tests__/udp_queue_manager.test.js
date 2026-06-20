@@ -219,7 +219,9 @@ describe('UdpQueueManager', () => {
                     enable: false,
                     maxMessagesPerMinute: 100,
                 },
-                deduplicationTtlMinutes: 0.0001,
+                deduplication: {
+                    ttlMinutes: 0.0001,
+                },
                 maxMessageSize: 65507,
             },
             mockLogger,
@@ -252,8 +254,10 @@ describe('UdpQueueManager', () => {
                     enable: false,
                     maxMessagesPerMinute: 100,
                 },
-                deduplicationEnable: false,
-                deduplicationTtlMinutes: 10,
+                deduplication: {
+                    enable: false,
+                    ttlMinutes: 10,
+                },
                 maxMessageSize: 65507,
             },
             mockLogger,

@@ -1006,8 +1006,10 @@ Butler:
             enable: false # Enable rate limiting to prevent message flooding
             maxMessagesPerMinute: 600 # Max messages per minute (~10/second)
 
-        deduplicationEnable: true # Set to false to disable executionId-based duplicate suppression for scheduler UDP messages.
-        deduplicationTtlMinutes: 10 # Keep successful scheduler executionIds deduplicated for this many minutes.
+        # Deduplication settings for scheduler UDP messages
+        deduplication:
+            enable: true # Set to false to disable executionId-based duplicate suppression for scheduler UDP messages.
+            ttlMinutes: 10 # Keep successful scheduler executionIds deduplicated for this many minutes.
 
         # Queue metrics (optional - requires InfluxDB)
         queueMetrics:
