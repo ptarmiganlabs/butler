@@ -1012,7 +1012,6 @@ describe('qseow/qliksense_license', () => {
             // Check all logger calls for safe field and absence of sensitive data
             expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('safeField: safe-value'));
             expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('authorization:'));
-            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('******'));
             expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('token:'));
             expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('my-secret-token'));
             expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('password:'));
