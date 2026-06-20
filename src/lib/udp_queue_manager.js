@@ -545,25 +545,27 @@ export class UdpQueueManager {
      */
     async addToQueue(processFunction, options = {}) {
         let queueSize;
+        let isQueueFull = false;
         const release = await this.metricsMutex.acquire();
         try {
             this.metrics.messagesReceived++;
 
             // Check if queue is full
             if (this.queue.size >= this.config.messageQueue.maxSize) {
-                this.metrics.messagesDroppedTotal++;
-                this.metrics.messagesDroppedQueueFull++;
-                this.droppedSinceLastLog.queueFull++;
-                this.logDroppedMessages();
-                return false;
+                isQueueFull = true;
+            } else {
+                this.metrics.messagesQueued++;
+
+                // Capture queue size while holding mutex to avoid race condition
+                queueSize = this.queue.size;
             }
-
-            this.metrics.messagesQueued++;
-
-            // Capture queue size while holding mutex to avoid race condition
-            queueSize = this.queue.size;
         } finally {
             release();
+        }
+
+        if (isQueueFull) {
+            await this.handleQueueFullDrop();
+            return false;
         }
 
         // Check backpressure with captured queue size
@@ -666,6 +668,23 @@ export class UdpQueueManager {
         }
 
         return 'queued';
+    }
+
+    /**
+     * Handle message drop due to queue being full
+     *
+     * @returns {Promise<void>}
+     */
+    async handleQueueFullDrop() {
+        const release = await this.metricsMutex.acquire();
+        try {
+            this.metrics.messagesDroppedTotal++;
+            this.metrics.messagesDroppedQueueFull++;
+            this.droppedSinceLastLog.queueFull++;
+        } finally {
+            release();
+        }
+        this.logDroppedMessages();
     }
 
     /**

@@ -61,28 +61,42 @@ describe('UdpQueueManager', () => {
     });
 
     test('should drop message when queue is full', async () => {
-        // p-queue's size property tracks waiting tasks (not running)
-        // maxSize is 10, so we can have up to 10 waiting
-        // Add 12 tasks: 2 will run immediately, 10 will wait (filling the queue)
-        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+        let releaseBlockingTask;
+        const blockingFn = () =>
+            new Promise((resolve) => {
+                releaseBlockingTask = () => resolve(true);
+            });
 
-        // Add 12 tasks - first 2 start running, next 10 wait
-        for (let i = 0; i < 12; i++) {
-            const result = await queueManager.addToQueue(slowFn);
-            expect(result).toBe(true); // First 12 should succeed
-        }
+        const smallQueueConfig = {
+            messageQueue: {
+                enable: true,
+                maxConcurrent: 1,
+                maxSize: 1,
+                backpressureThreshold: 80,
+            },
+            rateLimit: {
+                enable: false,
+                maxMessagesPerMinute: 100,
+            },
+            maxMessageSize: 65507,
+        };
+        const smallQueue = new UdpQueueManager(smallQueueConfig, mockLogger, 'small_queue');
 
-        // Wait a bit for queue to update
-        await new Promise((r) => setTimeout(r, 100));
+        const firstResult = await smallQueue.addToQueue(blockingFn);
+        expect(firstResult).toBe(true);
 
-        // Now queue should be full (10 waiting, 2 running)
-        // Try to add one more - should be dropped since waiting count >= maxSize
-        const result = await queueManager.addToQueue(() => Promise.resolve());
-        expect(result).toBe(false);
+        const secondResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(secondResult).toBe(true);
 
-        // Check metrics
-        const metrics = await queueManager.getMetrics();
+        const thirdResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(thirdResult).toBe(false);
+
+        const metrics = await smallQueue.getMetrics();
         expect(metrics.messagesDroppedQueueFull).toBe(1);
+
+        releaseBlockingTask();
+        await smallQueue.queue.clear();
+        smallQueue.destroy();
     });
 
     test('should get metrics', async () => {
@@ -159,18 +173,40 @@ describe('UdpQueueManager', () => {
     });
 
     test('should release executionId when queue admission fails', async () => {
-        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
+        let releaseBlockingTask;
+        const blockingFn = () =>
+            new Promise((resolve) => {
+                releaseBlockingTask = () => resolve(true);
+            });
 
-        for (let i = 0; i < 12; i++) {
-            const result = await queueManager.addToQueue(slowFn);
-            expect(result).toBe(true);
-        }
+        const smallQueueConfig = {
+            messageQueue: {
+                enable: true,
+                maxConcurrent: 1,
+                maxSize: 1,
+                backpressureThreshold: 80,
+            },
+            rateLimit: {
+                enable: false,
+                maxMessagesPerMinute: 100,
+            },
+            maxMessageSize: 65507,
+        };
+        const smallQueue = new UdpQueueManager(smallQueueConfig, mockLogger, 'small_queue_dedup');
 
-        await new Promise((r) => setTimeout(r, 100));
+        const firstResult = await smallQueue.addToQueue(blockingFn);
+        expect(firstResult).toBe(true);
 
-        const queued = await queueManager.enqueueDeduplicated('exec-queue-full', () => Promise.resolve(true));
+        const secondResult = await smallQueue.addToQueue(() => Promise.resolve());
+        expect(secondResult).toBe(true);
+
+        const queued = await smallQueue.enqueueDeduplicated('exec-queue-full', () => Promise.resolve(true));
         expect(queued).toBe('queue_full');
-        expect(queueManager.checkDuplicate('exec-queue-full')).toBe(false);
+        expect(smallQueue.checkDuplicate('exec-queue-full')).toBe(false);
+
+        releaseBlockingTask();
+        await smallQueue.queue.clear();
+        smallQueue.destroy();
     });
 
     test('should release executionId when queued processing returns false', async () => {
@@ -373,13 +409,8 @@ describe('UdpQueueManager', () => {
         // Trigger duplicate drop
         await queueManager.handleDuplicateDrop();
 
-        // Trigger queue full drop by filling the queue
-        const slowFn = () => new Promise((r) => setTimeout(r, 5000));
-        for (let i = 0; i < 12; i++) {
-            await queueManager.addToQueue(slowFn);
-        }
-        await new Promise((r) => setTimeout(r, 100));
-        await queueManager.addToQueue(() => Promise.resolve());
+        // Trigger queue full drop directly
+        await queueManager.handleQueueFullDrop();
 
         // Force the time check to pass
         queueManager.lastDropLog = 0;

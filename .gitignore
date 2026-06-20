@@ -30,6 +30,8 @@ dir2/dir3/file1.txt
 dir2/dir3/file2.txt
 output.txt
 
+.opencode/plans/*
+
 doc/*
 src/udp_client/node_modules/*
 npm-debug.log
