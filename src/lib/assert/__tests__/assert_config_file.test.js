@@ -398,6 +398,50 @@ describe('assert_config_file', () => {
             expect(logger.error).not.toHaveBeenCalled();
         });
 
+        test('should fail when QRS custom property lookup returns non-200 response', async () => {
+            qrsInteractMock.mockReturnValue({
+                Get: jest.fn().mockResolvedValue({ statusCode: 500, body: { message: 'Internal Server Error' } }),
+            });
+
+            const config = createMockConfig({
+                Butler: {
+                    configQRS: {
+                        host: 'qlik-server',
+                        port: 4242,
+                    },
+                    incidentTool: {
+                        newRelic: {
+                            reloadTaskFailure: {
+                                destination: {
+                                    event: {
+                                        sendToAccount: {
+                                            byCustomProperty: {
+                                                enable: true,
+                                                customPropertyName: 'NewRelicAccount',
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            const configQRS = {
+                certPaths: {
+                    certPath: '/path/to/cert.pem',
+                    keyPath: '/path/to/key.pem',
+                },
+            };
+
+            const result = await assertConfigModule.configFileNewRelicAssert(config, configQRS, logger);
+
+            expect(result).toBe(false);
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected QRS response'));
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+        });
+
         test('should pass when New Relic is disabled', async () => {
             const config = createMockConfig({
                 Butler: {

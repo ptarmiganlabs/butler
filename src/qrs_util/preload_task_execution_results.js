@@ -13,6 +13,7 @@
  */
 
 import QrsClient from '../lib/qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../lib/qrs_error.js';
 import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
 import { compareTaskDetails } from './task_execution_details_sort.js';
@@ -56,9 +57,12 @@ const taskStatusLookup = {
  *   Returns false if an error occurs.
  */
 export default async function getPreloadTaskExecutionResults(preloadTaskId) {
+    const endpoint = `reloadtask/${preloadTaskId}`;
+    let configQRS;
+
     try {
         // Set up Sense repository service configuration with certificates for authentication
-        const configQRS = {
+        configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
@@ -79,9 +83,23 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
 
         // Query the reloadtask endpoint to get preload task details
         // Note: Using reloadtask endpoint even for preload tasks (QRS API design)
-        const endpoint = `reloadtask/${preloadTaskId}`;
         globals.logger.verbose(`[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
+
+        if (!hasExpectedQrsStatus(result1) || !result1.body?.operational?.lastExecutionResult) {
+            globals.logger.error(
+                `[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: Unexpected QRS response for task ${preloadTaskId}: ${formatQrsResultWithContext(
+                    result1,
+                    endpoint,
+                    configQRS,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         globals.logger.debug(`[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: body: ${JSON.stringify(result1.body)}`);
 
@@ -192,7 +210,11 @@ export default async function getPreloadTaskExecutionResults(preloadTaskId) {
         return taskInfo;
     } catch (err) {
         globals.logger.error(
-            `[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: Error getting preload task execution results for task ${preloadTaskId}: ${globals.getErrorMessage(err)}`,
+            `[QSEOW] GET PRELOAD TASK EXECUTION RESULTS: Error getting preload task execution results for task ${preloadTaskId}: ${formatQrsErrorWithContext(
+                err,
+                endpoint,
+                configQRS,
+            )}`,
         );
         return false;
     }

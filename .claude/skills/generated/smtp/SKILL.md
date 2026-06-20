@@ -1,11 +1,11 @@
 ---
 name: smtp
-description: "Skill for the Smtp area of butler. 33 symbols across 19 files."
+description: "Skill for the Smtp area of butler. 29 symbols across 18 files."
 ---
 
 # Smtp
 
-33 symbols | 19 files | Cohesion: 65%
+29 symbols | 18 files | Cohesion: 64%
 
 ## When to Use
 
@@ -18,22 +18,22 @@ description: "Skill for the Smtp area of butler. 33 symbols across 19 files."
 | File | Symbols |
 |------|---------|
 | `src/lib/qseow/smtp/config.js` | isSmtpConfigOk, isEmailReloadSuccessNotificationConfigOk, isEmailReloadFailedNotificationConfigOk, isEmailReloadAbortedNotificationConfigOk, isEmailPreloadSuccessNotificationConfigOk (+3) |
-| `src/lib/qseow/slack_notification.js` | getSlackReloadFailedNotificationConfigOk, sendReloadTaskFailureNotificationSlack, escapeForJson, sendReloadTaskAbortedNotificationSlack |
 | `src/lib/qseow/msteams_notification.js` | sendTeams, sendReloadTaskFailureNotificationTeams, sendReloadTaskAbortedNotificationTeams |
 | `src/lib/assert/assert_config_file.js` | configFileStructureAssert, validate |
 | `src/lib/smtp_core.js` | sendEmail, sendEmailBasic |
 | `src/lib/qseow/get_qs_urls.js` | getQlikSenseUrls |
-| `src/lib/qseow/scriptlog.js` | failedTaskStoreLogOnDisk |
+| `src/lib/qseow/slack_notification.js` | sendReloadTaskAbortedNotificationSlack |
 | `src/lib/qseow/smtp/distribute-task-failed.js` | sendDistributeTaskFailureNotificationEmail |
 | `src/lib/qseow/smtp/distribute-task-success.js` | sendDistributeTaskSuccessNotificationEmail |
 | `src/lib/qseow/smtp/preload-task-failed.js` | sendPreloadTaskFailureNotificationEmail |
+| `src/lib/qseow/smtp/preload-task-success.js` | sendPreloadTaskSuccessNotificationEmail |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`configFileStructureAssert`** (Function) — `src/lib/assert/assert_config_file.js:717`
-- **`validate`** (Function) — `src/lib/assert/assert_config_file.js:742`
+- **`configFileStructureAssert`** (Function) — `src/lib/assert/assert_config_file.js:735`
+- **`validate`** (Function) — `src/lib/assert/assert_config_file.js:760`
 - **`getQlikSenseUrls`** (Function) — `src/lib/qseow/get_qs_urls.js:20`
 - **`sendReloadTaskFailureNotificationTeams`** (Function) — `src/lib/qseow/msteams_notification.js:433`
 - **`sendReloadTaskAbortedNotificationTeams`** (Function) — `src/lib/qseow/msteams_notification.js:649`
@@ -42,14 +42,11 @@ Start here when exploring this area:
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `configFileStructureAssert` | Function | `src/lib/assert/assert_config_file.js` | 717 |
-| `validate` | Function | `src/lib/assert/assert_config_file.js` | 742 |
+| `configFileStructureAssert` | Function | `src/lib/assert/assert_config_file.js` | 735 |
+| `validate` | Function | `src/lib/assert/assert_config_file.js` | 760 |
 | `getQlikSenseUrls` | Function | `src/lib/qseow/get_qs_urls.js` | 20 |
 | `sendReloadTaskFailureNotificationTeams` | Function | `src/lib/qseow/msteams_notification.js` | 433 |
 | `sendReloadTaskAbortedNotificationTeams` | Function | `src/lib/qseow/msteams_notification.js` | 649 |
-| `failedTaskStoreLogOnDisk` | Function | `src/lib/qseow/scriptlog.js` | 416 |
-| `sendReloadTaskFailureNotificationSlack` | Function | `src/lib/qseow/slack_notification.js` | 441 |
-| `escapeForJson` | Function | `src/lib/qseow/slack_notification.js` | 579 |
 | `sendReloadTaskAbortedNotificationSlack` | Function | `src/lib/qseow/slack_notification.js` | 657 |
 | `isSmtpConfigOk` | Function | `src/lib/qseow/smtp/config.js` | 102 |
 | `isEmailReloadSuccessNotificationConfigOk` | Function | `src/lib/qseow/smtp/config.js` | 122 |
@@ -62,17 +59,20 @@ Start here when exploring this area:
 | `sendDistributeTaskFailureNotificationEmail` | Function | `src/lib/qseow/smtp/distribute-task-failed.js` | 11 |
 | `sendDistributeTaskSuccessNotificationEmail` | Function | `src/lib/qseow/smtp/distribute-task-success.js` | 11 |
 | `sendPreloadTaskFailureNotificationEmail` | Function | `src/lib/qseow/smtp/preload-task-failed.js` | 11 |
+| `sendPreloadTaskSuccessNotificationEmail` | Function | `src/lib/qseow/smtp/preload-task-success.js` | 11 |
+| `sendReloadTaskAbortedNotificationEmail` | Function | `src/lib/qseow/smtp/reload-task-aborted.js` | 12 |
+| `sendReloadTaskFailureNotificationEmail` | Function | `src/lib/qseow/smtp/reload-task-failed.js` | 12 |
 
 ## Execution Flows
 
 | Flow | Type | Steps |
 |------|------|-------|
-| `HandleFailedReloadTask → GetQRSHttpHeaders` | cross_community | 4 |
-| `HandleFailedReloadTask → QrsClient` | cross_community | 4 |
-| `HandleFailedReloadTask → Get` | cross_community | 4 |
+| `HandleAbortedReloadTask → GetQRSHttpHeaders` | cross_community | 4 |
+| `HandleAbortedReloadTask → QrsClient` | cross_community | 4 |
 | `HandleFailedPreloadTask → GetQRSHttpHeaders` | cross_community | 4 |
 | `HandleFailedPreloadTask → QrsClient` | cross_community | 4 |
 | `HandleFailedPreloadTask → Get` | cross_community | 4 |
+| `HandleFailedPreloadTask → HasExpectedQrsStatus` | cross_community | 4 |
 | `HandleFailedPreloadTask → GetErrorMessage` | cross_community | 4 |
 | `HandleFailedDistributeTask → GetQRSHttpHeaders` | cross_community | 4 |
 | `HandleFailedDistributeTask → QrsClient` | cross_community | 4 |
@@ -82,10 +82,9 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Qseow | 33 calls |
-| Qrs_util | 10 calls |
+| Qseow | 27 calls |
+| Qrs_util | 14 calls |
 | Incident_mgmt | 5 calls |
-| Influxdb | 1 calls |
 
 ## How to Explore
 

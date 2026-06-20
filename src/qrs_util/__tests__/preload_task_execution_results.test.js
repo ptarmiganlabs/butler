@@ -3,6 +3,8 @@ import { jest } from '@jest/globals';
 describe('qrs_util/preload_task_execution_results', () => {
     let getPreloadTaskExecutionResults;
     let mockQrsGet;
+    let originalMockResolvedValue;
+    let originalMockResolvedValueOnce;
     let mockLogger;
 
     const mockTaskId = '223e4567-e89b-12d3-a456-426614174001';
@@ -37,6 +39,8 @@ describe('qrs_util/preload_task_execution_results', () => {
 
     beforeAll(async () => {
         mockQrsGet = jest.fn();
+        originalMockResolvedValue = mockQrsGet.mockResolvedValue.bind(mockQrsGet);
+        originalMockResolvedValueOnce = mockQrsGet.mockResolvedValueOnce.bind(mockQrsGet);
 
         const mockQrsClient = jest.fn(() => ({
             Get: mockQrsGet,
@@ -84,6 +88,9 @@ describe('qrs_util/preload_task_execution_results', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockQrsGet.mockReset();
+
+        mockQrsGet.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+        mockQrsGet.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
     });
 
     test('returns preload task execution details for successful execution', async () => {
@@ -163,6 +170,15 @@ describe('qrs_util/preload_task_execution_results', () => {
 
         expect(result).toBe(false);
         expect(mockLogger.error).toHaveBeenCalled();
+    });
+
+    test('returns false on unexpected HTTP status response', async () => {
+        mockQrsGet.mockResolvedValue({ statusCode: 500, body: { message: 'Internal Server Error' } });
+
+        const result = await getPreloadTaskExecutionResults(mockTaskId);
+
+        expect(result).toBe(false);
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     });
 
     test('handles aborted task status', async () => {

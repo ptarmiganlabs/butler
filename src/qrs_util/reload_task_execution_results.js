@@ -6,6 +6,7 @@
  */
 
 import QrsClient from '../lib/qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../lib/qrs_error.js';
 import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
 import { compareTaskDetails } from './task_execution_details_sort.js';
@@ -33,9 +34,12 @@ const taskStatusLookup = {
  * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (fileReferenceId, executionResultId, taskName, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, scriptLogSize, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
  */
 export async function getReloadTaskExecutionResults(reloadTaskId) {
+    const endpoint = `reloadtask/${reloadTaskId}`;
+    let configQRS;
+
     try {
         // Set up Sense repository service configuration
-        const configQRS = {
+        configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
@@ -54,9 +58,23 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
         // Step 1
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: reloadTaskId: ${reloadTaskId}`);
 
-        const endpoint = `reloadtask/${reloadTaskId}`;
         globals.logger.verbose(`[QSEOW] GET SCRIPT LOG 1: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
+
+        if (!hasExpectedQrsStatus(result1) || !result1.body?.operational?.lastExecutionResult) {
+            globals.logger.error(
+                `[QSEOW] GET SCRIPT LOG: Unexpected QRS response for task ${reloadTaskId}: ${formatQrsResultWithContext(
+                    result1,
+                    endpoint,
+                    configQRS,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         globals.logger.debug(`[QSEOW] GET SCRIPT LOG 1: body: ${JSON.stringify(result1.body)}`);
 
@@ -159,7 +177,7 @@ export async function getReloadTaskExecutionResults(reloadTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] GET SCRIPT LOG: ${formatQrsErrorWithContext(err, endpoint, configQRS)}`);
         return false;
     }
 }

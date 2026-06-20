@@ -44,6 +44,13 @@ describe('qrs_util/task_metadata', () => {
         expect(mockGlobals.logger.error).toHaveBeenCalled();
     });
 
+    test('returns false on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getTaskMetadata('t1');
+        expect(res).toBe(false);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
+
     test('returns false on outer error', async () => {
         mockGlobals.getQRSHttpHeaders.mockImplementation(() => {
             throw new Error('headers fail');

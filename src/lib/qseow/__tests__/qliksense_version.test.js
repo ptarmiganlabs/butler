@@ -47,19 +47,68 @@ beforeAll(async () => {
 beforeEach(() => {
     jest.clearAllMocks();
     cfg.clear();
+    globalsMock.isSea = false;
     cfg.set('Butler.qlikSenseVersion.versionMonitor.enable', true);
     cfg.set('Butler.qlikSenseVersion.versionMonitor.frequency', 'every 1 min');
     cfg.set('Butler.qlikSenseVersion.versionMonitor.host', 'sense-host');
     cfg.set('Butler.qlikSenseVersion.versionMonitor.rejectUnauthorized', false);
     cfg.set('Butler.influxDb.enable', true);
     cfg.set('Butler.qlikSenseVersion.versionMonitor.destination.influxDb.enable', true);
+    axiosMock.mockResolvedValue({
+        status: 200,
+        data: {
+            productName: 'Qlik Sense',
+            deploymentType: 'Windows',
+            version: '2024.10',
+            releaseLabel: 'May 2024',
+        },
+    });
 });
 
 test('setupQlikSenseVersionMonitor triggers axios call and posts to influx', async () => {
     await setupQlikSenseVersionMonitor({ get: (k) => cfg.get(k) }, logger);
+    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
     // One immediate call due to our mocked later.setInterval invoking callback
     expect(axiosMock).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Qlik Sense product name: Qlik Sense'));
     // With mocked later.setInterval calling back immediately + the initial call, we expect two posts
     expect(postInflux).toHaveBeenCalledTimes(2);
+});
+
+test('setupQlikSenseVersionMonitor logs contextual information for unexpected HTTP responses', async () => {
+    axiosMock.mockResolvedValue({
+        status: 503,
+        statusText: 'Service Unavailable',
+        data: { message: 'Upstream unavailable' },
+    });
+
+    await setupQlikSenseVersionMonitor({ get: (k) => cfg.get(k) }, logger);
+    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected HTTP response'));
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: /v1/systeminfo'));
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 503'));
+    expect(postInflux).not.toHaveBeenCalled();
+});
+
+test('setupQlikSenseVersionMonitor logs contextual information for thrown axios errors', async () => {
+    const error = new Error('Network timeout');
+    error.code = 'ECONNABORTED';
+    error.config = {
+        method: 'get',
+        timeout: 5000,
+        baseURL: 'https://sense-host:9032',
+        url: '/v1/systeminfo',
+    };
+    axiosMock.mockRejectedValue(error);
+
+    await setupQlikSenseVersionMonitor({ get: (k) => cfg.get(k) }, logger);
+    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: /v1/systeminfo'));
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('host: sense-host'));
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
 });

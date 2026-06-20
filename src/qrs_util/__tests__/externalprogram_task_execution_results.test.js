@@ -14,6 +14,12 @@ describe('externalprogram_task_execution_results', () => {
             Get: jest.fn(),
         };
 
+        const originalMockResolvedValue = mockQrsClient.Get.mockResolvedValue.bind(mockQrsClient.Get);
+        const originalMockResolvedValueOnce = mockQrsClient.Get.mockResolvedValueOnce.bind(mockQrsClient.Get);
+
+        mockQrsClient.Get.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+        mockQrsClient.Get.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
+
         await jest.unstable_mockModule('../../lib/qrs_client.js', () => ({
             default: jest.fn(() => mockQrsClient),
         }));
@@ -238,9 +244,8 @@ describe('externalprogram_task_execution_results', () => {
             const result = await getExternalProgramTaskExecutionResults('task-123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('Error getting external program task execution results: QRS API error'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: externalprogramtask/task-123'));
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('message: QRS API error'));
         });
 
         test('should handle error without message property', async () => {
@@ -250,9 +255,17 @@ describe('externalprogram_task_execution_results', () => {
             const result = await getExternalProgramTaskExecutionResults('task-123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('Error getting external program task execution results:'),
-            );
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNREFUSED'));
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('errno: -111'));
+        });
+
+        test('should return false on unexpected HTTP status response', async () => {
+            mockQrsClient.Get.mockResolvedValue({ statusCode: 500, body: { message: 'Internal Server Error' } });
+
+            const result = await getExternalProgramTaskExecutionResults('task-123');
+
+            expect(result).toBe(false);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
         });
 
         test('should handle network timeout', async () => {

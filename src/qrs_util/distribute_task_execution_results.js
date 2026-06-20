@@ -13,6 +13,7 @@
  */
 
 import QrsClient from '../lib/qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../lib/qrs_error.js';
 import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
 import { compareTaskDetails } from './task_execution_details_sort.js';
@@ -56,9 +57,12 @@ const taskStatusLookup = {
  *   Returns false if an error occurs.
  */
 export async function getDistributeTaskExecutionResults(distributeTaskId) {
+    const endpoint = `reloadtask/${distributeTaskId}`;
+    let configQRS;
+
     try {
         // Set up Sense repository service configuration with certificates for authentication
-        const configQRS = {
+        configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
@@ -79,9 +83,23 @@ export async function getDistributeTaskExecutionResults(distributeTaskId) {
 
         // Query the reloadtask endpoint to get distribute task details
         // Note: Using reloadtask endpoint even for distribute tasks (QRS API design)
-        const endpoint = `reloadtask/${distributeTaskId}`;
         globals.logger.verbose(`[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
+
+        if (!hasExpectedQrsStatus(result1) || !result1.body?.operational?.lastExecutionResult) {
+            globals.logger.error(
+                `[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Unexpected QRS response for task ${distributeTaskId}: ${formatQrsResultWithContext(
+                    result1,
+                    endpoint,
+                    configQRS,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         globals.logger.debug(`[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: body: ${JSON.stringify(result1.body)}`);
 
@@ -116,15 +134,13 @@ export async function getDistributeTaskExecutionResults(distributeTaskId) {
 
         return taskInfo;
     } catch (err) {
-        if (err.message) {
-            globals.logger.error(
-                `[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Error getting distribute task execution results: ${err.message}`,
-            );
-        } else {
-            globals.logger.error(
-                `[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Error getting distribute task execution results: ${JSON.stringify(err, null, 2)}`,
-            );
-        }
+        globals.logger.error(
+            `[QSEOW] GET DISTRIBUTE TASK EXECUTION RESULTS: Error getting distribute task execution results: ${formatQrsErrorWithContext(
+                err,
+                endpoint,
+                configQRS,
+            )}`,
+        );
         return false;
     }
 }

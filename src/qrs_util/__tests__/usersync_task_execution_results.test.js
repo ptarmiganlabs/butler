@@ -30,6 +30,8 @@ jest.unstable_mockModule('../../globals.js', () => ({
 const mockQrsClient = {
     Get: jest.fn(),
 };
+const originalMockResolvedValue = mockQrsClient.Get.mockResolvedValue.bind(mockQrsClient.Get);
+const originalMockResolvedValueOnce = mockQrsClient.Get.mockResolvedValueOnce.bind(mockQrsClient.Get);
 
 jest.unstable_mockModule('../../lib/qrs_client.js', () => ({
     default: jest.fn(() => mockQrsClient),
@@ -41,6 +43,9 @@ const QrsClient = (await import('../../lib/qrs_client.js')).default;
 describe('getUserSyncTaskExecutionResults', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+
+        mockQrsClient.Get.mockResolvedValue = (value) => originalMockResolvedValue({ statusCode: 200, ...value });
+        mockQrsClient.Get.mockResolvedValueOnce = (value) => originalMockResolvedValueOnce({ statusCode: 200, ...value });
 
         // Setup default config mock
         mockGlobals.config.get.mockImplementation((key) => {
@@ -313,6 +318,7 @@ describe('getUserSyncTaskExecutionResults', () => {
         test('should handle invalid response structure', async () => {
             const userSyncTaskId = 'task-invalid';
             const mockResponse = {
+                statusCode: 200,
                 body: {
                     // Missing operational property
                     name: 'Invalid Task',
@@ -325,6 +331,17 @@ describe('getUserSyncTaskExecutionResults', () => {
 
             expect(result).toBe(false);
             expect(mockGlobals.logger.error).toHaveBeenCalled();
+        });
+
+        test('should return false on unexpected HTTP status response', async () => {
+            const userSyncTaskId = 'task-http-error';
+
+            mockQrsClient.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+
+            const result = await getUserSyncTaskExecutionResults(userSyncTaskId);
+
+            expect(result).toBe(false);
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
         });
     });
 

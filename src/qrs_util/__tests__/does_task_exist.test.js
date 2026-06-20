@@ -34,6 +34,13 @@ describe('qrs_util/does_task_exist', () => {
         expect(res).toEqual({ exists: false, task: {} });
     });
 
+    test('returns exists=false and logs on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await fn('missing');
+        expect(res).toEqual({ exists: false, task: {} });
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
+
     test('returns false on QRS error path', async () => {
         mockQrs.Get.mockRejectedValueOnce(new Error('boom'));
         const res = await fn('err');

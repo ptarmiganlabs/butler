@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **butler** (2706 symbols, 5356 relationships, 226 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **butler** (2798 symbols, 5571 relationships, 234 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -40,21 +40,21 @@ This project is indexed by GitNexus as **butler** (2706 symbols, 5356 relationsh
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 | Work in the Configvis area (137 symbols) | `.claude/skills/generated/configvis/SKILL.md` |
-| Work in the Qseow area (65 symbols) | `.claude/skills/generated/qseow/SKILL.md` |
-| Work in the Qrs_util area (50 symbols) | `.claude/skills/generated/qrs-util/SKILL.md` |
+| Work in the Qseow area (80 symbols) | `.claude/skills/generated/qseow/SKILL.md` |
 | Work in the Rest_server area (48 symbols) | `.claude/skills/generated/rest-server/SKILL.md` |
-| Work in the Influxdb area (43 symbols) | `.claude/skills/generated/influxdb/SKILL.md` |
-| Work in the Smtp area (33 symbols) | `.claude/skills/generated/smtp/SKILL.md` |
+| Work in the Qrs_util area (45 symbols) | `.claude/skills/generated/qrs-util/SKILL.md` |
+| Work in the Influxdb area (44 symbols) | `.claude/skills/generated/influxdb/SKILL.md` |
+| Work in the Smtp area (29 symbols) | `.claude/skills/generated/smtp/SKILL.md` |
+| Work in the Incident_mgmt area (27 symbols) | `.claude/skills/generated/incident-mgmt/SKILL.md` |
 | Work in the Udp area (20 symbols) | `.claude/skills/generated/udp/SKILL.md` |
-| Work in the Incident_mgmt area (19 symbols) | `.claude/skills/generated/incident-mgmt/SKILL.md` |
-| Work in the Assert area (14 symbols) | `.claude/skills/generated/assert/SKILL.md` |
+| Work in the Assert area (13 symbols) | `.claude/skills/generated/assert/SKILL.md` |
 | Work in the Qscloud area (12 symbols) | `.claude/skills/generated/qscloud/SKILL.md` |
-| Work in the Api area (8 symbols) | `.claude/skills/generated/api/SKILL.md` |
-| Work in the Cluster_28 area (8 symbols) | `.claude/skills/generated/cluster-28/SKILL.md` |
+| Work in the Cluster_30 area (8 symbols) | `.claude/skills/generated/cluster-30/SKILL.md` |
 | Work in the Get area (7 symbols) | `.claude/skills/generated/get/SKILL.md` |
-| Work in the Cluster_25 area (6 symbols) | `.claude/skills/generated/cluster-25/SKILL.md` |
+| Work in the Api area (6 symbols) | `.claude/skills/generated/api/SKILL.md` |
 | Work in the Cluster_27 area (6 symbols) | `.claude/skills/generated/cluster-27/SKILL.md` |
+| Work in the Cluster_29 area (6 symbols) | `.claude/skills/generated/cluster-29/SKILL.md` |
 | Work in the Handlers area (6 symbols) | `.claude/skills/generated/handlers/SKILL.md` |
-| Work in the Cluster_30 area (5 symbols) | `.claude/skills/generated/cluster-30/SKILL.md` |
+| Work in the Cluster_32 area (5 symbols) | `.claude/skills/generated/cluster-32/SKILL.md` |
 
 <!-- gitnexus:end -->

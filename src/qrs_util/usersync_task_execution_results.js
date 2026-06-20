@@ -6,6 +6,7 @@
  */
 
 import QrsClient from '../lib/qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../lib/qrs_error.js';
 import { Duration, DateTime } from 'luxon';
 import globals from '../globals.js';
 import { compareTaskDetails } from './task_execution_details_sort.js';
@@ -33,9 +34,12 @@ const taskStatusLookup = {
  * @returns {Promise<Object|boolean>} - Returns an object containing task execution details (executionResultId, taskName, executingNodeName, executionDetailsSorted, executionDetailsConcatenated, executionStatusNum, executionStatusText, executionDuration, executionStartTime, executionStopTime), or false if an error occurs.
  */
 export async function getUserSyncTaskExecutionResults(userSyncTaskId) {
+    const endpoint = `usersynctask/${userSyncTaskId}`;
+    let configQRS;
+
     try {
         // Set up Sense repository service configuration
-        const configQRS = {
+        configQRS = {
             hostname: globals.config.get('Butler.configQRS.host'),
             portNumber: globals.config.get('Butler.configQRS.port'),
             certificates: {
@@ -53,9 +57,23 @@ export async function getUserSyncTaskExecutionResults(userSyncTaskId) {
 
         globals.logger.debug(`[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: userSyncTaskId: ${userSyncTaskId}`);
 
-        const endpoint = `usersynctask/${userSyncTaskId}`;
         globals.logger.verbose(`[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: Calling QRS endpoint: GET /qrs/${endpoint}`);
         const result1 = await qrsInstance.Get(endpoint);
+
+        if (!hasExpectedQrsStatus(result1) || !result1.body?.operational?.lastExecutionResult) {
+            globals.logger.error(
+                `[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: Unexpected QRS response for task ${userSyncTaskId}: ${formatQrsResultWithContext(
+                    result1,
+                    endpoint,
+                    configQRS,
+                    {
+                        method: 'GET',
+                        expectedStatusCodes: [200],
+                    },
+                )}`,
+            );
+            return false;
+        }
 
         globals.logger.debug(`[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: body: ${JSON.stringify(result1.body)}`);
 
@@ -155,7 +173,7 @@ export async function getUserSyncTaskExecutionResults(userSyncTaskId) {
 
         return taskInfo;
     } catch (err) {
-        globals.logger.error(`[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSEOW] GET USER SYNC TASK EXECUTION RESULTS: ${formatQrsErrorWithContext(err, endpoint, configQRS)}`);
         return false;
     }
 }

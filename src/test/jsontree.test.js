@@ -59,7 +59,7 @@ describe('JsonTree.js library validation', () => {
             expect(version).toMatch(/^\d+\.\d+\.\d+$/);
 
             // Should be version 4.0.0 or higher (indicating we have the latest)
-            const [major, minor, patch] = version.split('.').map(Number);
+            const [major] = version.split('.').map(Number);
             expect(major).toBeGreaterThanOrEqual(4);
 
             console.log(`JsonTree.js version: ${version}`);

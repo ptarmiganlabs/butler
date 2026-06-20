@@ -1,6 +1,7 @@
 import later from '@breejs/later';
 
 import QrsClient from '../qrs_client.js';
+import { formatQrsErrorWithContext, formatQrsResultWithContext, hasExpectedQrsStatus } from '../qrs_error.js';
 import globals from '../../globals.js';
 import {
     postQlikSenseLicenseStatusToInfluxDB,
@@ -8,104 +9,6 @@ import {
     postQlikSenseServerLicenseStatusToInfluxDB,
 } from '../influxdb/qlik_sense_license.js';
 import { callQlikSenseServerLicenseWebhook } from './webhook_notification.js';
-
-/**
- * Format error with full context for debugging.
- * Works with any error type - extracts all available information.
- * @param {Error|Object} err - The error object
- * @param {string} endpoint - The QRS endpoint that was called
- * @param {Object} qrsConfig - QRS configuration (hostname, port, etc.)
- * @returns {string} Formatted error message with context
- */
-function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
-    const parts = [];
-
-    // Request context
-    if (endpoint) parts.push(`endpoint: ${endpoint}`);
-    if (qrsConfig?.hostname) parts.push(`host: ${qrsConfig.hostname}`);
-    if (qrsConfig?.portNumber) parts.push(`port: ${qrsConfig.portNumber}`);
-
-    if (!err || typeof err !== 'object') {
-        if (err !== undefined) parts.push(`message: ${String(err)}`);
-        return parts.join(', ');
-    }
-
-    // Error properties (generic extraction)
-    if (err.code) parts.push(`code: ${err.code}`);
-    if (err.message) parts.push(`message: ${err.message}`);
-
-    // Axios-specific properties
-    if (err.config) {
-        if (err.config.method) parts.push(`method: ${err.config.method.toUpperCase()}`);
-        if (err.config.timeout) parts.push(`timeout: ${err.config.timeout}ms`);
-        if (err.config.baseURL) parts.push(`baseURL: ${err.config.baseURL}`);
-        if (err.config.url && err.config.url !== endpoint) parts.push(`url: ${err.config.url}`);
-    }
-
-    // Response context (if server responded)
-    if (err.response) {
-        if (err.response.status != null) parts.push(`status: ${err.response.status}`);
-        if (err.response.statusText) parts.push(`statusText: ${err.response.statusText}`);
-    }
-
-    // Network error properties (generic)
-    if (err.errno) parts.push(`errno: ${err.errno}`);
-    if (err.syscall) parts.push(`syscall: ${err.syscall}`);
-    if (err.hostname) parts.push(`hostname: ${err.hostname}`);
-    if (err.address) parts.push(`address: ${err.address}`);
-
-    // Any other enumerable properties (future-proof)
-    const knownKeys = new Set([
-        'code',
-        'message',
-        'config',
-        'response',
-        'request',
-        'errno',
-        'syscall',
-        'hostname',
-        'address',
-        'stack',
-        'name',
-        'isAxiosError',
-        'toJSON',
-    ]);
-    const sensitiveKeys = new Set([
-        'authorization',
-        'auth',
-        'token',
-        'password',
-        'cookie',
-        'secret',
-        'apikey',
-        'api_key',
-        'key',
-        'accesstoken',
-        'access_token',
-        'refreshtoken',
-        'refresh_token',
-        'privatekey',
-        'private_key',
-    ]);
-    Object.keys(err).forEach((key) => {
-        const lowerKey = key.toLowerCase();
-        const isSensitive = [...sensitiveKeys].some((s) => lowerKey.includes(s));
-        if (!knownKeys.has(key) && !isSensitive && err[key] !== undefined && err[key] !== null) {
-            let value = err[key];
-            if (typeof value === 'object') {
-                try {
-                    value = JSON.stringify(value);
-                } catch {
-                    value = '[unserializable]';
-                }
-            }
-            parts.push(`${key}: ${value}`);
-        }
-    });
-
-    if (!globals.isSea && err.stack) parts.push(`stack: ${err.stack}`);
-    return parts.join(', ');
-}
 
 /**
  * Build full QRS configuration object for QrsClient.
@@ -146,15 +49,23 @@ function getQrsErrorConfig() {
 async function checkQlikSenseServerLicenseStatus(config, logger) {
     try {
         const configQRS = buildQrsConfig();
+        const endpoint = 'license';
 
         const qrsInstance = new QrsClient(configQRS);
 
         // Get Qlik Sense server license info
-        const result = await qrsInstance.Get(`license`);
+        const result = await qrsInstance.Get(endpoint);
 
         // Is status code 200 or body is empty?
-        if (result.statusCode !== 200 || !result.body) {
-            logger.error(`[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: HTTP status code ${result.statusCode}`);
+        if (!hasExpectedQrsStatus(result) || !result.body) {
+            logger.error(
+                `[QSEOW] QLIKSENSE SERVER LICENSE MONITOR: Unexpected QRS response (HTTP status code ${result?.statusCode}): ${formatQrsResultWithContext(
+                    result,
+                    endpoint,
+                    configQRS,
+                    { method: 'GET', expectedStatusCodes: [200] },
+                )}`,
+            );
             return;
         }
 
@@ -331,15 +242,23 @@ async function checkQlikSenseServerLicenseStatus(config, logger) {
 async function checkQlikSenseAccessLicenseStatus(config, logger) {
     try {
         const configQRS = buildQrsConfig();
+        const endpoint = 'license/accesstypeoverview';
 
         const qrsInstance = new QrsClient(configQRS);
 
         // Get Qlik Sense access license info
-        const result1 = await qrsInstance.Get(`license/accesstypeoverview`);
+        const result1 = await qrsInstance.Get(endpoint);
 
         // Is status code 200 or body is empty?
-        if (result1.statusCode !== 200 || !result1.body) {
-            logger.error(`[QSEOW] QLIKSENSE LICENSE MONITOR: HTTP status code ${result1.statusCode}`);
+        if (!hasExpectedQrsStatus(result1) || !result1.body) {
+            logger.error(
+                `[QSEOW] QLIKSENSE LICENSE MONITOR: Unexpected QRS response (HTTP status code ${result1?.statusCode}): ${formatQrsResultWithContext(
+                    result1,
+                    endpoint,
+                    configQRS,
+                    { method: 'GET', expectedStatusCodes: [200] },
+                )}`,
+            );
             return;
         }
 
@@ -393,9 +312,14 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
     const result1 = await qrsInstance.Get(url);
 
     // Is status code other than 200 or body is empty?
-    if (result1.statusCode !== 200 || !result1.body) {
+    if (!hasExpectedQrsStatus(result1) || !Array.isArray(result1.body)) {
         logger.error(
-            `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Could not get list of assigned professional licenses. HTTP status code ${result1.statusCode}`,
+            `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Could not get list of assigned professional licenses. ${formatQrsResultWithContext(
+                result1,
+                url,
+                qrsInstance.config,
+                { method: 'GET', expectedStatusCodes: [200] },
+            )}`,
         );
         return false;
     }
@@ -419,23 +343,30 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
             // Get full user info
             let currentUser;
             try {
+                const userEndpoint = `user/${license.user.id}`;
                 // eslint-disable-next-line no-await-in-loop
-                const res = await qrsInstance.Get(`user/${license.user.id}`);
-                if (res.statusCode !== 200 || !res.body) {
+                const res = await qrsInstance.Get(userEndpoint);
+                if (!hasExpectedQrsStatus(res) || !res.body) {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsResultWithContext(
+                            res,
+                            userEndpoint,
+                            qrsInstance.config,
+                            { method: 'GET', expectedStatusCodes: [200] },
+                        )}`,
                     );
                     return false;
                 }
                 currentUser = res.body;
             } catch (err) {
+                const userEndpoint = `user/${license.user.id}`;
                 if (globals.isSea) {
                     logger.error(
                         `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${globals.getErrorMessage(err)}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
                     );
                 }
                 return false;
@@ -629,7 +560,14 @@ async function licenseReleaseProfessional(config, logger, qrsInstance) {
 
             // Is status code 204? Error if it's nmt
             if (result2.statusCode !== 204) {
-                logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: HTTP status code ${result2.statusCode}`);
+                logger.error(
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE PROFESSIONAL: Unexpected delete response. ${formatQrsResultWithContext(
+                        result2,
+                        `license/professionalaccesstype/${licenseRelease.licenseId}`,
+                        qrsInstance.config,
+                        { method: 'DELETE', expectedStatusCodes: [204] },
+                    )}`,
+                );
                 return false;
             }
 
@@ -687,9 +625,14 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
     const result3 = await qrsInstance.Get(url);
 
     // Is status code 200 or body is empty?
-    if (result3.statusCode !== 200 || !result3.body) {
+    if (!hasExpectedQrsStatus(result3) || !Array.isArray(result3.body)) {
         logger.error(
-            `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Could not get list of assigned analyzer licenses. HTTP status code ${result3.statusCode}`,
+            `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Could not get list of assigned analyzer licenses. ${formatQrsResultWithContext(
+                result3,
+                url,
+                qrsInstance.config,
+                { method: 'GET', expectedStatusCodes: [200] },
+            )}`,
         );
         return false;
     }
@@ -713,23 +656,30 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
             // Get full user info
             let currentUser;
             try {
+                const userEndpoint = `user/${license.user.id}`;
                 // eslint-disable-next-line no-await-in-loop
-                const res = await qrsInstance.Get(`user/${license.user.id}`);
-                if (res.statusCode !== 200 || !res.body) {
+                const res = await qrsInstance.Get(userEndpoint);
+                if (!hasExpectedQrsStatus(res) || !res.body) {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsResultWithContext(
+                            res,
+                            userEndpoint,
+                            qrsInstance.config,
+                            { method: 'GET', expectedStatusCodes: [200] },
+                        )}`,
                     );
                     return false;
                 }
                 currentUser = res.body;
             } catch (err) {
+                const userEndpoint = `user/${license.user.id}`;
                 if (globals.isSea) {
                     logger.error(
                         `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}`,
                     );
                 } else {
                     logger.error(
-                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${globals.getErrorMessage(err)}`,
+                        `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Failed getting user info for user [${license.user.id}] ${license.user.userDirectory}\\${license.user.userId}. ${formatQrsErrorWithContext(err, userEndpoint, qrsInstance.config)}`,
                     );
                 }
                 return false;
@@ -918,7 +868,14 @@ async function licenseReleaseAnalyzer(config, logger, qrsInstance) {
 
             // Is status code 204? Error if it's nmt
             if (result4.statusCode !== 204) {
-                logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: HTTP status code ${result4.statusCode}`);
+                logger.error(
+                    `[QSEOW] QLIKSENSE LICENSE RELEASE ANALYZER: Unexpected delete response. ${formatQrsResultWithContext(
+                        result4,
+                        `license/analyzeraccesstype/${licenseRelease.licenseId}`,
+                        qrsInstance.config,
+                        { method: 'DELETE', expectedStatusCodes: [204] },
+                    )}`,
+                );
                 return false;
             }
 
@@ -982,11 +939,7 @@ async function checkQlikSenseLicenseRelease(config, logger) {
         return true;
     } catch (err) {
         // This catch block handles errors from either professional or analyzer license release operations
-        const errorContext = formatQrsErrorWithContext(
-            err,
-            'license/professionalaccesstype|analyzeraccesstype',
-            getQrsErrorConfig(),
-        );
+        const errorContext = formatQrsErrorWithContext(err, 'license/professionalaccesstype|analyzeraccesstype', getQrsErrorConfig());
         logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: Request failed - ${errorContext}`);
         return false;
     }

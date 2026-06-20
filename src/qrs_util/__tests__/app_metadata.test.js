@@ -40,6 +40,13 @@ describe('qrs_util/app_metadata.getAppMetadata', () => {
         expect(res).toBe(false);
     });
 
+    test('returns false on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getAppMetadata('err');
+        expect(res).toBe(false);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
+    });
+
     test('returns {} when appId is empty string', async () => {
         const res = await getAppMetadata('');
         expect(res).toEqual({});

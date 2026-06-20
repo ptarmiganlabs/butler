@@ -37,6 +37,18 @@ describe('qrs_util/get_tasks', () => {
         expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=tags.name eq 'nightly'");
     });
 
+    test('escapes single quotes in tag filter', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ tag: "night's" });
+        expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=tags.name eq 'night''s'");
+    });
+
+    test('coerces non-string tag values before escaping', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ tag: 1234 });
+        expect(mockQrs.Get).toHaveBeenCalledWith("task/full?filter=tags.name eq '1234'");
+    });
+
     test('returns tasks for customProperty filter', async () => {
         mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [{ id: 't3', name: 'C' }] });
         const res = await getTasks({ customProperty: { name: 'env', value: 'prod' } });
@@ -46,10 +58,33 @@ describe('qrs_util/get_tasks', () => {
         );
     });
 
+    test('escapes single quotes in customProperty filter', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ customProperty: { name: "team's", value: "prod's" } });
+        expect(mockQrs.Get).toHaveBeenCalledWith(
+            "task/full?filter=(customProperties.definition.name eq 'team''s') and (customProperties.value eq 'prod''s')",
+        );
+    });
+
+    test('coerces non-string customProperty values before escaping', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
+        await getTasks({ customProperty: { name: true, value: 7 } });
+        expect(mockQrs.Get).toHaveBeenCalledWith(
+            "task/full?filter=(customProperties.definition.name eq 'true') and (customProperties.value eq '7')",
+        );
+    });
+
     test('returns [] when no tasks match', async () => {
         mockQrs.Get.mockResolvedValueOnce({ statusCode: 200, body: [] });
         const res = await getTasks({ tag: 'none' });
         expect(res).toEqual([]);
+    });
+
+    test('returns [] and logs on unexpected non-200 QRS response', async () => {
+        mockQrs.Get.mockResolvedValueOnce({ statusCode: 500, body: { message: 'Internal Server Error' } });
+        const res = await getTasks({ tag: 'err' });
+        expect(res).toEqual([]);
+        expect(mockGlobals.logger.error).toHaveBeenCalledWith(expect.stringContaining('status: 500'));
     });
 
     test('returns false on QRS error', async () => {

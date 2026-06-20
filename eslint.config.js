@@ -38,6 +38,7 @@ export default [
                 {
                     vars: 'all',
                     args: 'after-used',
+                    argsIgnorePattern: '^_',
                     caughtErrors: 'all',
                     ignoreRestSiblings: false,
                 },
