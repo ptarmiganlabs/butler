@@ -826,6 +826,7 @@ describe('qseow/qliksense_license', () => {
     describe('Enhanced error context', () => {
         // Helper to reduce boilerplate in error context tests
         async function setupMockAndRunTest(error) {
+            jest.resetModules();
             const qrsInstance = makeQrs();
             qrsInstance.Get = jest.fn().mockRejectedValue(error);
             jest.unstable_mockModule('../../qrs_client.js', () => ({
@@ -980,7 +981,12 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('endpoint: license/professionalaccesstype/full'));
+            // Endpoint now shows the logical operation name (consistent with other error handlers)
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('endpoint: license/professionalaccesstype|analyzeraccesstype'),
+            );
+            // The actual failing URL is shown separately
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('url: license/professionalaccesstype/full'));
             expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('code: ECONNABORTED'));
             expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('timeout: 30000ms'));
         });
@@ -1003,16 +1009,16 @@ describe('qseow/qliksense_license', () => {
             await Promise.resolve();
             await new Promise((r) => setImmediate(r));
 
-            const msg = logger.error.mock.calls[0][0];
-            expect(msg).toContain('safeField: safe-value');
-            expect(msg).not.toContain('authorization:');
-            expect(msg).not.toContain('Bearer secret-token');
-            expect(msg).not.toContain('token:');
-            expect(msg).not.toContain('my-secret-token');
-            expect(msg).not.toContain('password:');
-            expect(msg).not.toContain('super-secret-password');
-            expect(msg).not.toContain('apiKey:');
-            expect(msg).not.toContain('api-key-12345');
+            // Check all logger calls for safe field and absence of sensitive data
+            expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('safeField: safe-value'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('authorization:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('******'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('token:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('my-secret-token'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('password:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('super-secret-password'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('apiKey:'));
+            expect(logger.error).not.toHaveBeenCalledWith(expect.stringContaining('api-key-12345'));
         });
     });
 });

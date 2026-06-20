@@ -88,7 +88,9 @@ function formatQrsErrorWithContext(err, endpoint, qrsConfig) {
         'private_key',
     ]);
     Object.keys(err).forEach((key) => {
-        if (!knownKeys.has(key) && !sensitiveKeys.has(key.toLowerCase()) && err[key] !== undefined && err[key] !== null) {
+        const lowerKey = key.toLowerCase();
+        const isSensitive = [...sensitiveKeys].some((s) => lowerKey.includes(s));
+        if (!knownKeys.has(key) && !isSensitive && err[key] !== undefined && err[key] !== null) {
             let value = err[key];
             if (typeof value === 'object') {
                 try {
@@ -978,9 +980,10 @@ async function checkQlikSenseLicenseRelease(config, logger) {
 
         return true;
     } catch (err) {
+        // This catch block handles errors from either professional or analyzer license release operations
         const errorContext = formatQrsErrorWithContext(
             err,
-            err?.config?.url ?? 'license/professionalaccesstype|analyzeraccesstype',
+            'license/professionalaccesstype|analyzeraccesstype',
             getQrsErrorConfig(),
         );
         logger.error(`[QSEOW] QLIKSENSE LICENSE RELEASE: Request failed - ${errorContext}`);
