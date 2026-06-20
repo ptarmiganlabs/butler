@@ -40,7 +40,7 @@ const getTasks = async (filter) => {
         try {
             // Handle tag filter - search for tasks with a specific tag
             if (filter.tag) {
-                const tagName = filter.tag.replaceAll("'", "''");
+                const tagName = String(filter.tag).replaceAll("'", "''");
                 endpoint = `task/full?filter=tags.name eq '${tagName}'`;
                 globals.logger.debug(`GETTASKS 1: ${endpoint}`);
 
@@ -70,8 +70,8 @@ const getTasks = async (filter) => {
 
             // Handle custom properties filter - search for tasks with a specific custom property
             if (filter.customProperty) {
-                const customPropertyName = filter.customProperty.name.replaceAll("'", "''");
-                const customPropertyValue = filter.customProperty.value.replaceAll("'", "''");
+                const customPropertyName = String(filter.customProperty.name).replaceAll("'", "''");
+                const customPropertyValue = String(filter.customProperty.value).replaceAll("'", "''");
                 endpoint = `task/full?filter=(customProperties.definition.name eq '${customPropertyName}') and (customProperties.value eq '${customPropertyValue}')`;
                 globals.logger.debug(`GETTASKS 2: ${endpoint}`);
 
