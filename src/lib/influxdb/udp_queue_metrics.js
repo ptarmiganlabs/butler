@@ -143,11 +143,12 @@ export function startUdpQueueMetricsTimer() {
             // Add queue type to metrics for tagging
             metrics.queueType = globals.udpQueueManager.queueType;
 
-            // Write to InfluxDB
-            postUdpQueueMetricsToInfluxDb(metrics, measurementName);
-
-            // Clear counters after writing (snapshot-and-reset)
-            await globals.udpQueueManager.clearMetrics();
+            // Write to InfluxDB, then clear counters only after a successful write
+            postUdpQueueMetricsToInfluxDb(metrics, measurementName, () => {
+                globals.udpQueueManager.clearMetrics().catch((err) => {
+                    globals.logger.error(`UDP QUEUE METRICS: Error clearing metrics after write: ${globals.getErrorMessage(err)}`);
+                });
+            });
         } catch (err) {
             globals.logger.error(`UDP QUEUE METRICS: Error in periodic write: ${globals.getErrorMessage(err)}`);
         }
