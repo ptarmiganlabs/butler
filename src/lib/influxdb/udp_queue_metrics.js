@@ -10,9 +10,10 @@ import globals from '../../globals.js';
  *
  * @param {object} metrics Snapshot from UdpQueueManager.getMetrics()
  * @param {string} measurementName InfluxDB measurement name
+ * @param {() => (void|Promise<void>)} [onSuccess] Optional callback invoked after successful write
  * @returns {void}
  */
-export function postUdpQueueMetricsToInfluxDb(metrics, measurementName) {
+export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSuccess) {
     let tags = {};
 
     // Get global static tags from Butler.influxDb.tag.static
