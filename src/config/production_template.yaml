@@ -1017,11 +1017,12 @@ Butler:
                 enable: false # Master switch: Store queue metrics in InfluxDB. Requires Butler.influxDb.enable to also be true.
                 writeFrequency: 20000 # Write interval in milliseconds.
                 measurementName: butler_udp_queue # InfluxDB measurement name for queue metrics.
-                tags: # Optional feature-specific tags added to all queue metric points (in addition to global InfluxDB tags).
-                    # - name: butler_instance
-                    #   value: dev
-                    # - name: environment
-                    #   value: production
+                tags: [] # Optional feature-specific tags added to all queue metric points (in addition to global InfluxDB tags).
+                # Example:
+                # - name: butler_instance
+                #   value: dev
+                # - name: environment
+                #   value: production
                 metrics:
                     dropCounters:
                         enable: true # Write drop counters: messages_dropped_total, messages_dropped_queue_full, messages_dropped_rate_limit, messages_dropped_size
