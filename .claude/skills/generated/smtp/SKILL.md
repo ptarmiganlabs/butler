@@ -32,8 +32,8 @@ description: "Skill for the Smtp area of butler. 29 symbols across 18 files."
 
 Start here when exploring this area:
 
-- **`configFileStructureAssert`** (Function) — `src/lib/assert/assert_config_file.js:735`
-- **`validate`** (Function) — `src/lib/assert/assert_config_file.js:760`
+- **`configFileStructureAssert`** (Function) — `src/lib/assert/assert_config_file.js:738`
+- **`validate`** (Function) — `src/lib/assert/assert_config_file.js:763`
 - **`getQlikSenseUrls`** (Function) — `src/lib/qseow/get_qs_urls.js:20`
 - **`sendReloadTaskFailureNotificationTeams`** (Function) — `src/lib/qseow/msteams_notification.js:433`
 - **`sendReloadTaskAbortedNotificationTeams`** (Function) — `src/lib/qseow/msteams_notification.js:649`
@@ -42,8 +42,8 @@ Start here when exploring this area:
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `configFileStructureAssert` | Function | `src/lib/assert/assert_config_file.js` | 735 |
-| `validate` | Function | `src/lib/assert/assert_config_file.js` | 760 |
+| `configFileStructureAssert` | Function | `src/lib/assert/assert_config_file.js` | 738 |
+| `validate` | Function | `src/lib/assert/assert_config_file.js` | 763 |
 | `getQlikSenseUrls` | Function | `src/lib/qseow/get_qs_urls.js` | 20 |
 | `sendReloadTaskFailureNotificationTeams` | Function | `src/lib/qseow/msteams_notification.js` | 433 |
 | `sendReloadTaskAbortedNotificationTeams` | Function | `src/lib/qseow/msteams_notification.js` | 649 |

@@ -83,9 +83,7 @@ async function checkQlikSenseVersion(config, logger) {
             await postQlikSenseVersionToInfluxDB(result.data);
         }
     } catch (err) {
-        logger.error(
-            `[QSEOW] QLIKSENSE VERSION MONITOR: ${formatHttpErrorWithContext(err, endpoint, requestContext, { method: 'GET' })}`,
-        );
+        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${formatHttpErrorWithContext(err, endpoint, requestContext, { method: 'GET' })}`);
     }
 }
 
@@ -108,9 +106,14 @@ export async function setupQlikSenseVersionMonitor(config, logger) {
         }
     } catch (err) {
         logger.error(
-            `[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${formatHttpErrorWithContext(err, '/v1/systeminfo', getVersionMonitorRequestContext(), {
-                method: 'GET',
-            })}`,
+            `[QSEOW] QLIKSENSE VERSION MONITOR INIT: ${formatHttpErrorWithContext(
+                err,
+                '/v1/systeminfo',
+                getVersionMonitorRequestContext(),
+                {
+                    method: 'GET',
+                },
+            )}`,
         );
     }
 }
