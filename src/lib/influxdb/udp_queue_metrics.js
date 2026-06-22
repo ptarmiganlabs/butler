@@ -101,16 +101,19 @@ export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSucces
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
     // Asynchronously write the datapoint to InfluxDB
-    globals.influx
-        .writePoints(deepClonedDatapoint)
-        .then(() => {
-            globals.logger.silly(`UDP QUEUE METRICS: InfluxDB datapoint for UDP queue metrics: ${JSON.stringify(datapoint, null, 2)}`);
-            datapoint = null;
-            globals.logger.verbose('UDP QUEUE METRICS: Sent UDP queue metrics to InfluxDB');
-        })
-        .catch((err) => {
-            globals.logger.error(`UDP QUEUE METRICS: Error saving UDP queue metrics to InfluxDB! ${globals.getErrorMessage(err)}`);
-        });
+globals.influx
+    .writePoints(deepClonedDatapoint)
+    .then(() => {
+        globals.logger.silly(`UDP QUEUE METRICS: InfluxDB datapoint for UDP queue metrics: ${JSON.stringify(datapoint, null, 2)}`);
+        datapoint = null;
+        globals.logger.verbose('UDP QUEUE METRICS: Sent UDP queue metrics to InfluxDB');
+        if (typeof onSuccess === 'function') {
+            onSuccess();
+        }
+    })
+    .catch((err) => {
+        globals.logger.error(`UDP QUEUE METRICS: Error saving UDP queue metrics to InfluxDB! ${globals.getErrorMessage(err)}`);
+    });
 }
 
 /**
