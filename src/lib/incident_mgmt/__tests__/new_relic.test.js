@@ -423,7 +423,8 @@ describe('lib/incident_mgmt/new_relic', () => {
                 return (
                     key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.always.enable' ||
                     key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.enable' ||
-                    key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName' ||
+                    key ===
+                        'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.sendToAccount.byCustomProperty.customPropertyName' ||
                     key === 'Butler.configQRS.host' ||
                     key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event' ||
                     key === 'Butler.incidentTool.newRelic.reloadTaskFailure.destination.event.enable' ||

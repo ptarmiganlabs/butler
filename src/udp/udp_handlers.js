@@ -22,6 +22,7 @@ import { parseAllowedSources, isIpAllowed, createRejectThrottle } from '../lib/u
 import { guidRegex } from '../lib/guid_util.js';
 import { sanitizeField, sanitizeMessage } from '../lib/udp_sanitizer.js';
 import { UdpQueueManager } from '../lib/udp_queue_manager.js';
+import { startUdpQueueMetricsTimer } from '../lib/influxdb/udp_queue_metrics.js';
 
 // Per-source throttle for reject warnings (avoids log flooding from spamming hosts)
 const rejectThrottle = createRejectThrottle();
@@ -346,6 +347,14 @@ const udpInitTaskErrorServer = async () => {
         globals.logger.info(`[QSEOW] UDP INIT: Deduplication enabled (TTL: ${deduplicationTtlMinutes} minutes)`);
     } else {
         globals.logger.info('[QSEOW] UDP INIT: Deduplication disabled');
+    }
+
+    // Start UDP queue metrics InfluxDB writer if enabled
+    if (
+        globals.config.get('Butler.influxDb.enable') === true &&
+        globals.config.get('Butler.udpServerConfig.queueMetrics.influxdb.enable') === true
+    ) {
+        startUdpQueueMetricsTimer();
     }
 
     // Main handler for UDP messages relating to failed tasks

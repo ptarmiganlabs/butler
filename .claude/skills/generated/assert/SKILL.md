@@ -30,8 +30,8 @@ Start here when exploring this area:
 - **`configFileQsAssert`** (Function) — `src/lib/assert/assert_config_file.js:26`
 - **`configFileEmailAssert`** (Function) — `src/lib/assert/assert_config_file.js:83`
 - **`configFileInfluxDbAssert`** (Function) — `src/lib/assert/assert_config_file.js:212`
-- **`configFileAppAssert`** (Function) — `src/lib/assert/assert_config_file.js:700`
-- **`configFileConditionalAssert`** (Function) — `src/lib/assert/assert_config_file.js:842`
+- **`configFileAppAssert`** (Function) — `src/lib/assert/assert_config_file.js:703`
+- **`configFileConditionalAssert`** (Function) — `src/lib/assert/assert_config_file.js:845`
 
 ## Key Symbols
 
@@ -40,11 +40,11 @@ Start here when exploring this area:
 | `configFileQsAssert` | Function | `src/lib/assert/assert_config_file.js` | 26 |
 | `configFileEmailAssert` | Function | `src/lib/assert/assert_config_file.js` | 83 |
 | `configFileInfluxDbAssert` | Function | `src/lib/assert/assert_config_file.js` | 212 |
-| `configFileAppAssert` | Function | `src/lib/assert/assert_config_file.js` | 700 |
-| `configFileConditionalAssert` | Function | `src/lib/assert/assert_config_file.js` | 842 |
-| `setupQlikSenseAccessLicenseMonitor` | Function | `src/lib/qseow/qliksense_license.js` | 957 |
-| `setupQlikSenseLicenseRelease` | Function | `src/lib/qseow/qliksense_license.js` | 980 |
-| `setupQlikSenseServerLicenseMonitor` | Function | `src/lib/qseow/qliksense_license.js` | 1003 |
+| `configFileAppAssert` | Function | `src/lib/assert/assert_config_file.js` | 703 |
+| `configFileConditionalAssert` | Function | `src/lib/assert/assert_config_file.js` | 845 |
+| `setupQlikSenseAccessLicenseMonitor` | Function | `src/lib/qseow/qliksense_license.js` | 953 |
+| `setupQlikSenseLicenseRelease` | Function | `src/lib/qseow/qliksense_license.js` | 976 |
+| `setupQlikSenseServerLicenseMonitor` | Function | `src/lib/qseow/qliksense_license.js` | 999 |
 | `startAllSchedules` | Function | `src/lib/scheduler.js` | 131 |
 | `startSchedule` | Function | `src/lib/scheduler.js` | 272 |
 | `start` | Function | `src/butler.js` | 47 |

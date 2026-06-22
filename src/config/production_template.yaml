@@ -1014,10 +1014,28 @@ Butler:
         # Queue metrics (optional - requires InfluxDB)
         queueMetrics:
             influxdb:
-                enable: false # Store queue metrics in InfluxDB
-                writeFrequency: 20000 # Write interval (ms)
-                measurementName: butler_udp_queue
-                tags: [] # Optional tags added to all queue metrics points
+                enable: false # Master switch: Store queue metrics in InfluxDB. Requires Butler.influxDb.enable to also be true.
+                writeFrequency: 20000 # Write interval in milliseconds.
+                measurementName: butler_udp_queue # InfluxDB measurement name for queue metrics.
+                tags: [] # Optional feature-specific tags added to all queue metric points (in addition to global InfluxDB tags).
+                # Example:
+                # - name: butler_instance
+                #   value: dev
+                # - name: environment
+                #   value: production
+                metrics:
+                    dropCounters:
+                        enable: true # Write drop counters: messages_dropped_total, messages_dropped_queue_full, messages_dropped_rate_limit, messages_dropped_size
+                    messageCounters:
+                        enable: true # Write message counters: messages_received, messages_queued, messages_processed, messages_failed
+                    queueState:
+                        enable: true # Write queue state: queue_size, queue_utilization_pct, queue_pending, backpressure_active
+                    processingTimes:
+                        enable: true # Write processing times: processing_time_avg_ms, processing_time_p95_ms, processing_time_max_ms
+                    dedup:
+                        enable: true # Write deduplication metrics: deduplication_cache_size, messages_dropped_duplicate
+                    rateLimit:
+                        enable: true # Write rate limit metrics: rate_limit_current
 
     restServerConfig:
         enable: false # Should Butler's REST API be started? Must be true if *any* API endpoints are to be used.

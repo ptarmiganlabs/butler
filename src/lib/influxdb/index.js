@@ -7,6 +7,7 @@
  */
 
 export { postButlerMemoryUsageToInfluxdb } from './butler_metrics.js';
+export { postUdpQueueMetricsToInfluxDb, startUdpQueueMetricsTimer } from './udp_queue_metrics.js';
 export { postQlikSenseVersionToInfluxDB } from './qlik_sense_version.js';
 export {
     postQlikSenseServerLicenseStatusToInfluxDB,

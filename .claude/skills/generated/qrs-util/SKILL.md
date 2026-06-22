@@ -34,9 +34,9 @@ Start here when exploring this area:
 
 - **`configFileNewRelicAssert`** (Function) — `src/lib/assert/assert_config_file.js:285`
 - **`postQlikSenseLicenseReleasedToInfluxDB`** (Function) — `src/lib/influxdb/qlik_sense_license.js:289`
-- **`hasExpectedQrsStatus`** (Function) — `src/lib/qrs_error.js:101`
-- **`formatQrsResultWithContext`** (Function) — `src/lib/qrs_error.js:127`
-- **`formatQrsErrorWithContext`** (Function) — `src/lib/qrs_error.js:184`
+- **`hasExpectedQrsStatus`** (Function) — `src/lib/qrs_error.js:114`
+- **`formatQrsResultWithContext`** (Function) — `src/lib/qrs_error.js:140`
+- **`formatQrsErrorWithContext`** (Function) — `src/lib/qrs_error.js:197`
 
 ## Key Symbols
 
@@ -44,16 +44,16 @@ Start here when exploring this area:
 |--------|------|------|------|
 | `configFileNewRelicAssert` | Function | `src/lib/assert/assert_config_file.js` | 285 |
 | `postQlikSenseLicenseReleasedToInfluxDB` | Function | `src/lib/influxdb/qlik_sense_license.js` | 289 |
-| `hasExpectedQrsStatus` | Function | `src/lib/qrs_error.js` | 101 |
-| `formatQrsResultWithContext` | Function | `src/lib/qrs_error.js` | 127 |
-| `formatQrsErrorWithContext` | Function | `src/lib/qrs_error.js` | 184 |
+| `hasExpectedQrsStatus` | Function | `src/lib/qrs_error.js` | 114 |
+| `formatQrsResultWithContext` | Function | `src/lib/qrs_error.js` | 140 |
+| `formatQrsErrorWithContext` | Function | `src/lib/qrs_error.js` | 197 |
 | `getScriptLog` | Function | `src/lib/qseow/scriptlog.js` | 198 |
 | `getDistributeTaskExecutionResults` | Function | `src/qrs_util/distribute_task_execution_results.js` | 58 |
 | `getExternalProgramTaskExecutionResults` | Function | `src/qrs_util/externalprogram_task_execution_results.js` | 35 |
 | `getPreloadTaskExecutionResults` | Function | `src/qrs_util/preload_task_execution_results.js` | 58 |
 | `getReloadTaskExecutionResults` | Function | `src/qrs_util/reload_task_execution_results.js` | 35 |
 | `isCustomPropertyValueSet` | Function | `src/qrs_util/task_cp_util.js` | 14 |
-| `getReloadTasksCustomProperties` | Function | `src/qrs_util/task_cp_util.js` | 155 |
+| `getReloadTasksCustomProperties` | Function | `src/qrs_util/task_cp_util.js` | 158 |
 | `getUserSyncTaskExecutionResults` | Function | `src/qrs_util/usersync_task_execution_results.js` | 35 |
 | `handleSuccessDistributeTask` | Function | `src/udp/handlers/task_types/success_distribute.js` | 39 |
 | `handleSuccessPreloadTask` | Function | `src/udp/handlers/task_types/success_preload.js` | 39 |
