@@ -316,6 +316,7 @@ describe('lib/influxdb/udp_queue_metrics', () => {
             await flushPromises();
 
             expect(mockInfluxWritePoints).toHaveBeenCalledTimes(1);
+            expect(mockClearMetrics).not.toHaveBeenCalled();
 
             resolveWrite();
             await flushPromises();
