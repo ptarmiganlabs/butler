@@ -6,7 +6,6 @@ describe('lib/influxdb/udp_queue_metrics', () => {
     let mockGlobals;
     let mockInfluxWritePoints;
     let mockCloneDeep;
-    const flushPromises = () => Promise.resolve();
 
     const mockMetrics = {
         queueType: 'task_results',
@@ -233,6 +232,8 @@ describe('lib/influxdb/udp_queue_metrics', () => {
     });
 
     describe('startUdpQueueMetricsTimer', () => {
+        const flushPromises = () => Promise.resolve();
+
         beforeEach(() => {
             jest.useFakeTimers();
         });
