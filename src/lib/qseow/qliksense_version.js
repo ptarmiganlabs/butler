@@ -83,7 +83,8 @@ async function checkQlikSenseVersion(config, logger) {
             await postQlikSenseVersionToInfluxDB(result.data);
         }
     } catch (err) {
-        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${formatHttpErrorWithContext(err, endpoint, requestContext, { method: 'GET' })}`);
+        const formattedError = formatHttpErrorWithContext(err, endpoint, requestContext, { method: 'GET' });
+        logger.error(`[QSEOW] QLIKSENSE VERSION MONITOR: ${formattedError}`);
     }
 }
 
