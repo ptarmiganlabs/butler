@@ -104,8 +104,8 @@ export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSucces
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
     // Asynchronously write the datapoint to InfluxDB
-    return Promise.resolve()
-        .then(() => globals.influx.writePoints(deepClonedDatapoint))
+    return globals.influx
+        .writePoints(deepClonedDatapoint)
         .then(() => {
             globals.logger.silly(`UDP QUEUE METRICS: InfluxDB datapoint for UDP queue metrics: ${JSON.stringify(datapoint, null, 2)}`);
             datapoint = null;
@@ -186,6 +186,6 @@ export function startUdpQueueMetricsTimer() {
         }
     }, writeFrequency);
 
-    // Unref the timer so it doesn't prevent process exit
+    // Optional chaining keeps fake-timer environments from throwing if unref() is not implemented.
     udpQueueMetricsTimerHandle.unref?.();
 }

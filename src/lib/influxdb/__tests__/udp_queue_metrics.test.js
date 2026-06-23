@@ -232,6 +232,7 @@ describe('lib/influxdb/udp_queue_metrics', () => {
     });
 
     describe('startUdpQueueMetricsTimer', () => {
+        // Let promise callbacks settle between timer advances when using fake timers.
         const flushPromises = () => Promise.resolve();
 
         beforeEach(() => {
