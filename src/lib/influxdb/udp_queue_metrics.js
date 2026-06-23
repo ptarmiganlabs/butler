@@ -2,6 +2,8 @@ import _ from 'lodash';
 
 import globals from '../../globals.js';
 
+let udpQueueMetricsTimerHandle = null;
+
 /**
  * Sends UDP queue metrics to InfluxDB.
  *
@@ -11,9 +13,10 @@ import globals from '../../globals.js';
  * @param {object} metrics Snapshot from UdpQueueManager.getMetrics()
  * @param {string} measurementName InfluxDB measurement name
  * @param {() => (void|Promise<void>)} [onSuccess] Optional callback invoked after successful write
- * @returns {void}
+ * @param {() => (void|Promise<void>)} [onComplete] Optional callback invoked after write attempt completes
+ * @returns {Promise<void>}
  */
-export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSuccess) {
+export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSuccess, onComplete) {
     let tags = {};
 
     // Get global static tags from Butler.influxDb.tag.static
@@ -101,19 +104,24 @@ export function postUdpQueueMetricsToInfluxDb(metrics, measurementName, onSucces
     const deepClonedDatapoint = _.cloneDeep(datapoint);
 
     // Asynchronously write the datapoint to InfluxDB
-globals.influx
-    .writePoints(deepClonedDatapoint)
-    .then(() => {
-        globals.logger.silly(`UDP QUEUE METRICS: InfluxDB datapoint for UDP queue metrics: ${JSON.stringify(datapoint, null, 2)}`);
-        datapoint = null;
-        globals.logger.verbose('UDP QUEUE METRICS: Sent UDP queue metrics to InfluxDB');
-        if (typeof onSuccess === 'function') {
-            onSuccess();
-        }
-    })
-    .catch((err) => {
-        globals.logger.error(`UDP QUEUE METRICS: Error saving UDP queue metrics to InfluxDB! ${globals.getErrorMessage(err)}`);
-    });
+    return Promise.resolve()
+        .then(() => globals.influx.writePoints(deepClonedDatapoint))
+        .then(() => {
+            globals.logger.silly(`UDP QUEUE METRICS: InfluxDB datapoint for UDP queue metrics: ${JSON.stringify(datapoint, null, 2)}`);
+            datapoint = null;
+            globals.logger.verbose('UDP QUEUE METRICS: Sent UDP queue metrics to InfluxDB');
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        })
+        .catch((err) => {
+            globals.logger.error(`UDP QUEUE METRICS: Error saving UDP queue metrics to InfluxDB! ${globals.getErrorMessage(err)}`);
+        })
+        .finally(() => {
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        });
 }
 
 /**
@@ -128,15 +136,27 @@ globals.influx
 export function startUdpQueueMetricsTimer() {
     const writeFrequency = globals.config.get('Butler.udpServerConfig.queueMetrics.influxdb.writeFrequency');
     const measurementName = globals.config.get('Butler.udpServerConfig.queueMetrics.influxdb.measurementName');
+    let writeInProgress = false;
+
+    if (udpQueueMetricsTimerHandle) {
+        globals.logger.warn('UDP QUEUE METRICS: Periodic InfluxDB writer already running, skipping duplicate initialization');
+        return;
+    }
 
     globals.logger.info(
         `UDP QUEUE METRICS: Starting periodic InfluxDB writer (interval: ${writeFrequency}ms, measurement: ${measurementName})`,
     );
 
-    const timer = setInterval(async () => {
+    udpQueueMetricsTimerHandle = setInterval(async () => {
+        if (writeInProgress) {
+            return;
+        }
+        writeInProgress = true;
+
         // Guard: skip if queue manager is not yet initialized
         if (!globals.udpQueueManager) {
             globals.logger.warn('UDP QUEUE METRICS: Queue manager not initialized, skipping write');
+            writeInProgress = false;
             return;
         }
 
@@ -148,16 +168,24 @@ export function startUdpQueueMetricsTimer() {
             metrics.queueType = globals.udpQueueManager.queueType;
 
             // Write to InfluxDB, then clear counters only after a successful write
-            postUdpQueueMetricsToInfluxDb(metrics, measurementName, () => {
-                globals.udpQueueManager.clearMetrics().catch((err) => {
-                    globals.logger.error(`UDP QUEUE METRICS: Error clearing metrics after write: ${globals.getErrorMessage(err)}`);
-                });
-            });
+            postUdpQueueMetricsToInfluxDb(
+                metrics,
+                measurementName,
+                () => {
+                    globals.udpQueueManager.clearMetrics().catch((err) => {
+                        globals.logger.error(`UDP QUEUE METRICS: Error clearing metrics after write: ${globals.getErrorMessage(err)}`);
+                    });
+                },
+                () => {
+                    writeInProgress = false;
+                },
+            );
         } catch (err) {
             globals.logger.error(`UDP QUEUE METRICS: Error in periodic write: ${globals.getErrorMessage(err)}`);
+            writeInProgress = false;
         }
     }, writeFrequency);
 
     // Unref the timer so it doesn't prevent process exit
-    timer.unref();
+    udpQueueMetricsTimerHandle.unref?.();
 }
