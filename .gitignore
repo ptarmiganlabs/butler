@@ -105,3 +105,9 @@ profile-*
 profile*
 *clinic*
 *flamegraph*
+
+# What scripts/release-win.ps1 writes
+/butler.exe
+/butler.exe.sha256
+/win64-extras/
+/butler-*-win.zip
