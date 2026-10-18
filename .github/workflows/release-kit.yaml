@@ -1,17 +1,24 @@
 # Runs the macOS signing scripts against stand-ins for Apple's tools
 # (scripts/test/release-kit.test.js), so that a fault in their refusals or their
 # teardown is found on a pull request rather than in a release. No secret, no
-# keychain, no signature: the stand-ins only log what they are asked.
+# keychain, no signature: the stand-ins only log what they are asked. The same
+# test file holds the Windows release jobs in ci.yaml to their invariants.
 #
 # macos-15 because that is where the release job runs the scripts, under the
 # same /bin/bash 3.2. GitHub-hosted, as everything in a public repository is:
 # a pull request from a fork runs here too.
+#
+# release-win builds the unsigned Windows release binary on windows-latest, as
+# ci.yaml's build-win64 does, with the same script: it is built, smoke-tested
+# and checked to carry no signature. Nothing is signed here; only sign-win64
+# signs, on master.
 name: release-kit
 on:
     pull_request:
         paths:
             - 'scripts/**'
             - 'release-config/**'
+            - 'build-script/**'
             - 'package.json'
             - '.github/workflows/ci.yaml'
             - '.github/workflows/insiders-build.yaml'
@@ -22,6 +29,7 @@ on:
         paths:
             - 'scripts/**'
             - 'release-config/**'
+            - 'build-script/**'
             - 'package.json'
             - '.github/workflows/ci.yaml'
             - '.github/workflows/insiders-build.yaml'
@@ -57,3 +65,39 @@ jobs:
               run: |
                   /bin/bash --version | head -1
                   npm run test:release-kit
+
+    release-win:
+        runs-on: windows-latest
+        timeout-minutes: 30
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  node-version: 24
+
+            # As build-win64 installs them.
+            - name: Install dependencies
+              run: npm ci --ignore-scripts
+
+            # -Zip lays the files out as publish-win64 does, so the layout the release zip has had,
+            # butler.exe at the top and the templates in config/, is checked here.
+            - name: Build the unsigned binary, as build-win64 does
+              shell: pwsh
+              run: |
+                  ./scripts/release-win.ps1 -Zip
+                  $version = node -p "require('./package.json').version"
+                  Add-Type -AssemblyName System.IO.Compression.FileSystem
+                  $zip = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath "./butler-$version-win.zip"))
+                  try { $entries = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') }) } finally { $zip.Dispose() }
+                  $want = 'butler.exe', 'config/production_template.yaml', 'config/schedule_template.yaml'
+                  $dirs = 'config/log_appender_xml/', 'config/email_templates/', 'config/slack_templates/', 'config/teams_templates/'
+                  $missing = @($want | Where-Object { $entries -notcontains $_ }) + @($dirs | Where-Object { $d = $_; -not ($entries | Where-Object { $_.StartsWith($d) }) })
+                  if ($missing) { throw "The zip lacks: $($missing -join ', ')" }
+                  Write-Host "$($entries.Count) entries, butler.exe and every template among them"

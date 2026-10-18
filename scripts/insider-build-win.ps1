@@ -25,23 +25,20 @@ pwd
 dir
 
 # -------------------
-# Remove the signature from the executable
-& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" remove /s "./${env:DIST_FILE_NAME}.exe"
+# Remove node.exe's own signature before postject changes the file. signtool is found by search,
+# as in release-win.ps1, because the Windows SDK version in its path differs between machines.
+$signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" -ErrorAction SilentlyContinue |
+    Sort-Object FullName -Descending | Select-Object -First 1
+if (-not $signtool) { throw 'signtool.exe not found. Install the signing tools from the Windows SDK.' }
+& $signtool.FullName remove /s "./${env:DIST_FILE_NAME}.exe"
 if ($LASTEXITCODE -ne 0) { throw "signtool remove failed with exit code $LASTEXITCODE" }
 
 npx postject "${env:DIST_FILE_NAME}.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
 if ($LASTEXITCODE -ne 0) { throw "postject failed with exit code $LASTEXITCODE" }
 
-# -------------------
-# Sign the executable
-# 1st signing
-# & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha1 /v "./${env:DIST_FILE_NAME}.exe"
-# if ($LASTEXITCODE -ne 0) { throw "signtool sign (1st pass) failed with exit code $LASTEXITCODE" }
-
-# -------------------
-# 2nd signing
-# & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 "$env:CODESIGN_WIN_THUMBPRINT" /tr http://time.certum.pl /td sha256 /fd sha256 /v "./${env:DIST_FILE_NAME}.exe"
-# if ($LASTEXITCODE -ne 0) { throw "signtool sign (2nd pass) failed with exit code $LASTEXITCODE" }
+# Insiders builds are not signed: they are for testing (plabs-house-rules,
+# rules/ci/public-repositories.md). Releases are signed through Azure Artifact Signing, in
+# ci.yaml's sign-win64.
 
 # -------------------
 # Create insider's build zip

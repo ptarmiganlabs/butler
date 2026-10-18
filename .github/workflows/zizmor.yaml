@@ -11,6 +11,7 @@ jobs:
   zizmor:
     name: zizmor latest via PyPI
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       security-events: write # Required for upload-sarif (used by zizmor-action) to upload SARIF files.
       contents: read         # Only needed for private repos. Needed to clone the repo.

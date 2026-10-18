@@ -2,14 +2,15 @@ name: ci
 on:
     workflow_dispatch:
         inputs:
-            # Builds, signs and notarizes the macOS binary of the dispatched commit, then stops:
-            # nothing is released, and the zip is kept as a workflow artifact for three days. The
-            # only way to prove the signing on macos-15 before a release depends on it. Dispatch it
-            # on master; the release-signing environment admits no other branch:
+            # Builds the dispatched commit for macOS and Windows and signs both, notarizing the macOS
+            # one, then stops: nothing is released, and the signed builds are kept as workflow
+            # artifacts for three days. The only way to prove the signing on macos-15 and through
+            # Azure Artifact Signing before a release depends on it. Dispatch it on master; the
+            # release-signing environment admits no other branch:
             #
             #   gh workflow run ci.yaml --ref master -f rehearse_signing=true
             rehearse_signing:
-                description: Build, sign and notarize the macOS binary, and release nothing
+                description: Build and sign the macOS and Windows binaries, and release nothing
                 type: boolean
                 default: false
     push:
@@ -19,11 +20,15 @@ permissions: {}
 jobs:
     release-please:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         outputs:
             releases_created: ${{ steps.release.outputs.releases_created }}
             release_tag_name: ${{ steps.release.outputs['tag_name'] }}
             release_version: ${{ steps.release.outputs['version'] }}
             release_upload_url: ${{ steps.release.outputs['upload_url'] }}
+            # The commit release-please released. Not necessarily the commit that started this run:
+            # release-please releases master's HEAD, a different commit whenever another push started it.
+            release_sha: ${{ steps.release.outputs['sha'] }}
         env:
             GITHUB_REF: ${{ github.ref }}
             GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
@@ -99,6 +104,7 @@ jobs:
             contents: write
         needs: release-please
         runs-on: ubuntu-latest
+        timeout-minutes: 15
 
         if: needs.release-please.outputs.releases_created == 'true'
         env:
@@ -246,75 +252,312 @@ jobs:
                   retention-days: 3
                   if-no-files-found: error
 
-    release-win64:
-        permissions:
-            contents: write
+    # ------------------------------------------------------------------
+    # Windows, in three jobs, so that no job both runs repository code and holds the signing
+    # credential (plabs-house-rules, rules/ci/public-repositories.md). Butler SOS signs the same way:
+    #
+    #   build-win64    repository code and npm, no credential   -> unsigned butler.exe
+    #   sign-win64     the Azure credential, no repository code -> signed butler.exe
+    #   publish-win64  neither                                  -> zip attached to the release
+    #
+    # All three run on GitHub-hosted runners: butler is public, and the organisation's self-hosted
+    # runner groups do not admit public repositories, so the win-code-sign runner this used to ask
+    # for never started. No certificate is stored anywhere: sign-win64 signs through Azure,
+    # authenticated by GitHub's OIDC token.
+    #
+    # A rehearsal (rehearse_signing, above) builds the dispatched commit, signs it, verifies the
+    # signature and stops. publish-win64 never runs in one, and the signed binary is kept as a
+    # workflow artifact for three days.
+    # ------------------------------------------------------------------
+    build-win64:
         needs: release-please
-        runs-on:
-            - self-hosted
-            - x64
-            - windows
-            - sp53
-            - win-code-sign
-        # timeout-minutes: 15
-        if: needs.release-please.outputs.releases_created == 'true'
-        env:
-            DIST_FILE_NAME: butler
-            GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-            CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
+        # As release-macos-arm64: a release, or a rehearsal. release-please runs in a rehearsal too,
+        # so the implicit success() holds in both.
+        if: >-
+            needs.release-please.outputs.releases_created == 'true'
+            || (github.event_name == 'workflow_dispatch' && inputs.rehearse_signing)
+        runs-on: windows-latest
+        timeout-minutes: 30
+        permissions:
+            contents: read # checkout only
         steps:
-            - name: Release tag and upload url from previous job
-              run: |
-                  Write-Output 'tag_name        : ${{ needs.release-please.outputs.release_tag_name }}'
-                  Write-Output 'version         : ${{ needs.release-please.outputs.release_version }}'
-                  Write-Output 'upload_url      : ${{ needs.release-please.outputs.release_upload_url }}'
-
-            - name: Checkout repository
+            # A release builds the released commit, never github.sha. A rehearsal has no release, so it
+            # builds the commit it was started on.
+            - name: Checkout the commit being built
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
+                  ref: ${{ needs.release-please.outputs.releases_created == 'true' && needs.release-please.outputs.release_sha || github.sha }}
                   persist-credentials: false
 
+            # No npm cache: what this job builds gets signed, so it starts from nothing an earlier run
+            # left behind.
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
               with:
                   node-version: 24
 
-            - name: Install dependencies
-              run: |
-                  pwd
-                  npm ci --include=dev --include=prod
-
-            - name: Build binaries
+            - name: Verify the checkout is the version being released
+              if: needs.release-please.outputs.releases_created == 'true'
+              shell: pwsh
               env:
                   RELEASE_VERSION: ${{ needs.release-please.outputs.release_version }}
-              run: ./scripts/release-win.ps1
+              run: |
+                  $actual = node -p "require('./package.json').version"
+                  Write-Host "release-please : $env:RELEASE_VERSION"
+                  Write-Host "package.json   : $actual"
+                  if ($actual -ne $env:RELEASE_VERSION) {
+                    throw "Refusing to build: package.json says $actual, but the release is $env:RELEASE_VERSION."
+                  }
 
-            - name: Upload to existing release
+            # --ignore-scripts: no dependency's install script runs where the binary that gets signed
+            # is built.
+            - name: Install dependencies
+              run: npm ci --ignore-scripts
+
+            # scripts/release-win.ps1 builds, smoke-tests and checks the binary carries no signature,
+            # records the digest sign-win64 checks against, and stages what ships beside the binary in
+            # win64-extras/. The script, not this file, defines the zip's layout. release-kit.yaml
+            # runs the same script on pull requests.
+            - name: Build the unsigned binary
+              shell: pwsh
+              run: |
+                  ./scripts/release-win.ps1
+                  $hash = Get-Content -LiteralPath ./butler.exe.sha256
+                  Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "Unsigned Windows binary SHA256: ``$hash``"
+
+            # 30 days for a release, which is as long as GitHub lets a job be re-run. A failed
+            # sign-win64 or publish-win64 can only be recovered with "Re-run failed jobs", and that needs
+            # these artifacts still to exist: "Re-run all jobs" builds nothing, because release-please
+            # then finds the release already made and reports no new one. The repository's own
+            # artifact retention caps this, at 3 days on 2026-10-18, so that is the time there is to
+            # re-run a failed job. A rehearsal needs three days.
+            - name: Upload the unsigned binary
+              uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+              with:
+                  name: win64-unsigned
+                  path: |
+                      butler.exe
+                      butler.exe.sha256
+                  retention-days: ${{ inputs.rehearse_signing && 3 || 30 }}
+                  if-no-files-found: error
+
+            # Straight to publish-win64, never through sign-win64, which handles one file and nothing else.
+            - name: Upload the files that ship beside it
+              uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+              with:
+                  name: win64-extras
+                  path: win64-extras/
+                  retention-days: ${{ inputs.rehearse_signing && 3 || 30 }}
+                  if-no-files-found: error
+
+    sign-win64:
+        needs: build-win64
+        # Explicit, because the implicit success() fails when anything further up the chain was
+        # skipped, and this job depends on build-win64 alone.
+        if: ${{ !cancelled() && needs.build-win64.result == 'success' }}
+        # INVARIANT: no actions/checkout, no npm and no ./scripts in this job
+        # (scripts/test/release-kit.test.js holds it). A compromised dependency must not be able to
+        # reach the Azure OIDC token. A step that needs repository content belongs in build-win64 or
+        # publish-win64.
+        runs-on: windows-latest
+        timeout-minutes: 15
+        # This is what binds the OIDC token's subject, and the signing app's federated credential in
+        # Entra must match the subject exactly. With GitHub's immutable subject switched on for the
+        # repository, as in every Ptarmigan Labs repository that signs through Azure, it is:
+        #
+        #   repo:ptarmiganlabs@6304190/butler@47508387:environment:release-signing
+        #
+        # Renaming this environment or the repository, or transferring the repository, breaks signing
+        # with AADSTS700213, "no matching federated identity record found". Regenerate the prefix rather
+        # than retyping it, then append ":environment:release-signing":
+        #
+        #   gh api repos/ptarmiganlabs/butler/actions/oidc/customization/sub --jq .sub_claim_prefix
+        environment: release-signing
+        permissions:
+            id-token: write # the OIDC token azure/login exchanges for the signing credential
+            contents: read # nothing is checked out; downloading this run's artifact needs no more
+        outputs:
+            # The SHA-256 of the binary the verify step found signed by Ptarmigan Labs AB.
+            # publish-win64 checks the binary in the zip it attaches against this. A job's outputs are
+            # fixed when it ends, so nothing after this job can change it.
+            signed_sha256: ${{ steps.verify.outputs.sha256 }}
+        steps:
+            - name: Download the unsigned binary
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: win64-unsigned
+                  path: to-sign
+
+            # GitHub already protects artifacts, so this cannot currently fail. It states what the job
+            # assumes, and would catch a later change that rebuilds or re-uploads between build and sign.
+            - name: Verify the artifact is what build-win64 produced
+              shell: pwsh
+              run: |
+                  $expected = (Get-Content to-sign/butler.exe.sha256 -Raw).Trim()
+                  $actual = (Get-FileHash to-sign/butler.exe -Algorithm SHA256).Hash
+                  Write-Host "built  : $expected"
+                  Write-Host "to sign: $actual"
+                  if ($actual -ne $expected) {
+                    throw "Refusing to sign: the artifact does not match the digest build-win64 recorded."
+                  }
+                  Remove-Item to-sign/butler.exe.sha256
+
+            - name: Azure login via OIDC
+              uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Sign with Azure Artifact Signing
+              uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
+              with:
+                  endpoint: ${{ vars.SIGNING_ENDPOINT }}
+                  signing-account-name: ${{ vars.SIGNING_ACCOUNT_NAME }}
+                  certificate-profile-name: ${{ vars.SIGNING_CERT_PROFILE_NAME }}
+                  files-folder: ${{ github.workspace }}\to-sign
+                  files-folder-filter: exe
+                  file-digest: SHA256
+                  timestamp-rfc3161: http://timestamp.acs.microsoft.com
+                  timestamp-digest: SHA256
+
+            # A hard failure, deliberately: if signing fails, the release fails, rather than quietly
+            # shipping something unsigned. Two readings of the same signature (signtool's chain and
+            # timestamp check, and the one Windows itself makes), plus a check that the signer is
+            # Ptarmigan Labs AB, so that a misconfigured certificate profile cannot sign as anyone else.
+            # The binary's hash, taken once all of that has held, becomes the job's output.
+            - name: Verify the signature
+              id: verify
+              shell: pwsh
+              run: |
+                  $st = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
+                        Sort-Object FullName -Descending | Select-Object -First 1
+                  if (-not $st) { throw "signtool.exe not found on this runner." }
+                  & $st.FullName verify /pa /v to-sign\butler.exe
+                  if ($LASTEXITCODE -ne 0) { throw "Signature verification failed." }
+                  $sig = Get-AuthenticodeSignature -LiteralPath to-sign\butler.exe
+                  if ($sig.Status -ne 'Valid') { throw "Windows reads the signature as $($sig.Status): $($sig.StatusMessage)" }
+                  # The certificate's own parsed common name, compared exactly and case-sensitively. Not a
+                  # pattern over the subject string, which "Ptarmigan Labs ABC", "Ptarmigan Labs AB
+                  # Holding" or quoting in the distinguished name could get past.
+                  $signer = $sig.SignerCertificate.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+                  if ($signer -cne 'Ptarmigan Labs AB') {
+                    throw "Signed by an unexpected certificate: '$signer' ($($sig.SignerCertificate.Subject))"
+                  }
+                  $hash = (Get-FileHash -LiteralPath to-sign\butler.exe -Algorithm SHA256).Hash
+                  Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "sha256=$hash"
+                  Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value @(
+                    "Signed by: ``$($sig.SignerCertificate.Subject)``",
+                    "Timestamped by: ``$($sig.TimeStamperCertificate.Subject)``",
+                    "Signed Windows binary SHA256: ``$hash``"
+                  )
+
+            - name: Upload the signed binary
+              uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+              with:
+                  name: win64-signed
+                  path: to-sign/butler.exe
+                  # 30 days for a release, so that a failed publish-win64 can still be re-run on its own;
+                  # see the uploads in build-win64. A rehearsal's binary stays three days, for anyone who
+                  # wants to try it on a real machine.
+                  retention-days: ${{ inputs.rehearse_signing && 3 || 30 }}
+                  if-no-files-found: error
+
+    publish-win64:
+        needs: [release-please, build-win64, sign-win64]
+        # Never on a rehearsal, which has no release to attach to.
+        if: >-
+            !cancelled()
+            && needs.release-please.outputs.releases_created == 'true'
+            && needs.sign-win64.result == 'success'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            contents: write # attaches the zip to the release
+            id-token: write # for the provenance attestation only
+            attestations: write # stores the provenance attestation
+        steps:
+            - name: Download the signed binary
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: win64-signed
+                  path: package
+
+            - name: Download the files that ship beside it
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: win64-extras
+                  path: package
+
+            # Lets anyone check, with `gh attestation verify`, that a given copy of the signed binary came
+            # out of this workflow at this commit. Available because the repository is public.
+            #
+            # Only when this run's commit is the released commit. The attestation takes its source commit
+            # from the run's OIDC token, which is github.sha, while build-win64 built release_sha. The two
+            # differ when a later push's run is the one that creates the release, and an attestation that
+            # names the wrong source commit is worse than none.
+            - name: Generate build provenance
+              if: needs.release-please.outputs.release_sha == github.sha
+              uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+              with:
+                  subject-path: package/butler.exe
+
+            - name: Say why there is no build provenance
+              if: needs.release-please.outputs.release_sha != github.sha
+              env:
+                  RELEASE_SHA: ${{ needs.release-please.outputs.release_sha }}
+                  RUN_SHA: ${{ github.sha }}
+              run: |
+                  echo "::warning::No build provenance attestation for the Windows binary: this run started at $RUN_SHA, but the release and its binary are from $RELEASE_SHA, and the attestation would name the wrong commit."
+
+            # The signed executable at the top, and everything scripts/release-win.ps1 staged beside
+            # it, as it staged it. The layout is the script's to define, not this step's.
+            #
+            # And the butler.exe in the zip is the one sign-win64 found signed, byte for byte, read back
+            # out of the finished zip, so that nothing that replaced package/butler.exe after the
+            # download is attached in its place. Nothing runs between this step and the attach.
+            - name: Zip it
+              env:
+                  ZIP_NAME: butler-${{ needs.release-please.outputs.release_version }}-win.zip
+                  SIGNED_SHA256: ${{ needs.sign-win64.outputs.signed_sha256 }}
+              run: |
+                  set -euo pipefail
+                  if [ -z "$SIGNED_SHA256" ]; then echo "::error::sign-win64 recorded no hash of the binary it verified. Refusing to publish."; exit 1; fi
+                  cd package
+                  test -f butler.exe || { echo "::error::butler.exe is missing from what sign-win64 produced"; exit 1; }
+                  zip -r -9 "../$ZIP_NAME" .
+                  cd ..
+                  unzip -l "$ZIP_NAME"
+                  signed=$(printf '%s' "$SIGNED_SHA256" | tr 'A-F' 'a-f')
+                  zipped=$(unzip -p "$ZIP_NAME" butler.exe | sha256sum | cut -d' ' -f1)
+                  if [ "$zipped" != "$signed" ]; then
+                    echo "::error::The butler.exe in $ZIP_NAME is not the binary sign-win64 verified ($SIGNED_SHA256 signed, $zipped zipped). Refusing to publish."
+                    exit 1
+                  fi
+                  echo "The butler.exe in $ZIP_NAME is the one sign-win64 verified: $zipped"
+
+            - name: Attach to the release
               uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
               with:
                   allowUpdates: true
                   omitBodyDuringUpdate: true
                   omitNameDuringUpdate: true
-                  artifactContentType: raw
-                  # artifactContentType: application/zip
+                  # The release exists already, as a draft, so this is an update and its draft state is
+                  # left alone: a re-run after the release is published cannot turn it back into a draft.
+                  # draft: true still applies should the release somehow not exist.
                   draft: true
+                  omitDraftDuringUpdate: true
+                  artifactContentType: raw
                   tag: ${{ needs.release-please.outputs.release_tag_name }}
                   artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-win.zip
                   token: ${{ github.token }}
-
-            - name: Tidy up before existing
-              run: |
-                  dir
-                  Remove-Item -Path "./build" -Recurse -Force -ErrorAction SilentlyContinue
-                  del "./${env:DIST_FILE_NAME}.exe"
-                  del "./${env:DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-win.zip"
 
     release-linux:
         permissions:
             contents: write
         needs: release-please
         runs-on: ubuntu-latest
-        # timeout-minutes: 15
+        timeout-minutes: 15
 
         if: needs.release-please.outputs.releases_created == 'true'
         env:

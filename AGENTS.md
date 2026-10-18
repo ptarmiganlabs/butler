@@ -29,7 +29,14 @@ Butler is a Node.js application that adds "superpowers" to Qlik Sense Enterprise
 - **Insiders builds** (`scripts/insider-build-mac.sh`) are signed ad hoc only and not notarized: no secret, no keychain.
 - **Keychain:** `scripts/lib/macos-signing-keychain.sh`, the library persona, otlet and magpie-cli share, with butler's own names. A throwaway keychain in a folder of the run's own under `RUNNER_TEMP`, appended to the search list, never the default keychain, deleted at the end and at a signal. It never touches another project's keychain (`build.keychain` included) and needs no shared keychain password. Apple's CA certificates are committed in `release-config/apple-ca/`.
 - **Test:** `npm run test:release-kit` runs both scripts against stand-ins for Apple's tools (`scripts/test/apple-stand-ins/`); the `release-kit` workflow runs it on pull requests. It is not part of `npm test` (Jest).
-- **Rehearse** before a release depends on it: `gh workflow run ci.yaml --ref master -f rehearse_signing=true` signs and notarizes master's HEAD and releases nothing.
+- **Rehearse** before a release depends on it: `gh workflow run ci.yaml --ref master -f rehearse_signing=true` signs and notarizes master's HEAD, signs it for Windows too, and releases nothing.
+
+### Windows Signing
+
+- **Releases** are built, signed and published in three jobs in `ci.yaml`, all on GitHub-hosted runners, as in Butler SOS: `build-win64` runs `scripts/release-win.ps1` with no credential, and it builds, smoke-tests and hashes the unsigned `butler.exe` and stages the config templates in `win64-extras/`. `sign-win64` signs through Azure Artifact Signing, authenticated by GitHub's OIDC token in the `release-signing` environment, and runs no checkout, npm or repository script. `publish-win64` zips the signed binary with the templates and attaches the zip once its `butler.exe` matches the hash `sign-win64` verified.
+- **Insiders builds** (`scripts/insider-build-win.ps1`) are not signed, and run on `windows-latest`.
+- **Test:** `release-kit.yaml` runs `scripts/release-win.ps1 -Zip` on `windows-latest` on pull requests, and `npm run test:release-kit` holds the three jobs' wiring.
+- Insiders builds are not deployed anywhere: a public repository's CI does not reach our machines (plabs-house-rules, `rules/ci/public-repositories.md`).
 
 ### Docker Build (WARNING: SLOW)
 

@@ -12,11 +12,13 @@ jobs:
             security-events: write
         strategy:
             matrix:
-                os: [win-code-sign, macos-15, ubuntu-latest]
+                os: [windows-latest, macos-15, ubuntu-latest]
                 include:
-                    - os: win-code-sign
-                      # artifact_release_name: release-binaries-win
-                      # artifact_release_path: release-binaries-win/*
+                    # On a GitHub-hosted runner: butler is public, and the organisation's
+                    # self-hosted runner groups do not admit public repositories, so the
+                    # win-code-sign runner this leg asked for never started. Not signed: insiders
+                    # builds are for testing, and only a release is signed, in ci.yaml.
+                    - os: windows-latest
                       artifact_insider: butler--win-x64--${{ github.sha }}.zip
 
                     # Arm 64 build, on a GitHub-hosted runner: butler is public, and the
@@ -29,6 +31,7 @@ jobs:
                       artifact_insider: butler--linux-x64--${{ github.sha }}.zip
 
         runs-on: ${{ matrix.os }}
+        timeout-minutes: 30
         steps:
             - name: Checkout repository
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -73,12 +76,11 @@ jobs:
               with:
                   sarif_file: snyk.sarif
 
+            # Unsigned, so this step needs no secret at all.
             - name: Create binaries (Windows)
-              if: matrix.os == 'win-code-sign'
+              if: matrix.os == 'windows-latest'
               env:
                   DIST_FILE_NAME: butler
-                  GITHUB_TOKEN: ${{ secrets.PAT }}
-                  CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
               run: ./scripts/insider-build-win.ps1
 
             # Signed ad hoc, not with the Developer ID, and not notarized: insiders builds are
@@ -102,39 +104,3 @@ jobs:
               with:
                   name: ${{ matrix.artifact_insider }}
                   path: ${{ matrix.artifact_insider }}
-
-    deploy-windows-insider:
-        permissions:
-            actions: read
-        needs: insiders-build
-        runs-on: ${{ vars.BUTLER_INSIDER_DEPLOY_RUNNER || 'host2-win' }}
-        if: success()
-        env:
-            BUTLER_INSIDER_SERVICE_NAME: ${{ vars.BUTLER_INSIDER_SERVICE_NAME || 'Butler insiders build' }}
-            BUTLER_INSIDER_DEPLOY_PATH: ${{ vars.BUTLER_INSIDER_DEPLOY_PATH || 'C:\butler-insider' }}
-            BUTLER_INSIDER_SERVICE_TIMEOUT: ${{ vars.BUTLER_INSIDER_SERVICE_TIMEOUT || '30' }}
-            BUTLER_INSIDER_DOWNLOAD_PATH: ${{ vars.BUTLER_INSIDER_DOWNLOAD_PATH || './download' }}
-        steps:
-            - name: Download Windows insider build artifact
-              uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
-              with:
-                  name: butler--win-x64--${{ github.sha }}.zip
-                  path: ${{ env.BUTLER_INSIDER_DOWNLOAD_PATH }}
-
-            - name: Deploy Windows insider build
-              shell: powershell
-              continue-on-error: true
-              env:
-                  RUNNER_NAME: ${{ runner.name }}
-                  GITHUB_SHA: ${{ github.sha }}
-              run: ./scripts/deploy-insider-win.ps1
-
-            - name: Verify deployment
-              shell: powershell
-              continue-on-error: true
-              run: ./scripts/verify-insider-deploy.ps1
-
-            - name: Check for errors in log files
-              shell: powershell
-              continue-on-error: true
-              run: ./scripts/check-insider-logs.ps1
