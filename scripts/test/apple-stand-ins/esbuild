@@ -1,0 +1,12 @@
+#!/bin/bash
+# esbuild ... --outfile=<file> ...: leaves a file where the bundle would be.
+# The release kit copies this to node_modules/.bin/esbuild, which is where the
+# scripts call it from.
+printf 'esbuild %s\n' "$*" >> "$LOG"
+. "$STAND_INS/held" esbuild
+for argument in "$@"; do
+  case "$argument" in
+    --outfile=*) mkdir -p "$(dirname "${argument#--outfile=}")"; printf 'a bundle\n' > "${argument#--outfile=}" ;;
+  esac
+done
+exit 0

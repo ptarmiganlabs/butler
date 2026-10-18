@@ -1,0 +1,5 @@
+#!/bin/bash
+# git rev-parse --short HEAD: a commit, for the insiders version stamp.
+printf 'git %s\n' "$*" >> "$LOG"
+if [ "$1 $2 $3" = "rev-parse --short HEAD" ]; then echo abc1234; fi
+exit 0

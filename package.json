@@ -15,6 +15,7 @@
         "test:ci": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit",
         "test:watch": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit --watch --coverage",
         "test:jshint": "node_modules/jshint/bin/jshint butler.js",
+        "test:release-kit": "node --test scripts/test/release-kit.test.js",
         "format": "npm run format:prettier",
         "format:prettier": "npx prettier --config .prettierrc \"./**/*.{ts,css,less,js,html}\" --write",
         "butler": "node src/butler.js",

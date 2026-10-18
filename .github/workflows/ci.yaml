@@ -1,6 +1,17 @@
 name: ci
 on:
     workflow_dispatch:
+        inputs:
+            # Builds, signs and notarizes the macOS binary of the dispatched commit, then stops:
+            # nothing is released, and the zip is kept as a workflow artifact for three days. The
+            # only way to prove the signing on macos-15 before a release depends on it. Dispatch it
+            # on master; the release-signing environment admits no other branch:
+            #
+            #   gh workflow run ci.yaml --ref master -f rehearse_signing=true
+            rehearse_signing:
+                description: Build, sign and notarize the macOS binary, and release nothing
+                type: boolean
+                default: false
     push:
         branches:
             - master
@@ -143,28 +154,31 @@ jobs:
                   path: './build/'
                   retention-days: 3
 
+    # On a GitHub-hosted runner: butler is public, and the organisation's self-hosted runner
+    # groups do not admit public repositories, so a job asking for the build Mac never starts
+    # (plabs-house-rules, rules/ci/public-repositories.md). Each run gets a fresh VM, so nothing
+    # the signing leaves behind outlives the job.
     release-macos-arm64:
         permissions:
             contents: write
         needs: release-please
-        runs-on:
-            - self-hosted
-            - arm64
-            - macos
-            - sp53
-        # timeout-minutes: 15
+        runs-on: macos-15
+        # For its deployment policy, which admits master and nothing else, so that only merged code
+        # signs with the production identity. The Apple secrets are organisation secrets, which an
+        # environment does not scope.
+        environment: release-signing
+        timeout-minutes: 30
 
-        if: needs.release-please.outputs.releases_created == 'true'
+        if: >-
+            needs.release-please.outputs.releases_created == 'true'
+            || (github.event_name == 'workflow_dispatch' && inputs.rehearse_signing)
         env:
             DIST_FILE_NAME: butler
             GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_PAT }}
-            MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
-            MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
-            MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
-            MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
-            PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
-            PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
-            PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+        # The Apple secrets are on the step that signs, not on the job. As job env they reached
+        # every step here: setup-node, npm ci with its dependencies' install scripts, and the
+        # third-party action that attaches the zip. scripts/test/release-kit.test.js holds them to
+        # that one step.
         steps:
             - name: Release tag and upload url from previous job
               run: |
@@ -187,12 +201,30 @@ jobs:
                   pwd
                   npm ci --include=dev --include=prod
 
-            - name: Build binaries
+            # A release's zip is named for its version. A rehearsal has none, so its zip is named for
+            # the commit, and cannot be mistaken for a release's.
+            - name: Name the build
+              id: name
               env:
                   RELEASE_VERSION: ${{ needs.release-please.outputs.release_version }}
+              run: |
+                  if [ -n "$RELEASE_VERSION" ]; then version="$RELEASE_VERSION"; else version="rehearsal-${GITHUB_SHA:0:7}"; fi
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+                  echo "building $version"
+
+            - name: Build, sign and notarize
+              env:
+                  RELEASE_VERSION: ${{ steps.name.outputs.version }}
+                  MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
+                  MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
+                  MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
+                  PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+                  PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+                  PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
               run: bash ./scripts/release-macos.sh
 
             - name: Upload release artifacts to GitHub
+              if: needs.release-please.outputs.releases_created == 'true'
               uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
               with:
                   allowUpdates: true
@@ -205,16 +237,14 @@ jobs:
                   artifacts: ./butler-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip
                   token: ${{ github.token }}
 
-            - name: Tidy up before existing
-              run: |
-                  security delete-keychain build.keychain
-
-                  pwd
-                  ls -la
-                  rm -r build
-                  rm certificate.p12
-                  rm "./${DIST_FILE_NAME}"
-                  rm "./${DIST_FILE_NAME}-${{ needs.release-please.outputs.release_version }}-macos-arm64.zip"
+            - name: Keep the rehearsal's zip
+              if: needs.release-please.outputs.releases_created != 'true'
+              uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+              with:
+                  name: butler-${{ steps.name.outputs.version }}-macos-arm64
+                  path: ./butler-${{ steps.name.outputs.version }}-macos-arm64.zip
+                  retention-days: 3
+                  if-no-files-found: error
 
     release-win64:
         permissions:

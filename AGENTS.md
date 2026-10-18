@@ -23,6 +23,14 @@ Butler is a Node.js application that adds "superpowers" to Qlik Sense Enterprise
 - Test built application: `node build/build.cjs --version`
 - The build process is extremely fast (sub-second for main compilation)
 
+### macOS Signing
+
+- **Releases** are built, signed with the Developer ID and notarized by `scripts/release-macos.sh`, in `ci.yaml`'s `release-macos-arm64` job on a GitHub-hosted `macos-15` runner, in the `release-signing` environment (master only). The Apple secrets go to that one step and nothing else.
+- **Insiders builds** (`scripts/insider-build-mac.sh`) are signed ad hoc only and not notarized: no secret, no keychain.
+- **Keychain:** `scripts/lib/macos-signing-keychain.sh`, the library persona, otlet and magpie-cli share, with butler's own names. A throwaway keychain in a folder of the run's own under `RUNNER_TEMP`, appended to the search list, never the default keychain, deleted at the end and at a signal. It never touches another project's keychain (`build.keychain` included) and needs no shared keychain password. Apple's CA certificates are committed in `release-config/apple-ca/`.
+- **Test:** `npm run test:release-kit` runs both scripts against stand-ins for Apple's tools (`scripts/test/apple-stand-ins/`); the `release-kit` workflow runs it on pull requests. It is not part of `npm test` (Jest).
+- **Rehearse** before a release depends on it: `gh workflow run ci.yaml --ref master -f rehearse_signing=true` signs and notarizes master's HEAD and releases nothing.
+
 ### Docker Build (WARNING: SLOW)
 
 - Build Docker image: `docker build -t butler-test .` — takes 10+ minutes due to npm install in container. NEVER CANCEL. Set timeout to 20+ minutes.

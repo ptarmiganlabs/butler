@@ -1,0 +1,5 @@
+#!/bin/bash
+# npx postject <binary> NODE_SEA_BLOB <blob> ...: injects nothing.
+printf 'npx %s\n' "$*" >> "$LOG"
+. "$STAND_INS/held" npx
+exit 0

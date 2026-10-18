@@ -1,0 +1,8 @@
+#!/bin/bash
+# xcrun notarytool submit|... and xcrun stapler ...: says yes. A submission
+# sleeps $FAKE_NOTARY_SLEEP seconds first when that is set.
+printf 'xcrun %s\n' "$*" >> "$LOG"
+if [ "$1 $2" = "notarytool submit" ] && [ -n "${FAKE_NOTARY_SLEEP:-}" ]; then
+  sleep "$FAKE_NOTARY_SLEEP"
+fi
+exit 0
