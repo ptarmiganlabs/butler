@@ -12,15 +12,17 @@ jobs:
             security-events: write
         strategy:
             matrix:
-                os: [win-code-sign, mac-build2, ubuntu-latest]
+                os: [win-code-sign, macos-15, ubuntu-latest]
                 include:
                     - os: win-code-sign
                       # artifact_release_name: release-binaries-win
                       # artifact_release_path: release-binaries-win/*
                       artifact_insider: butler--win-x64--${{ github.sha }}.zip
 
-                    # Arm 64 build
-                    - os: mac-build2
+                    # Arm 64 build, on a GitHub-hosted runner: butler is public, and the
+                    # organisation's self-hosted runner groups do not admit public repositories
+                    # (plabs-house-rules, rules/ci/public-repositories.md).
+                    - os: macos-15
                       artifact_insider: butler--macos-arm64--${{ github.sha }}.zip
 
                     - os: ubuntu-latest
@@ -79,18 +81,13 @@ jobs:
                   CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
               run: ./scripts/insider-build-win.ps1
 
+            # Signed ad hoc, not with the Developer ID, and not notarized: insiders builds are
+            # for testing (plabs-house-rules, rules/ci/public-repositories.md). So this step
+            # needs no secret at all.
             - name: Create binaries (macOS)
-              if: matrix.os == 'mac-build2'
+              if: matrix.os == 'macos-15'
               env:
                   DIST_FILE_NAME: butler
-                  GITHUB_TOKEN: ${{ secrets.PAT }}
-                  MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE_BASE64_CODESIGN }}
-                  MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_PWD }}
-                  MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_CODESIGN_NAME }}
-                  MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
-                  PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
-                  PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
-                  PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
               run: bash ./scripts/insider-build-mac.sh
 
             - name: Create binaries (Linux)
