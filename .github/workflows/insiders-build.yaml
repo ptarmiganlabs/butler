@@ -12,11 +12,13 @@ jobs:
             security-events: write
         strategy:
             matrix:
-                os: [win-code-sign, macos-15, ubuntu-latest]
+                os: [windows-latest, macos-15, ubuntu-latest]
                 include:
-                    - os: win-code-sign
-                      # artifact_release_name: release-binaries-win
-                      # artifact_release_path: release-binaries-win/*
+                    # On a GitHub-hosted runner: butler is public, and the organisation's
+                    # self-hosted runner groups do not admit public repositories, so the
+                    # win-code-sign runner this leg asked for never started. Not signed: insiders
+                    # builds are for testing, and only a release is signed, in ci.yaml.
+                    - os: windows-latest
                       artifact_insider: butler--win-x64--${{ github.sha }}.zip
 
                     # Arm 64 build, on a GitHub-hosted runner: butler is public, and the
@@ -73,12 +75,11 @@ jobs:
               with:
                   sarif_file: snyk.sarif
 
+            # Unsigned, so this step needs no secret at all.
             - name: Create binaries (Windows)
-              if: matrix.os == 'win-code-sign'
+              if: matrix.os == 'windows-latest'
               env:
                   DIST_FILE_NAME: butler
-                  GITHUB_TOKEN: ${{ secrets.PAT }}
-                  CODESIGN_WIN_THUMBPRINT: ${{ secrets.WIN_CODESIGN_THUMBPRINT}}
               run: ./scripts/insider-build-win.ps1
 
             # Signed ad hoc, not with the Developer ID, and not notarized: insiders builds are
