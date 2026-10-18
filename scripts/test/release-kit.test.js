@@ -18,6 +18,12 @@
  * which is checked before anything runs, HOME is a folder of the test's own,
  * and the scripts run from a copy.
  *
+ * The Windows release cannot run here at all. What is held below is its
+ * wiring in ci.yaml: build, sign and publish in three jobs, the signing job
+ * running nothing from the repository, and the publish step refusing a binary
+ * sign-win64 did not verify. release-kit.yaml builds the unsigned binary on
+ * windows-latest with scripts/release-win.ps1.
+ *
  * Not a Jest suite: Jest's rootDir is src/. node:test, which needs nothing.
  */
 import assert from 'node:assert/strict';
@@ -717,6 +723,177 @@ describe('the workflows that run the macOS scripts', () => {
             })),
         ];
         const found = sources.filter(({ text }) => /build\.keychain|MACOS_CI_KEYCHAIN_PWD/.test(text)).map(({ file }) => file);
+        assert.deepEqual(found, []);
+    });
+});
+
+// The Windows release, in ci.yaml's three jobs. None of it can run here: it needs
+// Windows and the Azure signing credential. What can be held is its wiring, the
+// reason it is three jobs (plabs-house-rules, rules/ci/public-repositories.md),
+// and the publish step that checks the zip against what sign-win64 verified.
+/** GitHub's own runners, the only ones a public repository may use. */
+const HOSTED = ['ubuntu-latest', 'ubuntu-slim', 'ubuntu-24.04-arm', 'windows-latest', 'macos-15'];
+/** @param {any} job @returns {string[]} the labels a job may ask for, matrix legs included */
+const runsOn = (job) => (job['runs-on'] === '${{ matrix.os }}' ? job.strategy.matrix.os : [job['runs-on']].flat());
+/** @param {any} job */
+const runs = (job) => (job.steps ?? []).map((/** @type {any} */ s) => s.run ?? '').join('\n');
+
+describe('the Windows release jobs', () => {
+    const ci = workflow('ci.yaml');
+    const build = ci.jobs['build-win64'];
+    const sign = ci.jobs['sign-win64'];
+    const publish = ci.jobs['publish-win64'];
+    const insiders = workflow('insiders-build.yaml').jobs['insiders-build'];
+
+    it('replace release-win64, which asked for a self-hosted runner that never starts', () => {
+        assert.equal(ci.jobs['release-win64'], undefined);
+        assert.deepEqual(
+            [build, sign, publish].map((job) => job['runs-on']),
+            ['windows-latest', 'windows-latest', 'ubuntu-latest'],
+        );
+    });
+
+    it('sign in a job that runs nothing from the repository', () => {
+        // No checkout, no npm and no script of the repository's: a compromised
+        // dependency must not be able to reach the OIDC token.
+        const uses = sign.steps.map((/** @type {any} */ s) => s.uses?.split('@')[0]).filter(Boolean);
+        assert.deepEqual(uses, ['actions/download-artifact', 'azure/login', 'azure/artifact-signing-action', 'actions/upload-artifact']);
+        assert.doesNotMatch(runs(sign), /\bnpm\b|\bnpx\b|\bnode\b|\.\/scripts|\.\\scripts/);
+    });
+
+    it('give the signing credential to sign-win64 alone, in the master-only environment', () => {
+        assert.equal(sign.environment, 'release-signing');
+        assert.deepEqual(sign.permissions, { 'id-token': 'write', contents: 'read' });
+        const holding = [];
+        for (const file of readdirSync(WORKFLOWS).filter((name) => /\.ya?ml$/.test(name))) {
+            for (const [name, job] of Object.entries(workflow(file).jobs ?? {})) {
+                if (/vars\.(AZURE|SIGNING)_/.test(JSON.stringify(job))) holding.push(`${file} ${name}`);
+            }
+        }
+        assert.deepEqual(holding, ['ci.yaml sign-win64']);
+        for (const job of [build, publish]) {
+            assert.equal(job.environment, undefined);
+            assert.doesNotMatch(JSON.stringify(job), /secrets\./);
+        }
+        assert.deepEqual(build.permissions, { contents: 'read' });
+    });
+
+    it('sign only what build-win64 recorded, as Ptarmigan Labs AB, and hand on the hash it verified', () => {
+        assert.match(runs(sign), /throw "Refusing to sign: the artifact does not match the digest build-win64 recorded\."/);
+        const verify = sign.steps.find((/** @type {any} */ s) => s.id === 'verify');
+        assert.match(verify.run, /\$signer -cne 'Ptarmigan Labs AB'/);
+        assert.match(verify.run, /verify \/pa \/v to-sign\\butler\.exe/);
+        assert.match(verify.run, /GITHUB_OUTPUT -Value "sha256=\$hash"/);
+        assert.equal(sign.outputs.signed_sha256, '${{ steps.verify.outputs.sha256 }}');
+        const zip = publish.steps.find((/** @type {any} */ s) => s.name === 'Zip it');
+        assert.equal(zip.env.SIGNED_SHA256, '${{ needs.sign-win64.outputs.signed_sha256 }}');
+    });
+
+    it('rehearse signing without publishing anything', () => {
+        assert.match(build.if, /github\.event_name == 'workflow_dispatch' && inputs\.rehearse_signing/);
+        assert.equal(sign.if, "${{ !cancelled() && needs.build-win64.result == 'success' }}");
+        assert.match(publish.if, /needs\.release-please\.outputs\.releases_created == 'true'/);
+        assert.match(publish.if, /needs\.sign-win64\.result == 'success'/);
+    });
+
+    it("attach the zip under the name the release's Windows asset has always had", () => {
+        const attach = publish.steps.find((/** @type {any} */ s) => s.uses?.startsWith('ncipollo/release-action'));
+        assert.equal(attach.with.artifacts, './butler-${{ needs.release-please.outputs.release_version }}-win.zip');
+        assert.equal(
+            publish.steps.find((/** @type {any} */ s) => s.name === 'Zip it').env.ZIP_NAME,
+            'butler-${{ needs.release-please.outputs.release_version }}-win.zip',
+        );
+    });
+
+    it('publish only a zip whose butler.exe is the binary sign-win64 verified', { skip }, async (t) => {
+        // The step itself, run as the runner runs a step with no shell named,
+        // in a folder laid out as the two downloads leave it.
+        const zip = publish.steps.find((/** @type {any} */ s) => s.name === 'Zip it');
+        const dir = await mkdtemp(path.join(tmpdir(), 'butler-publish-win64-'));
+        t.after(() => rm(dir, { recursive: true, force: true }));
+        const script = path.join(dir, 'step.sh');
+        await writeFile(script, zip.run);
+        const run = async (/** @type {string} */ signed, /** @type {string} */ name) => {
+            const work = path.join(dir, name);
+            await mkdir(path.join(work, 'package', 'config'), { recursive: true });
+            await writeFile(path.join(work, 'package', 'butler.exe'), 'the binary sign-win64 verified');
+            await writeFile(path.join(work, 'package', 'config', 'production_template.yaml'), 'template');
+            return spawnSync(BASH, ['-e', script], {
+                cwd: work,
+                env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', ZIP_NAME: 'butler-9.9.9-win.zip', SIGNED_SHA256: signed },
+                encoding: 'utf8',
+            });
+        };
+        const verified = spawnSync('/bin/sh', ['-c', "printf '%s' 'the binary sign-win64 verified' | sha256sum | cut -d' ' -f1"], {
+            env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin' },
+            encoding: 'utf8',
+        }).stdout.trim();
+        assert.match(verified, /^[0-9a-f]{64}$/);
+
+        // PowerShell's Get-FileHash, which sign-win64 uses, writes the hash in capitals.
+        const good = await run(verified.toUpperCase(), 'good');
+        assert.equal(good.status, 0, good.stdout + good.stderr);
+        assert.match(good.stdout, /is the one sign-win64 verified/);
+
+        const swapped = await run('0'.repeat(64), 'swapped');
+        assert.notEqual(swapped.status, 0, 'a binary sign-win64 never verified was zipped for publishing');
+        assert.match(swapped.stdout, /is not the binary sign-win64 verified/);
+
+        const none = await run('', 'none');
+        assert.notEqual(none.status, 0, 'published without a hash from sign-win64');
+        assert.match(none.stdout, /recorded no hash/);
+    });
+
+    it('build the insiders Windows binary on windows-latest, unsigned, with no secret', () => {
+        assert.ok(insiders.strategy.matrix.os.includes('windows-latest'));
+        const step = insiders.steps.find((/** @type {any} */ s) => s.run?.includes('scripts/insider-build-win.ps1'));
+        assert.equal(step.if, "matrix.os == 'windows-latest'");
+        assert.doesNotMatch(JSON.stringify(step), /secrets\./);
+        const code = readFileSync(path.join(ROOT, 'scripts', 'insider-build-win.ps1'), 'utf8')
+            .split('\n')
+            .filter((line) => !/^\s*#/.test(line))
+            .join('\n');
+        assert.doesNotMatch(code, /\bsign \/|THUMBPRINT/);
+    });
+});
+
+describe('every workflow', () => {
+    const files = readdirSync(WORKFLOWS).filter((name) => /\.ya?ml$/.test(name));
+
+    it('runs every job on a GitHub-hosted runner', () => {
+        // The organisation's self-hosted runner groups do not admit public
+        // repositories, so a job that asks for one queues for a day and is
+        // cancelled, and nothing reports a failure.
+        const elsewhere = [];
+        for (const file of files) {
+            for (const [name, job] of Object.entries(workflow(file).jobs ?? {})) {
+                for (const label of runsOn(job)) if (!HOSTED.includes(label)) elsewhere.push(`${file} ${name}: ${label}`);
+            }
+        }
+        assert.deepEqual(elsewhere, []);
+    });
+
+    it('gives every job a timeout', () => {
+        // But the agentic workflow's lock file, which gh aw compile writes from
+        // its .md, where the agent's timeout is set.
+        const without = [];
+        for (const file of files.filter((name) => !name.endsWith('.lock.yml'))) {
+            for (const [name, job] of Object.entries(workflow(file).jobs ?? {})) {
+                if (!(job['timeout-minutes'] > 0)) without.push(`${file} ${name}`);
+            }
+        }
+        assert.deepEqual(without, []);
+    });
+
+    it('names no retired signing secret, deploy variable or self-hosted runner', () => {
+        const found = files.filter((name) =>
+            /WIN_CODESIGN_|CODESIGN_WIN_|BUTLER_INSIDER_|win-code-sign|self-hosted|host2-win/.test(
+                readFileSync(path.join(WORKFLOWS, name), 'utf8')
+                    .split('\n')
+                    .filter((line) => !/^\s*#/.test(line))
+                    .join('\n'),
+            ),
+        );
         assert.deepEqual(found, []);
     });
 });
