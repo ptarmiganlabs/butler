@@ -1,0 +1,5 @@
+#!/bin/bash
+# codesign: signs nothing, and says yes - to --remove-signature, to an ad-hoc
+# --sign -, to a Developer ID signature and to --verify alike.
+printf 'codesign %s\n' "$*" >> "$LOG"
+exit 0

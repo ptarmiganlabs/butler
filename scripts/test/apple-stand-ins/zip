@@ -1,0 +1,12 @@
+#!/bin/bash
+# zip [-r] [-u] <archive> <file>... [-x <pattern>...]: records the folder it ran
+# in and what it was asked, and makes the archive, empty, if it is not there.
+printf 'zip %s\n' "$*" >> "$LOG"
+printf 'zip ran in: %s\n' "${PWD##*/}" >> "$LOG"
+for argument in "$@"; do
+  case "$argument" in
+    -*) ;;
+    *) : >> "$argument"; break ;;
+  esac
+done
+exit 0

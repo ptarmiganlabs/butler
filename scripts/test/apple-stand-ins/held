@@ -1,0 +1,7 @@
+# Sourced by the build's stand-ins: logs which of the signing secrets the
+# calling tool could read from its environment. Names only, never values.
+held=
+for name in MACOS_CERTIFICATE MACOS_CERTIFICATE_PWD PROD_MACOS_NOTARIZATION_PWD MACOS_CI_KEYCHAIN_PWD; do
+  if [ -n "${!name+x}" ]; then held="$held $name"; fi
+done
+printf '%s env holds:%s\n' "$1" "${held:- none of the secrets}" >> "$LOG"

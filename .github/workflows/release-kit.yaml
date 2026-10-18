@@ -1,0 +1,59 @@
+# Runs the macOS signing scripts against stand-ins for Apple's tools
+# (scripts/test/release-kit.test.js), so that a fault in their refusals or their
+# teardown is found on a pull request rather than in a release. No secret, no
+# keychain, no signature: the stand-ins only log what they are asked.
+#
+# macos-15 because that is where the release job runs the scripts, under the
+# same /bin/bash 3.2. GitHub-hosted, as everything in a public repository is:
+# a pull request from a fork runs here too.
+name: release-kit
+on:
+    pull_request:
+        paths:
+            - 'scripts/**'
+            - 'release-config/**'
+            - 'package.json'
+            - '.github/workflows/ci.yaml'
+            - '.github/workflows/insiders-build.yaml'
+            - '.github/workflows/release-kit.yaml'
+    push:
+        branches:
+            - master
+        paths:
+            - 'scripts/**'
+            - 'release-config/**'
+            - 'package.json'
+            - '.github/workflows/ci.yaml'
+            - '.github/workflows/insiders-build.yaml'
+            - '.github/workflows/release-kit.yaml'
+    workflow_dispatch:
+permissions: {}
+concurrency:
+    group: release-kit-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+    cancel-in-progress: true
+jobs:
+    release-kit:
+        runs-on: macos-15
+        timeout-minutes: 15
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  node-version: 24
+
+            # For js-yaml, which reads the workflows. --ignore-scripts because nothing here needs a
+            # dependency's install script.
+            - name: Install dependencies
+              run: npm ci --ignore-scripts
+
+            - name: Run the signing scripts against stand-ins
+              run: |
+                  /bin/bash --version | head -1
+                  npm run test:release-kit

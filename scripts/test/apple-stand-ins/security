@@ -1,0 +1,44 @@
+#!/bin/bash
+# security: the keychain search list lives in $FAKE_KEYCHAINS, one path a line.
+printf 'security %s\n' "$*" >> "$LOG"
+case "$1" in
+  list-keychains)
+    # security list-keychains -d user [-s keychain...]. With -s and no
+    # keychain, the real one sets an empty list, and so does this.
+    if [ "$4" = "-s" ]; then
+      shift 4
+      : > "$FAKE_KEYCHAINS"
+      for keychain in "$@"; do printf '%s\n' "$keychain" >> "$FAKE_KEYCHAINS"; done
+    elif [ -n "${FAKE_LIST_KEYCHAINS_FAILS:-}" ]; then
+      # As the real one answers when it cannot reach securityd.
+      echo 'security: SecKeychainCopyDomainSearchList: User interaction is not allowed.' >&2
+      exit 1
+    else
+      while IFS= read -r keychain; do printf '    "%s"\n' "$keychain"; done < "$FAKE_KEYCHAINS"
+    fi
+    ;;
+  default-keychain)
+    # security default-keychain -d user [-s keychain]. The default is the
+    # login keychain unless $FAKE_DEFAULT_KEYCHAIN names another.
+    [ "$4" = "-s" ] || printf '    "%s"\n' "${FAKE_DEFAULT_KEYCHAIN:-$HOME/Library/Keychains/login.keychain-db}"
+    ;;
+  create-keychain)
+    for keychain in "$@"; do :; done
+    : > "$keychain"
+    ;;
+  delete-keychain)
+    # A bare name is a keychain in ~/Library/Keychains, as the real one reads it.
+    case "$2" in
+      */*) rm -f "$2" ;;
+      *) rm -f "$HOME/Library/Keychains/$2-db" ;;
+    esac
+    ;;
+  import)
+    # The mode of the file imported from, so that a test can see who else
+    # could have read the certificate while it lay decoded.
+    # GNU stat first, for the reason in the ditto stand-in.
+    mode=$(stat -c '%a' "$2" 2>/dev/null || stat -f '%Lp' "$2" 2>/dev/null || echo '?')
+    printf 'import-mode: %s %s\n' "$mode" "$2" >> "$LOG"
+    ;;
+esac
+exit 0

@@ -1,0 +1,11 @@
+#!/bin/bash
+# node --experimental-sea-config <file>: leaves the blob where the scripts'
+# sea-config.json puts it. The scripts also copy this file, as `command -v
+# node`, to be the binary they sign.
+printf 'node %s\n' "$*" >> "$LOG"
+. "$STAND_INS/held" node
+if [ "$1" = "--experimental-sea-config" ]; then
+  mkdir -p build
+  printf 'a blob\n' > build/sea-prep.blob
+fi
+exit 0
