@@ -55,6 +55,8 @@ jobs:
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
               with:
                   node-version: 24
+                  # The newest 24.x, not whichever one this runner has cached.
+                  check-latest: true
 
             # For js-yaml, which reads the workflows. --ignore-scripts because nothing here needs a
             # dependency's install script.
@@ -81,6 +83,8 @@ jobs:
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
               with:
                   node-version: 24
+                  # The newest 24.x, not whichever one this runner has cached.
+                  check-latest: true
 
             # As build-win64 installs them.
             - name: Install dependencies
