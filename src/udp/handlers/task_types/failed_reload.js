@@ -33,7 +33,7 @@ import { postReloadTaskFailureNotificationInfluxDb } from '../../../lib/influxdb
  * Handler for failed reload tasks.
  *
  * Processes reload task failures by:
- * - Retrieving script logs (if enabled for notifications)
+ * - Retrieving script logs (if needed for notifications or for storing on disk)
  * - Extracting app and task metadata from QRS
  * - Storing script logs to disk (if configured)
  * - Sending notifications via configured channels:
@@ -72,14 +72,15 @@ export const handleFailedReloadTask = async (msg, taskMetadata) => {
         );
 
         // Get script log for failed app reloads tasks
-        // Only done if it's actually needed based on enabled notification types
+        // Only done if it's actually needed based on enabled notification types, or for storing it on disk
         let scriptLog;
         if (
             globals.config.get('Butler.incidentTool.newRelic.enable') === true ||
             globals.config.get('Butler.slackNotification.enable') === true ||
             globals.config.get('Butler.teamsNotification.enable') === true ||
             globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true ||
-            globals.config.get('Butler.emailNotification.enable') === true
+            globals.config.get('Butler.emailNotification.enable') === true ||
+            globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable') === true
         ) {
             scriptLog = await getScriptLog(msg[5], 0, 0);
 
