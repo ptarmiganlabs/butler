@@ -453,13 +453,16 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                 const appOwner = await getAppOwner(reloadParams.appId);
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = reloadParams.scriptLog;
+                let scriptLogData = reloadParams.scriptLog;
 
                 // Handle case where scriptLog retrieval failed
                 if (scriptLogData === null || scriptLogData === undefined) {
                     globals.logger.warn(
                         `[QSEOW] TEAMS RELOAD TASK FAILED: Script log data is not available. Teams notification will be sent without script log details.`,
                     );
+
+                    // Leave the script log fields empty, but give the ones edited below a string value
+                    scriptLogData = { executionDetailsConcatenated: '', scriptLogHead: '', scriptLogTail: '' };
                 } else {
                     // Reduce script log lines to only the ones we want to send to Teams
                     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskFailure.headScriptLogLines');
@@ -669,13 +672,16 @@ export function sendReloadTaskAbortedNotificationTeams(reloadParams) {
                 const appOwner = await getAppOwner(reloadParams.appId);
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = reloadParams.scriptLog;
+                let scriptLogData = reloadParams.scriptLog;
 
                 // Handle case where scriptLog retrieval failed
                 if (scriptLogData === null || scriptLogData === undefined) {
                     globals.logger.warn(
                         `[QSEOW] TEAMS RELOAD TASK ABORTED: Script log data is not available. Teams notification will be sent without script log details.`,
                     );
+
+                    // Leave the script log fields empty, but give the ones edited below a string value
+                    scriptLogData = { executionDetailsConcatenated: '', scriptLogHead: '', scriptLogTail: '' };
                 } else {
                     // Reduce script log lines to only the ones we want to send to Teams
                     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.teamsNotification.reloadTaskAborted.headScriptLogLines');

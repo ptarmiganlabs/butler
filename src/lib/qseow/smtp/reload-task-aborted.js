@@ -189,13 +189,16 @@ export async function sendReloadTaskAbortedNotificationEmail(reloadParams) {
     }
 
     // Get script logs, if enabled in the config file
-    const scriptLogData = reloadParams.scriptLog;
+    let scriptLogData = reloadParams.scriptLog;
 
     // Handle case where scriptLog retrieval failed
     if (scriptLogData === null || scriptLogData === undefined) {
         globals.logger.warn(
             `[QSEOW] EMAIL RELOAD TASK ABORTED ALERT: Script log data is not available. Email will be sent without script log details.`,
         );
+
+        // Leave the script log fields in the email empty
+        scriptLogData = {};
     } else {
         // Reduce script log lines to only the ones we want to send in email
         scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskAborted.headScriptLogLines');

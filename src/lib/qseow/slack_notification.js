@@ -461,13 +461,16 @@ export function sendReloadTaskFailureNotificationSlack(reloadParams) {
                 const appOwner = await getAppOwner(reloadParams.appId);
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = reloadParams.scriptLog;
+                let scriptLogData = reloadParams.scriptLog;
 
                 // Handle case where scriptLog retrieval failed
                 if (scriptLogData === null || scriptLogData === undefined) {
                     globals.logger.warn(
                         `[QSEOW] SLACK RELOAD TASK FAILED: Script log data is not available. Slack notification will be sent without script log details.`,
                     );
+
+                    // Leave the script log fields empty, but give the ones edited below a string value
+                    scriptLogData = { executionDetailsConcatenated: '', scriptLogHead: '', scriptLogTail: '' };
                 } else {
                     // Reduce script log lines to only the ones we want to send to Slack
                     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskFailure.headScriptLogLines');
@@ -677,13 +680,16 @@ export function sendReloadTaskAbortedNotificationSlack(reloadParams) {
                 const appOwner = await getAppOwner(reloadParams.appId);
 
                 // Get script logs, if enabled in the config file
-                const scriptLogData = reloadParams.scriptLog;
+                let scriptLogData = reloadParams.scriptLog;
 
                 // Handle case where scriptLog retrieval failed
                 if (scriptLogData === null || scriptLogData === undefined) {
                     globals.logger.warn(
                         `[QSEOW] SLACK RELOAD TASK ABORTED: Script log data is not available. Slack notification will be sent without script log details.`,
                     );
+
+                    // Leave the script log fields empty, but give the ones edited below a string value
+                    scriptLogData = { executionDetailsConcatenated: '', scriptLogHead: '', scriptLogTail: '' };
                 } else {
                     // Reduce script log lines to only the ones we want to send to Slack
                     scriptLogData.scriptLogHeadCount = globals.config.get('Butler.slackNotification.reloadTaskAborted.headScriptLogLines');
