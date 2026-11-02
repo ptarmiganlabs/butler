@@ -108,8 +108,8 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // 3.1 Yes: Should all app owners get alerts?
         let appOwnerSendList = [];
 
-        // If the current app's owner doesn't have an email address there is nothing to do
-        if (appOwner.emails.length > 0) {
+        // If the current app's owner doesn't have an email address, or couldn't be read from the QRS, there is nothing to do
+        if (appOwner.emails?.length > 0) {
             if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') === true) {
                 // 3.1.1 Yes: Add app owners' email addresses to app owner send list
                 appOwnerSendList.push({
@@ -195,13 +195,16 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
     }
 
     // Get script logs, if enabled in the config file
-    const scriptLogData = reloadParams.scriptLog;
+    let scriptLogData = reloadParams.scriptLog;
 
     // Handle case where scriptLog retrieval failed
     if (scriptLogData === null || scriptLogData === undefined) {
         globals.logger.warn(
             `[QSEOW] EMAIL RELOAD TASK FAILED ALERT: Script log data is not available. Email will be sent without script log details.`,
         );
+
+        // Leave the script log fields in the email empty
+        scriptLogData = {};
     } else {
         // Reduce script log lines to only the ones we want to send in email
         scriptLogData.scriptLogHeadCount = globals.config.get('Butler.emailNotification.reloadTaskFailure.headScriptLogLines');
