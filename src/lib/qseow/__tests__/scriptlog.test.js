@@ -584,3 +584,45 @@ test('getScriptLog handles missing executionResultId gracefully', async () => {
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Deprecated API failed'));
     expect(logger.warn).toHaveBeenCalledWith('[QSEOW] GET SCRIPT LOG: No executionResultId available for fallback API');
 });
+
+describe('prepareScriptLogForNotification', () => {
+    const scriptLog = {
+        executingNodeName: 'node1',
+        executionDetailsConcatenated: 'details',
+        scriptLogFull: ['row1', 'row2', 'row3', 'row4'],
+        scriptLogHead: '',
+        scriptLogTail: '',
+    };
+
+    test('takes head and tail rows from the full script log, without changing the shared object', () => {
+        const res = scriptlog.prepareScriptLogForNotification(scriptLog, 1, 2);
+
+        expect(res).toMatchObject({
+            executingNodeName: 'node1',
+            executionDetailsConcatenated: 'details',
+            scriptLogAvailable: true,
+            scriptLogHeadCount: 1,
+            scriptLogTailCount: 2,
+            scriptLogHead: 'row1',
+            scriptLogTail: 'row3\r\nrow4',
+        });
+        expect(scriptLog.scriptLogHead).toBe('');
+        expect(scriptLog).not.toHaveProperty('scriptLogAvailable');
+    });
+
+    test.each([
+        ['could not be retrieved', null],
+        ['has no rows', { executingNodeName: 'node1', scriptLogFull: '' }],
+    ])('marks the script log as not available when it %s', (_, input) => {
+        const res = scriptlog.prepareScriptLogForNotification(input, 10, 10);
+
+        expect(res).toMatchObject({
+            scriptLogAvailable: false,
+            scriptLogHeadCount: 10,
+            scriptLogTailCount: 10,
+            executionDetailsConcatenated: '',
+            scriptLogHead: '',
+            scriptLogTail: '',
+        });
+    });
+});

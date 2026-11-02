@@ -518,5 +518,30 @@ export async function failedTaskStoreLogOnDisk(reloadParams) {
     }
 }
 
+/**
+ * Prepares script log data for the templates of a reload task notification (email, Teams, Slack).
+ * Works on a copy, as the script log object from getScriptLog() is shared by all notification channels.
+ * When the script log could not be retrieved, or has no rows, scriptLogAvailable is false and the head and tail are empty.
+ * @param {Object|null|undefined} scriptLog - The script log object from getScriptLog(), or null/undefined if it could not be retrieved.
+ * @param {number} headLineCount - The number of lines to include from the start of the script log.
+ * @param {number} tailLineCount - The number of lines to include from the end of the script log.
+ * @returns {Object} - The script log data with scriptLogAvailable, scriptLogHead, scriptLogHeadCount, scriptLogTail and scriptLogTailCount set.
+ * executionDetailsConcatenated, scriptLogHead and scriptLogTail are always strings.
+ */
+export function prepareScriptLogForNotification(scriptLog, headLineCount, tailLineCount) {
+    const scriptLogFull = Array.isArray(scriptLog?.scriptLogFull) ? scriptLog.scriptLogFull : [];
+    const scriptLogAvailable = scriptLogFull.length > 0;
+
+    return {
+        ...scriptLog,
+        executionDetailsConcatenated: scriptLog?.executionDetailsConcatenated ?? '',
+        scriptLogAvailable,
+        scriptLogHeadCount: headLineCount,
+        scriptLogTailCount: tailLineCount,
+        scriptLogHead: scriptLogAvailable ? scriptLogFull.slice(0, headLineCount).join('\r\n') : '',
+        scriptLogTail: scriptLogAvailable ? scriptLogFull.slice(Math.max(scriptLogFull.length - tailLineCount, 0)).join('\r\n') : '',
+    };
+}
+
 // Re-export getReloadTaskExecutionResults for backward compatibility
 export { getReloadTaskExecutionResults };
