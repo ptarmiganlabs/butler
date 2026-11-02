@@ -33,7 +33,7 @@ import { postReloadTaskFailureNotificationInfluxDb } from '../../../lib/influxdb
  * Handler for failed reload tasks.
  *
  * Processes reload task failures by:
- * - Retrieving script logs (if enabled for notifications)
+ * - Retrieving script logs (if needed for notifications or for storing on disk)
  * - Extracting app and task metadata from QRS
  * - Storing script logs to disk (if configured)
  * - Sending notifications via configured channels:
@@ -71,15 +71,21 @@ export const handleFailedReloadTask = async (msg, taskMetadata) => {
             `[QSEOW] TASKFAILURE: Reload task failed: UDP msg=${msg[0]}, Host=${msg[1]}, App name=${msg[3]}, Task name=${msg[2]}, Task ID=${msg[5]}`,
         );
 
+        // Storing script logs on disk is optional, and so is the Butler.scriptLog section of the config file
+        const storeScriptLogOnDisk =
+            globals.config.has('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable') &&
+            globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable') === true;
+
         // Get script log for failed app reloads tasks
-        // Only done if it's actually needed based on enabled notification types
+        // Only done if it's actually needed based on enabled notification types, or for storing it on disk
         let scriptLog;
         if (
             globals.config.get('Butler.incidentTool.newRelic.enable') === true ||
             globals.config.get('Butler.slackNotification.enable') === true ||
             globals.config.get('Butler.teamsNotification.enable') === true ||
             globals.config.get('Butler.influxDb.reloadTaskFailure.enable') === true ||
-            globals.config.get('Butler.emailNotification.enable') === true
+            globals.config.get('Butler.emailNotification.enable') === true ||
+            storeScriptLogOnDisk
         ) {
             scriptLog = await getScriptLog(msg[5], 0, 0);
 
@@ -136,7 +142,7 @@ export const handleFailedReloadTask = async (msg, taskMetadata) => {
             })) || [];
 
         // Store script log to disk
-        if (globals.config.get('Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable') === true) {
+        if (storeScriptLogOnDisk) {
             failedTaskStoreLogOnDisk({
                 hostName: msg[1],
                 user: msg[4].replace(/\\/g, '/'),
