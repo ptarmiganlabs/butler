@@ -211,6 +211,7 @@ describe('reload notifications when the script log could not be retrieved', () =
 
         const message = channel === 'teams' ? postedTeamsMessage() : postedSlackMessage();
         expect(message).toContain('Reload of Sales app');
+        expect(message).toContain(reloadParams.taskId);
         expect(message).not.toContain('rows in total');
         expect(message.includes('The script log is not available.')).toBe(hasScriptLogSection);
     });
