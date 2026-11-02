@@ -40,7 +40,13 @@ const globalsMock = {
     getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     config: {
         has: (k) => cfg.has(k),
-        get: (k) => cfg.get(k),
+        // Like node-config, get() throws for a key the config file doesn't have
+        get: (k) => {
+            if (!cfg.has(k)) {
+                throw new Error(`Configuration property "${k}" is not defined`);
+            }
+            return cfg.get(k);
+        },
     },
 };
 jest.unstable_mockModule('../../../globals.js', () => ({ default: globalsMock }));
@@ -116,5 +122,28 @@ describe('qscloud mqtt handler', () => {
         expect(sendTeams).toHaveBeenCalledTimes(1);
         expect(sendSlack).toHaveBeenCalledTimes(1);
         expect(sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    test('still sends notifications when the config file has no Butler.scriptLog section', async () => {
+        cfg.delete('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable');
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(logger.error).not.toHaveBeenCalled();
+        expect(writeFileSync).not.toHaveBeenCalled();
+        expect(sendTeams).toHaveBeenCalledTimes(1);
+        expect(sendSlack).toHaveBeenCalledTimes(1);
+        expect(sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    test('stores the script log on disk when enabled', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('appId=aid_reloadId=rid.log'), 'a\nb');
     });
 });

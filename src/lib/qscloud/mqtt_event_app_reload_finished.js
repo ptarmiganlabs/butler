@@ -187,7 +187,11 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     const appUrl = `${tenantUrl}${tenantUrl.endsWith('/') ? '' : '/'}sense/app/${appId}`;
 
                     // Save script log to disk file, if enabled
-                    if (globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') === true) {
+                    // Storing script logs on disk is optional, and so is the Butler.scriptLog section of the config file
+                    if (
+                        globals.config.has('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') &&
+                        globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') === true
+                    ) {
                         logger.verbose(`[QSCLOUD] Storing script log to disk file`);
 
                         // Get path to the directory where script logs will be stored
