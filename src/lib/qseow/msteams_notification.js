@@ -536,6 +536,8 @@ export function sendReloadTaskFailureNotificationTeams(reloadParams) {
                         .replace(/([\t])/gm, '\\t'),
                     scriptLogAvailable: scriptLogData.scriptLogAvailable,
                     scriptLogSize: scriptLogData.scriptLogSize,
+                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows,
+                    scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters,
                     scriptLogHead: scriptLogData.scriptLogHead
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
