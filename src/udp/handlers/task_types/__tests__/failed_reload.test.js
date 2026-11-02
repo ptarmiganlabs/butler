@@ -33,8 +33,9 @@ jest.unstable_mockModule('../../../../qrs_util/app_metadata.js', () => ({
     default: mockGetAppMetadata,
 }));
 
+const mockSendEmail = jest.fn();
 jest.unstable_mockModule('../../../../lib/qseow/smtp/reload-task-failed.js', () => ({
-    sendReloadTaskFailureNotificationEmail: jest.fn(),
+    sendReloadTaskFailureNotificationEmail: mockSendEmail,
 }));
 jest.unstable_mockModule('../../../../lib/qseow/slack_notification.js', () => ({
     sendReloadTaskFailureNotificationSlack: jest.fn(),
@@ -94,11 +95,22 @@ describe('handleFailedReloadTask script log retrieval', () => {
             'Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable': false,
         };
         mockGlobals.config.get.mockImplementation((key) => config[key]);
-        mockGlobals.config.has.mockReturnValue(false);
+        mockGlobals.config.has.mockImplementation((key) => key in config);
 
         mockGetScriptLog.mockResolvedValue(scriptLog);
         mockGetAppMetadata.mockResolvedValue({ id: 'app-456', name: 'Test App', tags: [], customProperties: [] });
     });
+
+    // A config file without the optional Butler.scriptLog section. Like node-config, get() throws for its keys.
+    const removeScriptLogSection = () => {
+        delete config['Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable'];
+        mockGlobals.config.get.mockImplementation((key) => {
+            if (key.startsWith('Butler.scriptLog.')) {
+                throw new Error(`Configuration property "${key}" is not defined`);
+            }
+            return config[key];
+        });
+    };
 
     test('should get the script log and store it on disk when that is its only use', async () => {
         config['Butler.scriptLog.storeOnDisk.clientManaged.reloadTaskFailure.enable'] = true;
@@ -126,5 +138,27 @@ describe('handleFailedReloadTask script log retrieval', () => {
         expect(mockGlobals.logger.error).not.toHaveBeenCalled();
         expect(mockGetScriptLog).not.toHaveBeenCalled();
         expect(mockFailedTaskStoreLogOnDisk).not.toHaveBeenCalled();
+    });
+
+    test('should still send alerts when the config file has no Butler.scriptLog section', async () => {
+        removeScriptLogSection();
+        config['Butler.emailNotification.enable'] = true;
+        config['Butler.emailNotification.reloadTaskFailure.enable'] = true;
+
+        await handleFailedReloadTask(msg, taskMetadata);
+
+        expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+        expect(mockGetScriptLog).toHaveBeenCalledWith('task-123-reload', 0, 0);
+        expect(mockFailedTaskStoreLogOnDisk).not.toHaveBeenCalled();
+        expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ taskId: 'task-123-reload', scriptLog }));
+    });
+
+    test('should not need the Butler.scriptLog section when nothing uses the script log', async () => {
+        removeScriptLogSection();
+
+        await handleFailedReloadTask(msg, taskMetadata);
+
+        expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+        expect(mockGetScriptLog).not.toHaveBeenCalled();
     });
 });
