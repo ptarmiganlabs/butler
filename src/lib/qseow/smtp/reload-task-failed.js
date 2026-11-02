@@ -108,8 +108,8 @@ export async function sendReloadTaskFailureNotificationEmail(reloadParams) {
         // 3.1 Yes: Should all app owners get alerts?
         let appOwnerSendList = [];
 
-        // If the current app's owner doesn't have an email address there is nothing to do
-        if (appOwner.emails.length > 0) {
+        // If the current app's owner doesn't have an email address, or couldn't be read from the QRS, there is nothing to do
+        if (appOwner.emails?.length > 0) {
             if (globals.config.get('Butler.emailNotification.reloadTaskFailure.appOwnerAlert.includeOwner.includeAll') === true) {
                 // 3.1.1 Yes: Add app owners' email addresses to app owner send list
                 appOwnerSendList.push({

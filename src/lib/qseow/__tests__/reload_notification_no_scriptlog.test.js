@@ -6,7 +6,8 @@ import handlebars from 'handlebars';
 
 // When the QRS script-log fetch fails, the reload task handlers pass scriptLog: null on to the
 // email, Teams and Slack senders. Each sender should still send its alert, without script log
-// details, rendered from the templates that ship with Butler.
+// details, rendered from the templates that ship with Butler. In the same QRS outage the app
+// owner can't be read either, and getAppOwner() returns false.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -31,9 +32,8 @@ jest.unstable_mockModule('rate-limiter-flexible', () => ({
     })),
 }));
 
-jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({
-    default: jest.fn().mockResolvedValue({ userName: 'owner', directory: 'DIR', userId: 'uid', emails: ['owner@example.com'] }),
-}));
+const getAppOwnerMock = jest.fn().mockResolvedValue({ userName: 'owner', directory: 'DIR', userId: 'uid', emails: ['owner@example.com'] });
+jest.unstable_mockModule('../../../qrs_util/get_app_owner.js', () => ({ default: getAppOwnerMock }));
 
 jest.unstable_mockModule('../../../qrs_util/task_cp_util.js', () => ({
     getTaskCustomPropertyValues: jest.fn().mockResolvedValue([]),
@@ -80,6 +80,16 @@ beforeAll(async () => {
 
 const flushPromises = () => new Promise((r) => setImmediate(r));
 
+// Turn on one type of reload alert email, sent to ops@example.com for every task
+const enableEmailAlert = (alertType, templateFile) => {
+    cfg.set('Butler.emailNotification.enable', true);
+    cfg.set(`Butler.emailNotification.${alertType}.enable`, true);
+    cfg.set(`Butler.emailNotification.${alertType}.alertEnableByCustomProperty.enable`, false);
+    cfg.set(`Butler.emailNotification.${alertType}.recipients`, ['ops@example.com']);
+    cfg.set(`Butler.emailNotification.${alertType}.bodyFileDirectory`, templateDir('email'));
+    cfg.set(`Butler.emailNotification.${alertType}.htmlTemplateFile`, templateFile);
+};
+
 const reloadParams = {
     hostName: 'sense1',
     user: 'DIR/user',
@@ -120,12 +130,7 @@ describe('reload notifications when the script log could not be retrieved', () =
         ['sendReloadTaskAbortedNotificationEmail', 'reloadTaskAborted', 'aborted-reload-qseow'],
         ['sendReloadTaskSuccessNotificationEmail', 'reloadTaskSuccess', 'success-reload-qseow'],
     ])('%s still sends the email, and its template renders', async (sender, alertType, templateFile) => {
-        cfg.set('Butler.emailNotification.enable', true);
-        cfg.set(`Butler.emailNotification.${alertType}.enable`, true);
-        cfg.set(`Butler.emailNotification.${alertType}.alertEnableByCustomProperty.enable`, false);
-        cfg.set(`Butler.emailNotification.${alertType}.recipients`, ['ops@example.com']);
-        cfg.set(`Butler.emailNotification.${alertType}.bodyFileDirectory`, templateDir('email'));
-        cfg.set(`Butler.emailNotification.${alertType}.htmlTemplateFile`, templateFile);
+        enableEmailAlert(alertType, templateFile);
 
         await senders[sender](reloadParams);
         await flushPromises();
@@ -140,6 +145,25 @@ describe('reload notifications when the script log could not be retrieved', () =
         // Render the email body the way smtp_core.sendEmail does
         const template = fs.readFileSync(path.join(bodyFileDirectory, `${htmlTemplateFile}.handlebars`), 'utf8');
         expect(handlebars.compile(template)(templateContext)).toContain('Reload of Sales app');
+    });
+
+    test.each([
+        ['sendReloadTaskFailureNotificationEmail', 'reloadTaskFailure', 'failed-reload-qseow'],
+        ['sendReloadTaskAbortedNotificationEmail', 'reloadTaskAborted', 'aborted-reload-qseow'],
+    ])('%s still sends the email when the app owner cannot be read either', async (sender, alertType, templateFile) => {
+        enableEmailAlert(alertType, templateFile);
+        cfg.set(`Butler.emailNotification.${alertType}.appOwnerAlert.enable`, true);
+        cfg.set(`Butler.emailNotification.${alertType}.appOwnerAlert.includeOwner.includeAll`, true);
+        getAppOwnerMock.mockResolvedValueOnce(false);
+
+        await senders[sender](reloadParams);
+        await flushPromises();
+
+        expect(logger.error).not.toHaveBeenCalled();
+        expect(sendEmailMock).toHaveBeenCalledTimes(1);
+
+        // Sent to the configured recipients only, as there is no app owner to add
+        expect(sendEmailMock.mock.calls[0][1]).toEqual(['ops@example.com']);
     });
 
     test.each([
