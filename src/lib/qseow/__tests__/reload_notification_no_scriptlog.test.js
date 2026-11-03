@@ -5,9 +5,10 @@ import { fileURLToPath } from 'url';
 import handlebars from 'handlebars';
 
 // When the QRS script-log fetch fails, the reload task handlers pass scriptLog: null on to the
-// email, Teams and Slack senders. Each sender should still send its alert, without script log
-// details, rendered from the templates that ship with Butler. In the same QRS outage the app
-// owner can't be read either, and getAppOwner() returns false.
+// email, Teams and Slack senders. Each sender should still send its alert, rendered from the
+// templates that ship with Butler, and those templates should say the script log is not available
+// instead of showing empty script log sections. In the same QRS outage the app owner can't be read
+// either, and getAppOwner() returns false. The last tests render the same templates with a script log.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -90,6 +91,34 @@ const enableEmailAlert = (alertType, templateFile) => {
     cfg.set(`Butler.emailNotification.${alertType}.htmlTemplateFile`, templateFile);
 };
 
+// Turn on one type of formatted reload alert in Teams or Slack
+const enableChatAlert = (channel, alertType, templateFile) => {
+    cfg.set(`Butler.${channel}Notification.${alertType}.enable`, true);
+    cfg.set(`Butler.${channel}Notification.${alertType}.messageType`, 'formatted');
+    cfg.set(`Butler.${channel}Notification.${alertType}.templateFile`, path.join(templateDir(channel), `${templateFile}.handlebars`));
+    cfg.set(`Butler.${channel}Notification.${alertType}.webhookURL`, `https://${channel}.example.com/hook`);
+};
+
+// Render the body of the first email sent, the way smtp_core.sendEmail does
+const renderEmail = () => {
+    const [, , , , bodyFileDirectory, htmlTemplateFile, templateContext] = sendEmailMock.mock.calls[0];
+    const template = fs.readFileSync(path.join(bodyFileDirectory, `${htmlTemplateFile}.handlebars`), 'utf8');
+    return handlebars.compile(template)(templateContext);
+};
+
+// sendTeams() only posts a formatted message that parsed as JSON, and slack_api.js parses it before posting
+const postedTeamsMessage = () => {
+    expect(teamsMessages).toHaveLength(1);
+    expect(teamsMessages[0].url).toBe('https://teams.example.com/hook');
+    return JSON.stringify(teamsMessages[0].msg);
+};
+const postedSlackMessage = () => {
+    expect(slackSendMock).toHaveBeenCalledTimes(1);
+    const [slackMsg] = slackSendMock.mock.calls[0];
+    expect(slackMsg.webhookUrl).toBe('https://slack.example.com/hook');
+    return JSON.stringify(JSON.parse(slackMsg.text));
+};
+
 const reloadParams = {
     hostName: 'sense1',
     user: 'DIR/user',
@@ -138,13 +167,12 @@ describe('reload notifications when the script log could not be retrieved', () =
         expect(logger.error).not.toHaveBeenCalled();
         expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log data is not available'));
         expect(sendEmailMock).toHaveBeenCalledTimes(1);
+        expect(sendEmailMock.mock.calls[0][1]).toEqual(['ops@example.com']);
 
-        const [, recipients, , , bodyFileDirectory, htmlTemplateFile, templateContext] = sendEmailMock.mock.calls[0];
-        expect(recipients).toEqual(['ops@example.com']);
-
-        // Render the email body the way smtp_core.sendEmail does
-        const template = fs.readFileSync(path.join(bodyFileDirectory, `${htmlTemplateFile}.handlebars`), 'utf8');
-        expect(handlebars.compile(template)(templateContext)).toContain('Reload of Sales app');
+        const body = renderEmail();
+        expect(body).toContain('Reload of Sales app');
+        expect(body).toContain('The script log is not available.');
+        expect(body).not.toContain('rows in total');
     });
 
     test.each([
@@ -166,14 +194,14 @@ describe('reload notifications when the script log could not be retrieved', () =
         expect(sendEmailMock.mock.calls[0][1]).toEqual(['ops@example.com']);
     });
 
+    // Only the failed-reload Teams and Slack templates have a script log section
     test.each([
-        ['sendReloadTaskFailureNotificationTeams', 'reloadTaskFailure', 'failed-reload-qseow'],
-        ['sendReloadTaskAbortedNotificationTeams', 'reloadTaskAborted', 'aborted-reload-qseow'],
-    ])('%s still posts the Teams message, and its template renders', async (sender, alertType, templateFile) => {
-        cfg.set(`Butler.teamsNotification.${alertType}.enable`, true);
-        cfg.set(`Butler.teamsNotification.${alertType}.messageType`, 'formatted');
-        cfg.set(`Butler.teamsNotification.${alertType}.templateFile`, path.join(templateDir('teams'), `${templateFile}.handlebars`));
-        cfg.set(`Butler.teamsNotification.${alertType}.webhookURL`, 'https://teams.example.com/hook');
+        ['sendReloadTaskFailureNotificationTeams', 'teams', 'reloadTaskFailure', 'failed-reload-qseow', true],
+        ['sendReloadTaskAbortedNotificationTeams', 'teams', 'reloadTaskAborted', 'aborted-reload-qseow', false],
+        ['sendReloadTaskFailureNotificationSlack', 'slack', 'reloadTaskFailure', 'failed-reload-qseow', true],
+        ['sendReloadTaskAbortedNotificationSlack', 'slack', 'reloadTaskAborted', 'aborted-reload-qseow', false],
+    ])('%s still posts the message, and its template renders', async (sender, channel, alertType, templateFile, hasScriptLogSection) => {
+        enableChatAlert(channel, alertType, templateFile);
 
         senders[sender](reloadParams);
         await flushPromises();
@@ -181,31 +209,65 @@ describe('reload notifications when the script log could not be retrieved', () =
         expect(logger.error).not.toHaveBeenCalled();
         expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log data is not available'));
 
-        // sendTeams() only posts the message if the rendered template parsed as JSON
-        expect(teamsMessages).toHaveLength(1);
-        expect(teamsMessages[0].url).toBe('https://teams.example.com/hook');
-        expect(JSON.stringify(teamsMessages[0].msg)).toContain('Reload of Sales app');
+        const message = channel === 'teams' ? postedTeamsMessage() : postedSlackMessage();
+        expect(message).toContain('Reload of Sales app');
+        expect(message).toContain(reloadParams.taskId);
+        expect(message).not.toContain('rows in total');
+        expect(message.includes('The script log is not available.')).toBe(hasScriptLogSection);
+    });
+});
+
+describe('reload notifications when the script log is available', () => {
+    const reloadParamsWithScriptLog = {
+        ...reloadParams,
+        scriptLog: {
+            executingNodeName: 'node1',
+            executionDetailsConcatenated: '',
+            scriptLogFull: ['Starting reload', 'Loading Sales.qvd', 'Error: table not found'],
+            scriptLogSizeRows: 3,
+            scriptLogSizeCharacters: 52,
+        },
+    };
+
+    test.each([
+        ['sendReloadTaskFailureNotificationEmail', 'reloadTaskFailure', 'failed-reload-qseow'],
+        ['sendReloadTaskAbortedNotificationEmail', 'reloadTaskAborted', 'aborted-reload-qseow'],
+        ['sendReloadTaskSuccessNotificationEmail', 'reloadTaskSuccess', 'success-reload-qseow'],
+    ])('%s shows the first and last rows of the script log', async (sender, alertType, templateFile) => {
+        enableEmailAlert(alertType, templateFile);
+        cfg.set(`Butler.emailNotification.${alertType}.headScriptLogLines`, 1);
+        cfg.set(`Butler.emailNotification.${alertType}.tailScriptLogLines`, 1);
+
+        await senders[sender](reloadParamsWithScriptLog);
+        await flushPromises();
+
+        expect(logger.error).not.toHaveBeenCalled();
+
+        const body = renderEmail();
+        expect(body).toContain('The script log contains 3 rows in total');
+        expect(body).toContain('<pre>Starting reload</pre>');
+        expect(body).toContain('<pre>Error: table not found</pre>');
+        expect(body).not.toContain('The script log is not available.');
     });
 
     test.each([
-        ['sendReloadTaskFailureNotificationSlack', 'reloadTaskFailure', 'failed-reload-qseow'],
-        ['sendReloadTaskAbortedNotificationSlack', 'reloadTaskAborted', 'aborted-reload-qseow'],
-    ])('%s still posts the Slack message, and its template renders', async (sender, alertType, templateFile) => {
-        cfg.set(`Butler.slackNotification.${alertType}.enable`, true);
-        cfg.set(`Butler.slackNotification.${alertType}.messageType`, 'formatted');
-        cfg.set(`Butler.slackNotification.${alertType}.templateFile`, path.join(templateDir('slack'), `${templateFile}.handlebars`));
-        cfg.set(`Butler.slackNotification.${alertType}.webhookURL`, 'https://slack.example.com/hook');
+        ['sendReloadTaskFailureNotificationTeams', 'teams'],
+        ['sendReloadTaskFailureNotificationSlack', 'slack'],
+    ])('%s shows the first and last rows of the script log', async (sender, channel) => {
+        enableChatAlert(channel, 'reloadTaskFailure', 'failed-reload-qseow');
+        cfg.set(`Butler.${channel}Notification.reloadTaskFailure.headScriptLogLines`, 1);
+        cfg.set(`Butler.${channel}Notification.reloadTaskFailure.tailScriptLogLines`, 1);
 
-        senders[sender](reloadParams);
+        senders[sender](reloadParamsWithScriptLog);
         await flushPromises();
 
         expect(logger.error).not.toHaveBeenCalled();
-        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Script log data is not available'));
-        expect(slackSendMock).toHaveBeenCalledTimes(1);
 
-        // slack_api.js parses formatted messages as JSON before posting them
-        const [slackMsg] = slackSendMock.mock.calls[0];
-        expect(slackMsg.webhookUrl).toBe('https://slack.example.com/hook');
-        expect(JSON.stringify(JSON.parse(slackMsg.text))).toContain('Reload of Sales app');
+        const message = channel === 'teams' ? postedTeamsMessage() : postedSlackMessage();
+        expect(message).toContain('The script log contains 3 rows in total');
+        expect(message).toContain('Starting reload');
+        expect(message).toContain('Error: table not found');
+        expect(message).not.toContain('Loading Sales.qvd');
+        expect(message).not.toContain('The script log is not available.');
     });
 });

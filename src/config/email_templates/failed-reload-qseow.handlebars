@@ -184,6 +184,7 @@
       <td colspan="2"><hr></td>
     </tr>
 
+    {{#if scriptLogAvailable}}
     <tr>
       <td colspan="2">
         The script log contains {{scriptLogSizeRows}} rows in total, with {{scriptLogSizeCharacters}} characters in them.<br>
@@ -210,6 +211,13 @@
         <pre>{{scriptLogTail}}</pre>
       </td>
     </tr>
+    {{else}}
+    <tr>
+      <td colspan="2">
+        The script log is not available.
+      </td>
+    </tr>
+    {{/if}}
 
 
   </tbody>
