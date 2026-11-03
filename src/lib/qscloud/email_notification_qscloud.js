@@ -16,7 +16,7 @@ import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
 import { sendEmail, isSmtpConfigOk } from '../qseow/smtp/index.js';
-import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
+import { prepareQlikSenseCloudScriptLogForNotification } from './scriptlog.js';
 
 let rateLimiterMemoryFailedReloads;
 let emailConfig;
@@ -249,53 +249,14 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             return false;
         }
 
-        // Get script logs, if enabled in the config file
-        // If the value is false, the script log could not be obtained
-        let scriptLogData = {};
-        if (reloadParams.scriptLog === false) {
-            scriptLogData = {
-                scriptLogFull: [],
-                scriptLogSizeRows: 0,
-                scriptLogSizeCharacters: 0,
-                scriptLogHead: '',
-                scriptLogHeadCount: 0,
-                scriptLogTail: '',
-                scriptLogTailCount: 0,
-            };
-        } else {
-            // Reduce script log lines to only the ones we want to send to email
-            scriptLogData.scriptLogHeadCount = globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines',
-            );
-            scriptLogData.scriptLogTailCount = globals.config.get(
-                'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines',
-            );
-
-            if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                // Get length of script log (row count)
-                scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
-
-                // Get length of entire script log (character count)
-                scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
-
-                // Get the first and last rows of the script log
-                scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(
-                    reloadParams.scriptLog.scriptLogFull,
-                    scriptLogData.scriptLogHeadCount,
-                );
-                scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(
-                    reloadParams.scriptLog.scriptLogFull,
-                    scriptLogData.scriptLogTailCount,
-                );
-            } else {
-                scriptLogData.scriptLogHead = '';
-                scriptLogData.scriptLogTail = '';
-                scriptLogData.scriptLogSizeRows = 0;
-                scriptLogData.scriptLogSizeCharacters = 0;
-            }
-
-            globals.logger.debug(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
-        }
+        // Reduce script log lines to only the ones we want to send to email
+        // If reloadParams.scriptLog is false, the script log could not be obtained
+        const scriptLogData = prepareQlikSenseCloudScriptLogForNotification(
+            reloadParams.scriptLog,
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.headScriptLogLines'),
+            globals.config.get('Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.tailScriptLogLines'),
+        );
+        globals.logger.debug(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
         // Format log message line breaks to work in HTML email
         if (reloadParams.reloadInfo.log !== undefined) {

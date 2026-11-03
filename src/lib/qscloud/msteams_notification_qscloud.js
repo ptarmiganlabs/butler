@@ -19,7 +19,7 @@ import { MSTEAMS_TEXT_FIELD_MAX_LENGTH } from '../../constants.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
-import { getQlikSenseCloudAppReloadScriptLogHead, getQlikSenseCloudAppReloadScriptLogTail } from './api/appreloadinfo.js';
+import { prepareQlikSenseCloudScriptLogForNotification } from './scriptlog.js';
 
 let rateLimiterMemoryFailedReloads;
 
@@ -250,55 +250,20 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                 // Get app owner info
                 const appOwner = await getQlikSenseCloudUserInfo(reloadParams.ownerId);
 
-                // Get script logs, if enabled in the config file
-                // If the value is false, the script log could not be obtained
-                let scriptLogData = {};
-
-                if (reloadParams.scriptLog === false) {
-                    scriptLogData = {
-                        scriptLogFull: [],
-                        scriptLogSizeRows: 0,
-                        scriptLogHead: '',
-                        scriptLogHeadCount: 0,
-                        scriptLogTail: '',
-                        scriptLogTailCount: 0,
-                    };
-                } else {
-                    // Reduce full script log to head and tail adapted for Teams
-                    scriptLogData.scriptLogHeadCount = globals.config.get(
+                // Reduce full script log to head and tail adapted for Teams
+                // If reloadParams.scriptLog is false, the script log could not be obtained
+                const scriptLogData = prepareQlikSenseCloudScriptLogForNotification(
+                    reloadParams.scriptLog,
+                    globals.config.get(
                         'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.headScriptLogLines',
-                    );
-                    scriptLogData.scriptLogTailCount = globals.config.get(
+                    ),
+                    globals.config.get(
                         'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.tailScriptLogLines',
-                    );
-
-                    if (reloadParams.scriptLog?.scriptLogFull?.length > 0) {
-                        // Get length of entire script log (character count)
-                        scriptLogData.scriptLogSizeCharacters = reloadParams.scriptLog.scriptLogFull.join('').length;
-
-                        // Get length of script log (row count)
-                        scriptLogData.scriptLogSizeRows = reloadParams.scriptLog.scriptLogFull.length;
-
-                        // Get the first and last rows of the script log
-                        scriptLogData.scriptLogHead = getQlikSenseCloudAppReloadScriptLogHead(
-                            reloadParams.scriptLog.scriptLogFull,
-                            scriptLogData.scriptLogHeadCount,
-                        );
-                        scriptLogData.scriptLogTail = getQlikSenseCloudAppReloadScriptLogTail(
-                            reloadParams.scriptLog.scriptLogFull,
-                            scriptLogData.scriptLogTailCount,
-                        );
-                    } else {
-                        scriptLogData.scriptLogHead = '';
-                        scriptLogData.scriptLogTail = '';
-                        scriptLogData.scriptLogSizeRows = 0;
-                        scriptLogData.scriptLogSizeCharacters = 0;
-                    }
-
-                    globals.logger.debug(
-                        `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
-                    );
-                }
+                    ),
+                );
+                globals.logger.debug(
+                    `[QSCLOUD] TEAMS ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
+                );
 
                 // Get Sense URLs from config file. Can be used as template fields.
                 const senseUrls = getQlikSenseCloudUrls();
