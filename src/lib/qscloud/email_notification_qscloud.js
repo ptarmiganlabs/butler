@@ -318,6 +318,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             executionStartTime: reloadParams.reloadInfo.executionStartTime,
             executionStopTime: reloadParams.reloadInfo.executionStopTime,
             executionStatusText: reloadParams.reloadInfo.status,
+            scriptLogAvailable: scriptLogData.scriptLogAvailable,
             scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
             scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
             scriptLogSizeCharacters: Number(scriptLogData.scriptLogSizeCharacters || 0).toLocaleString(),

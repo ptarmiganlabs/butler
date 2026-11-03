@@ -6,7 +6,8 @@ import handlebars from 'handlebars';
 
 // When the Qlik Sense Cloud script-log fetch fails, the app reload handler passes scriptLog: false on to
 // the email, Teams and Slack senders. Each sender should still send its alert, rendered from the
-// templates that ship with Butler. The last tests render the same templates with a script log.
+// templates that ship with Butler, and those templates should say the script log is not available
+// instead of showing empty script log sections. The last tests render the same templates with a script log.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -172,6 +173,8 @@ describe('Qlik Sense Cloud app reload alerts when the script log could not be re
 
         const alert = sentAlert(channel);
         expect(alert).toContain('Sales forecast');
+        expect(alert).toContain('The script log is not available.');
+        expect(alert).not.toContain('rows in total');
     });
 });
 

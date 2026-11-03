@@ -322,6 +322,7 @@ export function sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams
                     executionStartTime: reloadParams.reloadInfo.executionStartTime,
                     executionStopTime: reloadParams.reloadInfo.executionStopTime,
                     executionStatusText: reloadParams.reloadInfo.status,
+                    scriptLogAvailable: scriptLogData.scriptLogAvailable,
                     scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
                     scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
                     scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
