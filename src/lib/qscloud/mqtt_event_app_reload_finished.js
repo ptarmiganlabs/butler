@@ -234,15 +234,17 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // Should we get extended info about the event, or go with the basic info provided in the event/MQTT message?
                         // If extended info is enabled, we need to make API calls to get the extended info
                         // If extended info is disabled, we can use the basic info provided in the event/MQTT message
+                        // Keep the basic info to the Teams alert, so it doesn't change what the Slack and email alerts get
+                        let teamsScriptLog = scriptLog;
+                        let teamsReloadInfo = reloadInfo;
                         if (
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly',
                             ) === true
                         ) {
                             // Use the basic info provided in the event/MQTT message
-                            scriptLog = {};
-                            reloadInfo.appId = appId;
-                            reloadInfo.reloadId = reloadId;
+                            teamsScriptLog = {};
+                            teamsReloadInfo = { ...reloadInfo, appId, reloadId };
                         }
 
                         sendQlikSenseCloudAppReloadFailureNotificationTeams({
@@ -275,8 +277,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             warnings,
                             sizeMemory,
 
-                            scriptLog,
-                            reloadInfo,
+                            scriptLog: teamsScriptLog,
+                            reloadInfo: teamsReloadInfo,
                             appInfo,
                             appMetadata,
                             appItems: appItems?.data[0],
@@ -293,15 +295,17 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // Should we get extended info about the event, or go with the basic info provided in the event/MQTT message?
                         // If extended info is enabled, we need to make API calls to get the extended info
                         // If extended info is disabled, we can use the basic info provided in the event/MQTT message
+                        // Keep the basic info to the Slack alert, so it doesn't change what the email alert gets
+                        let slackScriptLog = scriptLog;
+                        let slackReloadInfo = reloadInfo;
                         if (
                             globals.config.get(
                                 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.slackNotification.reloadAppFailure.basicContentOnly',
                             ) === true
                         ) {
                             // Use the basic info provided in the event/MQTT message
-                            scriptLog = {};
-                            reloadInfo.appId = appId;
-                            reloadInfo.reloadId = reloadId;
+                            slackScriptLog = {};
+                            slackReloadInfo = { ...reloadInfo, appId, reloadId };
                         }
 
                         // Send Slack notification
@@ -335,8 +339,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             warnings,
                             sizeMemory,
 
-                            scriptLog,
-                            reloadInfo,
+                            scriptLog: slackScriptLog,
+                            reloadInfo: slackReloadInfo,
                             appInfo,
                             appMetadata,
                             appItems: appItems?.data[0],

@@ -2,9 +2,10 @@
 import { jest } from '@jest/globals';
 
 // Mocks for API helpers
+const getQlikSenseCloudAppReloadInfo = jest.fn().mockResolvedValue({ type: 'scheduled', appId: 'aid', reloadId: 'rid' });
 jest.unstable_mockModule('../api/appreloadinfo.js', () => ({
     getQlikSenseCloudAppReloadScriptLog: jest.fn().mockResolvedValue({ scriptLogFull: ['a', 'b'] }),
-    getQlikSenseCloudAppReloadInfo: jest.fn().mockResolvedValue({ type: 'scheduled', appId: 'aid', reloadId: 'rid' }),
+    getQlikSenseCloudAppReloadInfo,
 }));
 
 jest.unstable_mockModule('../api/app.js', () => ({
@@ -145,5 +146,32 @@ describe('qscloud mqtt handler', () => {
 
         expect(res).toBe(true);
         expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('appId=aid_reloadId=rid.log'), 'a\nb');
+    });
+
+    test.each([
+        ['Teams', 'teamsNotification', sendTeams, [sendSlack, sendEmail]],
+        ['Slack', 'slackNotification', sendSlack, [sendTeams, sendEmail]],
+    ])('basicContentOnly for %s leaves the script log out of that alert only', async (_, channel, basicSender, otherSenders) => {
+        cfg.set(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.basicContentOnly`, true);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(basicSender).toHaveBeenCalledWith(expect.objectContaining({ scriptLog: {} }));
+        for (const sender of otherSenders) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ scriptLog: { scriptLogFull: ['a', 'b'] } }));
+        }
+    });
+
+    test('basicContentOnly still sends every alert when the reload info could not be read', async () => {
+        cfg.set('Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicContentOnly', true);
+        getQlikSenseCloudAppReloadInfo.mockResolvedValueOnce(false);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(sendTeams).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: { appId: 'aid', reloadId: 'rid' } }));
+        expect(sendSlack).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: false }));
+        expect(sendEmail).toHaveBeenCalledTimes(1);
     });
 });
