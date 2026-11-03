@@ -70,26 +70,36 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
         mockSendEmail.mockResolvedValue(true);
     });
 
-    test('returns false when tag gating is enabled and app lacks the tag (no recipients)', async () => {
-        const params = {
-            tenantId: 't',
-            tenantComment: 'c',
-            tenantUrl: 'https://tenant.qlikcloud.com',
-            userId: 'u',
-            ownerId: 'owner123',
-            appId: 'app1',
-            appName: 'App 1',
-            appUrl: 'https://tenant.qlikcloud.com/app/app1',
-            appInfo: { attributes: {} },
-            appItems: { meta: { tags: [] }, resourceSize: { appFile: 42 } },
-            reloadInfo: { errorCode: 1, errorMessage: 'err', log: 'log' },
-            scriptLog: { scriptLogFull: ['a', 'b'] },
-        };
+    const params = {
+        tenantId: 't',
+        tenantComment: 'c',
+        tenantUrl: 'https://tenant.qlikcloud.com',
+        userId: 'u',
+        ownerId: 'owner123',
+        appId: 'app1',
+        appName: 'App 1',
+        appUrl: 'https://tenant.qlikcloud.com/app/app1',
+        appInfo: { attributes: {} },
+        appItems: { meta: { tags: [] }, resourceSize: { appFile: 42 } },
+        reloadInfo: { errorCode: 1, errorMessage: 'err', log: 'log' },
+        scriptLog: { scriptLogFull: ['a', 'b'] },
+    };
 
+    test('returns false when tag gating is enabled and app lacks the tag (no recipients)', async () => {
         const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(params);
 
         expect(result).toBe(false);
         expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('No email addresses found to send alert email'));
+        expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    test('returns false without an error when tag gating is enabled and the app tags could not be read', async () => {
+        // appItems is undefined when the app reload handler could not get the app items
+        const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail({ ...params, appItems: undefined });
+
+        expect(result).toBe(false);
+        expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Could not get the tags of app [app1] "App 1"'));
         expect(mockSendEmail).not.toHaveBeenCalled();
     });
 });

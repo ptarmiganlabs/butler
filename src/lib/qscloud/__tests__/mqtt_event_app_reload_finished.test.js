@@ -8,10 +8,11 @@ jest.unstable_mockModule('../api/appreloadinfo.js', () => ({
     getQlikSenseCloudAppReloadInfo,
 }));
 
+const getQlikSenseCloudAppItems = jest.fn().mockResolvedValue({ data: [{ resourceId: 'aid' }] });
 jest.unstable_mockModule('../api/app.js', () => ({
     getQlikSenseCloudAppInfo: jest.fn().mockResolvedValue({ id: 'aid', name: 'App' }),
     getQlikSenseCloudAppMetadata: jest.fn().mockResolvedValue({ foo: 'bar' }),
-    getQlikSenseCloudAppItems: jest.fn().mockResolvedValue({ data: [{ resourceId: 'aid' }] }),
+    getQlikSenseCloudAppItems,
 }));
 
 // Notification mocks
@@ -173,5 +174,20 @@ describe('qscloud mqtt handler', () => {
         expect(sendTeams).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: { appId: 'aid', reloadId: 'rid' } }));
         expect(sendSlack).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: false }));
         expect(sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    test.each([
+        ['match the app', { data: [{ resourceId: 'aid' }] }, { resourceId: 'aid' }],
+        ['could not be read', false, undefined],
+        ['do not match the app', { data: [{ resourceId: 'other-app' }] }, undefined],
+    ])('sends every alert when the app items %s', async (_, appItems, sentAppItem) => {
+        getQlikSenseCloudAppItems.mockResolvedValueOnce(appItems);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appItems: sentAppItem }));
+        }
     });
 });

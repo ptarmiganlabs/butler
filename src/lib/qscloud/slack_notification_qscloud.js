@@ -267,12 +267,12 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
 
                     appId: reloadParams.appId,
                     appName: reloadParams.appName,
-                    appDescription: reloadParams.appInfo.attributes.description,
+                    appDescription: reloadParams.appInfo?.attributes?.description || '',
                     appUrl: reloadParams.appUrl,
-                    appHasSectionAccess: reloadParams.appInfo.attributes.hasSectionAccess,
-                    appIsPublished: reloadParams.appInfo.attributes.published,
-                    appPublishTime: reloadParams.appInfo.attributes.publishTime,
-                    appThumbnail: reloadParams.appInfo.attributes.thumbnail,
+                    appHasSectionAccess: reloadParams.appInfo?.attributes?.hasSectionAccess ?? false,
+                    appIsPublished: reloadParams.appInfo?.attributes?.published ?? false,
+                    appPublishTime: reloadParams.appInfo?.attributes?.publishTime || '',
+                    appThumbnail: reloadParams.appInfo?.attributes?.thumbnail || '',
 
                     reloadTrigger: reloadParams.reloadTrigger,
                     source: reloadParams.source,
@@ -291,11 +291,12 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     status: reloadParams.status,
                     usageDuration: reloadParams.duration,
                     sizeMemoryBytes: reloadParams.sizeMemory.toLocaleString(),
-                    appFileSize: reloadParams.appItems.resourceSize.appFile.toLocaleString(),
+                    appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
 
+                    // If reloadParams.reloadInfo is false, the reload info could not be obtained
                     errorCode: reloadParams.reloadInfo.errorCode,
                     errorMessage: reloadParams.reloadInfo.errorMessage,
-                    logMessage: reloadParams.reloadInfo.log
+                    logMessage: (reloadParams.reloadInfo.log ?? '')
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),

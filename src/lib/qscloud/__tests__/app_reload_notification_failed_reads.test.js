@@ -4,10 +4,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import handlebars from 'handlebars';
 
-// When the Qlik Sense Cloud script-log fetch fails, the app reload handler passes scriptLog: false on to
-// the email, Teams and Slack senders. Each sender should still send its alert, rendered from the
-// templates that ship with Butler, and those templates should say the script log is not available
-// instead of showing empty script log sections. The last tests render the same templates with a script log.
+// When a Qlik Sense Cloud API read behind an app reload alert fails, the app reload handler passes scriptLog,
+// reloadInfo or appInfo on to the email, Teams and Slack senders as false, and appItems as undefined.
+// Each sender should still send its alert, rendered from the templates that ship with Butler. Without a
+// script log, those templates should say it is not available instead of showing empty script log sections.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -155,6 +155,15 @@ const reloadParams = {
     scriptLog: false,
 };
 
+// The same reload when the script log could be retrieved
+const reloadParamsWithScriptLog = {
+    ...reloadParams,
+    scriptLog: {
+        scriptLogFull: ['Starting reload', 'Loading Sales.qvd', 'Error: table not found'],
+        scriptLogSize: 3,
+    },
+};
+
 beforeEach(() => {
     cfg.clear();
     cfg.set('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc', 'https://tenant.example.com/console');
@@ -179,14 +188,6 @@ describe('Qlik Sense Cloud app reload alerts when the script log could not be re
 });
 
 describe('Qlik Sense Cloud app reload alerts when the script log is available', () => {
-    const reloadParamsWithScriptLog = {
-        ...reloadParams,
-        scriptLog: {
-            scriptLogFull: ['Starting reload', 'Loading Sales.qvd', 'Error: table not found'],
-            scriptLogSize: 3,
-        },
-    };
-
     test.each(['email', 'teams', 'slack'])('the %s alert shows the first and last rows of the script log', async (channel) => {
         enableAlert(channel);
 
@@ -201,5 +202,31 @@ describe('Qlik Sense Cloud app reload alerts when the script log is available', 
         expect(alert).toContain('Error: table not found');
         expect(alert).not.toContain('Loading Sales.qvd');
         expect(alert).not.toContain('The script log is not available.');
+    });
+});
+
+describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API read failed', () => {
+    // What the app reload handler passes on when each read fails
+    const failedReads = [
+        ['reload info', { reloadInfo: false }],
+        ['app info', { appInfo: false }],
+        ['app items', { appItems: undefined }],
+    ];
+
+    describe.each(['email', 'teams', 'slack'])('the %s alert', (channel) => {
+        test.each(failedReads)('is still sent when the %s could not be read', async (_, failedRead) => {
+            enableAlert(channel);
+
+            await senders[channel]({ ...reloadParamsWithScriptLog, ...failedRead });
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+
+            const alert = sentAlert(channel);
+            expect(alert).toContain('Sales forecast');
+            expect(alert).toContain('Error: table not found');
+            // Values the failed read would have given don't show up as "undefined" or "NaN"
+            expect(alert).not.toMatch(/undefined|NaN/);
+        });
     });
 });

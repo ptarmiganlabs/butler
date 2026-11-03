@@ -166,12 +166,16 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             }
         } else {
             // Check if app has the tag that enables email alerts. If not found, do not add anything to the main send list
-            // The app tag names are in reloadParams.meta.tags[].name
+            // The app tag names are in reloadParams.appItems.meta.tags[].name, unless the app items could not be obtained
             const alertTag = emailConfig.emailAlertByTagName;
-            const appTags = reloadParams.appItems.meta.tags;
-            const appHasAlertTag = appTags.find((tag) => tag.name === alertTag);
+            const appTags = reloadParams.appItems?.meta?.tags;
+            const appHasAlertTag = appTags?.find((tag) => tag.name === alertTag);
 
-            if (appTags === undefined || appTags?.length === 0 || appHasAlertTag === undefined) {
+            if (appTags === undefined) {
+                globals.logger.warn(
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the tags of app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email based on app tag.`,
+                );
+            } else if (appTags?.length === 0 || appHasAlertTag === undefined) {
                 globals.logger.warn(
                     `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
                 );

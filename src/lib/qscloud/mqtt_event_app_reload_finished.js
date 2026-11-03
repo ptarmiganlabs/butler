@@ -157,9 +157,12 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     try {
                         appItems = await getQlikSenseCloudAppItems(appId);
 
-                        // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
-                        // error if not
-                        if (appItems?.data.length !== 1 || appItems?.data[0].resourceId !== appId) {
+                        // If return value is false, the app items could not be obtained
+                        if (appItems === false) {
+                            logger.warn(`[QSCLOUD] Could not get app items. App ID="${appId}"`);
+                        } else if (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId) {
+                            // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
+                            // error if not
                             logger.error(
                                 `[QSCLOUD] App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
                                     appItems,
@@ -170,9 +173,9 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                             // Set appItems to empty object
                             appItems = {};
+                        } else {
+                            logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                         }
-
-                        logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                         logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
                     } catch (err) {
                         logger.error(`[QSCLOUD] Could not get app items. Error=${globals.getErrorMessage(err)}`);
@@ -281,7 +284,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             reloadInfo: teamsReloadInfo,
                             appInfo,
                             appMetadata,
-                            appItems: appItems?.data[0],
+                            appItems: appItems?.data?.[0],
                         });
                     }
 
@@ -343,7 +346,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             reloadInfo: slackReloadInfo,
                             appInfo,
                             appMetadata,
-                            appItems: appItems?.data[0],
+                            appItems: appItems?.data?.[0],
                         });
                     }
 
@@ -397,7 +400,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             reloadInfo,
                             appInfo,
                             appMetadata,
-                            appItems: appItems?.data[0],
+                            appItems: appItems?.data?.[0],
                         });
                     }
                 }
