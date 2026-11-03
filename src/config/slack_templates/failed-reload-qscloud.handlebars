@@ -153,6 +153,7 @@
                 "text": "```{{ logMessage }}```"
             }
         },
+        {{#if scriptLogAvailable}}
         {
             "type": "section",
             "text": {
@@ -181,5 +182,14 @@
                 "text": "```{{{ scriptLogTail }}}```"
             }
         }
+        {{else}}
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "The script log is not available."
+            }
+        }
+        {{/if}}
     ]
 }
