@@ -18,16 +18,12 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
         getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
-    const mockGetQlikSenseCloudUserInfo = jest.fn();
     const mockGetQlikSenseCloudUrls = jest.fn();
     const mockSendEmail = jest.fn();
     const mockIsSmtpConfigOk = jest.fn();
 
     beforeAll(async () => {
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
-        await jest.unstable_mockModule('../api/user.js', () => ({
-            getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo,
-        }));
         await jest.unstable_mockModule('../util.js', () => ({ getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls }));
         await jest.unstable_mockModule('../../qseow/smtp/index.js', () => ({
             sendEmail: mockSendEmail,
@@ -55,12 +51,6 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
             return 'default';
         });
 
-        mockGetQlikSenseCloudUserInfo.mockResolvedValue({
-            id: 'owner123',
-            name: 'Owner User',
-            email: 'owner@example.com',
-        });
-
         mockGetQlikSenseCloudUrls.mockReturnValue({
             qmcUrl: 'https://tenant.qlikcloud.com/qmc',
             hubUrl: 'https://tenant.qlikcloud.com/hub',
@@ -83,6 +73,7 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
         appItems: { meta: { tags: [] }, resourceSize: { appFile: 42 } },
         reloadInfo: { errorCode: 1, errorMessage: 'err', log: 'log' },
         scriptLog: { scriptLogFull: ['a', 'b'] },
+        appOwner: { id: 'owner123', name: 'Owner User', email: 'owner@example.com' },
     };
 
     test('returns false when tag gating is enabled and app lacks the tag (no recipients)', async () => {

@@ -15,9 +15,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 import { SLACK_TEXT_FIELD_MAX_LENGTH } from '../../constants.js';
 import slackSend from '../slack_api.js';
-import { getQlikSenseCloudUserInfo } from './api/user.js';
-import { getQlikSenseCloudAppInfo } from './api/app.js';
-import { getQlikSenseCloudUrls } from './util.js';
+import { prepareQlikSenseCloudAppReloadTemplateContext, escapeLineBreaksAndTabsForJson } from './template_context.js';
 import { prepareQlikSenseCloudScriptLogForNotification } from './scriptlog.js';
 
 let rateLimiterMemoryFailedReloads;
@@ -228,9 +226,6 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     return 1;
                 }
 
-                // Get app owner info
-                const appOwner = await getQlikSenseCloudUserInfo(reloadParams.ownerId);
-
                 // Reduce script log lines to only the ones we want to send to Slack
                 // If reloadParams.scriptLog is false, the script log could not be obtained
                 const scriptLogData = prepareQlikSenseCloudScriptLogForNotification(
@@ -246,89 +241,13 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     `[QSCLOUD] SLACK ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`,
                 );
 
-                // Get Sense URLs from config file. Can be used as template fields.
-                const senseUrls = getQlikSenseCloudUrls();
-
-                // Get generic URLs from config file. Can be used as template fields.
-                let genericUrls = globals.config.get('Butler.genericUrls');
-                if (!genericUrls) {
-                    // No URLs defined in the config file. Set to empty array
-                    genericUrls = [];
-                }
-
                 // These are the template fields that can be used in Slack body
-                const templateContext = {
-                    tenantId: reloadParams.tenantId,
-                    tenantComment: reloadParams.tenantComment,
-                    tenantUrl: reloadParams.tenantUrl,
+                const templateContext = prepareQlikSenseCloudAppReloadTemplateContext(reloadParams, scriptLogData);
 
-                    userId: reloadParams.userId,
-                    // If appOwner is false, the app owner could not be obtained
-                    userName: appOwner?.name || 'Unknown',
-
-                    appId: reloadParams.appId,
-                    appName: reloadParams.appName,
-                    appDescription: reloadParams.appInfo?.attributes?.description || '',
-                    appUrl: reloadParams.appUrl,
-                    appHasSectionAccess: reloadParams.appInfo?.attributes?.hasSectionAccess ?? false,
-                    appIsPublished: reloadParams.appInfo?.attributes?.published ?? false,
-                    appPublishTime: reloadParams.appInfo?.attributes?.publishTime || '',
-                    appThumbnail: reloadParams.appInfo?.attributes?.thumbnail || '',
-
-                    reloadTrigger: reloadParams.reloadTrigger,
-                    source: reloadParams.source,
-                    eventType: reloadParams.eventType,
-                    eventTypeVersion: reloadParams.eventTypeVersion,
-                    endedWithMemoryConstraint: reloadParams.endedWithMemoryConstraint,
-                    isDirectQueryMode: reloadParams.isDirectQueryMode,
-                    isPartialReload: reloadParams.isPartialReload,
-                    isSessionApp: reloadParams.isSessionApp,
-                    isSkipStore: reloadParams.isSkipStore,
-
-                    peakMemoryBytes: Number(reloadParams.peakMemoryBytes || 0).toLocaleString(),
-                    reloadId: reloadParams.reloadId,
-                    rowLimit: Number(reloadParams.rowLimit || 0).toLocaleString(),
-                    statements: reloadParams.statements,
-                    status: reloadParams.status,
-                    usageDuration: reloadParams.duration,
-                    sizeMemoryBytes: Number(reloadParams.sizeMemory || 0).toLocaleString(),
-                    appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
-
-                    // If reloadParams.reloadInfo is false, the reload info could not be obtained
-                    errorCode: reloadParams.reloadInfo.errorCode,
-                    errorMessage: reloadParams.reloadInfo.errorMessage,
-                    logMessage: (reloadParams.reloadInfo.log ?? '')
-                        .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n')
-                        .replace(/([\t])/gm, '\\t'),
-                    executionDuration: reloadParams.reloadInfo.executionDuration,
-                    executionStartTime: reloadParams.reloadInfo.executionStartTime,
-                    executionStopTime: reloadParams.reloadInfo.executionStopTime,
-                    executionStatusText: reloadParams.reloadInfo.status,
-                    scriptLogAvailable: scriptLogData.scriptLogAvailable,
-                    scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
-                    scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
-                    scriptLogSizeCharacters: scriptLogData.scriptLogSizeCharacters.toLocaleString(),
-                    scriptLogHead: scriptLogData.scriptLogHead
-                        .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n')
-                        .replace(/([\t])/gm, '\\t'),
-                    scriptLogTail: scriptLogData.scriptLogTail
-                        .replace(/([\r])/gm, '')
-                        .replace(/([\n])/gm, '\\n')
-                        .replace(/([\t])/gm, '\\t'),
-                    scriptLogTailCount: scriptLogData.scriptLogTailCount,
-                    scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
-
-                    qlikSenseQMC: senseUrls.qmcUrl,
-                    qlikSenseHub: senseUrls.hubUrl,
-                    genericUrls,
-
-                    appOwnerName: appOwner?.name || 'Unknown',
-                    appOwnerUserId: appOwner?.id || 'Unknown',
-                    appOwnerPicture: appOwner?.picture || '',
-                    appOwnerEmail: appOwner?.email || 'Unknown',
-                };
+                // The Slack template is JSON, so line breaks and tabs in the log message and script log are written as escape sequences
+                templateContext.logMessage = escapeLineBreaksAndTabsForJson(templateContext.logMessage);
+                templateContext.scriptLogHead = escapeLineBreaksAndTabsForJson(templateContext.scriptLogHead);
+                templateContext.scriptLogTail = escapeLineBreaksAndTabsForJson(templateContext.scriptLogTail);
 
                 // Properly escape strings for JSON embedding using JSON.stringify
                 // This ensures all special characters are correctly escaped for JSON

@@ -18,7 +18,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
         getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
-    const mockGetQlikSenseCloudUserInfo = jest.fn();
     const mockGetQlikSenseCloudUrls = jest.fn();
     const mockSendEmail = jest.fn();
     const mockIsSmtpConfigOk = jest.fn();
@@ -27,9 +26,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
     beforeAll(async () => {
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
-        await jest.unstable_mockModule('../api/user.js', () => ({
-            getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo,
-        }));
         await jest.unstable_mockModule('../util.js', () => ({
             getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls,
         }));
@@ -57,12 +53,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert')
                 return { enable: false };
             return 'default-value';
-        });
-
-        mockGetQlikSenseCloudUserInfo.mockResolvedValue({
-            id: 'user123',
-            name: 'Test User',
-            email: 'user@example.com',
         });
 
         mockGetQlikSenseCloudUrls.mockReturnValue({
@@ -98,6 +88,11 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             },
             scriptLog: {
                 scriptLogFull: ['Line 1', 'Line 2'],
+            },
+            appOwner: {
+                id: 'user123',
+                name: 'Test User',
+                email: 'user@example.com',
             },
         };
 
@@ -173,6 +168,51 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             expect(result).toBe(true);
         });
 
+        test('should leave the reload info it is given unchanged', async () => {
+            // The app reload handler gives the Teams and Slack senders the same reload info.
+            // Another app than in the other tests, so the rate limiter lets the email through.
+            const reloadParams = {
+                ...basicReloadParams,
+                appId: 'app-with-log',
+                reloadInfo: { ...basicReloadParams.reloadInfo, log: 'Line 1\nLine 2' },
+            };
+
+            await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(reloadParams.reloadInfo.log).toBe('Line 1\nLine 2');
+            // The email gets the log message with the line breaks HTML email needs
+            const [, , , , , , templateContext] = mockSendEmail.mock.calls[0];
+            expect(templateContext.logMessage).toBe('Line 1\r\nLine 2');
+        });
+
+        test.each([
+            ['could not be read', false],
+            ['is not passed on', undefined],
+        ])('should still email the configured recipients when the app owner %s, with app owner alerts on', async (_, appOwner) => {
+            const getConfig = mockGlobals.config.get.getMockImplementation();
+            mockGlobals.config.get.mockImplementation((key) =>
+                key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert'
+                    ? { enable: true, includeOwner: { includeAll: true } }
+                    : getConfig(key),
+            );
+            // Another app than in the other tests, so the rate limiter lets the email through
+            const reloadParams = { ...basicReloadParams, appId: `app-owner-${appOwner}`, appOwner };
+
+            const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(result).toBe(true);
+            expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(
+                expect.stringContaining(
+                    `Could not get the owner of app [app-owner-${appOwner}] "Test App". Not sending alert email to the app owner.`,
+                ),
+            );
+            expect(mockSendEmail).toHaveBeenCalledTimes(1);
+            expect(mockSendEmail.mock.calls[0][1]).toEqual(['test@example.com']);
+        });
+
         test('should handle generic URLs gracefully', async () => {
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.genericUrls') return undefined;
@@ -188,7 +228,9 @@ describe('lib/qscloud/email_notification_qscloud', () => {
         });
 
         test('should handle errors in main execution', async () => {
-            mockGetQlikSenseCloudUserInfo.mockRejectedValue(new Error('API Error'));
+            mockGetQlikSenseCloudUrls.mockImplementation(() => {
+                throw new Error('API Error');
+            });
 
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 
