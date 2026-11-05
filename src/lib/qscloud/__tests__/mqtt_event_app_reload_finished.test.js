@@ -2,16 +2,18 @@
 import { jest } from '@jest/globals';
 
 // Mocks for API helpers
+const getQlikSenseCloudAppReloadScriptLog = jest.fn().mockResolvedValue({ scriptLogFull: ['a', 'b'] });
 const getQlikSenseCloudAppReloadInfo = jest.fn().mockResolvedValue({ type: 'scheduled', appId: 'aid', reloadId: 'rid' });
 jest.unstable_mockModule('../api/appreloadinfo.js', () => ({
-    getQlikSenseCloudAppReloadScriptLog: jest.fn().mockResolvedValue({ scriptLogFull: ['a', 'b'] }),
+    getQlikSenseCloudAppReloadScriptLog,
     getQlikSenseCloudAppReloadInfo,
 }));
 
+const getQlikSenseCloudAppItems = jest.fn().mockResolvedValue({ data: [{ resourceId: 'aid' }] });
 jest.unstable_mockModule('../api/app.js', () => ({
     getQlikSenseCloudAppInfo: jest.fn().mockResolvedValue({ id: 'aid', name: 'App' }),
     getQlikSenseCloudAppMetadata: jest.fn().mockResolvedValue({ foo: 'bar' }),
-    getQlikSenseCloudAppItems: jest.fn().mockResolvedValue({ data: [{ resourceId: 'aid' }] }),
+    getQlikSenseCloudAppItems,
 }));
 
 // Notification mocks
@@ -145,7 +147,44 @@ describe('qscloud mqtt handler', () => {
         const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
 
         expect(res).toBe(true);
+        expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining('2024-10-14'), { recursive: true });
         expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('appId=aid_reloadId=rid.log'), 'a\nb');
+    });
+
+    test('still sends every alert when the script log directory cannot be created', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+        mkdirSync.mockImplementationOnce(() => {
+            throw new Error("EACCES: permission denied, mkdir '/logs/qscloud/2024-10-14'");
+        });
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(writeFileSync).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Could not store script log to disk file'));
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('EACCES: permission denied'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledTimes(1);
+        }
+    });
+
+    test('stores nothing on disk, and logs no error, when the script log could not be read', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+        // getQlikSenseCloudAppReloadScriptLog() returns false when it fails
+        getQlikSenseCloudAppReloadScriptLog.mockResolvedValueOnce(false);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(mkdirSync).not.toHaveBeenCalled();
+        expect(writeFileSync).not.toHaveBeenCalled();
+        expect(logger.error).not.toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Not storing the script log to disk file'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledTimes(1);
+        }
     });
 
     test.each([
@@ -173,5 +212,20 @@ describe('qscloud mqtt handler', () => {
         expect(sendTeams).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: { appId: 'aid', reloadId: 'rid' } }));
         expect(sendSlack).toHaveBeenCalledWith(expect.objectContaining({ reloadInfo: false }));
         expect(sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    test.each([
+        ['match the app', { data: [{ resourceId: 'aid' }] }, { resourceId: 'aid' }],
+        ['could not be read', false, undefined],
+        ['do not match the app', { data: [{ resourceId: 'other-app' }] }, undefined],
+    ])('sends every alert when the app items %s', async (_, appItems, sentAppItem) => {
+        getQlikSenseCloudAppItems.mockResolvedValueOnce(appItems);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appItems: sentAppItem }));
+        }
     });
 });

@@ -263,16 +263,17 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     tenantUrl: reloadParams.tenantUrl,
 
                     userId: reloadParams.userId,
-                    userName: appOwner === undefined ? 'Unknown' : appOwner.name,
+                    // If appOwner is false, the app owner could not be obtained
+                    userName: appOwner?.name || 'Unknown',
 
                     appId: reloadParams.appId,
                     appName: reloadParams.appName,
-                    appDescription: reloadParams.appInfo.attributes.description,
+                    appDescription: reloadParams.appInfo?.attributes?.description || '',
                     appUrl: reloadParams.appUrl,
-                    appHasSectionAccess: reloadParams.appInfo.attributes.hasSectionAccess,
-                    appIsPublished: reloadParams.appInfo.attributes.published,
-                    appPublishTime: reloadParams.appInfo.attributes.publishTime,
-                    appThumbnail: reloadParams.appInfo.attributes.thumbnail,
+                    appHasSectionAccess: reloadParams.appInfo?.attributes?.hasSectionAccess ?? false,
+                    appIsPublished: reloadParams.appInfo?.attributes?.published ?? false,
+                    appPublishTime: reloadParams.appInfo?.attributes?.publishTime || '',
+                    appThumbnail: reloadParams.appInfo?.attributes?.thumbnail || '',
 
                     reloadTrigger: reloadParams.reloadTrigger,
                     source: reloadParams.source,
@@ -284,18 +285,19 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     isSessionApp: reloadParams.isSessionApp,
                     isSkipStore: reloadParams.isSkipStore,
 
-                    peakMemoryBytes: reloadParams.peakMemoryBytes.toLocaleString(),
+                    peakMemoryBytes: Number(reloadParams.peakMemoryBytes || 0).toLocaleString(),
                     reloadId: reloadParams.reloadId,
-                    rowLimit: reloadParams.rowLimit.toLocaleString(),
+                    rowLimit: Number(reloadParams.rowLimit || 0).toLocaleString(),
                     statements: reloadParams.statements,
                     status: reloadParams.status,
                     usageDuration: reloadParams.duration,
-                    sizeMemoryBytes: reloadParams.sizeMemory.toLocaleString(),
-                    appFileSize: reloadParams.appItems.resourceSize.appFile.toLocaleString(),
+                    sizeMemoryBytes: Number(reloadParams.sizeMemory || 0).toLocaleString(),
+                    appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
 
+                    // If reloadParams.reloadInfo is false, the reload info could not be obtained
                     errorCode: reloadParams.reloadInfo.errorCode,
                     errorMessage: reloadParams.reloadInfo.errorMessage,
-                    logMessage: reloadParams.reloadInfo.log
+                    logMessage: (reloadParams.reloadInfo.log ?? '')
                         .replace(/([\r])/gm, '')
                         .replace(/([\n])/gm, '\\n')
                         .replace(/([\t])/gm, '\\t'),
@@ -322,10 +324,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     qlikSenseHub: senseUrls.hubUrl,
                     genericUrls,
 
-                    appOwnerName: appOwner.name,
-                    appOwnerUserId: appOwner.id,
-                    appOwnerPicture: appOwner.picture,
-                    appOwnerEmail: appOwner.email,
+                    appOwnerName: appOwner?.name || 'Unknown',
+                    appOwnerUserId: appOwner?.id || 'Unknown',
+                    appOwnerPicture: appOwner?.picture || '',
+                    appOwnerEmail: appOwner?.email || 'Unknown',
                 };
 
                 // Properly escape strings for JSON embedding using JSON.stringify

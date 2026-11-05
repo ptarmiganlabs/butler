@@ -4,10 +4,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import handlebars from 'handlebars';
 
-// When the Qlik Sense Cloud script-log fetch fails, the app reload handler passes scriptLog: false on to
-// the email, Teams and Slack senders. Each sender should still send its alert, rendered from the
-// templates that ship with Butler, and those templates should say the script log is not available
-// instead of showing empty script log sections. The last tests render the same templates with a script log.
+// When a Qlik Sense Cloud API read behind an app reload alert fails, the app reload handler passes scriptLog,
+// reloadInfo or appInfo on to the email, Teams and Slack senders as false, and appItems as undefined.
+// Each sender should still send its alert, rendered from the templates that ship with Butler. Without a
+// script log, those templates should say it is not available instead of showing empty script log sections.
+// The same goes for the app owner, which each sender reads itself, and for numbers missing from the app reload event.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -32,9 +33,8 @@ jest.unstable_mockModule('rate-limiter-flexible', () => ({
     })),
 }));
 
-jest.unstable_mockModule('../api/user.js', () => ({
-    getQlikSenseCloudUserInfo: jest.fn().mockResolvedValue({ id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' }),
-}));
+const getQlikSenseCloudUserInfo = jest.fn().mockResolvedValue({ id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' });
+jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Capture outgoing alerts instead of sending them
 const sendEmailMock = jest.fn();
@@ -109,6 +109,13 @@ const sentAlert = (channel) => {
     return JSON.stringify(JSON.parse(slackMsg.text));
 };
 
+// How each shipped template shows an app owner that could not be read
+const unknownOwner = {
+    email: /<strong>App owner<\/strong><br>\s*Unknown\s*<\/td>/,
+    teams: '{"title":"App owner:","value":"Unknown"}',
+    slack: '"text":"*App owner:*\\nUnknown"',
+};
+
 const reloadParams = {
     tenantId: 'tenant-1',
     tenantComment: 'Production tenant',
@@ -155,6 +162,15 @@ const reloadParams = {
     scriptLog: false,
 };
 
+// The same reload when the script log could be retrieved
+const reloadParamsWithScriptLog = {
+    ...reloadParams,
+    scriptLog: {
+        scriptLogFull: ['Starting reload', 'Loading Sales.qvd', 'Error: table not found'],
+        scriptLogSize: 3,
+    },
+};
+
 beforeEach(() => {
     cfg.clear();
     cfg.set('Butler.qlikSenseCloud.event.mqtt.tenant.qlikSenseUrls.qmc', 'https://tenant.example.com/console');
@@ -179,14 +195,6 @@ describe('Qlik Sense Cloud app reload alerts when the script log could not be re
 });
 
 describe('Qlik Sense Cloud app reload alerts when the script log is available', () => {
-    const reloadParamsWithScriptLog = {
-        ...reloadParams,
-        scriptLog: {
-            scriptLogFull: ['Starting reload', 'Loading Sales.qvd', 'Error: table not found'],
-            scriptLogSize: 3,
-        },
-    };
-
     test.each(['email', 'teams', 'slack'])('the %s alert shows the first and last rows of the script log', async (channel) => {
         enableAlert(channel);
 
@@ -201,5 +209,89 @@ describe('Qlik Sense Cloud app reload alerts when the script log is available', 
         expect(alert).toContain('Error: table not found');
         expect(alert).not.toContain('Loading Sales.qvd');
         expect(alert).not.toContain('The script log is not available.');
+    });
+});
+
+describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API read failed', () => {
+    // What the app reload handler passes on when each read fails
+    const failedReads = [
+        ['reload info', { reloadInfo: false }],
+        ['app info', { appInfo: false }],
+        ['app items', { appItems: undefined }],
+    ];
+
+    describe.each(['email', 'teams', 'slack'])('the %s alert', (channel) => {
+        test.each(failedReads)('is still sent when the %s could not be read', async (_, failedRead) => {
+            enableAlert(channel);
+
+            await senders[channel]({ ...reloadParamsWithScriptLog, ...failedRead });
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+
+            const alert = sentAlert(channel);
+            expect(alert).toContain('Sales forecast');
+            expect(alert).toContain('Error: table not found');
+            // Values the failed read would have given don't show up as "undefined" or "NaN"
+            expect(alert).not.toMatch(/undefined|NaN/);
+        });
+
+        test('shows the app owner as unknown when the app owner could not be read', async () => {
+            enableAlert(channel);
+            // getQlikSenseCloudUserInfo() returns false when it fails
+            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+            await senders[channel](reloadParamsWithScriptLog);
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+            expect(sentAlert(channel)).toMatch(unknownOwner[channel]);
+        });
+
+        test('is still sent when every read failed at once', async () => {
+            enableAlert(channel);
+            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+            await senders[channel]({ ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined });
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+
+            const alert = sentAlert(channel);
+            expect(alert).toContain('Sales forecast');
+            expect(alert).toContain('The script log is not available.');
+            expect(alert).toMatch(unknownOwner[channel]);
+            expect(alert).not.toMatch(/undefined|NaN/);
+        });
+    });
+});
+
+describe('Qlik Sense Cloud app reload alerts when the app reload event has no memory or row limit numbers', () => {
+    test.each(['email', 'teams', 'slack'])('the %s alert is still sent', async (channel) => {
+        enableAlert(channel);
+
+        // The app reload handler passes these on as undefined when the event doesn't have them
+        await senders[channel]({ ...reloadParamsWithScriptLog, peakMemoryBytes: undefined, rowLimit: undefined, sizeMemory: undefined });
+        await flushPromises();
+
+        expect(logger.error).not.toHaveBeenCalled();
+
+        const alert = sentAlert(channel);
+        expect(alert).toContain('Sales forecast');
+        expect(alert).not.toMatch(/undefined|NaN/);
+    });
+});
+
+describe('Qlik Sense Cloud app reload email alerts when the app owner could not be read', () => {
+    test('give custom templates "Unknown" as the user name', async () => {
+        enableAlert('email');
+        getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+        await senders.email(reloadParamsWithScriptLog);
+        await flushPromises();
+
+        // The shipped email template doesn't show userName, so check the fields sendEmail() renders custom templates with
+        const [, , , , , , templateContext] = sendEmailMock.mock.calls[0];
+        expect(templateContext.userName).toBe('Unknown');
     });
 });
