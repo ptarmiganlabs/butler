@@ -115,6 +115,11 @@ const unknownOwner = {
     teams: '{"title":"App owner:","value":"Unknown"}',
     slack: '"text":"*App owner:*\\nUnknown"',
 };
+const unknownOwnerEmail = {
+    email: /<strong>App owner email<\/strong><br>\s*Unknown\s*<\/td>/,
+    teams: '{"title":"App owner email:","value":"Unknown"}',
+    slack: '"text":"*App owner email:*\\nUnknown"',
+};
 
 const reloadParams = {
     tenantId: 'tenant-1',
@@ -236,7 +241,7 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
             expect(alert).not.toMatch(/undefined|NaN/);
         });
 
-        test('shows the app owner as unknown when the app owner could not be read', async () => {
+        test('shows the app owner and their email as unknown when the app owner could not be read', async () => {
             enableAlert(channel);
             // getQlikSenseCloudUserInfo() returns false when it fails
             getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
@@ -245,7 +250,9 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
             await flushPromises();
 
             expect(logger.error).not.toHaveBeenCalled();
-            expect(sentAlert(channel)).toMatch(unknownOwner[channel]);
+            const alert = sentAlert(channel);
+            expect(alert).toMatch(unknownOwner[channel]);
+            expect(alert).toMatch(unknownOwnerEmail[channel]);
         });
 
         test('is still sent when every read failed at once', async () => {

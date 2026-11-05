@@ -340,10 +340,11 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             qlikSenseHub: senseUrls.hubUrl,
             genericUrls,
 
+            // If appOwner is false, the app owner could not be obtained
             appOwnerName: appOwner?.name || 'Unknown',
-            appOwnerUserId: appOwner?.id || '',
+            appOwnerUserId: appOwner?.id || 'Unknown',
             appOwnerPicture: appOwner?.picture || '',
-            appOwnerEmail: appOwner?.email || '',
+            appOwnerEmail: appOwner?.email || 'Unknown',
         };
 
         // Send alert emails
