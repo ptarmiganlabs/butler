@@ -12,7 +12,6 @@ import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 import globals from '../../globals.js';
-import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
 import { sendEmail, isSmtpConfigOk } from '../qseow/smtp/index.js';
@@ -191,8 +190,8 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             }
         }
 
-        // Get app owner info
-        const appOwner = await getQlikSenseCloudUserInfo(reloadParams.ownerId);
+        // The app reload handler gets the app owner. It is false if the app owner could not be obtained
+        const { appOwner } = reloadParams;
 
         // Get recipients based on app owner settings
         // Build separate list of app owner email addresses

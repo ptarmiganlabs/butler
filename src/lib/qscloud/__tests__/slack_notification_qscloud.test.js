@@ -116,9 +116,6 @@ describe('qscloud slack notification - reload failures', () => {
             default: slackSend,
         }));
 
-        await jest.unstable_mockModule('../api/user.js', () => ({
-            getQlikSenseCloudUserInfo: jest.fn().mockResolvedValue({ name: 'Owner X', id: 'o1', email: 'o@e', picture: 'p' }),
-        }));
         await jest.unstable_mockModule('../util.js', () => ({
             getQlikSenseCloudUrls: jest.fn().mockReturnValue({ qmcUrl: 'QMC', hubUrl: 'HUB' }),
         }));
@@ -161,9 +158,6 @@ describe('qscloud slack notification - reload failures', () => {
         const slackSend = jest.fn().mockResolvedValue({ status: 200, statusText: 'OK', data: 'ok' });
         await jest.unstable_mockModule('../../slack_api.js', () => ({ default: slackSend }));
 
-        await jest.unstable_mockModule('../api/user.js', () => ({
-            getQlikSenseCloudUserInfo: jest.fn().mockResolvedValue({ name: 'Owner X', id: 'o1', email: 'o@e', picture: 'p' }),
-        }));
         await jest.unstable_mockModule('../util.js', () => ({
             getQlikSenseCloudUrls: jest.fn().mockReturnValue({ qmcUrl: 'QMC', hubUrl: 'HUB' }),
         }));

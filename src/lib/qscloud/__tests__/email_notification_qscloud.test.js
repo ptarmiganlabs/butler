@@ -18,7 +18,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
         getErrorMessage: jest.fn((err) => err?.message || err?.toString() || 'Unknown error'),
     };
 
-    const mockGetQlikSenseCloudUserInfo = jest.fn();
     const mockGetQlikSenseCloudUrls = jest.fn();
     const mockSendEmail = jest.fn();
     const mockIsSmtpConfigOk = jest.fn();
@@ -27,9 +26,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
 
     beforeAll(async () => {
         await jest.unstable_mockModule('../../../globals.js', () => ({ default: mockGlobals }));
-        await jest.unstable_mockModule('../api/user.js', () => ({
-            getQlikSenseCloudUserInfo: mockGetQlikSenseCloudUserInfo,
-        }));
         await jest.unstable_mockModule('../util.js', () => ({
             getQlikSenseCloudUrls: mockGetQlikSenseCloudUrls,
         }));
@@ -57,12 +53,6 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert')
                 return { enable: false };
             return 'default-value';
-        });
-
-        mockGetQlikSenseCloudUserInfo.mockResolvedValue({
-            id: 'user123',
-            name: 'Test User',
-            email: 'user@example.com',
         });
 
         mockGetQlikSenseCloudUrls.mockReturnValue({
@@ -98,6 +88,11 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             },
             scriptLog: {
                 scriptLogFull: ['Line 1', 'Line 2'],
+            },
+            appOwner: {
+                id: 'user123',
+                name: 'Test User',
+                email: 'user@example.com',
             },
         };
 
@@ -188,7 +183,9 @@ describe('lib/qscloud/email_notification_qscloud', () => {
         });
 
         test('should handle errors in main execution', async () => {
-            mockGetQlikSenseCloudUserInfo.mockRejectedValue(new Error('API Error'));
+            mockGetQlikSenseCloudUrls.mockImplementation(() => {
+                throw new Error('API Error');
+            });
 
             const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(basicReloadParams);
 

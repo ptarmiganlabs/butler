@@ -8,7 +8,8 @@ import handlebars from 'handlebars';
 // reloadInfo or appInfo on to the email, Teams and Slack senders as false, and appItems as undefined.
 // Each sender should still send its alert, rendered from the templates that ship with Butler. Without a
 // script log, those templates should say it is not available instead of showing empty script log sections.
-// The same goes for the app owner, which each sender reads itself, and for numbers missing from the app reload event.
+// The same goes for the app owner, which the handler passes on as false when it could not be read, and for numbers
+// missing from the app reload event.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -32,9 +33,6 @@ jest.unstable_mockModule('rate-limiter-flexible', () => ({
         consume: jest.fn().mockResolvedValue({ remainingPoints: 0, msBeforeNext: 0 }),
     })),
 }));
-
-const getQlikSenseCloudUserInfo = jest.fn().mockResolvedValue({ id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' });
-jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Capture outgoing alerts instead of sending them
 const sendEmailMock = jest.fn();
@@ -163,6 +161,7 @@ const reloadParams = {
     },
     appMetadata: {},
     appItems: { resourceSize: { appFile: 4096 }, meta: { tags: [] } },
+    appOwner: { id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' },
     // What the app reload handler passes on when getQlikSenseCloudAppReloadScriptLog() fails
     scriptLog: false,
 };
@@ -243,10 +242,7 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
 
         test('shows the app owner and their email as unknown when the app owner could not be read', async () => {
             enableAlert(channel);
-            // getQlikSenseCloudUserInfo() returns false when it fails
-            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
-
-            await senders[channel](reloadParamsWithScriptLog);
+            await senders[channel]({ ...reloadParamsWithScriptLog, appOwner: false });
             await flushPromises();
 
             expect(logger.error).not.toHaveBeenCalled();
@@ -257,9 +253,7 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
 
         test('is still sent when every read failed at once', async () => {
             enableAlert(channel);
-            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
-
-            await senders[channel]({ ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined });
+            await senders[channel]({ ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined, appOwner: false });
             await flushPromises();
 
             expect(logger.error).not.toHaveBeenCalled();
@@ -292,9 +286,7 @@ describe('Qlik Sense Cloud app reload alerts when the app reload event has no me
 describe('Qlik Sense Cloud app reload email alerts when the app owner could not be read', () => {
     test('give custom templates "Unknown" as the user name', async () => {
         enableAlert('email');
-        getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
-
-        await senders.email(reloadParamsWithScriptLog);
+        await senders.email({ ...reloadParamsWithScriptLog, appOwner: false });
         await flushPromises();
 
         // The shipped email template doesn't show userName, so check the fields sendEmail() renders custom templates with

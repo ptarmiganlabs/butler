@@ -6,7 +6,7 @@
  *
  * Processing flow:
  * 1. Receive MQTT message with app reload info
- * 2. Fetch app metadata and script logs from QSC API
+ * 2. Fetch the script log, reload info, app info, app items and app owner from QSC APIs, all at once
  * 3. Send notifications via configured channels (Teams, Slack, Email)
  */
 
@@ -15,12 +15,30 @@ import fs from 'fs';
 
 import globals from '../../globals.js';
 import { getQlikSenseCloudAppReloadScriptLog, getQlikSenseCloudAppReloadInfo } from './api/appreloadinfo.js';
-import { getQlikSenseCloudAppInfo, getQlikSenseCloudAppMetadata, getQlikSenseCloudAppItems } from './api/app.js';
+import { getQlikSenseCloudAppInfo, getQlikSenseCloudAppItems } from './api/app.js';
+import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationTeams } from './msteams_notification_qscloud.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationSlack } from './slack_notification_qscloud.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationEmail } from './email_notification_qscloud.js';
 
 const { config, logger } = globals;
+
+/**
+ * Get the value of a Qlik Sense Cloud API read that was run with Promise.allSettled().
+ * The API functions return false when a read fails. A read that threw is logged, and treated the same way.
+ *
+ * @param {PromiseSettledResult} read - The settled read
+ * @param {string} description - What was read, for the log
+ * @returns {*} The value the read returned, or false if it threw
+ */
+function getSettledReadValue(read, description) {
+    if (read.status === 'rejected') {
+        logger.error(`[QSCLOUD] Could not get ${description}. Error=${globals.getErrorMessage(read.reason)}`);
+        return false;
+    }
+
+    return read.value;
+}
 
 /**
  * Handle Qlik Sense Cloud app reload finished event.
@@ -88,8 +106,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 let scriptLog = {};
                 let reloadInfo = {};
                 let appInfo = {};
-                let appMetadata = {};
                 let appItems = {};
+                let appOwner = {};
 
                 // App reload did fail. Send enabled notifications/alerts, store script log etc
                 logger.info(`[QSCLOUD] App reload failed. App ID=[${appId}] name="${message.data.name}"`);
@@ -98,19 +116,28 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 if (globals.config.get('Butler.qlikSenseCloud.enable') === true) {
                     // Get info that will be needed later from QS CLoud APIs
                     // This includes:
-                    // - Reload script log
-                    // - Reload info
-                    // - App info
+                    // - Reload script log, via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
+                    //   https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
+                    // - Reload info, via "GET /v1/reloads/{reloadId}"
+                    //   https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
+                    // - App info, via "GET /v1/apps/{appId}"
+                    //   https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
+                    // - App items, via "GET /v1/items"
+                    //   https://qlik.dev/apis/rest/items/#get-v1-items
+                    // - App owner, via "GET /v1/users/{userId}"
+                    //   https://qlik.dev/apis/rest/users/#get-v1-users-userId
+                    // The reads don't depend on each other, so they run at the same time.
+                    // When the APIs are slow or time out, the alerts then wait for the slowest read, not for all of them in turn.
+                    const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead] = await Promise.allSettled([
+                        getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
+                        getQlikSenseCloudAppReloadInfo(reloadId),
+                        getQlikSenseCloudAppInfo(appId),
+                        getQlikSenseCloudAppItems(appId),
+                        getQlikSenseCloudUserInfo(ownerId),
+                    ]);
 
-                    // Script log is available via "GET /v1/apps/{appId}/reloads/logs/{reloadId}"
-                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-reloads-logs-reloadId
-                    try {
-                        scriptLog = await getQlikSenseCloudAppReloadScriptLog(appId, reloadId);
-                    } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app reload script log. Error=${globals.getErrorMessage(err)}`);
-                    }
-
-                    // If return value is false, the script log could not be obtained
+                    // If a value is false, that info could not be obtained
+                    scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log');
                     if (scriptLog === false) {
                         logger.warn(`[QSCLOUD] Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`);
                     } else {
@@ -118,67 +145,50 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     }
                     logger.debug(`[QSCLOUD] App reload script log: ${scriptLog}`);
 
-                    // Reload info is available via "GET /v1/reloads/{reloadId}"
-                    // https://qlik.dev/apis/rest/reloads/#get-v1-reloads-reloadId
-                    try {
-                        reloadInfo = await getQlikSenseCloudAppReloadInfo(reloadId);
-                        reloadTrigger = reloadInfo.type;
-
+                    reloadInfo = getSettledReadValue(reloadInfoRead, 'app reload info');
+                    reloadTrigger = reloadInfo.type;
+                    if (reloadInfo === false) {
+                        logger.warn(`[QSCLOUD] Could not get app reload info. App ID="${appId}", reload ID="${reloadId}"`);
+                    } else {
                         logger.verbose(`[QSCLOUD] App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                        logger.debug(`[QSCLOUD] App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
-                    } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app reload info. Error=${globals.getErrorMessage(err)}`);
                     }
+                    logger.debug(`[QSCLOUD] App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
 
-                    // App info is available via "GET /v1/apps/{appId}"
-                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId
-                    try {
-                        appInfo = await getQlikSenseCloudAppInfo(appId);
-
+                    appInfo = getSettledReadValue(appInfoRead, 'app info');
+                    if (appInfo === false) {
+                        logger.warn(`[QSCLOUD] Could not get app info. App ID="${appId}"`);
+                    } else {
                         logger.verbose(`[QSCLOUD] App info obtained. App ID="${appId}"`);
-                        logger.debug(`[QSCLOUD] App info: ${JSON.stringify(appInfo, null, 2)}`);
-                    } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app info. Error=${globals.getErrorMessage(err)}`);
                     }
+                    logger.debug(`[QSCLOUD] App info: ${JSON.stringify(appInfo, null, 2)}`);
 
-                    // App metadata is available via "GET /v1/apps/{appId}/data/metadata"
-                    // https://qlik.dev/apis/rest/apps/#get-v1-apps-appId-data-metadata
-                    try {
-                        appMetadata = await getQlikSenseCloudAppMetadata(appId);
+                    appItems = getSettledReadValue(appItemsRead, 'app items');
+                    if (appItems === false) {
+                        logger.warn(`[QSCLOUD] Could not get app items. App ID="${appId}"`);
+                    } else if (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId) {
+                        // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
+                        // error if not
+                        logger.error(
+                            `[QSCLOUD] App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
+                                appItems,
+                                null,
+                                2,
+                            )}"`,
+                        );
 
-                        logger.verbose(`[QSCLOUD] App metadata obtained. App ID="${appId}"`);
-                        logger.debug(`[QSCLOUD] App metadata: ${JSON.stringify(appMetadata, null, 2)}`);
-                    } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app metadata. Error=${globals.getErrorMessage(err)}`);
+                        // Set appItems to empty object
+                        appItems = {};
+                    } else {
+                        logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                     }
+                    logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
 
-                    // App items are available via "GET /v1/items"
-                    // https://qlik.dev/apis/rest/items/#get-v1-items
-                    try {
-                        appItems = await getQlikSenseCloudAppItems(appId);
-
-                        // If return value is false, the app items could not be obtained
-                        if (appItems === false) {
-                            logger.warn(`[QSCLOUD] Could not get app items. App ID="${appId}"`);
-                        } else if (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId) {
-                            // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
-                            // error if not
-                            logger.error(
-                                `[QSCLOUD] App items obtained, but app ID does not match. App ID="${appId}", appItems="${JSON.stringify(
-                                    appItems,
-                                    null,
-                                    2,
-                                )}"`,
-                            );
-
-                            // Set appItems to empty object
-                            appItems = {};
-                        } else {
-                            logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
-                        }
-                        logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
-                    } catch (err) {
-                        logger.error(`[QSCLOUD] Could not get app items. Error=${globals.getErrorMessage(err)}`);
+                    // The alerts show the app owner, and the email alert can be sent to them
+                    appOwner = getSettledReadValue(appOwnerRead, 'app owner');
+                    if (appOwner === false) {
+                        logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
+                    } else {
+                        logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
                     }
 
                     // Get info from config file
@@ -291,8 +301,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             scriptLog: teamsScriptLog,
                             reloadInfo: teamsReloadInfo,
                             appInfo,
-                            appMetadata,
                             appItems: appItems?.data?.[0],
+                            appOwner,
                         });
                     }
 
@@ -353,8 +363,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             scriptLog: slackScriptLog,
                             reloadInfo: slackReloadInfo,
                             appInfo,
-                            appMetadata,
                             appItems: appItems?.data?.[0],
+                            appOwner,
                         });
                     }
 
@@ -370,8 +380,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // - Reload script log
                         // - Reload info
                         // - App info
-                        // - App metadata
                         // - App items
+                        // - App owner
 
                         // Send email notification
                         sendQlikSenseCloudAppReloadFailureNotificationEmail({
@@ -407,8 +417,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             scriptLog,
                             reloadInfo,
                             appInfo,
-                            appMetadata,
                             appItems: appItems?.data?.[0],
+                            appOwner,
                         });
                     }
                 }

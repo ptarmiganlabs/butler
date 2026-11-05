@@ -15,7 +15,6 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 import globals from '../../globals.js';
 import { SLACK_TEXT_FIELD_MAX_LENGTH } from '../../constants.js';
 import slackSend from '../slack_api.js';
-import { getQlikSenseCloudUserInfo } from './api/user.js';
 import { getQlikSenseCloudAppInfo } from './api/app.js';
 import { getQlikSenseCloudUrls } from './util.js';
 import { prepareQlikSenseCloudScriptLogForNotification } from './scriptlog.js';
@@ -228,8 +227,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     return 1;
                 }
 
-                // Get app owner info
-                const appOwner = await getQlikSenseCloudUserInfo(reloadParams.ownerId);
+                // The app reload handler gets the app owner. It is false if the app owner could not be obtained
+                const { appOwner } = reloadParams;
 
                 // Reduce script log lines to only the ones we want to send to Slack
                 // If reloadParams.scriptLog is false, the script log could not be obtained

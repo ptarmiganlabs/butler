@@ -9,12 +9,18 @@ jest.unstable_mockModule('../api/appreloadinfo.js', () => ({
     getQlikSenseCloudAppReloadInfo,
 }));
 
+const getQlikSenseCloudAppInfo = jest.fn().mockResolvedValue({ id: 'aid', name: 'App' });
+const getQlikSenseCloudAppMetadata = jest.fn().mockResolvedValue({ foo: 'bar' });
 const getQlikSenseCloudAppItems = jest.fn().mockResolvedValue({ data: [{ resourceId: 'aid' }] });
 jest.unstable_mockModule('../api/app.js', () => ({
-    getQlikSenseCloudAppInfo: jest.fn().mockResolvedValue({ id: 'aid', name: 'App' }),
-    getQlikSenseCloudAppMetadata: jest.fn().mockResolvedValue({ foo: 'bar' }),
+    getQlikSenseCloudAppInfo,
+    getQlikSenseCloudAppMetadata,
     getQlikSenseCloudAppItems,
 }));
+
+const appOwner = { id: 'owner', name: 'App Owner', email: 'owner@example.com' };
+const getQlikSenseCloudUserInfo = jest.fn().mockResolvedValue(appOwner);
+jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Notification mocks
 const sendTeams = jest.fn();
@@ -226,6 +232,72 @@ describe('qscloud mqtt handler', () => {
         expect(res).toBe(true);
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
             expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appItems: sentAppItem }));
+        }
+    });
+
+    test('starts every Qlik Sense Cloud API read before waiting for any of them', async () => {
+        const reads = [
+            getQlikSenseCloudAppReloadScriptLog,
+            getQlikSenseCloudAppReloadInfo,
+            getQlikSenseCloudAppInfo,
+            getQlikSenseCloudAppItems,
+            getQlikSenseCloudUserInfo,
+        ];
+        // Count the reads under way at the same time. Each one fails after a moment, as during an API outage.
+        let readsUnderWay = 0;
+        let mostReadsUnderWay = 0;
+        for (const read of reads) {
+            read.mockImplementationOnce(async () => {
+                readsUnderWay += 1;
+                mostReadsUnderWay = Math.max(mostReadsUnderWay, readsUnderWay);
+                await new Promise((resolve) => setImmediate(resolve));
+                readsUnderWay -= 1;
+                return false;
+            });
+        }
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(mostReadsUnderWay).toBe(reads.length);
+    });
+
+    test('reads the app owner once, and passes it on to every alert', async () => {
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner }));
+        }
+    });
+
+    test('does not read the app metadata, which no alert uses', async () => {
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudAppMetadata).not.toHaveBeenCalled();
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender.mock.calls[0][0]).not.toHaveProperty('appMetadata');
+        }
+    });
+
+    test.each([
+        ['app reload script log', getQlikSenseCloudAppReloadScriptLog, 'scriptLog'],
+        ['app reload info', getQlikSenseCloudAppReloadInfo, 'reloadInfo'],
+        ['app info', getQlikSenseCloudAppInfo, 'appInfo'],
+        ['app owner', getQlikSenseCloudUserInfo, 'appOwner'],
+    ])('sends every alert when reading the %s throws', async (description, read, field) => {
+        read.mockRejectedValueOnce(new Error('socket hang up'));
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(logger.error).toHaveBeenCalledWith(`[QSCLOUD] Could not get ${description}. Error=socket hang up`);
+        // A read that throws is treated as one that failed
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ [field]: false }));
         }
     });
 });

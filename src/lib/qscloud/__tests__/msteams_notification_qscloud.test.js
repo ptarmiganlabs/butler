@@ -183,6 +183,12 @@ describe('qscloud/msteams_notification_qscloud', () => {
         scriptLog: {
             scriptLogFull: ['Starting reload', 'Loading data', 'Processing tables', 'Reload completed successfully'],
         },
+
+        appOwner: {
+            id: 'user123',
+            name: 'Test User',
+            email: 'test@example.com',
+        },
     });
 
     describe('sendQlikSenseCloudAppReloadFailureNotificationTeams', () => {
@@ -254,7 +260,8 @@ describe('qscloud/msteams_notification_qscloud', () => {
             await new Promise((resolve) => setTimeout(resolve, 50));
 
             expect(mockConsume).toHaveBeenCalledWith('reload123', 1);
-            expect(mockGetQlikSenseCloudUserInfo).toHaveBeenCalledWith('user123');
+            // The app reload handler reads the app owner, and passes it on in reloadParams
+            expect(mockGetQlikSenseCloudUserInfo).not.toHaveBeenCalled();
             expect(mockGetQlikSenseCloudUrls).toHaveBeenCalled();
             expect(mockHandlebars.compile).toHaveBeenCalledWith('App {{appName}} failed to reload');
             expect(mockWebhook.sendMessage).toHaveBeenCalled();
@@ -282,9 +289,6 @@ describe('qscloud/msteams_notification_qscloud', () => {
             });
 
             mockGlobals.config.has.mockReturnValue(true);
-
-            // Mock user info for template file test
-            mockGetQlikSenseCloudUserInfo.mockResolvedValue({ name: 'Test User' });
 
             const reloadParams = createMockReloadParams();
 
@@ -533,9 +537,8 @@ describe('qscloud/msteams_notification_qscloud', () => {
             });
 
             mockGlobals.config.has.mockReturnValue(true);
-            mockGetQlikSenseCloudUserInfo.mockResolvedValue(undefined);
 
-            const reloadParams = createMockReloadParams();
+            const reloadParams = { ...createMockReloadParams(), appOwner: undefined };
 
             const result = sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams);
 
