@@ -136,6 +136,7 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         //    2. No: Does the app whose reload failed have a tag that enables alert emails?
         //       1. Yes: Add system-wide list of recipients to send list. This list is defined in Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.recipients[]
         //       2. No: Don't add recpients to send list
+        //       3. Unknown, as the app's tags could not be obtained: Add system-wide list of recipients to send list, so the alert isn't lost
         // 2. Should app owners get alerts? Determined by Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.enable, which is a boolean
         //    1. Yes: Should *all* app owners get alerts? Determined by Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert.includeOwner.includeAll, which is a boolean
         //       1. Yes: Add app owner's email address to app owner send list
@@ -173,9 +174,13 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             const appHasAlertTag = appTags?.find((tag) => tag.name === alertTag);
 
             if (appTags === undefined) {
+                // The app may have the tag. Better to send an alert email too many than to lose one
                 globals.logger.warn(
-                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the tags of app [${reloadParams.appId}] "${reloadParams.appName}", as its app items could not be read or did not match the app. Not sending alert email based on app tag.`,
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the tags of app [${reloadParams.appId}] "${reloadParams.appName}", as its app items could not be read or did not match the app. Sending alert email to the configured recipients anyway, in case the app has the tag "${alertTag}".`,
                 );
+                if (emailConfig?.globalSendList?.length > 0) {
+                    globalSendList.push(...emailConfig.globalSendList);
+                }
             } else if (appHasAlertTag === undefined) {
                 globals.logger.warn(
                     `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
