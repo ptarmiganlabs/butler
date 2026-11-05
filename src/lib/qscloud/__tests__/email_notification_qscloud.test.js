@@ -186,6 +186,33 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             expect(templateContext.logMessage).toBe('Line 1\r\nLine 2');
         });
 
+        test.each([
+            ['could not be read', false],
+            ['is not passed on', undefined],
+        ])('should still email the configured recipients when the app owner %s, with app owner alerts on', async (_, appOwner) => {
+            const getConfig = mockGlobals.config.get.getMockImplementation();
+            mockGlobals.config.get.mockImplementation((key) =>
+                key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert'
+                    ? { enable: true, includeOwner: { includeAll: true } }
+                    : getConfig(key),
+            );
+            // Another app than in the other tests, so the rate limiter lets the email through
+            const reloadParams = { ...basicReloadParams, appId: `app-owner-${appOwner}`, appOwner };
+
+            const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(result).toBe(true);
+            expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+            expect(mockGlobals.logger.warn).toHaveBeenCalledWith(
+                expect.stringContaining(
+                    `Could not get the owner of app [app-owner-${appOwner}] "Test App". Not sending alert email to the app owner.`,
+                ),
+            );
+            expect(mockSendEmail).toHaveBeenCalledTimes(1);
+            expect(mockSendEmail.mock.calls[0][1]).toEqual(['test@example.com']);
+        });
+
         test('should handle generic URLs gracefully', async () => {
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.genericUrls') return undefined;

@@ -196,7 +196,11 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         if (emailConfig.appOwnerAlert.enable === true) {
             let appOwnerSendList = [];
 
-            if (appOwner.email === undefined || appOwner?.email?.length === 0) {
+            if (!appOwner) {
+                globals.logger.warn(
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the owner of app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email to the app owner.`,
+                );
+            } else if (!appOwner.email) {
                 globals.logger.warn(
                     `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App owner email address is not set for app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email to app owner "${appOwner.name}".`,
                 );
