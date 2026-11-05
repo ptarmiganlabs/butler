@@ -263,7 +263,8 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     tenantUrl: reloadParams.tenantUrl,
 
                     userId: reloadParams.userId,
-                    userName: appOwner === undefined ? 'Unknown' : appOwner.name,
+                    // If appOwner is false, the app owner could not be obtained
+                    userName: appOwner?.name || 'Unknown',
 
                     appId: reloadParams.appId,
                     appName: reloadParams.appName,
@@ -284,13 +285,13 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     isSessionApp: reloadParams.isSessionApp,
                     isSkipStore: reloadParams.isSkipStore,
 
-                    peakMemoryBytes: reloadParams.peakMemoryBytes.toLocaleString(),
+                    peakMemoryBytes: Number(reloadParams.peakMemoryBytes || 0).toLocaleString(),
                     reloadId: reloadParams.reloadId,
-                    rowLimit: reloadParams.rowLimit.toLocaleString(),
+                    rowLimit: Number(reloadParams.rowLimit || 0).toLocaleString(),
                     statements: reloadParams.statements,
                     status: reloadParams.status,
                     usageDuration: reloadParams.duration,
-                    sizeMemoryBytes: reloadParams.sizeMemory.toLocaleString(),
+                    sizeMemoryBytes: Number(reloadParams.sizeMemory || 0).toLocaleString(),
                     appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
 
                     // If reloadParams.reloadInfo is false, the reload info could not be obtained
@@ -323,10 +324,10 @@ export function sendQlikSenseCloudAppReloadFailureNotificationSlack(reloadParams
                     qlikSenseHub: senseUrls.hubUrl,
                     genericUrls,
 
-                    appOwnerName: appOwner.name,
-                    appOwnerUserId: appOwner.id,
-                    appOwnerPicture: appOwner.picture,
-                    appOwnerEmail: appOwner.email,
+                    appOwnerName: appOwner?.name || 'Unknown',
+                    appOwnerUserId: appOwner?.id || 'Unknown',
+                    appOwnerPicture: appOwner?.picture || '',
+                    appOwnerEmail: appOwner?.email || 'Unknown',
                 };
 
                 // Properly escape strings for JSON embedding using JSON.stringify

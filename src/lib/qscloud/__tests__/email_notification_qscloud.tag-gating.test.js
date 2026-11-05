@@ -94,12 +94,34 @@ describe('lib/qscloud/email_notification_qscloud (tag gating)', () => {
     });
 
     test('returns false without an error when tag gating is enabled and the app tags could not be read', async () => {
-        // appItems is undefined when the app reload handler could not get the app items
+        // appItems is undefined when the app reload handler could not get the app items, or they did not match the app
         const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail({ ...params, appItems: undefined });
 
         expect(result).toBe(false);
         expect(mockGlobals.logger.error).not.toHaveBeenCalled();
-        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Could not get the tags of app [app1] "App 1"'));
+        expect(mockGlobals.logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining(
+                'Could not get the tags of app [app1] "App 1", as its app items could not be read or did not match the app.',
+            ),
+        );
         expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    test('still sends the app owner alert when tag gating is enabled and the app tags could not be read', async () => {
+        const getConfig = mockGlobals.config.get.getMockImplementation();
+        mockGlobals.config.get.mockImplementation((key) =>
+            key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.emailNotification.reloadAppFailure.appOwnerAlert'
+                ? { enable: true, includeOwner: { includeAll: true } }
+                : getConfig(key),
+        );
+
+        const result = await sendQlikSenseCloudAppReloadFailureNotificationEmail({ ...params, appItems: undefined });
+        // Alert emails are sent once the rate limiter lets them through
+        await new Promise((r) => setImmediate(r));
+
+        expect(result).toBe(true);
+        expect(mockGlobals.logger.error).not.toHaveBeenCalled();
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toEqual(['owner@example.com']);
     });
 });

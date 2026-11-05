@@ -195,34 +195,42 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         globals.config.has('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') &&
                         globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable') === true
                     ) {
-                        logger.verbose(`[QSCLOUD] Storing script log to disk file`);
+                        if (Array.isArray(scriptLog?.scriptLogFull)) {
+                            logger.verbose(`[QSCLOUD] Storing script log to disk file`);
 
-                        // Get path to the directory where script logs will be stored
-                        const scriptLogDirRoot = globals.config.get('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory');
+                            // Get path to the directory where script logs will be stored
+                            const scriptLogDirRoot = globals.config.get(
+                                'Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory',
+                            );
 
-                        // Create directory for script logs, if needed
-                        // eventTime has format "2024-10-14T11:31:39Z"
-                        // Set logDate variable to date part of eventTime
-                        const logDate = eventTime.slice(0, 10);
-                        const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
+                            // eventTime has format "2024-10-14T11:31:39Z"
+                            // Set logDate variable to date part of eventTime
+                            const logDate = eventTime.slice(0, 10);
+                            const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
 
-                        logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
+                            logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
 
-                        // Get error time stamp from eventTime, in format YYY-MM-DD_HH-MM-SS
-                        const logTimeStamp = eventTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
+                            // Get error time stamp from eventTime, in format YYY-MM-DD_HH-MM-SS
+                            const logTimeStamp = eventTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
 
-                        // Create directory for script logs, if needed
-                        fs.mkdirSync(reloadLogDir, { recursive: true });
+                            const fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
 
-                        const fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
+                            // Create directory for script logs, if needed, and write script log to disk file
+                            // A disk error is logged, and doesn't stop the alerts below from being sent
+                            try {
+                                fs.mkdirSync(reloadLogDir, { recursive: true });
 
-                        // Write script log to disk file
-                        try {
-                            logger.info(`[QSCLOUD] Writing failed task script log: ${fileName}`);
-                            fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
-                        } catch (err) {
-                            logger.error(
-                                `[QSCLOUD] Could not store script log to disk file. File="${fileName}", error=${globals.getErrorMessage(err)}`,
+                                logger.info(`[QSCLOUD] Writing failed task script log: ${fileName}`);
+                                fs.writeFileSync(fileName, scriptLog.scriptLogFull.join('\n'));
+                            } catch (err) {
+                                logger.error(
+                                    `[QSCLOUD] Could not store script log to disk file. File="${fileName}", error=${globals.getErrorMessage(err)}`,
+                                );
+                            }
+                        } else {
+                            // The script log could not be obtained, so there is nothing to store
+                            logger.warn(
+                                `[QSCLOUD] Not storing the script log to disk file, as it could not be obtained. App ID="${appId}", reload ID="${reloadId}"`,
                             );
                         }
                     }

@@ -166,24 +166,23 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             }
         } else {
             // Check if app has the tag that enables email alerts. If not found, do not add anything to the main send list
-            // The app tag names are in reloadParams.appItems.meta.tags[].name, unless the app items could not be obtained
+            // The app tag names are in reloadParams.appItems.meta.tags[].name
+            // appItems is undefined if the app items could not be obtained, or did not match the app
             const alertTag = emailConfig.emailAlertByTagName;
             const appTags = reloadParams.appItems?.meta?.tags;
             const appHasAlertTag = appTags?.find((tag) => tag.name === alertTag);
 
             if (appTags === undefined) {
                 globals.logger.warn(
-                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the tags of app [${reloadParams.appId}] "${reloadParams.appName}". Not sending alert email based on app tag.`,
+                    `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Could not get the tags of app [${reloadParams.appId}] "${reloadParams.appName}", as its app items could not be read or did not match the app. Not sending alert email based on app tag.`,
                 );
-            } else if (appTags?.length === 0 || appHasAlertTag === undefined) {
+            } else if (appHasAlertTag === undefined) {
                 globals.logger.warn(
                     `[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: App [${reloadParams.appId}] "${reloadParams.appName}" does not have the tag "${alertTag}" set. Not sending alert email based on app tag.`,
                 );
-            } else if (appHasAlertTag !== undefined) {
-                if (emailConfig?.globalSendList?.length > 0) {
-                    // Add global send list from YAML config file to main send list
-                    globalSendList.push(...emailConfig.globalSendList);
-                }
+            } else if (emailConfig?.globalSendList?.length > 0) {
+                // Add global send list from YAML config file to main send list
+                globalSendList.push(...emailConfig.globalSendList);
             }
         }
 
@@ -285,7 +284,8 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
             tenantUrl: reloadParams.tenantUrl,
 
             userId: reloadParams.userId,
-            userName: appOwner === undefined ? 'Unknown' : appOwner.name,
+            // If appOwner is false, the app owner could not be obtained
+            userName: appOwner?.name || 'Unknown',
 
             appId: reloadParams.appId,
             appName: reloadParams.appName,

@@ -8,6 +8,7 @@ import handlebars from 'handlebars';
 // reloadInfo or appInfo on to the email, Teams and Slack senders as false, and appItems as undefined.
 // Each sender should still send its alert, rendered from the templates that ship with Butler. Without a
 // script log, those templates should say it is not available instead of showing empty script log sections.
+// The same goes for the app owner, which each sender reads itself, and for numbers missing from the app reload event.
 
 const templateDir = (channel) => fileURLToPath(new URL(`../../../config/${channel}_templates`, import.meta.url));
 
@@ -32,9 +33,8 @@ jest.unstable_mockModule('rate-limiter-flexible', () => ({
     })),
 }));
 
-jest.unstable_mockModule('../api/user.js', () => ({
-    getQlikSenseCloudUserInfo: jest.fn().mockResolvedValue({ id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' }),
-}));
+const getQlikSenseCloudUserInfo = jest.fn().mockResolvedValue({ id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' });
+jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Capture outgoing alerts instead of sending them
 const sendEmailMock = jest.fn();
@@ -107,6 +107,13 @@ const sentAlert = (channel) => {
     const [slackMsg] = slackSendMock.mock.calls[0];
     expect(slackMsg.webhookUrl).toBe('https://slack.example.com/hook');
     return JSON.stringify(JSON.parse(slackMsg.text));
+};
+
+// How each shipped template shows an app owner that could not be read
+const unknownOwner = {
+    email: /<strong>App owner<\/strong><br>\s*Unknown\s*<\/td>/,
+    teams: '{"title":"App owner:","value":"Unknown"}',
+    slack: '"text":"*App owner:*\\nUnknown"',
 };
 
 const reloadParams = {
@@ -228,5 +235,63 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
             // Values the failed read would have given don't show up as "undefined" or "NaN"
             expect(alert).not.toMatch(/undefined|NaN/);
         });
+
+        test('shows the app owner as unknown when the app owner could not be read', async () => {
+            enableAlert(channel);
+            // getQlikSenseCloudUserInfo() returns false when it fails
+            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+            await senders[channel](reloadParamsWithScriptLog);
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+            expect(sentAlert(channel)).toMatch(unknownOwner[channel]);
+        });
+
+        test('is still sent when every read failed at once', async () => {
+            enableAlert(channel);
+            getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+            await senders[channel]({ ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined });
+            await flushPromises();
+
+            expect(logger.error).not.toHaveBeenCalled();
+
+            const alert = sentAlert(channel);
+            expect(alert).toContain('Sales forecast');
+            expect(alert).toContain('The script log is not available.');
+            expect(alert).toMatch(unknownOwner[channel]);
+            expect(alert).not.toMatch(/undefined|NaN/);
+        });
+    });
+});
+
+describe('Qlik Sense Cloud app reload alerts when the app reload event has no memory or row limit numbers', () => {
+    test.each(['email', 'teams', 'slack'])('the %s alert is still sent', async (channel) => {
+        enableAlert(channel);
+
+        // The app reload handler passes these on as undefined when the event doesn't have them
+        await senders[channel]({ ...reloadParamsWithScriptLog, peakMemoryBytes: undefined, rowLimit: undefined, sizeMemory: undefined });
+        await flushPromises();
+
+        expect(logger.error).not.toHaveBeenCalled();
+
+        const alert = sentAlert(channel);
+        expect(alert).toContain('Sales forecast');
+        expect(alert).not.toMatch(/undefined|NaN/);
+    });
+});
+
+describe('Qlik Sense Cloud app reload email alerts when the app owner could not be read', () => {
+    test('give custom templates "Unknown" as the user name', async () => {
+        enableAlert('email');
+        getQlikSenseCloudUserInfo.mockResolvedValueOnce(false);
+
+        await senders.email(reloadParamsWithScriptLog);
+        await flushPromises();
+
+        // The shipped email template doesn't show userName, so check the fields sendEmail() renders custom templates with
+        const [, , , , , , templateContext] = sendEmailMock.mock.calls[0];
+        expect(templateContext.userName).toBe('Unknown');
     });
 });
