@@ -168,6 +168,24 @@ describe('lib/qscloud/email_notification_qscloud', () => {
             expect(result).toBe(true);
         });
 
+        test('should leave the reload info it is given unchanged', async () => {
+            // The app reload handler gives the Teams and Slack senders the same reload info.
+            // Another app than in the other tests, so the rate limiter lets the email through.
+            const reloadParams = {
+                ...basicReloadParams,
+                appId: 'app-with-log',
+                reloadInfo: { ...basicReloadParams.reloadInfo, log: 'Line 1\nLine 2' },
+            };
+
+            await sendQlikSenseCloudAppReloadFailureNotificationEmail(reloadParams);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(reloadParams.reloadInfo.log).toBe('Line 1\nLine 2');
+            // The email gets the log message with the line breaks HTML email needs
+            const [, , , , , , templateContext] = mockSendEmail.mock.calls[0];
+            expect(templateContext.logMessage).toBe('Line 1\r\nLine 2');
+        });
+
         test('should handle generic URLs gracefully', async () => {
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.genericUrls') return undefined;

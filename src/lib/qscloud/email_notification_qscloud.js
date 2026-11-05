@@ -8,12 +8,10 @@
  * Uses Handlebars templates for email body formatting and includes rate limiting.
  */
 
-import handlebars from 'handlebars';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 import globals from '../../globals.js';
-import { getQlikSenseCloudAppInfo } from './api/app.js';
-import { getQlikSenseCloudUrls } from './util.js';
+import { prepareQlikSenseCloudAppReloadTemplateContext } from './template_context.js';
 import { sendEmail, isSmtpConfigOk } from '../qseow/smtp/index.js';
 import { prepareQlikSenseCloudScriptLogForNotification } from './scriptlog.js';
 
@@ -265,86 +263,12 @@ export async function sendQlikSenseCloudAppReloadFailureNotificationEmail(reload
         );
         globals.logger.debug(`[QSCLOUD] EMAIL ALERT - APP RELOAD FAILED: Script log data:\n${JSON.stringify(scriptLogData, null, 2)}`);
 
-        // Format log message line breaks to work in HTML email
-        if (reloadParams.reloadInfo.log !== undefined) {
-            // Replace \n with \r\n
-            reloadParams.reloadInfo.log = reloadParams.reloadInfo.log.replace(/(\r\n|\n|\r)/gm, '\r\n');
-        }
-
-        // Get Sense URLs from config file. Can be used as template fields.
-        const senseUrls = getQlikSenseCloudUrls();
-
-        // Get generic URLs from config file. Can be used as template fields.
-        let genericUrls = globals.config.get('Butler.genericUrls');
-        if (!genericUrls) {
-            // No URLs defined in the config file. Set to empty array
-            genericUrls = [];
-        }
-
         // These are the template fields that can be used in email body
-        const templateContext = {
-            tenantId: reloadParams.tenantId,
-            tenantComment: reloadParams.tenantComment,
-            tenantUrl: reloadParams.tenantUrl,
+        const templateContext = prepareQlikSenseCloudAppReloadTemplateContext(reloadParams, scriptLogData);
 
-            userId: reloadParams.userId,
-            // If appOwner is false, the app owner could not be obtained
-            userName: appOwner?.name || 'Unknown',
-
-            appId: reloadParams.appId,
-            appName: reloadParams.appName,
-            appDescription: reloadParams.appInfo?.attributes?.description || '',
-            appUrl: reloadParams.appUrl,
-            appHasSectionAccess: reloadParams.appInfo?.attributes?.hasSectionAccess ?? false,
-            appIsPublished: reloadParams.appInfo?.attributes?.published ?? false,
-            appPublishTime: reloadParams.appInfo?.attributes?.publishTime || '',
-            appThumbnail: reloadParams.appInfo?.attributes?.thumbnail || '',
-
-            reloadTrigger: reloadParams.reloadTrigger,
-            source: reloadParams.source,
-            eventType: reloadParams.eventType,
-            eventTypeVersion: reloadParams.eventTypeVersion,
-            endedWithMemoryConstraint: reloadParams.endedWithMemoryConstraint,
-            isDirectQueryMode: reloadParams.isDirectQueryMode,
-            isPartialReload: reloadParams.isPartialReload,
-            isSessionApp: reloadParams.isSessionApp,
-            isSkipStore: reloadParams.isSkipStore,
-
-            peakMemoryBytes: Number(reloadParams.peakMemoryBytes || 0).toLocaleString(),
-            reloadId: reloadParams.reloadId,
-            rowLimit: Number(reloadParams.rowLimit || 0).toLocaleString(),
-            statements: reloadParams.statements,
-            status: reloadParams.status,
-            usageDuration: reloadParams.duration,
-            sizeMemoryBytes: Number(reloadParams.sizeMemory || 0).toLocaleString(),
-            appFileSize: Number(reloadParams.appItems?.resourceSize?.appFile || 0).toLocaleString(),
-
-            errorCode: reloadParams.reloadInfo.errorCode,
-            errorMessage: reloadParams.reloadInfo.errorMessage,
-            logMessage: reloadParams.reloadInfo.log,
-            executionDuration: reloadParams.reloadInfo.executionDuration,
-            executionStartTime: reloadParams.reloadInfo.executionStartTime,
-            executionStopTime: reloadParams.reloadInfo.executionStopTime,
-            executionStatusText: reloadParams.reloadInfo.status,
-            scriptLogAvailable: scriptLogData.scriptLogAvailable,
-            scriptLogSize: scriptLogData.scriptLogSizeRows.toLocaleString(),
-            scriptLogSizeRows: scriptLogData.scriptLogSizeRows.toLocaleString(),
-            scriptLogSizeCharacters: Number(scriptLogData.scriptLogSizeCharacters || 0).toLocaleString(),
-            scriptLogHead: scriptLogData.scriptLogHead,
-            scriptLogTail: scriptLogData.scriptLogTail,
-            scriptLogTailCount: scriptLogData.scriptLogTailCount,
-            scriptLogHeadCount: scriptLogData.scriptLogHeadCount,
-
-            qlikSenseQMC: senseUrls.qmcUrl,
-            qlikSenseHub: senseUrls.hubUrl,
-            genericUrls,
-
-            // If appOwner is false, the app owner could not be obtained
-            appOwnerName: appOwner?.name || 'Unknown',
-            appOwnerUserId: appOwner?.id || 'Unknown',
-            appOwnerPicture: appOwner?.picture || '',
-            appOwnerEmail: appOwner?.email || 'Unknown',
-        };
+        // Format log message line breaks to work in HTML email
+        // Replace \n with \r\n
+        templateContext.logMessage = templateContext.logMessage.replace(/(\r\n|\n|\r)/gm, '\r\n');
 
         // Send alert emails
         // Take into account rate limiting, basing it on appId + email address
