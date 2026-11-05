@@ -203,8 +203,9 @@ describe('prepareQlikSenseCloudAppReloadTemplateContext', () => {
         expect(templateContext).toEqual(expect.objectContaining({ peakMemoryBytes: '0', rowLimit: '0', sizeMemoryBytes: '0' }));
     });
 
-    test('gives an empty list of generic URLs when the config file has none', () => {
-        cfg.delete('Butler.genericUrls');
+    test('gives an empty list of generic URLs when the config file sets them to null', () => {
+        // The config file schema allows null. A config file without the setting fails before this, in config.get()
+        cfg.set('Butler.genericUrls', null);
 
         expect(prepareQlikSenseCloudAppReloadTemplateContext(reloadParams, scriptLogData).genericUrls).toEqual([]);
     });
