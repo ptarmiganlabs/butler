@@ -273,6 +273,35 @@ describe('qscloud mqtt handler', () => {
         }
     });
 
+    test('does not read the app owner when no alert channel is enabled', async () => {
+        for (const channel of ['teamsNotification', 'slackNotification', 'emailNotification']) {
+            cfg.set(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`, false);
+        }
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudUserInfo).not.toHaveBeenCalled();
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get app owner'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
+        }
+    });
+
+    test.each(['teamsNotification', 'slackNotification', 'emailNotification'])(
+        'reads the app owner when only the %s alert is enabled',
+        async (enabledChannel) => {
+            for (const channel of ['teamsNotification', 'slackNotification', 'emailNotification']) {
+                cfg.set(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`, channel === enabledChannel);
+            }
+
+            const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+            expect(res).toBe(true);
+            expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
+        },
+    );
+
     test('does not read the app metadata, which no alert uses', async () => {
         const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
 

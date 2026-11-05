@@ -126,14 +126,19 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     //   https://qlik.dev/apis/rest/items/#get-v1-items
                     // - App owner, via "GET /v1/users/{userId}"
                     //   https://qlik.dev/apis/rest/users/#get-v1-users-userId
+                    //   Only the alerts use the app owner, so it is only read if at least one alert channel is enabled
                     // The reads don't depend on each other, so they run at the same time.
                     // When the APIs are slow or time out, the alerts then wait for the slowest read, not for all of them in turn.
+                    const alertChannelEnabled = ['teamsNotification', 'slackNotification', 'emailNotification'].some(
+                        (channel) =>
+                            globals.config.get(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`) === true,
+                    );
                     const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead] = await Promise.allSettled([
                         getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
                         getQlikSenseCloudAppReloadInfo(reloadId),
                         getQlikSenseCloudAppInfo(appId),
                         getQlikSenseCloudAppItems(appId),
-                        getQlikSenseCloudUserInfo(ownerId),
+                        alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
                     ]);
 
                     // If a value is false, that info could not be obtained
@@ -184,11 +189,13 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
 
                     // The alerts show the app owner, and the email alert can be sent to them
-                    appOwner = getSettledReadValue(appOwnerRead, 'app owner');
-                    if (appOwner === false) {
-                        logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
+                    if (alertChannelEnabled) {
+                        appOwner = getSettledReadValue(appOwnerRead, 'app owner');
+                        if (appOwner === false) {
+                            logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
+                        } else {
+                            logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
+                        }
                     }
 
                     // Get info from config file
