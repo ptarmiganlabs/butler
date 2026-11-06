@@ -114,7 +114,7 @@ export async function getQlikSenseCloudAppItems(appId) {
 
         return appItems;
     } catch (err) {
-        globals.logger.error(`[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: ${globals.getErrorMessage(err)}`);
+        globals.logger.error(`[QSCLOUD] SENSE CLOUD GET APP ITEMS: ${globals.getErrorMessage(err)}`);
         return false;
     }
 }

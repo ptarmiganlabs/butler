@@ -74,7 +74,9 @@ describe('QS Cloud User API', () => {
             const result = await getQlikSenseCloudUserInfo('user123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Network error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith(
+                '[QSCLOUD] QLIK SENSE CLOUD GET USER INFO: Could not get user "user123": Network error',
+            );
         });
 
         test('should handle invalid JSON response', async () => {
