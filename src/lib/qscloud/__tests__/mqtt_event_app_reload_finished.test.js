@@ -489,6 +489,28 @@ describe('qscloud mqtt handler', () => {
             expect(sender).toHaveBeenCalledWith(expect.objectContaining({ [field]: false }));
         }
     });
+
+    test.each([
+        ['app reload script log', getQlikSenseCloudAppReloadScriptLog, baseMsg, 'App ID="aid", reload ID="rid"'],
+        ['app reload info', getQlikSenseCloudAppReloadInfo, baseMsg, 'App ID="aid", reload ID="rid"'],
+        ['app info', getQlikSenseCloudAppInfo, baseMsg, 'App ID="aid"'],
+        ['app items', getQlikSenseCloudAppItems, baseMsg, 'App ID="aid"'],
+        // The users API doesn't know this owner, so that read returns false without a mock change
+        [
+            'app owner',
+            undefined,
+            { ...baseMsg, extensions: { ...baseMsg.extensions, ownerId: 'deleted-owner' } },
+            'App ID="aid", owner ID="deleted-owner"',
+        ],
+    ])('warns that the %s could not be obtained, with its IDs', async (description, read, msg, ids) => {
+        // The API functions return false when a read fails
+        read?.mockResolvedValueOnce(false);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(logger.warn).toHaveBeenCalledWith(`[QSCLOUD] Could not get ${description}. ${ids}`);
+    });
 });
 
 describe.each([

@@ -25,20 +25,28 @@ import { sendQlikSenseCloudAppReloadFailureNotificationEmail } from './email_not
 const { config, logger } = globals;
 
 /**
- * Get the value of a Qlik Sense Cloud API read that was run with Promise.allSettled().
+ * Get the value of a Qlik Sense Cloud API read that was run with Promise.allSettled(), and log whether it was obtained.
  * The API functions return false when a read fails. A read that threw is logged, and treated the same way.
  *
  * @param {PromiseSettledResult} read - The settled read
  * @param {string} description - What was read, for the log
+ * @param {string} ids - The IDs of what was read, for the log
  * @returns {*} The value the read returned, or false if it threw
  */
-function getSettledReadValue(read, description) {
+function getSettledReadValue(read, description, ids) {
+    let { value } = read;
     if (read.status === 'rejected') {
         logger.error(`[QSCLOUD] Could not get ${description}. Error=${globals.getErrorMessage(read.reason)}`);
-        return false;
+        value = false;
     }
 
-    return read.value;
+    if (value === false) {
+        logger.warn(`[QSCLOUD] Could not get ${description}. ${ids}`);
+    } else {
+        logger.verbose(`[QSCLOUD] Got ${description}. ${ids}`);
+    }
+
+    return value;
 }
 
 /**
@@ -172,35 +180,19 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         ]);
 
                     // If a value is false, that info could not be obtained
-                    scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log');
-                    if (scriptLog === false) {
-                        logger.warn(`[QSCLOUD] Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD]  App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                    }
+                    const reloadIds = `App ID="${appId}", reload ID="${reloadId}"`;
+                    scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log', reloadIds);
                     logger.debug(`[QSCLOUD] App reload script log: ${scriptLog}`);
 
-                    reloadInfo = getSettledReadValue(reloadInfoRead, 'app reload info');
+                    reloadInfo = getSettledReadValue(reloadInfoRead, 'app reload info', reloadIds);
                     reloadTrigger = reloadInfo.type;
-                    if (reloadInfo === false) {
-                        logger.warn(`[QSCLOUD] Could not get app reload info. App ID="${appId}", reload ID="${reloadId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD] App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                    }
                     logger.debug(`[QSCLOUD] App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
 
-                    appInfo = getSettledReadValue(appInfoRead, 'app info');
-                    if (appInfo === false) {
-                        logger.warn(`[QSCLOUD] Could not get app info. App ID="${appId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD] App info obtained. App ID="${appId}"`);
-                    }
+                    appInfo = getSettledReadValue(appInfoRead, 'app info', `App ID="${appId}"`);
                     logger.debug(`[QSCLOUD] App info: ${JSON.stringify(appInfo, null, 2)}`);
 
-                    appItems = getSettledReadValue(appItemsRead, 'app items');
-                    if (appItems === false) {
-                        logger.warn(`[QSCLOUD] Could not get app items. App ID="${appId}"`);
-                    } else if (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId) {
+                    appItems = getSettledReadValue(appItemsRead, 'app items', `App ID="${appId}"`);
+                    if (appItems !== false && (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId)) {
                         // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
                         // error if not
                         logger.error(
@@ -213,19 +205,12 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                         // Set appItems to empty object
                         appItems = {};
-                    } else {
-                        logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                     }
                     logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
 
                     // The alerts show the app owner, and the email alert can be sent to them
                     if (alertChannelEnabled) {
-                        appOwner = getSettledReadValue(appOwnerRead, 'app owner');
-                        if (appOwner === false) {
-                            logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
-                        } else {
-                            logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
-                        }
+                        appOwner = getSettledReadValue(appOwnerRead, 'app owner', `App ID="${appId}", owner ID="${ownerId}"`);
 
                         // The alerts also show the name of the user who triggered the reload.
                         // When there is no such user to get, the alerts show the user as unknown
@@ -237,16 +222,11 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         } else if (reloadUserSource === 'app owner') {
                             reloadUser = appOwner;
                         } else {
-                            reloadUser = getSettledReadValue(reloadUserRead, 'the user who triggered the app reload');
-                            if (reloadUser === false) {
-                                logger.warn(
-                                    `[QSCLOUD] Could not get the user who triggered the app reload. App ID="${appId}", user ID="${userId}"`,
-                                );
-                            } else {
-                                logger.verbose(
-                                    `[QSCLOUD] User who triggered the app reload obtained. App ID="${appId}", user ID="${userId}"`,
-                                );
-                            }
+                            reloadUser = getSettledReadValue(
+                                reloadUserRead,
+                                'the user who triggered the app reload',
+                                `App ID="${appId}", user ID="${userId}"`,
+                            );
                         }
                     }
 
