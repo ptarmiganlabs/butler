@@ -516,7 +516,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
             expect(mockGetQlikSenseCloudAppReloadScriptLogTail).not.toHaveBeenCalled();
         });
 
-        test('should handle undefined app owner', async () => {
+        test('should handle undefined app owner and user who triggered the reload', async () => {
             // Setup specific config for this test
             mockGlobals.config.get.mockImplementation((key) => {
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.enable') return true;
@@ -531,14 +531,14 @@ describe('qscloud/msteams_notification_qscloud', () => {
                     return 10;
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.rateLimit') return 300;
                 if (key === 'Butler.qlikSenseCloud.event.mqtt.tenant.alert.teamsNotification.reloadAppFailure.basicMsgTemplate')
-                    return 'User: {{userName}}';
+                    return 'Owner: {{appOwnerName}}, user: {{userName}}';
                 if (key === 'Butler.genericUrls') return [];
                 return undefined;
             });
 
             mockGlobals.config.has.mockReturnValue(true);
 
-            const reloadParams = { ...createMockReloadParams(), appOwner: undefined };
+            const reloadParams = { ...createMockReloadParams(), appOwner: undefined, reloadUser: undefined };
 
             const result = sendQlikSenseCloudAppReloadFailureNotificationTeams(reloadParams);
 
@@ -547,6 +547,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
 
             expect(mockCompiledTemplate).toHaveBeenCalledWith(
                 expect.objectContaining({
+                    appOwnerName: 'Unknown',
                     userName: 'Unknown',
                 }),
             );

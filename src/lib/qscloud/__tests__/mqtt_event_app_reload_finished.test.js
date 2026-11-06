@@ -19,7 +19,11 @@ jest.unstable_mockModule('../api/app.js', () => ({
 }));
 
 const appOwner = { id: 'owner', name: 'App Owner', email: 'owner@example.com' };
-const getQlikSenseCloudUserInfo = jest.fn().mockResolvedValue(appOwner);
+// The user who triggered the reload
+const reloadUser = { id: 'user-1', name: 'Reload User', email: 'user@example.com' };
+// Reading any other user fails, which getQlikSenseCloudUserInfo() reports by returning false
+const users = { owner: appOwner, 'user-1': reloadUser };
+const getQlikSenseCloudUserInfo = jest.fn(async (userId) => users[userId] || false);
 jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Notification mocks
@@ -257,6 +261,8 @@ describe('qscloud mqtt handler', () => {
             getQlikSenseCloudAppReloadInfo,
             getQlikSenseCloudAppInfo,
             getQlikSenseCloudAppItems,
+            // Once for the app owner, and once for the user who triggered the reload
+            getQlikSenseCloudUserInfo,
             getQlikSenseCloudUserInfo,
         ];
         // Count the reads under way at the same time. Each one fails after a moment, as during an API outage.
@@ -278,18 +284,75 @@ describe('qscloud mqtt handler', () => {
         expect(mostReadsUnderWay).toBe(reads.length);
     });
 
-    test('reads the app owner once, and passes it on to every alert', async () => {
+    test('reads the app owner and the user who triggered the reload once each, and passes them on to every alert', async () => {
         const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(2);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('user-1');
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser }));
+        }
+    });
+
+    test('reads the app owner only once when they triggered the reload', async () => {
+        const msg = { ...baseMsg, extensions: { ...baseMsg.extensions, userId: 'owner' } };
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
 
         expect(res).toBe(true);
         expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
         expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
-            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner }));
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: appOwner }));
         }
     });
 
-    test('does not read the app owner when no alert channel is enabled', async () => {
+    test('reads no user but the app owner when the event has no user ID', async () => {
+        const msg = { ...baseMsg, extensions: { topLevelResourceId: 'aid', ownerId: 'owner', tenantId: 'tenant-1' } };
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get the user who triggered the app reload'));
+        // The template fields then show the user as unknown
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: {} }));
+        }
+    });
+
+    test('sends every alert when the user who triggered the reload could not be read', async () => {
+        // A user the users API doesn't know
+        const msg = { ...baseMsg, extensions: { ...baseMsg.extensions, userId: 'deleted-user' } };
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(logger.warn).toHaveBeenCalledWith(
+            '[QSCLOUD] Could not get the user who triggered the app reload. App ID="aid", user ID="deleted-user"',
+        );
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: false }));
+        }
+    });
+
+    test('sends every alert when reading the user who triggered the reload throws', async () => {
+        // The app owner is read first, and then the user who triggered the reload
+        getQlikSenseCloudUserInfo.mockResolvedValueOnce(appOwner).mockRejectedValueOnce(new Error('socket hang up'));
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(logger.error).toHaveBeenCalledWith('[QSCLOUD] Could not get the user who triggered the app reload. Error=socket hang up');
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: false }));
+        }
+    });
+
+    test('does not read the app owner or the user who triggered the reload when no alert channel is enabled', async () => {
         for (const channel of ['teamsNotification', 'slackNotification', 'emailNotification']) {
             cfg.set(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`, false);
         }
@@ -299,13 +362,14 @@ describe('qscloud mqtt handler', () => {
         expect(res).toBe(true);
         expect(getQlikSenseCloudUserInfo).not.toHaveBeenCalled();
         expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get app owner'));
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get the user who triggered the app reload'));
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
             expect(sender).not.toHaveBeenCalled();
         }
     });
 
     test.each(['teamsNotification', 'slackNotification', 'emailNotification'])(
-        'reads the app owner when only the %s alert is enabled',
+        'reads the app owner and the user who triggered the reload when only the %s alert is enabled',
         async (enabledChannel) => {
             for (const channel of ['teamsNotification', 'slackNotification', 'emailNotification']) {
                 cfg.set(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`, channel === enabledChannel);
@@ -314,7 +378,9 @@ describe('qscloud mqtt handler', () => {
             const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
 
             expect(res).toBe(true);
-            expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
+            expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(2);
+            expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+            expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('user-1');
         },
     );
 
@@ -359,6 +425,7 @@ describe.each([
         expect(getQlikSenseCloudAppReloadScriptLog).toHaveBeenCalledWith('aid', 'rid');
         expect(getQlikSenseCloudAppInfo).toHaveBeenCalledWith('aid');
         expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('user-1');
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
             expect(sender).toHaveBeenCalledWith(
                 expect.objectContaining({

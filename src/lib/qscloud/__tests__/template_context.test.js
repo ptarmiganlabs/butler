@@ -85,6 +85,8 @@ const reloadParams = {
     },
     appItems: { resourceSize: { appFile: 4096 }, meta: { tags: [] } },
     appOwner: { id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: 'https://example.com/ada.png' },
+    // The user who triggered the reload
+    reloadUser: { id: 'user-1', name: 'Rita Reloader', email: 'rita@example.com', picture: '' },
 };
 
 // What prepareQlikSenseCloudScriptLogForNotification() gives for that reload's script log
@@ -106,7 +108,7 @@ describe('prepareQlikSenseCloudAppReloadTemplateContext', () => {
             tenantUrl: 'https://tenant.example.com',
 
             userId: 'user-1',
-            userName: 'Ada Owner',
+            userName: 'Rita Reloader',
 
             appId: 'app-1',
             appName: 'Sales forecast',
@@ -164,9 +166,9 @@ describe('prepareQlikSenseCloudAppReloadTemplateContext', () => {
     });
 
     test('falls back to defaults for the info that could not be obtained', () => {
-        // What the app reload handler passes on when the reload info, app info, app items and app owner reads fail
+        // What the app reload handler passes on when the reload info, app info, app items, app owner and reloading user reads fail
         const templateContext = prepareQlikSenseCloudAppReloadTemplateContext(
-            { ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined, appOwner: false },
+            { ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined, appOwner: false, reloadUser: false },
             scriptLogData,
         );
 

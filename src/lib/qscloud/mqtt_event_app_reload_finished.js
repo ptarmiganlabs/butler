@@ -6,7 +6,7 @@
  *
  * Processing flow:
  * 1. Receive MQTT message with app reload info
- * 2. Fetch the script log, reload info, app info, app items and app owner from QSC APIs, all at once
+ * 2. Fetch the script log, reload info, app info, app items, app owner and the user who triggered the reload from QSC APIs, all at once
  * 3. Send notifications via configured channels (Teams, Slack, Email)
  */
 
@@ -111,6 +111,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 let appInfo = {};
                 let appItems = {};
                 let appOwner = {};
+                let reloadUser = {};
 
                 // App reload did fail. Send enabled notifications/alerts, store script log etc
                 logger.info(`[QSCLOUD] App reload failed. App ID=[${appId}] name="${message.data.name}"`);
@@ -129,20 +130,23 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     //   https://qlik.dev/apis/rest/items/#get-v1-items
                     // - App owner, via "GET /v1/users/{userId}"
                     //   https://qlik.dev/apis/rest/users/#get-v1-users-userId
-                    //   Only the alerts use the app owner, so it is only read if at least one alert channel is enabled
+                    // - The user who triggered the reload, the same way. Not read again when that user is the app owner
+                    //   Only the alerts use the app owner and that user, so they are only read if at least one alert channel is enabled
                     // The reads don't depend on each other, so they run at the same time.
                     // When the APIs are slow or time out, the alerts then wait for the slowest read, not for all of them in turn.
                     const alertChannelEnabled = ['teamsNotification', 'slackNotification', 'emailNotification'].some(
                         (channel) =>
                             globals.config.get(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`) === true,
                     );
-                    const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead] = await Promise.allSettled([
-                        getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
-                        getQlikSenseCloudAppReloadInfo(reloadId),
-                        getQlikSenseCloudAppInfo(appId),
-                        getQlikSenseCloudAppItems(appId),
-                        alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
-                    ]);
+                    const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead, reloadUserRead] =
+                        await Promise.allSettled([
+                            getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
+                            getQlikSenseCloudAppReloadInfo(reloadId),
+                            getQlikSenseCloudAppInfo(appId),
+                            getQlikSenseCloudAppItems(appId),
+                            alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
+                            alertChannelEnabled && userId && userId !== ownerId ? getQlikSenseCloudUserInfo(userId) : undefined,
+                        ]);
 
                     // If a value is false, that info could not be obtained
                     scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log');
@@ -198,6 +202,23 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
                         } else {
                             logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
+                        }
+
+                        // The alerts also show the name of the user who triggered the reload
+                        // An event without a user ID shows it as unknown
+                        if (userId === ownerId) {
+                            reloadUser = appOwner;
+                        } else if (userId) {
+                            reloadUser = getSettledReadValue(reloadUserRead, 'the user who triggered the app reload');
+                            if (reloadUser === false) {
+                                logger.warn(
+                                    `[QSCLOUD] Could not get the user who triggered the app reload. App ID="${appId}", user ID="${userId}"`,
+                                );
+                            } else {
+                                logger.verbose(
+                                    `[QSCLOUD] User who triggered the app reload obtained. App ID="${appId}", user ID="${userId}"`,
+                                );
+                            }
                         }
                     }
 
@@ -313,6 +334,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
 
@@ -375,6 +397,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
 
@@ -392,6 +415,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // - App info
                         // - App items
                         // - App owner
+                        // - User who triggered the reload
 
                         // Send email notification
                         sendQlikSenseCloudAppReloadFailureNotificationEmail({
@@ -429,6 +453,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
                 }
