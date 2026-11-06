@@ -147,6 +147,21 @@ describe('lib/qscloud/util', () => {
             });
         });
 
+        test('takes an attribute from the legacy format when the CloudEvents one is empty', () => {
+            const event = {
+                ...legacyEvent,
+                ...cloudEvent,
+                type: '',
+                time: '',
+                tenantid: '',
+                userid: '',
+                ownerid: '',
+                toplevelresourceid: '',
+            };
+
+            expect(getQlikSenseCloudEventAttributes(event)).toEqual({ ...attributes, eventTypeVersion: '1.0.0' });
+        });
+
         test('gives undefined for an attribute the event has in neither format', () => {
             expect(getQlikSenseCloudEventAttributes({ data: {} })).toStrictEqual({
                 eventType: undefined,
