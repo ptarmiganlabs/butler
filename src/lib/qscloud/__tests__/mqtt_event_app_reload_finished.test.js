@@ -379,7 +379,26 @@ describe('qscloud mqtt handler', () => {
         expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get the user who triggered the app reload'));
         // The template fields then show the user as unknown
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
-            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: {} }));
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: false }));
+        }
+    });
+
+    test('reads no user but the app owner when a service account triggered the reload', async () => {
+        // The CloudEvents attributes say what type of principal triggered the event
+        const msg = { ...bothFormatsMsg, authtype: 'service_account' };
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledTimes(1);
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Could not get the user who triggered the app reload'));
+        expect(logger.verbose).toHaveBeenCalledWith(
+            '[QSCLOUD] No user who triggered the app reload to get, as a service account triggered it. App ID="aid"',
+        );
+        // The template fields then show the user as unknown
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(expect.objectContaining({ appOwner, reloadUser: false }));
         }
     });
 

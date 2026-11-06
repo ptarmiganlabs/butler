@@ -57,6 +57,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
             eventType,
             eventTime,
             eventTypeVersion,
+            authType,
             ownerId,
             tenantId,
             userId,
@@ -142,7 +143,8 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     //   https://qlik.dev/apis/rest/items/#get-v1-items
                     // - App owner, via "GET /v1/users/{userId}"
                     //   https://qlik.dev/apis/rest/users/#get-v1-users-userId
-                    // - The user who triggered the reload, the same way. Not read again when that user is the app owner
+                    // - The user who triggered the reload, the same way. Not read when that is the app owner, who is read anyway,
+                    //   nor when the event has no user ID, or says that a service account triggered the reload
                     //   Only the alerts use the app owner and that user, so they are only read if at least one alert channel is enabled
                     // The reads don't depend on each other, so they run at the same time.
                     // When the APIs are slow or time out, the alerts then wait for the slowest read, not for all of them in turn.
@@ -150,6 +152,15 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         (channel) =>
                             globals.config.get(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`) === true,
                     );
+
+                    // Where the alerts get the user who triggered the reload from
+                    let reloadUserSource = 'user read';
+                    if (!userId || authType === 'service_account') {
+                        reloadUserSource = 'none';
+                    } else if (userId === ownerId) {
+                        reloadUserSource = 'app owner';
+                    }
+
                     const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead, reloadUserRead] =
                         await Promise.allSettled([
                             getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
@@ -157,7 +168,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             getQlikSenseCloudAppInfo(appId),
                             getQlikSenseCloudAppItems(appId),
                             alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
-                            alertChannelEnabled && userId && userId !== ownerId ? getQlikSenseCloudUserInfo(userId) : undefined,
+                            alertChannelEnabled && reloadUserSource === 'user read' ? getQlikSenseCloudUserInfo(userId) : undefined,
                         ]);
 
                     // If a value is false, that info could not be obtained
@@ -216,11 +227,16 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
                         }
 
-                        // The alerts also show the name of the user who triggered the reload
-                        // An event without a user ID shows it as unknown
-                        if (userId === ownerId) {
+                        // The alerts also show the name of the user who triggered the reload.
+                        // When there is no such user to get, the alerts show the user as unknown
+                        if (reloadUserSource === 'none') {
+                            reloadUser = false;
+                            logger.verbose(
+                                `[QSCLOUD] No user who triggered the app reload to get, as ${userId ? 'a service account triggered it' : 'the event has no user ID'}. App ID="${appId}"`,
+                            );
+                        } else if (reloadUserSource === 'app owner') {
                             reloadUser = appOwner;
-                        } else if (userId) {
+                        } else {
                             reloadUser = getSettledReadValue(reloadUserRead, 'the user who triggered the app reload');
                             if (reloadUser === false) {
                                 logger.warn(

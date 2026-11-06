@@ -145,11 +145,19 @@ describe('lib/qscloud/util', () => {
                 eventTime: undefined,
                 eventTypeVersion: undefined,
                 source: undefined,
+                authType: undefined,
                 tenantId: undefined,
                 userId: undefined,
                 ownerId: undefined,
                 topLevelResourceId: undefined,
             });
+        });
+
+        test('gives the type of principal that triggered the event, which only the CloudEvents format has', () => {
+            expect(getQlikSenseCloudEventAttributes({ ...legacyEvent, ...cloudEvent, authtype: 'service_account' }).authType).toBe(
+                'service_account',
+            );
+            expect(getQlikSenseCloudEventAttributes(legacyEvent).authType).toBeUndefined();
         });
     });
 });

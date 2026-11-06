@@ -16,7 +16,8 @@ import { getQlikSenseCloudUrls } from './util.js';
  *
  * @param {Object} reloadParams - Info about the failed app reload, as the app reload handler passes it on.
  *      reloadInfo, appInfo, appOwner and reloadUser are false, and appItems is undefined, when they could not be obtained.
- *      reloadUser is the user who triggered the reload.
+ *      reloadUser is the user who triggered the reload. It is also false when there is no such user to get:
+ *      the event has no user ID, or says that a service account triggered the reload.
  * @param {Object} scriptLogData - Script log fields from prepareQlikSenseCloudScriptLogForNotification()
  * @returns {Object} Fields for the alert template
  */
