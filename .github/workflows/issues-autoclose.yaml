@@ -20,6 +20,8 @@ jobs:
           days-before-issue-stale: 30
           days-before-issue-close: 14
           stale-issue-label: 'stale'
+          # Issues from the October 2026 codebase review are a tracked backlog, not abandoned requests
+          exempt-issue-labels: 'code-review-2026'
           stale-issue-message: 'This issue is stale because it has been open for 30 days with no activity.'
           close-issue-message: "This issue was automatically closed because it has been inactive for 14 days since being marked as stale.\n\nPlease reopen if needed."
           days-before-pr-stale: -1
