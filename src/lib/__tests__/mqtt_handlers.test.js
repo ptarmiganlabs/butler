@@ -169,10 +169,16 @@ describe('lib/mqtt_handlers', () => {
             expect(handleQlikSenseCloudAppReloadFinished).toHaveBeenCalledWith(event);
         });
 
-        test('does not pass on other Qlik Sense Cloud events', async () => {
+        test('passes another event on the app reload topic on to the app reload handler, which checks its type', async () => {
             const appOpenedEvent = { ...cloudEvent, type: 'com.qlik.v1.app.opened' };
 
             await onQlikSenseCloudMessage('qscloud/app/reload/tenant-1', Buffer.from(JSON.stringify(appOpenedEvent)));
+
+            expect(handleQlikSenseCloudAppReloadFinished).toHaveBeenCalledWith(appOpenedEvent);
+        });
+
+        test('does not pass on a message on another topic', async () => {
+            await onQlikSenseCloudMessage('qscloud/app/created/tenant-1', Buffer.from(JSON.stringify(cloudEvent)));
 
             expect(handleQlikSenseCloudAppReloadFinished).not.toHaveBeenCalled();
         });

@@ -141,6 +141,39 @@ describe('qscloud mqtt handler', () => {
         expect(sendEmail).not.toHaveBeenCalled();
     });
 
+    test('skips an event without a tenant ID, and says that is why', async () => {
+        const res = await handleQlikSenseCloudAppReloadFinished({ ...cloudEventsMsg, tenantid: undefined });
+
+        expect(res).toBe(false);
+        expect(logger.warn).toHaveBeenCalledWith(
+            '[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud has no tenant ID. Skipping event. App ID="aid"',
+        );
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('is not defined in the Butler configuration file'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
+        }
+    });
+
+    test.each([
+        ['of another type', { ...cloudEventsMsg, type: 'com.qlik.v1.app.opened' }, 'com.qlik.v1.app.opened'],
+        [
+            'in a format Butler does not read',
+            { specversion: '2.0', kind: 'com.qlik.v1.app.reload.finished', data: baseMsg.data },
+            'undefined',
+        ],
+    ])('skips an event %s, with a warning', async (_, msg, eventType) => {
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(false);
+        expect(logger.warn).toHaveBeenCalledWith(
+            `[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud is not an app reload finished event. Skipping event. Event type="${eventType}"`,
+        );
+        expect(getQlikSenseCloudAppReloadScriptLog).not.toHaveBeenCalled();
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
+        }
+    });
+
     test('sends notifications when enabled', async () => {
         const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
         expect(res).toBe(true);

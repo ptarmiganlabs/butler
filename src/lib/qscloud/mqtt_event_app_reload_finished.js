@@ -87,6 +87,12 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     comment: config.get('Butler.qlikSenseCloud.event.mqtt.tenant.comment'),
                 });
 
+                // An event without a tenant ID can't be from a monitored tenant. Say so, rather than blame the config file below
+                if (!tenantId) {
+                    logger.warn(`[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud has no tenant ID. Skipping event. App ID="${appId}"`);
+                    return false;
+                }
+
                 // Make sure incoming message is from a Qlik Sense Cloud tenant that we are monitoring
                 // If the tenant ID is not in the list of monitored tenants, skip the event and warn about it
                 // Valid tenant ID is defined in the Butler configuration file
@@ -437,6 +443,13 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     }
                 }
             }
+        } else {
+            // The gateway publishes app reload events to the app reload topic, so another event there is unexpected.
+            // It can be an event in a format Butler doesn't read, which would otherwise be dropped without a word
+            logger.warn(
+                `[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud is not an app reload finished event. Skipping event. Event type="${eventType}"`,
+            );
+            return false;
         }
 
         return true;
