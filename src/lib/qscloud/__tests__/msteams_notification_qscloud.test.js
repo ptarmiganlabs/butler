@@ -545,6 +545,7 @@ describe('qscloud/msteams_notification_qscloud', () => {
             // Wait for async operations - significant timeout for fire-and-forget async sendTeams call
             await new Promise((resolve) => setTimeout(resolve, 500));
 
+            // Handlebars is mocked in this file, so the template text above isn't rendered. Check the fields the template is given
             expect(mockCompiledTemplate).toHaveBeenCalledWith(
                 expect.objectContaining({
                     appOwnerName: 'Unknown',

@@ -22,9 +22,16 @@ jest.unstable_mockModule('../api/app.js', () => ({
 const appOwner = { id: 'owner', name: 'App Owner', email: 'owner@example.com' };
 // The user who triggered the reload
 const reloadUser = { id: 'user-1', name: 'Reload User', email: 'user@example.com' };
-// Reading any other user fails, which getQlikSenseCloudUserInfo() reports by returning false
+// Reading any other user fails, which getQlikSenseCloudUserInfo() reports by returning false.
+// Reading the user "unreachable-user" throws, as when the API can't be reached
 const users = { owner: appOwner, 'user-1': reloadUser };
-const getQlikSenseCloudUserInfo = jest.fn(async (userId) => users[userId] || false);
+const readUser = async (userId) => {
+    if (userId === 'unreachable-user') {
+        throw new Error('socket hang up');
+    }
+    return users[userId] || false;
+};
+const getQlikSenseCloudUserInfo = jest.fn(readUser);
 jest.unstable_mockModule('../api/user.js', () => ({ getQlikSenseCloudUserInfo }));
 
 // Notification mocks
@@ -74,6 +81,10 @@ beforeAll(async () => {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    // Clearing a mock leaves its queued ...Once() results. Reset the users read, so a test that queued more than it
+    // used can't hand its leftovers to the next test
+    getQlikSenseCloudUserInfo.mockReset();
+    getQlikSenseCloudUserInfo.mockImplementation(readUser);
     cfg.clear();
     // basic config
     cfg.set('Butler.qlikSenseCloud.enable', true);
@@ -418,10 +429,9 @@ describe('qscloud mqtt handler', () => {
     });
 
     test('sends every alert when reading the user who triggered the reload throws', async () => {
-        // The app owner is read first, and then the user who triggered the reload
-        getQlikSenseCloudUserInfo.mockResolvedValueOnce(appOwner).mockRejectedValueOnce(new Error('socket hang up'));
+        const msg = { ...baseMsg, extensions: { ...baseMsg.extensions, userId: 'unreachable-user' } };
 
-        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
 
         expect(res).toBe(true);
         expect(logger.error).toHaveBeenCalledWith('[QSCLOUD] Could not get the user who triggered the app reload. Error=socket hang up');
