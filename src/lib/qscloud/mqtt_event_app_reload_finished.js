@@ -51,17 +51,23 @@ function getSettledReadValue(read, description) {
 export async function handleQlikSenseCloudAppReloadFinished(message) {
     try {
         // Get the event's type, time, source and IDs, whichever format the event is in
-        const { source, eventType, eventTime, eventTypeVersion, ownerId, tenantId, userId, topLevelResourceId } =
-            getQlikSenseCloudEventAttributes(message);
+        // The app is the event's top level resource
+        const {
+            source,
+            eventType,
+            eventTime,
+            eventTypeVersion,
+            ownerId,
+            tenantId,
+            userId,
+            topLevelResourceId: appId,
+        } = getQlikSenseCloudEventAttributes(message);
 
         // Make sure eventType is 'com.qlik.v1.app.reload.finished'
         if (eventType === 'com.qlik.v1.app.reload.finished') {
             // What is app reload status?
             // Possible values: 'ok', 'error'
             if (message.data.status === 'error') {
-                // The app is the event's top level resource
-                const appId = topLevelResourceId;
-
                 // Get  info about the app reload from the message sent by Qlik Sense Cloud
                 const {
                     duration,
@@ -86,6 +92,12 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     id: config.get('Butler.qlikSenseCloud.event.mqtt.tenant.id'),
                     comment: config.get('Butler.qlikSenseCloud.event.mqtt.tenant.comment'),
                 });
+
+                // An event without a tenant ID can't be from a monitored tenant. Say so, rather than blame the config file below
+                if (!tenantId) {
+                    logger.warn(`[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud has no tenant ID. Skipping event. App ID="${appId}"`);
+                    return false;
+                }
 
                 // Make sure incoming message is from a Qlik Sense Cloud tenant that we are monitoring
                 // If the tenant ID is not in the list of monitored tenants, skip the event and warn about it
@@ -239,26 +251,30 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         if (Array.isArray(scriptLog?.scriptLogFull)) {
                             logger.verbose(`[QSCLOUD] Storing script log to disk file`);
 
-                            // Get path to the directory where script logs will be stored
-                            const scriptLogDirRoot = globals.config.get(
-                                'Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory',
-                            );
-
-                            // eventTime has format "2024-10-14T11:31:39Z"
-                            // Set logDate variable to date part of eventTime
-                            const logDate = eventTime.slice(0, 10);
-                            const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
-
-                            logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
-
-                            // Get error time stamp from eventTime, in format YYY-MM-DD_HH-MM-SS
-                            const logTimeStamp = eventTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
-
-                            const fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
-
-                            // Create directory for script logs, if needed, and write script log to disk file
-                            // A disk error is logged, and doesn't stop the alerts below from being sent
+                            // An error while storing the script log is logged, and doesn't stop the alerts below from being sent
+                            let fileName;
                             try {
+                                // Get path to the directory where script logs will be stored
+                                const scriptLogDirRoot = globals.config.get(
+                                    'Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory',
+                                );
+
+                                // eventTime has format "2024-10-14T11:31:39Z"
+                                // The CloudEvents format doesn't require an event time, so an event without one is stored under the time Butler got it
+                                const logTime = eventTime || new Date().toISOString();
+
+                                // Set logDate variable to date part of the event time
+                                const logDate = logTime.slice(0, 10);
+                                const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
+
+                                logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
+
+                                // Get error time stamp from the event time, in format YYY-MM-DD_HH-MM-SS
+                                const logTimeStamp = logTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
+
+                                fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
+
+                                // Create directory for script logs, if needed, and write script log to disk file
                                 fs.mkdirSync(reloadLogDir, { recursive: true });
 
                                 logger.info(`[QSCLOUD] Writing failed task script log: ${fileName}`);
@@ -458,6 +474,13 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     }
                 }
             }
+        } else {
+            // The gateway publishes app reload events to the app reload topic, so another event there is unexpected.
+            // It can be an event in a format Butler doesn't read, which would otherwise be dropped without a word
+            logger.warn(
+                `[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud is not an app reload finished event. Skipping event. Event type="${eventType}"`,
+            );
+            return false;
         }
 
         return true;

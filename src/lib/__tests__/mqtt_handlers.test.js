@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { legacyEvent, cloudEvent } from '../qscloud/__tests__/qscloud_events.js';
 
 describe('lib/mqtt_handlers', () => {
     let mqttInitHandlers;
@@ -106,39 +107,14 @@ describe('lib/mqtt_handlers', () => {
     });
 
     describe('Qlik Sense Cloud events', () => {
-        // A failed app reload, as Qlik Sense Cloud sends it in the legacy format
-        const legacyEvent = {
-            cloudEventsVersion: '0.1',
-            source: 'com.qlik/engine',
-            contentType: 'application/json',
-            eventId: 'b0f5c473-5dea-4d7e-a188-5e0b904cde33',
-            eventTime: '2026-11-06T10:15:00Z',
-            eventTypeVersion: '1.0.0',
-            eventType: 'com.qlik.v1.app.reload.finished',
-            extensions: { ownerId: 'owner-1', tenantId: 'tenant-1', userId: 'user-1', topLevelResourceId: 'app-1' },
-            data: { status: 'error', name: 'Sales forecast', reloadId: 'reload-1' },
-        };
-
-        // The same event in the CloudEvents format, the only format Qlik Sense Cloud sends from 10 December 2026
-        const cloudEvent = {
-            id: 'b0f5c473-5dea-4d7e-a188-5e0b904cde33',
-            specversion: '1.0',
-            source: 'com.qlik/engine',
-            type: 'com.qlik.v1.app.reload.finished',
-            time: '2026-11-06T10:15:00Z',
-            datacontenttype: 'application/json',
-            tenantid: 'tenant-1',
-            userid: 'user-1',
-            ownerid: 'owner-1',
-            spaceid: 'space-1',
-            toplevelresourceid: 'app-1',
-            data: { status: 'error', name: 'Sales forecast', reloadId: 'reload-1' },
-        };
-
         // The message handler of the MQTT client for Qlik Sense Cloud events
         let onQlikSenseCloudMessage;
 
+        // The config file values before each test, to restore after it
+        let configValuesBefore;
+
         beforeEach(() => {
+            configValuesBefore = { ...configValues };
             Object.assign(configValues, {
                 'Butler.mqttConfig.qlikSenseCloud.event.mqttForward.enable': true,
                 'Butler.mqttConfig.qlikSenseCloud.event.mqttForward.broker.host': 'qscloud-mqtt.example.com',
@@ -155,7 +131,10 @@ describe('lib/mqtt_handlers', () => {
         });
 
         afterEach(() => {
-            configValues['Butler.mqttConfig.qlikSenseCloud.event.mqttForward.enable'] = false;
+            for (const key of Object.keys(configValues)) {
+                delete configValues[key];
+            }
+            Object.assign(configValues, configValuesBefore);
         });
 
         test.each([
@@ -169,10 +148,16 @@ describe('lib/mqtt_handlers', () => {
             expect(handleQlikSenseCloudAppReloadFinished).toHaveBeenCalledWith(event);
         });
 
-        test('does not pass on other Qlik Sense Cloud events', async () => {
+        test('passes another event on the app reload topic on to the app reload handler, which checks its type', async () => {
             const appOpenedEvent = { ...cloudEvent, type: 'com.qlik.v1.app.opened' };
 
             await onQlikSenseCloudMessage('qscloud/app/reload/tenant-1', Buffer.from(JSON.stringify(appOpenedEvent)));
+
+            expect(handleQlikSenseCloudAppReloadFinished).toHaveBeenCalledWith(appOpenedEvent);
+        });
+
+        test('does not pass on a message on another topic', async () => {
+            await onQlikSenseCloudMessage('qscloud/app/created/tenant-1', Buffer.from(JSON.stringify(cloudEvent)));
 
             expect(handleQlikSenseCloudAppReloadFinished).not.toHaveBeenCalled();
         });
