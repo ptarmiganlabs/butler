@@ -24,11 +24,13 @@ jest.unstable_mockModule('../../../../globals.js', () => ({
 }));
 
 // Import the module under test
-const { getQlikSenseCloudUserInfo } = await import('../user.js');
+const { getQlikSenseCloudUserInfo, clearQlikSenseCloudUserInfoReads } = await import('../user.js');
 
 describe('QS Cloud User API', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        // Each test reads the users itself, instead of reusing what earlier tests read
+        clearQlikSenseCloudUserInfoReads();
 
         // Set up default config values
         mockGlobals.config.get.mockImplementation((path) => {
@@ -116,6 +118,67 @@ describe('QS Cloud User API', () => {
                     url: '/api/v1/users/null',
                 }),
             );
+        });
+    });
+
+    describe('reusing user reads', () => {
+        const user = { id: 'user123', name: 'Test User', email: 'test@example.com' };
+
+        beforeEach(() => {
+            mockAxios.request.mockResolvedValue({ data: JSON.stringify(user) });
+        });
+
+        test('reuses a read of the same user from the last 5 minutes', async () => {
+            const first = await getQlikSenseCloudUserInfo('user123');
+            const second = await getQlikSenseCloudUserInfo('user123');
+
+            expect(first).toEqual(user);
+            expect(second).toEqual(user);
+            expect(mockAxios.request).toHaveBeenCalledTimes(1);
+        });
+
+        test('shares a read of the same user that is still under way', async () => {
+            const [first, second] = await Promise.all([getQlikSenseCloudUserInfo('user123'), getQlikSenseCloudUserInfo('user123')]);
+
+            expect(first).toEqual(user);
+            expect(second).toEqual(user);
+            expect(mockAxios.request).toHaveBeenCalledTimes(1);
+        });
+
+        test('reads each user separately', async () => {
+            await getQlikSenseCloudUserInfo('user123');
+            await getQlikSenseCloudUserInfo('user456');
+
+            expect(mockAxios.request).toHaveBeenCalledTimes(2);
+            expect(mockAxios.request).toHaveBeenCalledWith(expect.objectContaining({ url: '/api/v1/users/user456' }));
+        });
+
+        test('reads the user again once 5 minutes have passed', async () => {
+            // Only the clock is faked, so the reads still resolve
+            jest.useFakeTimers({ now: new Date('2026-11-06T13:00:00Z'), doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate'] });
+            try {
+                await getQlikSenseCloudUserInfo('user123');
+                jest.setSystemTime(new Date('2026-11-06T13:04:59Z'));
+                await getQlikSenseCloudUserInfo('user123');
+                expect(mockAxios.request).toHaveBeenCalledTimes(1);
+
+                jest.setSystemTime(new Date('2026-11-06T13:05:00Z'));
+                await getQlikSenseCloudUserInfo('user123');
+                expect(mockAxios.request).toHaveBeenCalledTimes(2);
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+
+        test('reads the user again after a read that failed', async () => {
+            mockAxios.request.mockRejectedValueOnce(new Error('Network error'));
+
+            const first = await getQlikSenseCloudUserInfo('user123');
+            const second = await getQlikSenseCloudUserInfo('user123');
+
+            expect(first).toBe(false);
+            expect(second).toEqual(user);
+            expect(mockAxios.request).toHaveBeenCalledTimes(2);
         });
     });
 });
