@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import globals from '../globals.js';
 import { HTTP_TIMEOUT_MS } from '../constants.js';
 import { handleQlikSenseCloudAppReloadFinished } from './qscloud/mqtt_event_app_reload_finished.js';
+import { getQlikSenseCloudEventAttributes } from './qscloud/util.js';
 import senseStartTask from '../qrs_util/sense_start_task.js';
 
 const { config, logger } = globals;
@@ -247,10 +248,10 @@ function mqttInitHandlers() {
                         // **MQTT message dispatch**
                         // Compare the first part of the topic to the configured topic for app reload events
                         // Event: App reload
-                        // messageObj.eventType should be "com.qlik.v1.app.reload.finished"
+                        // The event type should be "com.qlik.v1.app.reload.finished", in the CloudEvents or the legacy format
                         if (
                             topicStr.startsWith(config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.appReload')) &&
-                            messageObj.eventType === 'com.qlik.v1.app.reload.finished'
+                            getQlikSenseCloudEventAttributes(messageObj).eventType === 'com.qlik.v1.app.reload.finished'
                         ) {
                             logger.debug(`MQTT QS CLOUD EVENT IN: ${messageStr}`);
 

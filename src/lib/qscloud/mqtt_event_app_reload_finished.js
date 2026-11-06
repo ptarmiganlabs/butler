@@ -17,6 +17,7 @@ import globals from '../../globals.js';
 import { getQlikSenseCloudAppReloadScriptLog, getQlikSenseCloudAppReloadInfo } from './api/appreloadinfo.js';
 import { getQlikSenseCloudAppInfo, getQlikSenseCloudAppItems } from './api/app.js';
 import { getQlikSenseCloudUserInfo } from './api/user.js';
+import { getQlikSenseCloudEventAttributes } from './util.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationTeams } from './msteams_notification_qscloud.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationSlack } from './slack_notification_qscloud.js';
 import { sendQlikSenseCloudAppReloadFailureNotificationEmail } from './email_notification_qscloud.js';
@@ -44,22 +45,24 @@ function getSettledReadValue(read, description) {
  * Handle Qlik Sense Cloud app reload finished event.
  * These events are received as MQTT messages, via a gateway that forwards the Qlik Sense Cloud webhook API events to MQTT.
  *
- * @param {Object} message - MQTT message object, as sent by Qlik Sense Cloud webhook API
+ * @param {Object} message - MQTT message object, as sent by Qlik Sense Cloud webhook API, in the CloudEvents or the legacy format
  * @returns {Promise<boolean>} - Returns true if successful, otherwise false
  */
 export async function handleQlikSenseCloudAppReloadFinished(message) {
     try {
+        // Get the event's type, time, source and IDs, whichever format the event is in
+        const { source, eventType, eventTime, eventTypeVersion, ownerId, tenantId, userId, topLevelResourceId } =
+            getQlikSenseCloudEventAttributes(message);
+
         // Make sure eventType is 'com.qlik.v1.app.reload.finished'
-        if (message.eventType === 'com.qlik.v1.app.reload.finished') {
+        if (eventType === 'com.qlik.v1.app.reload.finished') {
             // What is app reload status?
             // Possible values: 'ok', 'error'
             if (message.data.status === 'error') {
-                // Get app ID from message.extensions.topLevelResourceId
-                const appId = message.extensions.topLevelResourceId;
+                // The app is the event's top level resource
+                const appId = topLevelResourceId;
 
                 // Get  info about the app reload from the message sent by Qlik Sense Cloud
-                const { source, eventType, eventTime, eventTypeVersion } = message;
-                const { ownerId, tenantId, userId } = message.extensions;
                 const {
                     duration,
                     endedWithMemoryConstraint,

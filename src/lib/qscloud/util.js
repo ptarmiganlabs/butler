@@ -13,3 +13,31 @@ export function getQlikSenseCloudUrls() {
         hubUrl,
     };
 }
+
+/**
+ * Gets the attributes Butler uses from a Qlik Sense Cloud event, in either of the formats Qlik Sense Cloud sends.
+ *
+ * Qlik Sense Cloud is moving its webhook events from a legacy format to the CloudEvents format.
+ * Since 3 November 2025 the events have the attributes of both formats, and from 10 December 2026 only the CloudEvents ones.
+ * An attribute is taken from the CloudEvents format when the event has it there, and from the legacy format otherwise.
+ *
+ * @param {Object} event - Qlik Sense Cloud event, as forwarded to MQTT
+ * @returns {Object} The event's type, time, type version and source, and the IDs of its tenant, user, owner and top level resource.
+ * An attribute the event has in neither format is undefined.
+ */
+export function getQlikSenseCloudEventAttributes(event) {
+    // The legacy format has the IDs in an extensions object
+    const extensions = event.extensions || {};
+
+    return {
+        eventType: event.type ?? event.eventType,
+        eventTime: event.time ?? event.eventTime,
+        // The CloudEvents format has no event type version
+        eventTypeVersion: event.eventTypeVersion,
+        source: event.source,
+        tenantId: event.tenantid ?? extensions.tenantId,
+        userId: event.userid ?? extensions.userId,
+        ownerId: event.ownerid ?? extensions.ownerId,
+        topLevelResourceId: event.toplevelresourceid ?? extensions.topLevelResourceId,
+    };
+}
