@@ -22,8 +22,8 @@ export function getQlikSenseCloudUrls() {
  * An attribute is taken from the CloudEvents format when the event has it there and it isn't empty, and from the legacy format otherwise.
  *
  * @param {Object} event - Qlik Sense Cloud event, as forwarded to MQTT
- * @returns {Object} The event's type, time, type version and source, and the IDs of its tenant, user, owner and top level resource.
- * An attribute the event has in neither format is undefined.
+ * @returns {Object} The event's type, time, type version and source, the type of principal that triggered it,
+ * and the IDs of its tenant, user, owner and top level resource. An attribute the event has in neither format is undefined.
  */
 export function getQlikSenseCloudEventAttributes(event) {
     // The legacy format has the IDs in an extensions object
@@ -35,6 +35,8 @@ export function getQlikSenseCloudEventAttributes(event) {
         // The CloudEvents format has no event type version
         eventTypeVersion: event.eventTypeVersion,
         source: event.source,
+        // Only the CloudEvents format has the type of principal that triggered the event, for example service_account
+        authType: event.authtype,
         tenantId: event.tenantid || extensions.tenantId,
         userId: event.userid || extensions.userId,
         ownerId: event.ownerid || extensions.ownerId,

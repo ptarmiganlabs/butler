@@ -9,6 +9,9 @@ export const HTTP_TIMEOUT_SHORT_MS = 10000; // 10 seconds - Used for monitoring 
 export const HTTP_TIMEOUT_VERY_SHORT_MS = 5000; // 5 seconds - Used for New Relic API calls
 export const DOCKER_HEALTHCHECK_TIMEOUT_MS = 2000; // 2 seconds - Docker healthcheck timeout
 
+// Qlik Sense Cloud
+export const QS_CLOUD_USER_INFO_REUSE_MS = 5 * 60 * 1000; // 5 minutes - How long alerts reuse a Qlik Sense Cloud user read
+
 // Retry Configuration
 export const MAX_RETRY_ATTEMPTS = 3; // Maximum number of retry attempts for script log retrieval
 export const RETRY_DELAY_MS = 2000; // 2 seconds - Delay between retry attempts

@@ -162,6 +162,8 @@ const reloadParams = {
     appMetadata: {},
     appItems: { resourceSize: { appFile: 4096 }, meta: { tags: [] } },
     appOwner: { id: 'owner-1', name: 'Ada Owner', email: 'ada@example.com', picture: '' },
+    // The user who triggered the reload
+    reloadUser: { id: 'user-1', name: 'Rita Reloader', email: 'rita@example.com', picture: '' },
     // What the app reload handler passes on when getQlikSenseCloudAppReloadScriptLog() fails
     scriptLog: false,
 };
@@ -253,7 +255,14 @@ describe('Qlik Sense Cloud app reload alerts when another Qlik Sense Cloud API r
 
         test('is still sent when every read failed at once', async () => {
             enableAlert(channel);
-            await senders[channel]({ ...reloadParams, reloadInfo: false, appInfo: false, appItems: undefined, appOwner: false });
+            await senders[channel]({
+                ...reloadParams,
+                reloadInfo: false,
+                appInfo: false,
+                appItems: undefined,
+                appOwner: false,
+                reloadUser: false,
+            });
             await flushPromises();
 
             expect(logger.error).not.toHaveBeenCalled();
@@ -283,13 +292,22 @@ describe('Qlik Sense Cloud app reload alerts when the app reload event has no me
     });
 });
 
-describe('Qlik Sense Cloud app reload email alerts when the app owner could not be read', () => {
-    test('give custom templates "Unknown" as the user name', async () => {
+describe('Qlik Sense Cloud app reload email alerts', () => {
+    // The shipped email template doesn't show userName, so these check the fields sendEmail() renders custom templates with
+    test('give custom templates the name of the user who triggered the reload as the user name', async () => {
         enableAlert('email');
-        await senders.email({ ...reloadParamsWithScriptLog, appOwner: false });
+        await senders.email(reloadParamsWithScriptLog);
         await flushPromises();
 
-        // The shipped email template doesn't show userName, so check the fields sendEmail() renders custom templates with
+        const [, , , , , , templateContext] = sendEmailMock.mock.calls[0];
+        expect(templateContext.userName).toBe('Rita Reloader');
+    });
+
+    test('give custom templates "Unknown" as the user name when the user who triggered the reload could not be read', async () => {
+        enableAlert('email');
+        await senders.email({ ...reloadParamsWithScriptLog, reloadUser: false });
+        await flushPromises();
+
         const [, , , , , , templateContext] = sendEmailMock.mock.calls[0];
         expect(templateContext.userName).toBe('Unknown');
     });

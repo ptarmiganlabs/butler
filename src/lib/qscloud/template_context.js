@@ -15,7 +15,9 @@ import { getQlikSenseCloudUrls } from './util.js';
  * Each sender escapes it for its own message format.
  *
  * @param {Object} reloadParams - Info about the failed app reload, as the app reload handler passes it on.
- *      reloadInfo, appInfo and appOwner are false, and appItems is undefined, when they could not be obtained.
+ *      reloadInfo, appInfo, appOwner and reloadUser are false, and appItems is undefined, when they could not be obtained.
+ *      reloadUser is the user who triggered the reload. It is also false when there is no such user to get:
+ *      the event has no user ID, or says that a service account triggered the reload.
  * @param {Object} scriptLogData - Script log fields from prepareQlikSenseCloudScriptLogForNotification()
  * @returns {Object} Fields for the alert template
  */
@@ -24,6 +26,7 @@ export function prepareQlikSenseCloudAppReloadTemplateContext(reloadParams, scri
     const reloadInfo = reloadParams.reloadInfo || {};
     const appAttributes = reloadParams.appInfo?.attributes || {};
     const appOwner = reloadParams.appOwner || {};
+    const reloadUser = reloadParams.reloadUser || {};
 
     // Get Sense URLs from config file. Can be used as template fields.
     const senseUrls = getQlikSenseCloudUrls();
@@ -41,7 +44,7 @@ export function prepareQlikSenseCloudAppReloadTemplateContext(reloadParams, scri
         tenantUrl: reloadParams.tenantUrl,
 
         userId: reloadParams.userId,
-        userName: appOwner.name || 'Unknown',
+        userName: reloadUser.name || 'Unknown',
 
         appId: reloadParams.appId,
         appName: reloadParams.appName,

@@ -6,7 +6,7 @@
  *
  * Processing flow:
  * 1. Receive MQTT message with app reload info
- * 2. Fetch the script log, reload info, app info, app items and app owner from QSC APIs, all at once
+ * 2. Fetch the script log, reload info, app info, app items, app owner and the user who triggered the reload from QSC APIs, all at once
  * 3. Send notifications via configured channels (Teams, Slack, Email)
  */
 
@@ -25,20 +25,28 @@ import { sendQlikSenseCloudAppReloadFailureNotificationEmail } from './email_not
 const { config, logger } = globals;
 
 /**
- * Get the value of a Qlik Sense Cloud API read that was run with Promise.allSettled().
+ * Get the value of a Qlik Sense Cloud API read that was run with Promise.allSettled(), and log whether it was obtained.
  * The API functions return false when a read fails. A read that threw is logged, and treated the same way.
  *
  * @param {PromiseSettledResult} read - The settled read
  * @param {string} description - What was read, for the log
+ * @param {string} ids - The IDs of what was read, for the log
  * @returns {*} The value the read returned, or false if it threw
  */
-function getSettledReadValue(read, description) {
+function getSettledReadValue(read, description, ids) {
+    let { value } = read;
     if (read.status === 'rejected') {
         logger.error(`[QSCLOUD] Could not get ${description}. Error=${globals.getErrorMessage(read.reason)}`);
-        return false;
+        value = false;
     }
 
-    return read.value;
+    if (value === false) {
+        logger.warn(`[QSCLOUD] Could not get ${description}. ${ids}`);
+    } else {
+        logger.verbose(`[QSCLOUD] Got ${description}. ${ids}`);
+    }
+
+    return value;
 }
 
 /**
@@ -57,6 +65,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
             eventType,
             eventTime,
             eventTypeVersion,
+            authType,
             ownerId,
             tenantId,
             userId,
@@ -123,6 +132,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                 let appInfo = {};
                 let appItems = {};
                 let appOwner = {};
+                let reloadUser = {};
 
                 // App reload did fail. Send enabled notifications/alerts, store script log etc
                 logger.info(`[QSCLOUD] App reload failed. App ID=[${appId}] name="${message.data.name}"`);
@@ -141,51 +151,48 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                     //   https://qlik.dev/apis/rest/items/#get-v1-items
                     // - App owner, via "GET /v1/users/{userId}"
                     //   https://qlik.dev/apis/rest/users/#get-v1-users-userId
-                    //   Only the alerts use the app owner, so it is only read if at least one alert channel is enabled
+                    // - The user who triggered the reload, the same way. Not read when that is the app owner, who is read anyway,
+                    //   nor when the event has no user ID, or says that a service account triggered the reload
+                    //   Only the alerts use the app owner and that user, so they are only read if at least one alert channel is enabled
                     // The reads don't depend on each other, so they run at the same time.
                     // When the APIs are slow or time out, the alerts then wait for the slowest read, not for all of them in turn.
                     const alertChannelEnabled = ['teamsNotification', 'slackNotification', 'emailNotification'].some(
                         (channel) =>
                             globals.config.get(`Butler.qlikSenseCloud.event.mqtt.tenant.alert.${channel}.reloadAppFailure.enable`) === true,
                     );
-                    const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead] = await Promise.allSettled([
-                        getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
-                        getQlikSenseCloudAppReloadInfo(reloadId),
-                        getQlikSenseCloudAppInfo(appId),
-                        getQlikSenseCloudAppItems(appId),
-                        alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
-                    ]);
+
+                    // Where the alerts get the user who triggered the reload from
+                    let reloadUserSource = 'user read';
+                    if (!userId || authType === 'service_account') {
+                        reloadUserSource = 'none';
+                    } else if (userId === ownerId) {
+                        reloadUserSource = 'app owner';
+                    }
+
+                    const [scriptLogRead, reloadInfoRead, appInfoRead, appItemsRead, appOwnerRead, reloadUserRead] =
+                        await Promise.allSettled([
+                            getQlikSenseCloudAppReloadScriptLog(appId, reloadId),
+                            getQlikSenseCloudAppReloadInfo(reloadId),
+                            getQlikSenseCloudAppInfo(appId),
+                            getQlikSenseCloudAppItems(appId),
+                            alertChannelEnabled ? getQlikSenseCloudUserInfo(ownerId) : undefined,
+                            alertChannelEnabled && reloadUserSource === 'user read' ? getQlikSenseCloudUserInfo(userId) : undefined,
+                        ]);
 
                     // If a value is false, that info could not be obtained
-                    scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log');
-                    if (scriptLog === false) {
-                        logger.warn(`[QSCLOUD] Could not get app reload script log. App ID="${appId}", reload ID="${reloadId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD]  App reload script log obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                    }
+                    const reloadIds = `App ID="${appId}", reload ID="${reloadId}"`;
+                    scriptLog = getSettledReadValue(scriptLogRead, 'app reload script log', reloadIds);
                     logger.debug(`[QSCLOUD] App reload script log: ${scriptLog}`);
 
-                    reloadInfo = getSettledReadValue(reloadInfoRead, 'app reload info');
+                    reloadInfo = getSettledReadValue(reloadInfoRead, 'app reload info', reloadIds);
                     reloadTrigger = reloadInfo.type;
-                    if (reloadInfo === false) {
-                        logger.warn(`[QSCLOUD] Could not get app reload info. App ID="${appId}", reload ID="${reloadId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD] App reload info obtained. App ID="${appId}", reload ID="${reloadId}"`);
-                    }
                     logger.debug(`[QSCLOUD] App reload info: ${JSON.stringify(reloadInfo, null, 2)}`);
 
-                    appInfo = getSettledReadValue(appInfoRead, 'app info');
-                    if (appInfo === false) {
-                        logger.warn(`[QSCLOUD] Could not get app info. App ID="${appId}"`);
-                    } else {
-                        logger.verbose(`[QSCLOUD] App info obtained. App ID="${appId}"`);
-                    }
+                    appInfo = getSettledReadValue(appInfoRead, 'app info', `App ID="${appId}"`);
                     logger.debug(`[QSCLOUD] App info: ${JSON.stringify(appInfo, null, 2)}`);
 
-                    appItems = getSettledReadValue(appItemsRead, 'app items');
-                    if (appItems === false) {
-                        logger.warn(`[QSCLOUD] Could not get app items. App ID="${appId}"`);
-                    } else if (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId) {
+                    appItems = getSettledReadValue(appItemsRead, 'app items', `App ID="${appId}"`);
+                    if (appItems !== false && (appItems?.data?.length !== 1 || appItems.data[0].resourceId !== appId)) {
                         // There should be exactly one item in the appItems.data array, with a resourceId property that is the same as the app ID
                         // error if not
                         logger.error(
@@ -198,18 +205,28 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
 
                         // Set appItems to empty object
                         appItems = {};
-                    } else {
-                        logger.verbose(`[QSCLOUD] App items obtained. App ID="${appId}"`);
                     }
                     logger.debug(`[QSCLOUD] App items: ${JSON.stringify(appItems, null, 2)}`);
 
                     // The alerts show the app owner, and the email alert can be sent to them
                     if (alertChannelEnabled) {
-                        appOwner = getSettledReadValue(appOwnerRead, 'app owner');
-                        if (appOwner === false) {
-                            logger.warn(`[QSCLOUD] Could not get app owner. App ID="${appId}", owner ID="${ownerId}"`);
+                        appOwner = getSettledReadValue(appOwnerRead, 'app owner', `App ID="${appId}", owner ID="${ownerId}"`);
+
+                        // The alerts also show the name of the user who triggered the reload.
+                        // When there is no such user to get, the alerts show the user as unknown
+                        if (reloadUserSource === 'none') {
+                            reloadUser = false;
+                            logger.verbose(
+                                `[QSCLOUD] No user who triggered the app reload to get, as ${userId ? 'a service account triggered it' : 'the event has no user ID'}. App ID="${appId}"`,
+                            );
+                        } else if (reloadUserSource === 'app owner') {
+                            reloadUser = appOwner;
                         } else {
-                            logger.verbose(`[QSCLOUD] App owner obtained. App ID="${appId}", owner ID="${ownerId}"`);
+                            reloadUser = getSettledReadValue(
+                                reloadUserRead,
+                                'the user who triggered the app reload',
+                                `App ID="${appId}", user ID="${userId}"`,
+                            );
                         }
                     }
 
@@ -329,6 +346,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
 
@@ -391,6 +409,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
 
@@ -408,6 +427,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         // - App info
                         // - App items
                         // - App owner
+                        // - User who triggered the reload
 
                         // Send email notification
                         sendQlikSenseCloudAppReloadFailureNotificationEmail({
@@ -445,6 +465,7 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                             appInfo,
                             appItems: appItems?.data?.[0],
                             appOwner,
+                            reloadUser,
                         });
                     }
                 }

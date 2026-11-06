@@ -206,7 +206,7 @@ describe('QS Cloud App API', () => {
             const result = await getQlikSenseCloudAppItems('app123');
 
             expect(result).toBe(false);
-            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] Qlik SENSE CLOUD GET SCRIPT LOG: Items API error');
+            expect(mockGlobals.logger.error).toHaveBeenCalledWith('[QSCLOUD] SENSE CLOUD GET APP ITEMS: Items API error');
         });
 
         test('should handle empty app ID', async () => {
