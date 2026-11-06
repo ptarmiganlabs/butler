@@ -51,17 +51,23 @@ function getSettledReadValue(read, description) {
 export async function handleQlikSenseCloudAppReloadFinished(message) {
     try {
         // Get the event's type, time, source and IDs, whichever format the event is in
-        const { source, eventType, eventTime, eventTypeVersion, ownerId, tenantId, userId, topLevelResourceId } =
-            getQlikSenseCloudEventAttributes(message);
+        // The app is the event's top level resource
+        const {
+            source,
+            eventType,
+            eventTime,
+            eventTypeVersion,
+            ownerId,
+            tenantId,
+            userId,
+            topLevelResourceId: appId,
+        } = getQlikSenseCloudEventAttributes(message);
 
         // Make sure eventType is 'com.qlik.v1.app.reload.finished'
         if (eventType === 'com.qlik.v1.app.reload.finished') {
             // What is app reload status?
             // Possible values: 'ok', 'error'
             if (message.data.status === 'error') {
-                // The app is the event's top level resource
-                const appId = topLevelResourceId;
-
                 // Get  info about the app reload from the message sent by Qlik Sense Cloud
                 const {
                     duration,
