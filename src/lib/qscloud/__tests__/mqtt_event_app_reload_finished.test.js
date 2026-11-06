@@ -209,6 +209,41 @@ describe('qscloud mqtt handler', () => {
         }
     });
 
+    test('stores the script log under the time Butler got the event, when the event has no time', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+        // Only the clock is faked, so the reads still resolve
+        jest.useFakeTimers({ now: new Date('2026-11-06T13:57:27.123Z'), doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate'] });
+
+        try {
+            // The CloudEvents format doesn't require an event time
+            const res = await handleQlikSenseCloudAppReloadFinished({ ...cloudEventsMsg, time: undefined });
+
+            expect(res).toBe(true);
+            expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining('2026-11-06'), { recursive: true });
+            expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('2026-11-06T13-57-27_appId=aid_reloadId=rid.log'), 'a\nb');
+            for (const sender of [sendTeams, sendSlack, sendEmail]) {
+                expect(sender).toHaveBeenCalledTimes(1);
+            }
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test('still sends every alert when the config file has no script log directory', async () => {
+        // Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory is missing, so config.get() throws for it
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(writeFileSync).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Could not store script log to disk file'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledTimes(1);
+        }
+    });
+
     test.each([
         ['Teams', 'teamsNotification', sendTeams, [sendSlack, sendEmail]],
         ['Slack', 'slackNotification', sendSlack, [sendTeams, sendEmail]],

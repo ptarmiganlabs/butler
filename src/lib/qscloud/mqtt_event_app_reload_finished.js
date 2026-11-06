@@ -218,26 +218,30 @@ export async function handleQlikSenseCloudAppReloadFinished(message) {
                         if (Array.isArray(scriptLog?.scriptLogFull)) {
                             logger.verbose(`[QSCLOUD] Storing script log to disk file`);
 
-                            // Get path to the directory where script logs will be stored
-                            const scriptLogDirRoot = globals.config.get(
-                                'Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory',
-                            );
-
-                            // eventTime has format "2024-10-14T11:31:39Z"
-                            // Set logDate variable to date part of eventTime
-                            const logDate = eventTime.slice(0, 10);
-                            const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
-
-                            logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
-
-                            // Get error time stamp from eventTime, in format YYY-MM-DD_HH-MM-SS
-                            const logTimeStamp = eventTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
-
-                            const fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
-
-                            // Create directory for script logs, if needed, and write script log to disk file
-                            // A disk error is logged, and doesn't stop the alerts below from being sent
+                            // An error while storing the script log is logged, and doesn't stop the alerts below from being sent
+                            let fileName;
                             try {
+                                // Get path to the directory where script logs will be stored
+                                const scriptLogDirRoot = globals.config.get(
+                                    'Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory',
+                                );
+
+                                // eventTime has format "2024-10-14T11:31:39Z"
+                                // The CloudEvents format doesn't require an event time, so an event without one is stored under the time Butler got it
+                                const logTime = eventTime || new Date().toISOString();
+
+                                // Set logDate variable to date part of the event time
+                                const logDate = logTime.slice(0, 10);
+                                const reloadLogDir = path.resolve(scriptLogDirRoot, logDate);
+
+                                logger.debug(`[QSCLOUD] Script log directory: ${reloadLogDir}`);
+
+                                // Get error time stamp from the event time, in format YYY-MM-DD_HH-MM-SS
+                                const logTimeStamp = logTime.slice(0, 19).replace(/ /g, '_').replace(/:/g, '-');
+
+                                fileName = path.resolve(reloadLogDir, `${logTimeStamp}_appId=${appId}_reloadId=${reloadId}.log`);
+
+                                // Create directory for script logs, if needed, and write script log to disk file
                                 fs.mkdirSync(reloadLogDir, { recursive: true });
 
                                 logger.info(`[QSCLOUD] Writing failed task script log: ${fileName}`);
