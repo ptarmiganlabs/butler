@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { legacyEvent, cloudEvent, toCloudEventsFormat } from './qscloud_events.js';
 
 describe('lib/qscloud/util', () => {
     let getQlikSenseCloudUrls;
@@ -68,36 +69,8 @@ describe('lib/qscloud/util', () => {
     });
 
     describe('getQlikSenseCloudEventAttributes', () => {
-        // A failed app reload, as Qlik Sense Cloud sends it in the legacy format
-        const legacyEvent = {
-            cloudEventsVersion: '0.1',
-            source: 'com.qlik/engine',
-            contentType: 'application/json',
-            eventId: 'b0f5c473-5dea-4d7e-a188-5e0b904cde33',
-            eventTime: '2026-11-06T10:15:00Z',
-            eventTypeVersion: '1.0.0',
-            eventType: 'com.qlik.v1.app.reload.finished',
-            extensions: { ownerId: 'owner-1', tenantId: 'tenant-1', userId: 'user-1', topLevelResourceId: 'app-1' },
-            data: { status: 'error', name: 'Sales forecast', reloadId: 'reload-1' },
-        };
+        // What Butler uses from the test events
 
-        // The same event in the CloudEvents format, the only format Qlik Sense Cloud sends from 10 December 2026
-        const cloudEvent = {
-            id: 'b0f5c473-5dea-4d7e-a188-5e0b904cde33',
-            specversion: '1.0',
-            source: 'com.qlik/engine',
-            type: 'com.qlik.v1.app.reload.finished',
-            time: '2026-11-06T10:15:00Z',
-            datacontenttype: 'application/json',
-            tenantid: 'tenant-1',
-            userid: 'user-1',
-            ownerid: 'owner-1',
-            spaceid: 'space-1',
-            toplevelresourceid: 'app-1',
-            data: { status: 'error', name: 'Sales forecast', reloadId: 'reload-1' },
-        };
-
-        // What Butler uses from the event
         const attributes = {
             eventType: 'com.qlik.v1.app.reload.finished',
             eventTime: '2026-11-06T10:15:00Z',
@@ -107,6 +80,10 @@ describe('lib/qscloud/util', () => {
             ownerId: 'owner-1',
             topLevelResourceId: 'app-1',
         };
+
+        test('has test events whose CloudEvents one is the legacy one converted, so other tests can convert theirs', () => {
+            expect(toCloudEventsFormat(legacyEvent)).toEqual(cloudEvent);
+        });
 
         test('reads an event in the legacy format', () => {
             expect(getQlikSenseCloudEventAttributes(legacyEvent)).toEqual({ ...attributes, eventTypeVersion: '1.0.0' });

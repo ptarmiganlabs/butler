@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { jest } from '@jest/globals';
+import { toCloudEventsFormat } from './qscloud_events.js';
 
 // Mocks for API helpers
 const getQlikSenseCloudAppReloadScriptLog = jest.fn().mockResolvedValue({ scriptLogFull: ['a', 'b'] });
@@ -115,17 +116,7 @@ const baseMsg = {
 };
 
 // The same event in the CloudEvents format, the only format Qlik Sense Cloud sends from 10 December 2026
-const cloudEventsMsg = {
-    specversion: '1.0',
-    type: 'com.qlik.v1.app.reload.finished',
-    tenantid: 'tenant-1',
-    userid: 'user-1',
-    ownerid: 'owner',
-    toplevelresourceid: 'aid',
-    data: baseMsg.data,
-    source: 'qscloud',
-    time: '2024-10-14T11:31:39Z',
-};
+const cloudEventsMsg = toCloudEventsFormat(baseMsg);
 
 // Until then, Qlik Sense Cloud sends the attributes of both formats in each event
 const bothFormatsMsg = { ...baseMsg, ...cloudEventsMsg };
