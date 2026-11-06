@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { jest } from '@jest/globals';
+import { toCloudEventsFormat } from './qscloud_events.js';
 
 // Mocks for API helpers
 const getQlikSenseCloudAppReloadScriptLog = jest.fn().mockResolvedValue({ scriptLogFull: ['a', 'b'] });
@@ -114,6 +115,12 @@ const baseMsg = {
     eventTypeVersion: '1',
 };
 
+// The same event in the CloudEvents format, the only format Qlik Sense Cloud sends from 10 December 2026
+const cloudEventsMsg = toCloudEventsFormat(baseMsg);
+
+// Until then, Qlik Sense Cloud sends the attributes of both formats in each event
+const bothFormatsMsg = { ...baseMsg, ...cloudEventsMsg };
+
 describe('qscloud mqtt handler', () => {
     test('ignores events from unmonitored tenants', async () => {
         const msg = JSON.parse(JSON.stringify(baseMsg));
@@ -123,6 +130,39 @@ describe('qscloud mqtt handler', () => {
         expect(sendTeams).not.toHaveBeenCalled();
         expect(sendSlack).not.toHaveBeenCalled();
         expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    test('skips an event without a tenant ID, and says that is why', async () => {
+        const res = await handleQlikSenseCloudAppReloadFinished({ ...cloudEventsMsg, tenantid: undefined });
+
+        expect(res).toBe(false);
+        expect(logger.warn).toHaveBeenCalledWith(
+            '[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud has no tenant ID. Skipping event. App ID="aid"',
+        );
+        expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('is not defined in the Butler configuration file'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
+        }
+    });
+
+    test.each([
+        ['of another type', { ...cloudEventsMsg, type: 'com.qlik.v1.app.opened' }, 'com.qlik.v1.app.opened'],
+        [
+            'in a format Butler does not read',
+            { specversion: '2.0', kind: 'com.qlik.v1.app.reload.finished', data: baseMsg.data },
+            'undefined',
+        ],
+    ])('skips an event %s, with a warning', async (_, msg, eventType) => {
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(false);
+        expect(logger.warn).toHaveBeenCalledWith(
+            `[QSCLOUD] Incoming MQTT event from Qlik Sense Cloud is not an app reload finished event. Skipping event. Event type="${eventType}"`,
+        );
+        expect(getQlikSenseCloudAppReloadScriptLog).not.toHaveBeenCalled();
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
+        }
     });
 
     test('sends notifications when enabled', async () => {
@@ -188,6 +228,41 @@ describe('qscloud mqtt handler', () => {
         expect(writeFileSync).not.toHaveBeenCalled();
         expect(logger.error).not.toHaveBeenCalled();
         expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Not storing the script log to disk file'));
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledTimes(1);
+        }
+    });
+
+    test('stores the script log under the time Butler got the event, when the event has no time', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+        // Only the clock is faked, so the reads still resolve
+        jest.useFakeTimers({ now: new Date('2026-11-06T13:57:27.123Z'), doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate'] });
+
+        try {
+            // The CloudEvents format doesn't require an event time
+            const res = await handleQlikSenseCloudAppReloadFinished({ ...cloudEventsMsg, time: undefined });
+
+            expect(res).toBe(true);
+            expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining('2026-11-06'), { recursive: true });
+            expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('2026-11-06T13-57-27_appId=aid_reloadId=rid.log'), 'a\nb');
+            for (const sender of [sendTeams, sendSlack, sendEmail]) {
+                expect(sender).toHaveBeenCalledTimes(1);
+            }
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test('still sends every alert when the config file has no script log directory', async () => {
+        // Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory is missing, so config.get() throws for it
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+
+        const res = await handleQlikSenseCloudAppReloadFinished(baseMsg);
+
+        expect(res).toBe(true);
+        expect(writeFileSync).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Could not store script log to disk file'));
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
             expect(sender).toHaveBeenCalledTimes(1);
         }
@@ -327,6 +402,60 @@ describe('qscloud mqtt handler', () => {
         // A read that throws is treated as one that failed
         for (const sender of [sendTeams, sendSlack, sendEmail]) {
             expect(sender).toHaveBeenCalledWith(expect.objectContaining({ [field]: false }));
+        }
+    });
+});
+
+describe.each([
+    ['the legacy format', baseMsg, '1'],
+    ['the CloudEvents format', cloudEventsMsg, undefined],
+    ['both formats', bothFormatsMsg, '1'],
+])('qscloud mqtt handler, for an app reload failure event in %s', (_, msg, eventTypeVersion) => {
+    test('sends every alert, with the IDs from the event', async () => {
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(getQlikSenseCloudAppReloadScriptLog).toHaveBeenCalledWith('aid', 'rid');
+        expect(getQlikSenseCloudAppInfo).toHaveBeenCalledWith('aid');
+        expect(getQlikSenseCloudUserInfo).toHaveBeenCalledWith('owner');
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    tenantId: 'tenant-1',
+                    userId: 'user-1',
+                    ownerId: 'owner',
+                    appId: 'aid',
+                    appUrl: 'https://tenant.example.com/sense/app/aid',
+                    source: 'qscloud',
+                    eventType: 'com.qlik.v1.app.reload.finished',
+                    eventTypeVersion,
+                }),
+            );
+        }
+    });
+
+    test('names the stored script log after the event time', async () => {
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.enable', true);
+        cfg.set('Butler.scriptLog.storeOnDisk.qsCloud.appReloadFailure.logDirectory', '/logs/qscloud');
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(true);
+        expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining('2024-10-14'), { recursive: true });
+        expect(writeFileSync).toHaveBeenCalledWith(expect.stringContaining('2024-10-14T11-31-39_appId=aid_reloadId=rid.log'), 'a\nb');
+    });
+
+    test('skips the event when its tenant is not monitored', async () => {
+        cfg.set('Butler.qlikSenseCloud.event.mqtt.tenant.id', 'other-tenant');
+
+        const res = await handleQlikSenseCloudAppReloadFinished(msg);
+
+        expect(res).toBe(false);
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining('tenant ID "tenant-1" is not defined in the Butler configuration file'),
+        );
+        for (const sender of [sendTeams, sendSlack, sendEmail]) {
+            expect(sender).not.toHaveBeenCalled();
         }
     });
 });

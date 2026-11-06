@@ -247,11 +247,8 @@ function mqttInitHandlers() {
                         // **MQTT message dispatch**
                         // Compare the first part of the topic to the configured topic for app reload events
                         // Event: App reload
-                        // messageObj.eventType should be "com.qlik.v1.app.reload.finished"
-                        if (
-                            topicStr.startsWith(config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.appReload')) &&
-                            messageObj.eventType === 'com.qlik.v1.app.reload.finished'
-                        ) {
+                        // The app reload handler checks the event type, and warns about other events
+                        if (topicStr.startsWith(config.get('Butler.mqttConfig.qlikSenseCloud.event.mqttForward.topic.appReload'))) {
                             logger.debug(`MQTT QS CLOUD EVENT IN: ${messageStr}`);
 
                             // Handle app reload finished event
