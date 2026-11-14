@@ -21,6 +21,8 @@
 <a href="https://github.com/sponsors/ptarmiganlabs">❤️ Sponsor</a>
 </p>
 
+<p align="center"><img src="docs/img/butler-demo.gif" alt="A Qlik Sense reload fails; Butler sends the alert by email, to Microsoft Teams and to Slack, each with the task, the app and the end of the script log" width="880"></p>
+
 Butler adds the things Qlik Sense Enterprise on Windows leaves out: advanced reload-failure
 alerts, a task scheduler, a key-value store, file system access and much more. Adapt it to your
 needs, and please consider sharing enhancements with the wider community.
