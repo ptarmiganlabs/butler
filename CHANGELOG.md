@@ -1,5 +1,94 @@
 # Changelog
 
+## [17.0.0](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.4...butler-v17.0.0) (2026-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **qs-cloud:** The userName field of Qlik Sense Cloud app reload alerts is now the name of the user who triggered the reload, as the docs describe, and "Unknown" when a service account triggered it. It used to be the app owner's name. Custom templates that use userName for the app owner should use appOwnerName instead.
+* **udp:** Add de-dupllication timeout setting to config file
+
+### Features
+
+* Enhance QRS API error handling with detailed context in error messages ([a5af939](https://github.com/ptarmiganlabs/butler/commit/a5af939939dd921d4e46963eedc6564d77863e60))
+* Improve error handling when calling QRS API ([b424f2a](https://github.com/ptarmiganlabs/butler/commit/b424f2a53b0292262fdb9cba18405b3a62d22343))
+* **qrs-api:** Enhance error handling and logging in QRS utility functions ([9dee5c0](https://github.com/ptarmiganlabs/butler/commit/9dee5c04451bc33d441aeea376ffe32fbe6a8f7e))
+* **udp-queue:** implement handling for queue full drops and refactor related tests ([61c1dda](https://github.com/ptarmiganlabs/butler/commit/61c1dda9d3dcbba9f8a01ce2fe8f24a0620304d2))
+* **udp-queue:** log deduplication settings at UDP server startup ([6276e89](https://github.com/ptarmiganlabs/butler/commit/6276e89ed1882a3d5138a43dfa2cbfbeb4d1aaa2))
+* **udp:** Add de-dupllication timeout setting to config file ([97c1f58](https://github.com/ptarmiganlabs/butler/commit/97c1f5898a5cc993ac60e920217b69df10367d44))
+* **udp:** Better duplicate and queue handling for incoming UDP messages from Sense ([7c4df53](https://github.com/ptarmiganlabs/butler/commit/7c4df5337f6b6f76b37bf017b1f84e30fdf781fc))
+* **udp:** Enhance UDP drop logging to include breakdown of drop reasons and reset counters after logging ([f7b965e](https://github.com/ptarmiganlabs/butler/commit/f7b965e03a76caa5b636c5aad8b1e941277c69dc))
+* **udp:** implement message deduplication and improve logging for email notifications ([815a3f4](https://github.com/ptarmiganlabs/butler/commit/815a3f415b6a74959d988451e73c6b25350c0f91))
+
+
+### Bug Fixes
+
+* **build:** build macos insiders on macos-15, signed ad hoc ([fedb003](https://github.com/ptarmiganlabs/butler/commit/fedb0033e916b591355095d7d101481caddd477e))
+* **build:** build windows insiders on windows-latest, unsigned ([f674324](https://github.com/ptarmiganlabs/butler/commit/f674324264a357a94095dbe3848983a74f169788))
+* **build:** sign macos releases on macos-15 from a throwaway keychain ([13b7a1e](https://github.com/ptarmiganlabs/butler/commit/13b7a1e5459cded4f621f066729d84084062a10d))
+* **build:** sign windows releases through azure artifact signing on hosted runners ([f2b7f24](https://github.com/ptarmiganlabs/butler/commit/f2b7f2439834cf8eba852aa551aaa03508b264c5))
+* Fix various linting and style issues in the codebase ([ade6a79](https://github.com/ptarmiganlabs/butler/commit/ade6a79df40efcd636798cb1738afdd428ee1bae))
+* **lib:** address review feedback in QRS logging ([71929a8](https://github.com/ptarmiganlabs/butler/commit/71929a852ea50fd024431eac54166ed738761314))
+* **qrs-util:** address review feedback ([2f85015](https://github.com/ptarmiganlabs/butler/commit/2f85015b0e3bc165bc91b2c52dee226f177a0736))
+* **qrs-util:** escape custom property filter quotes ([e58e28c](https://github.com/ptarmiganlabs/butler/commit/e58e28cdb0aab67ea98faf29bf4e944b97552c9e))
+* **qrs-util:** preserve filter value coercion ([90c8d2b](https://github.com/ptarmiganlabs/butler/commit/90c8d2b2e5440faaaac5225059411cdfe37bc6d0))
+* **qs-cloud:** don't look up a user when a service account triggered the reload ([210a9dd](https://github.com/ptarmiganlabs/butler/commit/210a9dd984521ce05235ae7194cf4a56d13052df))
+* **qs-cloud:** don't require the scriptLog config section for app reload alerts ([18a7183](https://github.com/ptarmiganlabs/butler/commit/18a7183a2a7e628faecf85d6b726c2cc337e72a3))
+* **qs-cloud:** keep basicContentOnly to the channel it is set for ([c5ba3c9](https://github.com/ptarmiganlabs/butler/commit/c5ba3c913bd29c5fd63938635d7394ada08fafb4))
+* **qs-cloud:** label the user and app items read errors correctly ([ee1e2c0](https://github.com/ptarmiganlabs/butler/commit/ee1e2c0c5361d2edbbd2bbc2487923f2b4e649df))
+* **qs-cloud:** make userName the user who triggered the reload ([8c5851a](https://github.com/ptarmiganlabs/butler/commit/8c5851af0c8092e33ab99e1fb6d472bb41d8e759))
+* **qs-cloud:** read reload events in the CloudEvents format ([25cf654](https://github.com/ptarmiganlabs/butler/commit/25cf6541b3879a781459c054b7bbeda3361d8a26))
+* **qs-cloud:** say when the script log is missing in reload alerts ([8b6f26f](https://github.com/ptarmiganlabs/butler/commit/8b6f26fe548b8eebeb237e5deb69a026801ff595))
+* **qs-cloud:** send reload alerts on disk errors and missing event numbers ([eb9c457](https://github.com/ptarmiganlabs/butler/commit/eb9c4570285e499dd711f2a6ae88894b98f8aa9e))
+* **qs-cloud:** send reload alerts when app or reload info reads fail ([1e5727f](https://github.com/ptarmiganlabs/butler/commit/1e5727f4f87f5b72ab1284930b11eef230b7ecc2))
+* **qs-cloud:** send tag-based alert emails when the app's tags are unknown ([6424081](https://github.com/ptarmiganlabs/butler/commit/6424081c70573adc1ec8425904a112eb032c9710))
+* **qs-cloud:** send Teams and Slack alerts when the script log fetch fails ([dbcb62f](https://github.com/ptarmiganlabs/butler/commit/dbcb62f85aa861944634fdf33f04574258fed9c3))
+* **qs-cloud:** send the alerts when the script log can't be stored on disk ([8d874b5](https://github.com/ptarmiganlabs/butler/commit/8d874b5c20a7aa55bfbdd88c0310102731048261))
+* **qs-cloud:** show "Unknown" for an unknown app owner's email in email alerts ([7ab1de2](https://github.com/ptarmiganlabs/butler/commit/7ab1de2f2a7270a024f81df691d2819a0d83c910))
+* **qs-cloud:** use the legacy event attribute when the CloudEvents one is empty ([22c6d97](https://github.com/ptarmiganlabs/butler/commit/22c6d978071a2b5ba88ab1ff92b9be3a42a5e1e8))
+* **qs-cloud:** warn about the app reload events Butler skips ([df155c9](https://github.com/ptarmiganlabs/butler/commit/df155c97d55032260c86dc64bfea7e0e9ba8300a))
+* **qs-cloud:** warn when an email alert has no app owner, instead of throwing ([fc49e01](https://github.com/ptarmiganlabs/butler/commit/fc49e013849f92ff45d32a7d27ed413e1f4ece13))
+* **qseow:** address remaining qrs error review feedback ([b183bc3](https://github.com/ptarmiganlabs/butler/commit/b183bc381042fa1e3a4becb23a29bb83acf7903b))
+* **qseow:** address security and test isolation issues in error handling ([cbfc042](https://github.com/ptarmiganlabs/butler/commit/cbfc04285689304e541cd9a74620f37553e06d33))
+* **qseow:** say when the script log is missing in reload alerts ([d6c60d8](https://github.com/ptarmiganlabs/butler/commit/d6c60d8331f32ca81938a75d5739fc0b954f0cba))
+* **qseow:** send reload alert emails when the app owner cannot be read ([c9e93a0](https://github.com/ptarmiganlabs/butler/commit/c9e93a0cea7ed4edf1094d646354af6ab570e55c))
+* **qseow:** send reload alerts when the script log cannot be fetched ([c7a44b3](https://github.com/ptarmiganlabs/butler/commit/c7a44b30397c5dc8ab4ed5c2af8b3c20398476f0))
+* **qseow:** show the task ID in Teams reload alerts ([be33a57](https://github.com/ptarmiganlabs/butler/commit/be33a57549b3c768c3291289b32508e0d5dd3f66))
+* **qseow:** simplify qrs error config lookup ([2d8a05a](https://github.com/ptarmiganlabs/butler/commit/2d8a05aeeda3e30d1019eebcbe2d6a9e29d71927))
+* **startup:** supress obsolete messages during Butler startup ([9ade010](https://github.com/ptarmiganlabs/butler/commit/9ade010488f5d5df2b3fd2763d7fd16a8cd7a9cf))
+* **udp-queue:** correct messageReceived metric increment logic in queue handling ([6fd521d](https://github.com/ptarmiganlabs/butler/commit/6fd521d3e1c32f139c8497447c52dcec93588b22))
+* **udp:** don't require the scriptLog config section for failed reloads ([524aac2](https://github.com/ptarmiganlabs/butler/commit/524aac28aa03b2f6161acc3f2c9bb587ee339962))
+* **udp:** enhance error logging with additional context and streamline QRS config retrieval ([ef621af](https://github.com/ptarmiganlabs/butler/commit/ef621af372e0b1324f93caa7534b80058b3326a1))
+* **udp:** get the script log when storing it on disk is its only use ([960cae5](https://github.com/ptarmiganlabs/butler/commit/960cae595831f25e91ffe0ee96ea4aef3b1419b9))
+
+
+### Miscellaneous
+
+* add apple's ca certificates for the macos signing keychain ([224f46d](https://github.com/ptarmiganlabs/butler/commit/224f46d9ade59d8511a76b1f9a15aba8beb597e0))
+* let a dispatched ci run rehearse macos release signing ([38edb3c](https://github.com/ptarmiganlabs/butler/commit/38edb3cba9609fd6e7a104671f6d22ee27812faa))
+* **repo:** remove unrelated generated files ([c978d3c](https://github.com/ptarmiganlabs/butler/commit/c978d3cb3175335aee2d92efd4f020263da3a9c4))
+* Update dependencies for nodemailer, posthog-node, @types/node, and eslint-plugin-jsdoc ([a3d141e](https://github.com/ptarmiganlabs/butler/commit/a3d141e1da64b384ff559f4af6135b1b95cab226))
+* use the organisation's default FUNDING.yml ([70e9d7d](https://github.com/ptarmiganlabs/butler/commit/70e9d7dd20475fd12481c82672ffdeea1ae6d38e))
+
+
+### Refactoring
+
+* **qs-cloud:** build the template fields of reload alerts in one place ([d2dfec1](https://github.com/ptarmiganlabs/butler/commit/d2dfec1d1014af81374e007b782d9434144fd65c))
+* **qs-cloud:** log each Qlik Sense Cloud API read in one place ([c582952](https://github.com/ptarmiganlabs/butler/commit/c582952be1cdd2090095c259fac0c3ab8ea9a2c5))
+* **qs-cloud:** only read the app owner when an alert channel is enabled ([bcb7ace](https://github.com/ptarmiganlabs/butler/commit/bcb7ace583f9a54378700ff586c5fb15d25c2bf6))
+* **qs-cloud:** read the APIs behind reload alerts all at once ([0ff5e38](https://github.com/ptarmiganlabs/butler/commit/0ff5e38f3590e2420ff9afa1331641abd4c7502b))
+* **qs-cloud:** read the app ID straight from the event attributes ([ec91cbd](https://github.com/ptarmiganlabs/butler/commit/ec91cbdbc0fd88836811952a763c512e8c2ff2bd))
+* **qseow:** prepare reload alert script logs in one helper ([af90137](https://github.com/ptarmiganlabs/butler/commit/af901374dbe75e5652508dc6b3f898c2d136a87f))
+
+
+### Documentation
+
+* add sponsor section to README ([5b5e803](https://github.com/ptarmiganlabs/butler/commit/5b5e80398d8f0dac71349d41beadc46b8d212036))
+* **config:** clarify required UDP deduplication TTL setting ([67b3c91](https://github.com/ptarmiganlabs/butler/commit/67b3c91fb43b27a727ee0ca78045c54ae2f876e7))
+* describe macos signing in AGENTS.md ([8bdda80](https://github.com/ptarmiganlabs/butler/commit/8bdda8020997625c013a0171acab40e2177490be))
+* describe windows signing in AGENTS.md ([dcae145](https://github.com/ptarmiganlabs/butler/commit/dcae1458da395b19d27ab367d92d0419c8900048))
+* show a failed-reload alert under the README header ([553a610](https://github.com/ptarmiganlabs/butler/commit/553a6102cd47038c20ef144dba97f2f549f62945))
+
 ## [16.0.4](https://github.com/ptarmiganlabs/butler/compare/butler-v16.0.3...butler-v16.0.4) (2026-06-16)
 
 
